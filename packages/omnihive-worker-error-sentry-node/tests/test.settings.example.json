@@ -1,0 +1,16 @@
+[
+  {
+    "name": "defaultErrorWorker",
+    "type": "error",
+    "package": "@withonevision/omnihive-worker-error-sentry-node",
+    "version": "^4.0.0",
+    "classPath": "@withonevision/omnihive-worker-error-sentry-node/index",
+    "default": true,
+    "enabled": true,
+    "metadata": {
+      "sentryDsn": "XXX",
+      "environment": "XXX",
+      "hostname": "XXX"
+    }
+  }
+]

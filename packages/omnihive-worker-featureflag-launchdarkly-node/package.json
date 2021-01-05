@@ -1,0 +1,14 @@
+{
+  "name": "@withonevision/omnihive-worker-featureflag-launchdarkly-node",
+  "version": "4.0.0",
+  "description": "OmniHive Launch Darkly Node Feature Flag Worker",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@withonevision/omnihive-hive-common": "^4.0.0",
+    "@withonevision/omnihive-hive-worker": "^4.0.0",
+    "launchdarkly-node-server-sdk": "5.13.4"
+  }
+}

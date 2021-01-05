@@ -1,0 +1,17 @@
+[
+  {
+    "name": "defaultLogWorker",
+    "type": "log",
+    "package": "@withonevision/omnihive-worker-log-elastic",
+    "version": "^4.0.0",
+    "classPath": "@withonevision/omnihive-worker-log-elastic/index",
+    "default": true,
+    "enabled": true,
+    "metadata": {
+      "cloudId": "XXX",
+      "cloudPassword": "XXX",
+      "cloudUser": "XXX",
+      "logIndex": "XXX"
+    }
+  }
+]

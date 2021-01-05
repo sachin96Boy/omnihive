@@ -1,0 +1,6 @@
+{
+    "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git", "**/node_modules"],
+    "watch": ["./**/*.ts", "../**/*.ts"],
+    "exec": "OH_ENV_FILE=\"/Library/Application Support/OmniHive/omnihive.env\" node --inspect=127.0.0.1:9228 -r ts-node/register -r dotenv/config --trace-warnings --stack-size=2048 --max-old-space-size=16384 ./droneRunner.ts",
+    "ext": "ts"
+}

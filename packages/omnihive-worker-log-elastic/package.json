@@ -1,0 +1,14 @@
+{
+  "name": "@withonevision/omnihive-worker-log-elastic",
+  "version": "4.0.0",
+  "description": "OmniHive Elastic Log Worker",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "7.10.0",
+    "@withonevision/omnihive-hive-common": "^4.0.0",
+    "@withonevision/omnihive-hive-worker": "^4.0.0"
+  }
+}

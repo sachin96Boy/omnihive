@@ -1,0 +1,14 @@
+{
+  "name": "@withonevision/omnihive-worker-cache-nodecache",
+  "version": "4.0.0",
+  "description": "OmniHive Node Cache Worker",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@withonevision/omnihive-hive-common": "^4.0.0",
+    "@withonevision/omnihive-hive-worker": "^4.0.0",
+    "node-cache": "5.1.2"
+  }
+}

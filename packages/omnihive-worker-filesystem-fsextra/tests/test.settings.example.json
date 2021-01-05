@@ -1,0 +1,12 @@
+[
+  {
+    "name": "defaultFileWorker",
+    "type": "fileSystem",
+    "package": "@withonevision/omnihive-worker-filesystem-fsextra",
+    "version": "^4.0.0",
+    "classPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
+    "default": true,
+    "enabled": true,
+    "metadata": {}
+  }
+]

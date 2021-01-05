@@ -1,0 +1,16 @@
+[
+  {
+    "name": "adminPubSubClient",
+    "type": "pubSubClient",
+    "package": "@withonevision/omnihive-worker-pubsubclient-pusherjs",
+    "version": "^4.0.0",
+    "classPath": "@withonevision/omnihive-worker-pubsubclient-pusherjs/index",
+    "default": true,
+    "enabled": true,
+    "metadata": {
+      "key": "XXX",
+      "cluster": "XXX",
+      "maxRetries": 5
+    }
+  }
+]

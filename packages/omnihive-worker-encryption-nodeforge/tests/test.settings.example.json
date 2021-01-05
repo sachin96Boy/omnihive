@@ -1,0 +1,14 @@
+[
+  {
+    "name": "defaultEncryptionWorker",
+    "type": "encryption",
+    "package": "@withonevision/omnihive-worker-encryption-nodeforge",
+    "version": "^4.0.0",
+    "classPath": "@withonevision/omnihive-worker-encryption-nodeforge/index",
+    "default": true,
+    "enabled": true,
+    "metadata": {
+      "encryptionKey": "XXX"
+    }
+  }
+]

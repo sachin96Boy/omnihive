@@ -1,0 +1,12 @@
+[
+  {
+    "name": "defaultCacheWorker",
+    "type": "cache",
+    "package": "@withonevision/omnihive-worker-cache-redis",
+    "version": "^4.0.0",
+    "classPath": "@withonevision/omnihive-worker-cache-redis/index",
+    "default": true,
+    "enabled": true,
+    "metadata": {}
+  }
+]

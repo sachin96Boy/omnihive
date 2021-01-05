@@ -1,0 +1,28 @@
+[
+  {
+    "name": "defaultFlagWorker",
+    "type": "featureFlag",
+    "package": "@withonevision/omnihive-worker-featureflag-launchdarkly-node",
+    "version": "^4.0.0",
+    "classPath": "@withonevision/omnihive-worker-featureflag-launchdarkly-node/index",
+    "default": true,
+    "enabled": true,
+    "metadata": {
+      "clientSideId": "XXX",
+      "mobileKey": "XXX",
+      "project": "XXX",
+      "sdkKey": "XXX",
+      "user": "XXX"
+    }
+  },
+  {
+    "name": "defaultLogWorker",
+    "type": "log",
+    "package": "@withonevision/omnihive-worker-log-console",
+    "version": "^4.0.0",
+    "classPath": "@withonevision/omnihive-worker-log-console/index",
+    "default": true,
+    "enabled": true,
+    "metadata": { }
+  }
+]

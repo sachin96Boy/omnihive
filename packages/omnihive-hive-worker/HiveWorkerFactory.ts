@@ -3,7 +3,6 @@ import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorke
 import { serializeError } from 'serialize-error';
 import { IHiveWorker } from './interfaces/IHiveWorker';
 
-
 export class HiveWorkerFactory {
 
     private static instance: HiveWorkerFactory;

@@ -1,33 +1,49 @@
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
-import { IRestDrone } from "@withonevision/omnihive-hive-queen/interfaces/IRestDrone";
-import { DroneBase } from "@withonevision/omnihive-hive-queen/models/DroneBase";
-import { IPubSubServerWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubServerWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import * as core from "express-serve-static-core";
-import { QueenStore } from "../stores/QueenStore";
+import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
+import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
+import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import swaggerUi from "swagger-ui-express";
+import { IHiveWorker } from "@withonevision/omnihive-hive-worker/interfaces/IHiveWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubServerWorker";
 import { ITokenWorker } from "@withonevision/omnihive-hive-worker/interfaces/ITokenWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-hive-worker/models/HiveWorkerMetadataRestFunction";
+import * as core from "express-serve-static-core";
+import swaggerUi from "swagger-ui-express";
 
-export default class SystemRefreshDrone extends DroneBase implements IRestDrone {
+export default class SystemRefreshWorker extends HiveWorkerBase implements IHiveWorker {
+
+    private tokenWorker!: ITokenWorker;
+    private metadata!: HiveWorkerMetadataRestFunction;
+
+    constructor() {
+        super();
+    }
+
+    public async init(config: HiveWorker): Promise<void> {
+        await AwaitHelper.execute<void>(super.init(config));
+        this.metadata = this.hiveWorkerHelper.checkMetadata<HiveWorkerMetadataRestFunction>(HiveWorkerMetadataRestFunction, config.metadata);
+    }
+
+    public async afterInit(): Promise<void> {
+        const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
+            HiveWorkerFactory.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
+
+        if (!tokenWorker) {
+            throw new Error("Token Worker cannot be found");
+        }
+
+        this.tokenWorker = tokenWorker;
+    }
 
     public async register(app: core.Express, restRoot: string): Promise<void> {
 
-        app.post(`${restRoot}/refresh`, async (req, res) => {
+        app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: core.Request, res: core.Response) => {
             try {
                 await AwaitHelper.execute<void>(this.checkRequest(req));
-
-                const accessToken: string | undefined = req.headers.ohAccess?.toString();
-
-                const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-                    HiveWorkerFactory.getInstance().getHiveWorker<ITokenWorker | undefined>(HiveWorkerType.Token));
-
-                if (!accessToken || !tokenWorker) {
-                    throw new Error("Request Denied");
-                }
-
-                const verified: boolean = await AwaitHelper.execute<boolean>(tokenWorker.verify(accessToken));
+                const accessToken: string | undefined = req.headers.ohAccess?.toString()
+                const verified: boolean = await AwaitHelper.execute<boolean>(this.tokenWorker.verify(accessToken ?? ""));
 
                 if (!verified) {
                     throw new Error("Invalid Access Token");

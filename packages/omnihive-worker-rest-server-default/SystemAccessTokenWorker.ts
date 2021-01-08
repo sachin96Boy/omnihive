@@ -1,28 +1,44 @@
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { IRestDrone } from "@withonevision/omnihive-hive-queen/interfaces/IRestDrone";
-import { DroneBase } from "@withonevision/omnihive-hive-queen/models/DroneBase";
-import { ITokenWorker } from "@withonevision/omnihive-hive-worker/interfaces/ITokenWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import * as core from "express-serve-static-core";
+import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
+import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
+import { IRestEndpointWorker } from "@withonevision/omnihive-hive-worker/interfaces/IRestEndpointWorker";
+import { ITokenWorker } from "@withonevision/omnihive-hive-worker/interfaces/ITokenWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-hive-worker/models/HiveWorkerMetadataRestFunction";
+import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
 
-export default class SystemAccessTokenDrone extends DroneBase implements IRestDrone {
+export default class SystemAccessTokenWorker extends HiveWorkerBase implements IRestEndpointWorker {
+
+    private tokenWorker!: ITokenWorker;
+    private metadata!: HiveWorkerMetadataRestFunction;
+
+    constructor() {
+        super();
+    }
+
+    public async init(config: HiveWorker): Promise<void> {
+        await AwaitHelper.execute<void>(super.init(config));
+        this.metadata = this.hiveWorkerHelper.checkMetadata<HiveWorkerMetadataRestFunction>(HiveWorkerMetadataRestFunction, config.metadata);
+    }
+
+    public async afterInit(): Promise<void> {
+        const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
+            HiveWorkerFactory.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
+
+        if (!tokenWorker) {
+            throw new Error("Token Worker cannot be found");
+        }
+
+        this.tokenWorker = tokenWorker;
+    }
 
     public async register(app: core.Express, restRoot: string): Promise<void> {
-
-        app.post(`${restRoot}/accessToken`, async (req: core.Request, res: core.Response) => {
+        app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: core.Request, res: core.Response) => {
             try {
-
-                const tokenHiveWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-                    HiveWorkerFactory.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
-
-                if (!tokenHiveWorker) {
-                    throw new Error("Token Drone cannot be found");
-                }
-
-                await AwaitHelper.execute<void>(this.checkRequest(req, tokenHiveWorker));
-                const token = await AwaitHelper.execute<string>(tokenHiveWorker.get());
+                await AwaitHelper.execute<void>(this.checkRequest(req));
+                const token = await AwaitHelper.execute<string>(this.tokenWorker.get());
                 return res.send(token);
             } catch (e) {
                 return res.status(400).send(e.message);
@@ -30,7 +46,7 @@ export default class SystemAccessTokenDrone extends DroneBase implements IRestDr
         });
     }
 
-    private checkRequest = async (req: core.Request, hiveWorker: ITokenWorker) => {
+    private checkRequest = async (req: core.Request) => {
 
         if (!req.body) {
             throw new Error(`Request body incorrectly formed`);
@@ -44,12 +60,12 @@ export default class SystemAccessTokenDrone extends DroneBase implements IRestDr
             throw new Error(`A client secret must be provided`);
         }
 
-        if (!hiveWorker || !hiveWorker.config.metadata || !hiveWorker.config.metadata.clientId || !hiveWorker.config.metadata.clientSecret) {
+        if (!this.tokenWorker || !this.tokenWorker.config.metadata || !this.tokenWorker.config.metadata.clientId || !this.tokenWorker.config.metadata.clientSecret) {
             throw new Error("A token worker cannot be found");
         }
     }
 
-    public getSwaggerDefinition = (): swaggerUi.JsonObject => {
+    public getSwaggerDefinition = (): swaggerUi.JsonObject | undefined => {
         return {
             "definitions": {
                 "GetAccessTokenParameters": {

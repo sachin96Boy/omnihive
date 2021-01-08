@@ -11,31 +11,16 @@
     "@withonevision/omnihive-hive-worker": "^4.0.0",
     "@withonevision/omnihive-worker-filesystem-fsextra": "^4.0.0",
     "@withonevision/omnihive-worker-log-console": "^4.0.0",
-    "body-parser": "1.19.0",
-    "cors": "2.8.5",
     "cross-spawn": "7.0.3",
     "dayjs": "1.9.7",
-    "express": "4.17.1",
     "fs-extra": "9.0.1",
     "graphql": "15.4.0",
-    "helmet": "4.2.0",
-    "next": "10.0.4",
-    "react": "17.0.1",
-    "react-dom": "17.0.1",
-    "read-pkg-up": "7.0.1",
-    "swagger-ui-express": "4.1.6"
+    "read-pkg-up": "7.0.1"
   },
   "devDependencies": {
-    "@types/body-parser": "1.19.0",
-    "@types/cors": "2.8.9",
     "@types/cross-spawn": "6.0.2",
-    "@types/express": "4.17.9",
     "@types/express-serve-static-core": "4.17.17",
     "@types/fs-extra": "9.0.6",
-    "@types/graphql": "14.5.0",
-    "@types/helmet": "4.0.0",
-    "@types/react": "17.0.0",
-    "@types/react-dom": "17.0.0",
-    "@types/swagger-ui-express": "4.1.2"
+    "@types/graphql": "14.5.0"
   }
 }

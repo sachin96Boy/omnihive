@@ -1,5 +1,5 @@
-const QueenStore = require("@withonevision/omnihive-hive-queen/stores/QueenStore");
+const ServerStore = require("./stores/ServerStore");
 
 module.exports = {
-  basePath: `${QueenStore.QueenStore.getInstance().getRootUrlPathName() === "/" ? "/admin" : QueenStore.QueenStore.getInstance().getRootUrlPathName() + "/admin"}`,
+  basePath: `${ServerStore.ServerStore.getInstance().getRootUrlPathName() === "/" ? "/admin" : ServerStore.ServerStore.getInstance().getRootUrlPathName() + "/admin"}`,
 }

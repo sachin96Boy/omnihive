@@ -1,6 +1,5 @@
 import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
 import { StringBuilder } from "@withonevision/omnihive-hive-common/helpers/StringBuilder";
-import { Drone } from "@withonevision/omnihive-hive-common/models/Drone";
 import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
 import { SystemSettings } from "@withonevision/omnihive-hive-common/models/SystemSettings";
 import { QueenStore } from "../stores/QueenStore";
@@ -34,6 +33,7 @@ export class AppService {
         // Load Workers
         LogService.getInstance().write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
 
+        // Load Default Workers
         if (packageJson && packageJson.packageJson && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.defaultWorkers) {
             const defaultWorkers: HiveWorker[] = packageJson.packageJson.omniHive.defaultWorkers as HiveWorker[];
 
@@ -61,6 +61,34 @@ export class AppService {
             });
         }
 
+        // Load Required Workers
+        if (packageJson && packageJson.packageJson && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.requiredWorkers) {
+            const requiredWorkers: HiveWorker[] = packageJson.packageJson.omniHive.requiredWorkers as HiveWorker[];
+
+            requiredWorkers.forEach((requiredWorker: HiveWorker) => {
+
+                if (!QueenStore.getInstance().settings.workers.some((hiveWorker: HiveWorker) => hiveWorker.name === requiredWorker.name)) {
+                    Object.keys(requiredWorker.metadata).forEach((metaKey: string) => {
+                        if (typeof requiredWorker.metadata[metaKey] === "string") {
+                            if ((requiredWorker.metadata[metaKey] as string).startsWith("${") && (requiredWorker.metadata[metaKey] as string).endsWith("}")) {
+                                let metaValue: string = requiredWorker.metadata[metaKey] as string;
+
+                                metaValue = metaValue.substr(2, metaValue.length - 3);
+                                const envValue: string | undefined = process.env[metaValue];
+
+                                if (envValue) {
+                                    requiredWorker.metadata[metaKey] = envValue;
+                                }
+                            }
+                        }
+                    });
+
+                    QueenStore.getInstance().settings.workers.push(requiredWorker);
+                }
+
+            });
+        }
+
         LogService.getInstance().write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
 
         if (packageJson && packageJson.packageJson && packageJson.packageJson.dependencies && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.coreDependencies) {
@@ -69,14 +97,9 @@ export class AppService {
             const corePackages: any = packageJson.packageJson.omniHive.coreDependencies;
             const loadedPackages: any = packageJson.packageJson.dependencies;
             const workerPackages: any = {};
-            const dronePackages: any = {};
 
             QueenStore.getInstance().settings.workers.forEach((hiveWorker: HiveWorker) => {
                 workerPackages[hiveWorker.package] = hiveWorker.version;
-            });
-
-            QueenStore.getInstance().settings.drones.forEach((drone: Drone) => {
-                dronePackages[drone.package] = drone.version;
             });
 
             //Find out what to remove
@@ -95,15 +118,6 @@ export class AppService {
                 if (removeLoadedPackage) {
                     for (const workerPackage of Object.entries(workerPackages)) {
                         if (workerPackage[0] === loadedPackage[0] && workerPackage[1] === loadedPackage[1]) {
-                            removeLoadedPackage = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (removeLoadedPackage) {
-                    for (const dronePackage of Object.entries(dronePackages)) {
-                        if (dronePackage[0] === loadedPackage[0] && dronePackage[1] === loadedPackage[1]) {
                             removeLoadedPackage = false;
                             break;
                         }

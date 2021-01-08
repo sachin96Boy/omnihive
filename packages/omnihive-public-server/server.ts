@@ -17,6 +17,7 @@ import { serializeError } from "serialize-error";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import http, { Server } from "http";
+import { ServerStore } from "./stores/ServerStore";
 
 const start = async (): Promise<void> => {
 
@@ -57,7 +58,7 @@ const start = async (): Promise<void> => {
             return;
         }
 
-        QueenStore.getInstance().loadSpecialStatusApp(ServerStatus.Rebuilding)
+        ServerStore.getInstance().loadSpecialStatusApp(ServerStatus.Rebuilding)
             .then(() => {
                 serverChangeHandler();
 
@@ -77,7 +78,7 @@ const start = async (): Promise<void> => {
                                 });
                         })
                         .catch((err: Error) => {
-                            QueenStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
+                            ServerStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
 
                             serverChangeHandler();
 
@@ -93,7 +94,7 @@ const start = async (): Promise<void> => {
                         });
                 } catch (err) {
 
-                    QueenStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
+                    ServerStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
 
                     serverChangeHandler();
 
@@ -111,7 +112,7 @@ const start = async (): Promise<void> => {
     });
 
     // Set server to rebuilding first
-    await AwaitHelper.execute<void>(QueenStore.getInstance().loadSpecialStatusApp(ServerStatus.Rebuilding));
+    await AwaitHelper.execute<void>(ServerStore.getInstance().loadSpecialStatusApp(ServerStatus.Rebuilding));
     serverChangeHandler();
 
     // Try to spin up full server
@@ -121,7 +122,7 @@ const start = async (): Promise<void> => {
         serverChangeHandler();
     } catch (err) {
         // Problem...spin up admin server
-        QueenStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
+        ServerStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
         serverChangeHandler();
         LogService.getInstance().write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
     }
@@ -131,20 +132,20 @@ const serverChangeHandler = (): void => {
 
     LogService.getInstance().write(OmniHiveLogLevel.Info, `Server Change Handler Started`);
 
-    const server: Server = http.createServer(QueenStore.getInstance().appServer);
+    const server: Server = http.createServer(ServerStore.getInstance().appServer);
 
-    if (QueenStore.getInstance().webServer) {
-        QueenStore.getInstance().webServer?.removeAllListeners().close();
+    if (ServerStore.getInstance().webServer) {
+        ServerStore.getInstance().webServer?.removeAllListeners().close();
     }
 
-    QueenStore.getInstance().webServer = server;
+    ServerStore.getInstance().webServer = server;
 
-    QueenStore.getInstance().webServer?.listen(QueenStore.getInstance().settings.server.portNumber, () => {
+    ServerStore.getInstance().webServer?.listen(QueenStore.getInstance().settings.server.portNumber, () => {
         LogService.getInstance().write(OmniHiveLogLevel.Info, `New Server Listening on process ${process.pid} using port ${QueenStore.getInstance().settings.server.portNumber}`);
     });
 
     LogService.getInstance().write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
-    
+
 }
 
 start();

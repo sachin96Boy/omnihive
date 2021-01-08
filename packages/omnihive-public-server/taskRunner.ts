@@ -1,12 +1,9 @@
-import { DroneType } from "@withonevision/omnihive-hive-common/enums/DroneType";
 import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
-import { Drone } from "@withonevision/omnihive-hive-common/models/Drone";
 import { AppService } from "@withonevision/omnihive-hive-queen/services/AppService";
 import { LogService } from "@withonevision/omnihive-hive-queen/services/LogService";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
 import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
 import minimist from "minimist";
@@ -14,14 +11,15 @@ import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
+import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
 
 // Set up args and variables
 const args = minimist(process.argv.slice(2));
 
-const argDroneName: string = args._[0];
+const argWorkerName: string = args._[0];
 const argFile: string = args._[1];
 
-async function droneRunner(droneName: string, argsFile: string) {
+async function taskRunner(workerName: string, argsFile: string) {
 
     if (!process.env.OH_ENV_FILE) {
         throw new Error("Please provide a file path to the OmniHive Environment File (OH_ENV_FILE)");
@@ -40,51 +38,49 @@ async function droneRunner(droneName: string, argsFile: string) {
         throw new Error("FileSystem Worker Not Found...Cannot Read Args")
     }
 
-    // Get Drone
+    // Get TaskWorker
 
-    const drone: Drone | undefined = QueenStore.getInstance().settings.drones.find((d: Drone) => d.name === droneName && d.enabled === true && d.type === DroneType.Task);
+    const taskWorker: [HiveWorker, any] | undefined = HiveWorkerFactory.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === workerName && w[0].enabled === true && w[0].type === HiveWorkerType.Task);
 
-    if (!drone) {
-        logError(droneName, new Error(`Drone ${droneName} was not found in server configuration, is disabled, or is not of the right type`));
+    if (!taskWorker) {
+        logError(workerName, new Error(`Task Worker ${workerName} was not found in server configuration, is disabled, or is not of the right type`));
         return;
     }
 
-    // Set up drone args
-    let droneArgs: any = null;
+    // Set up worker args
+    let workerArgs: any = null;
 
     if (argsFile && argsFile !== "") {
         try {
             if (fileSystemWorker) {
-                droneArgs = JSON.parse(fileSystemWorker.readFile(argFile));
+                workerArgs = JSON.parse(fileSystemWorker.readFile(argFile));
             }
         } catch (err) {
-            logError(droneName, err);
+            logError(workerName, err);
         }
     }
 
-    // Try running the drone
+    // Try running the worker
     try {
-        const droneDynamicModule: any = import(drone.classPath);
-
-        if (!(droneArgs === null || droneArgs === undefined)) {
-            await droneDynamicModule.default(droneArgs);
+        if (!(workerArgs === null || workerArgs === undefined)) {
+            await taskWorker[1](workerArgs);
         } else {
-            await droneDynamicModule.default();
+            await taskWorker[1]();
         }
 
     } catch (err) {
-        logError(droneName, err);
+        logError(workerName, err);
     }
 }
 
-async function logError(droneName: string, err: Error) {
+async function logError(workerName: string, err: Error) {
 
     const logService: LogService = LogService.getInstance();
 
     console.log(err);
-    logService.write(OmniHiveLogLevel.Error, `Drone Runner => ${droneName} => Error => ${JSON.stringify(serializeError(err))}`);
-    throw new Error(`Drone Runner => ${droneName} => Error => ${JSON.stringify(serializeError(err))}`);
+    logService.write(OmniHiveLogLevel.Error, `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
+    throw new Error(`Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
 }
 
-// Run drone
-droneRunner(argDroneName, argFile);
+// Run Task Worker
+taskRunner(argWorkerName, argFile);

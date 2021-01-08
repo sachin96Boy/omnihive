@@ -1,26 +1,25 @@
-import { DroneType } from "@withonevision/omnihive-hive-common/enums/DroneType";
 import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
 import { ServerStatus } from "@withonevision/omnihive-hive-common/enums/ServerStatus";
 import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-hive-common/helpers/StringBuilder";
 import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
-import { Drone } from "@withonevision/omnihive-hive-common/models/Drone";
 import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
 import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
 import { StoredProcSchema } from "@withonevision/omnihive-hive-common/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-hive-common/models/TableSchema";
-import { IRestDrone } from "@withonevision/omnihive-hive-queen/interfaces/IRestDrone";
 import { LogService } from "@withonevision/omnihive-hive-queen/services/LogService";
 import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
 import { IDatabaseWorker } from "@withonevision/omnihive-hive-worker/interfaces/IDatabaseWorker";
 import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
 import { IGraphBuildWorker } from "@withonevision/omnihive-hive-worker/interfaces/IGraphBuildWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-hive-worker/interfaces/IRestEndpointWorker";
 import { IServerWorker } from "@withonevision/omnihive-hive-worker/interfaces/IServerWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-hive-worker/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataServer } from "@withonevision/omnihive-hive-worker/models/HiveWorkerMetadataServer";
+import { ServerStore } from "@withonevision/omnihive-public-server/stores/ServerStore";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import { serializeError } from "serialize-error";
@@ -53,7 +52,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
         try {
 
             // Start setting up server
-            const app = QueenStore.getInstance().getCleanAppServer();
+            const app = ServerStore.getInstance().getCleanAppServer();
             const metadata: HiveWorkerMetadataServer = this.config.metadata as HiveWorkerMetadataServer;
 
             // Clear schema directories
@@ -157,16 +156,16 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                             const schemaFilePath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections/${dbWorker[0].name}.json`;
                             const jsonSchema: any = JSON.parse(fileSystemWorker.readFile(schemaFilePath));
 
-                            const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, { tables: jsonSchema["tables"], storedProcs: jsonSchema["storedProcs"] }, QueenStore.getInstance().settings.drones);
+                            const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, { tables: jsonSchema["tables"], storedProcs: jsonSchema["storedProcs"] });
                             const masterPath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/${buildWorker.config.name}_${dbWorker[0].name}_FederatedGraphSchema.js`;
                             fileSystemWorker.writeDataToFile(masterPath, fileString);
                         }
                     });
             }
 
-            // Build custom graph drones
-            const customGraphDrones: Drone[] = QueenStore.getInstance().settings.drones.filter((drone: Drone) => drone.type === DroneType.Graph && drone.enabled === true)
-            if (customGraphDrones.length > 0) {
+            // Build custom graph workers
+            const customGraphWorkers: [HiveWorker, any][] = HiveWorkerFactory.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true)
+            if (customGraphWorkers.length > 0) {
 
                 const builder: StringBuilder = new StringBuilder();
 
@@ -179,8 +178,8 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                 builder.appendLine(`var { HiveWorkerFactory } = require("@withonevision/omnihive-hive-worker/HiveWorkerFactory");`);
                 builder.appendLine();
 
-                customGraphDrones.forEach((drone: Drone) => {
-                    builder.appendLine(`var ${drone.name} = require("${drone.classPath}");`);
+                customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
+                    builder.appendLine(`var ${worker[0].name} = require("${worker[0].classPath}");`);
                 });
 
                 // Build main graph schema
@@ -193,15 +192,15 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
 
                 // Loop through graph endpoints
 
-                customGraphDrones.forEach((drone: Drone) => {
+                customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
 
-                    builder.appendLine(`\t\t\t${drone.name}: {`);
+                    builder.appendLine(`\t\t\t${worker[0].name}: {`);
                     builder.appendLine(`\t\t\t\ttype: GraphQLJSONObject,`);
                     builder.appendLine(`\t\t\t\targs: {`);
                     builder.appendLine(`\t\t\t\t\tcustomArgs: { type: GraphQLJSONObject },`);
                     builder.appendLine(`\t\t\t\t},`);
                     builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
-                    builder.appendLine(`\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(${drone.name}(parent, args, context, resolveInfo));`);
+                    builder.appendLine(`\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(${worker[0].name}(parent, args, context, resolveInfo));`);
                     builder.appendLine(`\t\t\t\t\treturn customFunctionReturn;`);
                     builder.appendLine(`\t\t\t\t},`);
                     builder.appendLine(`\t\t\t},`);
@@ -275,7 +274,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                     if (QueenStore.getInstance().settings.server.enableGraphPlayground) {
                         graphDatabaseConfig.introspection = true;
                         graphDatabaseConfig.playground = {
-                            endpoint: `${QueenStore.getInstance().settings.server.rootUrl}/graphql/database/${builderMeta.graphUrl}`
+                            endpoint: `${QueenStore.getInstance().settings.server.rootUrl}/graphql/database${builderMeta.graphUrl}`
                         };
                     } else {
                         graphDatabaseConfig.introspection = false;
@@ -283,7 +282,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                     }
 
                     const graphDatabaseServer: ApolloServer = new ApolloServer(graphDatabaseConfig);
-                    graphDatabaseServer.applyMiddleware({ app, path: `/graphql/database/${builderMeta.graphUrl}` });
+                    graphDatabaseServer.applyMiddleware({ app, path: `/graphql/database${builderMeta.graphUrl}` });
                 }
             }
 
@@ -292,7 +291,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
             // Register custom graph apollo server
             LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Graph Endpoint Registering`);
 
-            if (QueenStore.getInstance().settings.drones.some((drone: Drone) => drone.type === DroneType.Graph && drone.enabled === true)) {
+            if (HiveWorkerFactory.getInstance().workers.some((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true)) {
 
                 const functionFileName: string = `${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/CustomFunctionFederatedGraphSchema.js`;
                 const functionDynamicModule: any = await import(functionFileName);
@@ -331,7 +330,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
             LogService.getInstance().write(OmniHiveLogLevel.Info, `REST Server Generation Started`);
 
             // Register "custom" REST endpoints
-            if (QueenStore.getInstance().settings.drones.some((drone: Drone) => drone.type === DroneType.Rest && drone.enabled === true)) {
+            if (HiveWorkerFactory.getInstance().workers.some((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true)) {
 
                 const swaggerDefinition: swaggerUi.JsonObject = {
                     info: {
@@ -348,18 +347,16 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                     ],
                 };
 
-                for (const restDrone of QueenStore.getInstance().settings.drones.filter((drone: Drone) => drone.type === DroneType.Rest && drone.enabled === true)) {
+                for (const restWorker of HiveWorkerFactory.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true)) {
 
-                    if (!restDrone.classPath || restDrone.classPath === "") {
-                        throw new Error(`Drone type ${restDrone.type} with name ${restDrone.name} has no classPath`);
+                    const workerInstance: IRestEndpointWorker = restWorker[1] as IRestEndpointWorker;
+                    workerInstance.register(app, OmniHiveConstants.CUSTOM_REST_ROOT);
+                    const newWorkerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
+
+                    if (newWorkerSwagger) {
+                        swaggerDefinition.paths = { ...swaggerDefinition.paths, ...newWorkerSwagger.paths };
+                        swaggerDefinition.definitions = { ...swaggerDefinition.definitions, ...newWorkerSwagger.definitions };
                     }
-
-                    const newWorker: any = await AwaitHelper.execute<any>(import(restDrone.classPath));
-                    const newWorkerInstance: IRestDrone = new newWorker.default() as IRestDrone;
-
-                    newWorkerInstance.register(app, OmniHiveConstants.CUSTOM_REST_ROOT);
-                    swaggerDefinition.paths = { ...swaggerDefinition.paths, ...newWorkerInstance.getSwaggerDefinition().paths };
-                    swaggerDefinition.definitions = { ...swaggerDefinition.definitions, ...newWorkerInstance.getSwaggerDefinition().definitions };
                 }
 
                 if (QueenStore.getInstance().settings.server.enableSwagger) {
@@ -378,7 +375,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
             LogService.getInstance().write(OmniHiveLogLevel.Info, `New Server Built`);
 
             // Rebuild server
-            QueenStore.getInstance().appServer = app;
+            ServerStore.getInstance().appServer = app;
 
 
         } catch (err) {

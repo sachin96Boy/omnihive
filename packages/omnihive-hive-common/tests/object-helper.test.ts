@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { serializeError } from 'serialize-error';
 import { ObjectHelper } from '../helpers/ObjectHelper';
-import { Drone } from '../models/Drone';
+import { HiveWorker } from '../models/HiveWorker';
 
 describe("ObjectHelper Tests", function () {
     const testObject = "Test Object";
@@ -11,9 +11,9 @@ describe("ObjectHelper Tests", function () {
             const model = {
                 name: testObject,
             }
-            const obj = ObjectHelper.create<Drone>(Drone, model);
+            const obj = ObjectHelper.create<HiveWorker>(HiveWorker, model);
 
-            const comparer = Object.keys(new Drone());
+            const comparer = Object.keys(new HiveWorker());
             const objKeys = Object.keys(obj);
 
             assert.deepEqual(objKeys, comparer);
@@ -25,9 +25,9 @@ describe("ObjectHelper Tests", function () {
 
     it("create object generic", function () {
 
-        const obj = ObjectHelper.create<Drone>(Drone, null);
+        const obj = ObjectHelper.create<HiveWorker>(HiveWorker, null);
 
-        const comparer = Object.keys(new Drone());
+        const comparer = Object.keys(new HiveWorker());
         const objKeys = Object.keys(obj);
 
         assert.deepEqual(objKeys, comparer);
@@ -39,9 +39,9 @@ describe("ObjectHelper Tests", function () {
             const model = {
                 name: testObject,
             }
-            const obj = ObjectHelper.createStrict<Drone>(Drone, model);
+            const obj = ObjectHelper.createStrict<HiveWorker>(HiveWorker, model);
 
-            const comparer = Object.keys(new Drone());
+            const comparer = Object.keys(new HiveWorker());
             const objKeys = Object.keys(obj);
 
             assert.deepEqual(objKeys, comparer);
@@ -53,7 +53,7 @@ describe("ObjectHelper Tests", function () {
 
     it("create object strict no model", function () {
         try {
-            ObjectHelper.createStrict<Drone>(Drone, null);
+            ObjectHelper.createStrict<HiveWorker>(HiveWorker, null);
 
             assert.fail("Strict can not create without a model");
         } catch (err) {
@@ -66,7 +66,7 @@ describe("ObjectHelper Tests", function () {
             const model = {
                 fakeProperty: testObject,
             }
-            ObjectHelper.createStrict<Drone>(Drone, model);
+            ObjectHelper.createStrict<HiveWorker>(HiveWorker, model);
 
             assert.fail("Strict can not create with a bad property");
         } catch (err) {
@@ -79,16 +79,16 @@ describe("ObjectHelper Tests", function () {
             const model = {
                 name: testObject,
             }
-            const obj = ObjectHelper.createArray<Drone>(Drone, [model, model]);
+            const obj = ObjectHelper.createArray<HiveWorker>(HiveWorker, [model, model]);
 
-            const comparer = Object.keys(new Drone());
+            const comparer = Object.keys(new HiveWorker());
             const obj0Keys = Object.keys(obj[0]);
             const obj1Keys = Object.keys(obj[1]);
 
             assert.deepEqual(obj0Keys, comparer);
             assert.deepEqual(obj1Keys, comparer);
             assert.equal(obj.length, 2);
-            assert.deepEqual(obj.map((x: Drone) => x.name), [testObject, testObject]);
+            assert.deepEqual(obj.map((x: HiveWorker) => x.name), [testObject, testObject]);
         } catch (err) {
             throw new Error(JSON.stringify(serializeError(err)));
         }
@@ -99,16 +99,16 @@ describe("ObjectHelper Tests", function () {
             const model = {
                 name: testObject,
             }
-            const obj = ObjectHelper.createArrayStrict<Drone>(Drone, [model, model]);
+            const obj = ObjectHelper.createArrayStrict<HiveWorker>(HiveWorker, [model, model]);
 
-            const comparer = Object.keys(new Drone());
+            const comparer = Object.keys(new HiveWorker());
             const obj0Keys = Object.keys(obj[0]);
             const obj1Keys = Object.keys(obj[1]);
 
             assert.deepEqual(obj0Keys, comparer);
             assert.deepEqual(obj1Keys, comparer);
             assert.equal(obj.length, 2);
-            assert.deepEqual(obj.map((x: Drone) => x.name), [testObject, testObject]);
+            assert.deepEqual(obj.map((x: HiveWorker) => x.name), [testObject, testObject]);
         } catch (err) {
             throw new Error(JSON.stringify(serializeError(err)));
         }
@@ -116,7 +116,7 @@ describe("ObjectHelper Tests", function () {
 
     it("create object array strict no model", function () {
         try {
-            ObjectHelper.createStrict<Drone>(Drone, null);
+            ObjectHelper.createStrict<HiveWorker>(HiveWorker, null);
 
             assert.fail("Strict can not create without a model");
         } catch (err) {
@@ -129,7 +129,7 @@ describe("ObjectHelper Tests", function () {
             const model = {
                 fakeProperty: testObject,
             }
-            ObjectHelper.createArrayStrict<Drone>(Drone, [model, model]);
+            ObjectHelper.createArrayStrict<HiveWorker>(HiveWorker, [model, model]);
 
             assert.fail("Strict can not create with a bad property");
         } catch (err) {

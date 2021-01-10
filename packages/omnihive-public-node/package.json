@@ -1,7 +1,7 @@
 {
-  "name": "@withonevision/omnihive-public-server",
+  "name": "@withonevision/omnihive-public-node",
   "version": "4.0.0",
-  "description": "OmniHive Server",
+  "description": "OmniHive Node Host",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
@@ -16,25 +16,26 @@
     "@withonevision/omnihive-worker-encryption-nodeforge": "^4.0.0",
     "@withonevision/omnihive-worker-featureflag-launchdarkly-node": "^4.0.0",
     "@withonevision/omnihive-worker-filesystem-fsextra": "^4.0.0",
+    "@withonevision/omnihive-worker-function-core": "^4.0.0",
     "@withonevision/omnihive-worker-graphql-builder-v1": "^4.0.0",
     "@withonevision/omnihive-worker-knex-mssql": "^4.0.0",
-    "@withonevision/omnihive-worker-log-console": "^4.0.0",
+    "@withonevision/omnihive-worker-log-core": "^4.0.0",
     "@withonevision/omnihive-worker-pubsubclient-pusherjs": "^4.0.0",
     "@withonevision/omnihive-worker-pubsubserver-pusher": "^4.0.0",
-    "@withonevision/omnihive-worker-rest-server-default": "^4.0.0",
-    "@withonevision/omnihive-worker-server-v1": "^4.0.0",
     "@withonevision/omnihive-worker-token-jsonwebtoken": "^4.0.0",
     "@withonevision/omnihive-worker-user-auth0": "^4.0.0",
-    "autoprefixer": "10.1.0",
+    "apollo-server": "2.19.1",
+    "apollo-server-express": "2.19.1",
+    "autoprefixer": "10.2.1",
     "body-parser": "1.19.0",
+    "change-case": "4.1.2",
     "cors": "2.8.5",
-    "dayjs": "1.9.8",
     "express": "4.17.1",
     "graphql": "15.4.0",
     "helmet": "4.3.1",
     "minimist": "1.2.5",
-    "next": "10.0.4",
-    "postcss": "8.2.1",
+    "next": "10.0.5",
+    "postcss": "8.2.4",
     "postcss-import": "14.0.0",
     "postcss-preset-env": "6.7.0",
     "react": "17.0.1",
@@ -46,9 +47,10 @@
   "devDependencies": {
     "@types/body-parser": "1.19.0",
     "@types/cors": "2.8.9",
+    "@types/cross-spawn": "6.0.2",
     "@types/express": "4.17.9",
     "@types/minimist": "1.2.1",
-    "@types/node": "14.14.16",
+    "@types/node": "14.14.20",
     "@types/react": "17.0.0",
     "@types/react-dom": "17.0.0",
     "@types/swagger-ui-express": "4.1.2"
@@ -58,17 +60,21 @@
       "@withonevision/omnihive-hive-common": "^4.0.0",
       "@withonevision/omnihive-hive-queen": "^4.0.0",
       "@withonevision/omnihive-hive-worker": "^4.0.0",
-      "@withonevision/omnihive-worker-rest-server-default": "^4.0.0",
-      "autoprefixer": "10.1.0",
+      "@withonevision/omnihive-worker-filesystem-fsextra": "^4.0.0",
+      "@withonevision/omnihive-worker-function-core": "^4.0.0",
+      "@withonevision/omnihive-worker-log-core": "^4.0.0",
+      "apollo-server": "2.19.1",
+      "apollo-server-express": "2.19.1",
+      "autoprefixer": "10.2.1",
       "body-parser": "1.19.0",
+      "change-case": "4.1.2",
       "cors": "2.8.5",
-      "dayjs": "1.9.8",
       "express": "4.17.1",
       "graphql": "15.4.0",
       "helmet": "4.3.1",
       "minimist": "1.2.5",
-      "next": "10.0.4",
-      "postcss": "8.2.1",
+      "next": "10.0.5",
+      "postcss": "8.2.4",
       "postcss-import": "14.0.0",
       "postcss-preset-env": "6.7.0",
       "react": "17.0.1",
@@ -79,21 +85,31 @@
     },
     "coreWorkers": [
       {
+        "name": "ohreqFileSystemWorker",
+        "type": "fileSystem",
+        "package": "@withonevision/omnihive-worker-filesystem-fsextra",
+        "version": "^4.0.0",
+        "classPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
+        "default": false,
+        "enabled": true,
+        "metadata": {}
+      },
+      {
         "name": "ohreqLogWorker",
         "type": "log",
-        "package": "@withonevision/omnihive-worker-log-server-default",
+        "package": "@withonevision/omnihive-worker-log-core",
         "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-log-server-default/index",
-        "default": true,
+        "classPath": "@withonevision/omnihive-worker-log-core/index",
+        "default": false,
         "enabled": true,
         "metadata": {}
       },
       {
         "name": "ohreqRestSystemAccessToken",
         "type": "restEndpointFunction",
-        "package": "@withonevision/omnihive-worker-rest-server-default",
+        "package": "@withonevision/omnihive-worker-function-core",
         "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemAccessTokenWorker",
+        "classPath": "@withonevision/omnihive-worker-function-core/SystemAccessTokenWorker",
         "default": false,
         "enabled": true,
         "metadata": {
@@ -103,9 +119,9 @@
       {
         "name": "ohreqRestSystemCheckSettings",
         "type": "restEndpointFunction",
-        "package": "@withonevision/omnihive-worker-rest-server-default",
+        "package": "@withonevision/omnihive-worker-function-core",
         "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemCheckSettingsWorker",
+        "classPath": "@withonevision/omnihive-worker-function-core/SystemCheckSettingsWorker",
         "default": false,
         "enabled": true,
         "metadata": {
@@ -115,9 +131,9 @@
       {
         "name": "ohreqRestSystemRefresh",
         "type": "restEndpointFunction",
-        "package": "@withonevision/omnihive-worker-rest-server-default",
+        "package": "@withonevision/omnihive-worker-function-core",
         "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemRefreshWorker",
+        "classPath": "@withonevision/omnihive-worker-function-core/SystemRefreshWorker",
         "default": false,
         "enabled": true,
         "metadata": {
@@ -127,9 +143,9 @@
       {
         "name": "ohreqRestSystemStatus",
         "type": "restEndpointFunction",
-        "package": "@withonevision/omnihive-worker-rest-server-default",
+        "package": "@withonevision/omnihive-worker-function-core",
         "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemStatusWorker",
+        "classPath": "@withonevision/omnihive-worker-function-core/SystemStatusWorker",
         "default": false,
         "enabled": true,
         "metadata": {
@@ -185,30 +201,6 @@
         "enabled": true,
         "metadata": {
           "encryptionKey": "${OH_DEFAULT_WORKER_ENCRYPTION_KEY}"
-        }
-      },
-      {
-        "name": "defaultFileWorker",
-        "type": "fileSystem",
-        "package": "@withonevision/omnihive-worker-filesystem-fsextra",
-        "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
-        "default": true,
-        "enabled": true,
-        "metadata": {}
-      },
-      {
-        "name": "defaultServerWorker",
-        "type": "server",
-        "package": "@withonevision/omnihive-worker-server-v1",
-        "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-server-v1/index",
-        "default": true,
-        "enabled": true,
-        "metadata": {
-          "buildWorkers": [
-            "*"
-          ]
         }
       },
       {

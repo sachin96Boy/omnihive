@@ -10,5 +10,8 @@
     "@withonevision/omnihive-hive-common": "^4.0.0",
     "@withonevision/omnihive-hive-worker": "^4.0.0",
     "fs-extra": "9.0.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "9.0.6"
   }
 }

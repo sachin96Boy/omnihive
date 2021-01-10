@@ -7,20 +7,6 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-hive-common": "^4.0.0",
-    "@withonevision/omnihive-hive-worker": "^4.0.0",
-    "@withonevision/omnihive-worker-filesystem-fsextra": "^4.0.0",
-    "@withonevision/omnihive-worker-log-console": "^4.0.0",
-    "cross-spawn": "7.0.3",
-    "dayjs": "1.9.7",
-    "fs-extra": "9.0.1",
-    "graphql": "15.4.0",
-    "read-pkg-up": "7.0.1"
-  },
-  "devDependencies": {
-    "@types/cross-spawn": "6.0.2",
-    "@types/express-serve-static-core": "4.17.17",
-    "@types/fs-extra": "9.0.6",
-    "@types/graphql": "14.5.0"
+    "@withonevision/omnihive-hive-common": "^4.0.0"
   }
 }

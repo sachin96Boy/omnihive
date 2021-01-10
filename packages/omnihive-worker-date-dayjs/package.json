@@ -9,6 +9,6 @@
   "dependencies": {
     "@withonevision/omnihive-hive-common": "^4.0.0",
     "@withonevision/omnihive-hive-worker": "^4.0.0",
-    "dayjs": "1.9.7"
+    "dayjs": "1.10.3"
   }
 }

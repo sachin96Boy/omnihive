@@ -2,7 +2,6 @@ import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWo
 import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
-import { AppService } from "@withonevision/omnihive-hive-queen/services/AppService";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
 import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
 import minimist from "minimist";
@@ -12,6 +11,7 @@ import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
 import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
+import { NodeStore } from "./stores/NodeStore";
 
 // Set up args and variables
 const args = minimist(process.argv.slice(2));
@@ -28,9 +28,8 @@ async function taskRunner(workerName: string, argsFile: string) {
     dotenvExpand(dotenv.config({ path: process.env.OH_ENV_FILE }));
 
     const packageJson: NormalizedReadResult | undefined = await AwaitHelper.execute<NormalizedReadResult | undefined>(readPkgUp());
-    const appService: AppService = new AppService();
 
-    await appService.init(process.env.OH_SERVER_SETTINGS, packageJson);
+    await NodeStore.getInstance().initApp(process.env.OH_SERVER_SETTINGS, packageJson);
 
     const fileSystemWorker: IFileSystemWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
 
@@ -46,7 +45,7 @@ async function taskRunner(workerName: string, argsFile: string) {
 
     // Get TaskWorker
 
-    const taskWorker: [HiveWorker, any] | undefined = HiveWorkerFactory.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === workerName && w[0].enabled === true && w[0].type === HiveWorkerType.Task);
+    const taskWorker: [HiveWorker, any] | undefined = HiveWorkerFactory.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === workerName && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction);
 
     if (!taskWorker) {
         logError(workerName, new Error(`Task Worker ${workerName} was not found in server configuration, is disabled, or is not of the right type`));

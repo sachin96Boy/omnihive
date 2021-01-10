@@ -8,7 +8,6 @@ export class HiveWorkerFactory {
     private static instance: HiveWorkerFactory;
 
     public workers: [HiveWorker, any][] = [];
-    public isInit: boolean = false;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() { }
@@ -43,8 +42,6 @@ export class HiveWorkerFactory {
                 this.workers.push([hiveWorker, newWorkerInstance]);
             }
 
-            this.isInit = true;
-
             for (const worker of this.workers) {
                 await AwaitHelper.execute<void>((worker[1] as IHiveWorker).afterInit());
             }
@@ -59,8 +56,8 @@ export class HiveWorkerFactory {
 
     public getHiveWorker = async <T extends IHiveWorker | undefined>(type: string, name?: string): Promise<T | undefined> => {
 
-        if (!this.isInit || this.workers.length === 0) {
-            throw new Error("Hive Worker Factory Has Not Been Initialized");
+        if (this.workers.length === 0) {
+            return undefined;
         }
 
         let hiveWorker: [HiveWorker, any] | undefined = undefined;
@@ -69,7 +66,14 @@ export class HiveWorkerFactory {
             hiveWorker = this.workers.find((d: [HiveWorker, any]) => d[0].type === type && d[0].default === true && d[0].enabled === true);
 
             if (!hiveWorker) {
-                return undefined;
+
+                const anyWorkers: [HiveWorker, any][] = this.workers.filter((d: [HiveWorker, any]) => d[0].type === type && d[0].enabled === true);
+
+                if (anyWorkers && anyWorkers.length > 0) {
+                    hiveWorker = anyWorkers[0]
+                } else {
+                    return undefined;
+                }
             }
 
         } else {
@@ -83,7 +87,7 @@ export class HiveWorkerFactory {
         return hiveWorker[1] as T;
     }
 
-    public registerWorker = async (hiveWorker: HiveWorker): Promise<[HiveWorker, any]> => {
+    public registerWorker = async (hiveWorker: HiveWorker): Promise<void> => {
 
         if (!hiveWorker.classPath || hiveWorker.classPath === "") {
             throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no classPath`);
@@ -95,7 +99,5 @@ export class HiveWorkerFactory {
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).afterInit());
 
         this.workers.push([hiveWorker, newWorkerInstance]);
-
-        return [hiveWorker, newWorkerInstance];
     }
 }

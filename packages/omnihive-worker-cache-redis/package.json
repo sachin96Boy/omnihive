@@ -12,6 +12,6 @@
     "ioredis": "4.19.4"
   },
   "devDependencies": {
-    "@types/ioredis": "4.17.10"
+    "@types/ioredis": "4.17.11"
   }
 }

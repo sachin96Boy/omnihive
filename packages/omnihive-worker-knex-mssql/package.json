@@ -9,9 +9,9 @@
   "dependencies": {
     "@withonevision/omnihive-hive-common": "^4.0.0",
     "@withonevision/omnihive-hive-worker": "^4.0.0",
-    "knex": "0.21.14",
-    "mssql": "6.3.0",
-    "tedious": "9.2.1"
+    "knex": "0.21.15",
+    "mssql": "6.3.1",
+    "tedious": "9.2.3"
   },
   "devDependencies": {
     "@types/mssql": "6.0.7"

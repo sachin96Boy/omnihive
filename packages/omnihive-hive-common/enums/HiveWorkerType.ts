@@ -1,5 +1,4 @@
 export enum HiveWorkerType {
-    Application = "application",
     Cache = "cache",
     Date = "date",
     Database = "database",
@@ -15,11 +14,10 @@ export enum HiveWorkerType {
     PubSubServer = "pubSubServer",
     PubSubClient = "pubSubClient",
     RestEndpointFunction = "restEndpointFunction",
-    Server = "server",
     Storage = "storage",
-    Task = "task",
+    TaskFunction = "taskFunction",
     Token = "token",
     User = "user",
     Unknown = "unknown",
-    Workflow = "workflow"
+    WorkflowFunction = "workflowFunction"
 }

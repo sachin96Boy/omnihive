@@ -23,12 +23,8 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             return;
         }
 
-        let adminPubSubServer: IPubSubServerWorker | undefined = undefined;
-
-        if (HiveWorkerFactory.getInstance().isInit) {
-            adminPubSubServer = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-                HiveWorkerFactory.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
-        }
+        const adminPubSubServer = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
+            HiveWorkerFactory.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
 
         if (adminPubSubServer) {
 
@@ -40,17 +36,13 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
         }
 
-        if (HiveWorkerFactory.getInstance().isInit) {
-            const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+        const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
-            if (logWorker) {
-                logWorker.write(logLevel, logString);
-            }
+        if (logWorker) {
+            logWorker.write(logLevel, logString);
+        }
 
-            if (!logWorker || (logWorker && logWorker.config.package !== "@withonevision/omnihive-worker-log-console")) {
-                console.log(formattedLogString);
-            }
-        } else {
+        if (!logWorker || (logWorker && logWorker.config.package !== "@withonevision/omnihive-worker-log-console")) {
             console.log(formattedLogString);
         }
 

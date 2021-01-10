@@ -1,14 +1,14 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { IHiveWorker } from "@withonevision/omnihive-hive-worker/interfaces/IHiveWorker";
-import { IPubSubServerWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubServerWorker";
-import { ITokenWorker } from "@withonevision/omnihive-hive-worker/interfaces/ITokenWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-hive-worker/models/HiveWorkerMetadataRestFunction";
+
+import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
+import { IHiveWorker } from "@withonevision/omnihive-public-queen/interfaces/IHiveWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-public-queen/interfaces/IPubSubServerWorker";
+import { ITokenWorker } from "@withonevision/omnihive-public-queen/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-public-queen/models/HiveWorkerMetadataRestFunction";
+import { OmniHiveConstants } from "@withonevision/omnihive-public-queen/models/OmniHiveConstants";
+import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
 import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
 
@@ -29,7 +29,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IHive
     public async register(app: core.Express, restRoot: string): Promise<void> {
 
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
+            QueenStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
 
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");
@@ -48,7 +48,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IHive
                 }
 
                 const adminPubSubServer: IPubSubServerWorker | undefined = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-                    HiveWorkerFactory.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
+                    QueenStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
 
                 if (!adminPubSubServer) {
                     throw new Error("No admin pub-sub server hive worker found");

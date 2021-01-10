@@ -1,12 +1,12 @@
 import CrossStorageWorker from '..';
-import { HiveWorkerType } from '@withonevision/omnihive-hive-common/enums/HiveWorkerType';
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { HiveWorkerFactory } from '@withonevision/omnihive-hive-worker/HiveWorkerFactory';
 import { assert } from 'chai';
 import fs from 'fs';
 import { serializeError } from 'serialize-error';
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
+import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
+import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
 
 const getConfigs = function (): any | undefined {
     try {
@@ -41,9 +41,9 @@ describe('cache (node) worker tests', function () {
 
     const init = async function (): Promise<void> {
         try {
-            await AwaitHelper.execute(HiveWorkerFactory.getInstance()
-                .init(configs));
-            const newWorker = HiveWorkerFactory
+            await AwaitHelper.execute(QueenStore.getInstance()
+                .initWorkers(configs));
+            const newWorker = QueenStore
                 .getInstance()
                 .workers
                 .find((x) => x[0].type === HiveWorkerType.Cache);

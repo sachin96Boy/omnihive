@@ -1,6 +1,6 @@
 import { HiveWorker } from "./HiveWorker";
 import { ClientSettings } from "./ClientSettings";
-import { ServerSettings } from "@withonevision/omnihive-hive-common/models/ServerSettings";
+import { ServerSettings } from "../models/ServerSettings";
 
 export class SystemSettings {
     public server: ServerSettings = new ServerSettings();

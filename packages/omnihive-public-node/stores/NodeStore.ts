@@ -1,31 +1,28 @@
-import { ServerStatus } from "@withonevision/omnihive-hive-common/enums/ServerStatus";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { IRestEndpointWorker } from "@withonevision/omnihive-hive-worker/interfaces/IRestEndpointWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-public-queen/enums/OmniHiveLogLevel";
+import { ServerStatus } from "@withonevision/omnihive-public-queen/enums/ServerStatus";
+import { StringBuilder } from "@withonevision/omnihive-public-queen/helpers/StringBuilder";
+import { StringHelper } from "@withonevision/omnihive-public-queen/helpers/StringHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-public-queen/interfaces/IFileSystemWorker";
+import { IHiveAccountWorker } from "@withonevision/omnihive-public-queen/interfaces/IHiveAccountWorker";
+import { ILogWorker } from "@withonevision/omnihive-public-queen/interfaces/ILogWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-public-queen/interfaces/IRestEndpointWorker";
+import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-public-queen/models/OmniHiveConstants";
+import { SystemSettings } from "@withonevision/omnihive-public-queen/models/SystemSettings";
+import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
 import bodyParser from "body-parser";
 import cors from "cors";
+import spawn from "cross-spawn";
 import express from "express";
 import * as core from "express-serve-static-core";
 import helmet from "helmet";
-import { Server } from "http";
-import swaggerUi from "swagger-ui-express";
+import http, { Server } from "http";
 import next from "next";
 import NextServer from "next/dist/next-server/server/next-server";
-import { parse } from "url";
 import { NormalizedReadResult } from "read-pkg-up";
-import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
-import { SystemSettings } from "@withonevision/omnihive-hive-common/models/SystemSettings";
-import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
-import { StringBuilder } from "@withonevision/omnihive-hive-common/helpers/StringBuilder";
-import spawn from "cross-spawn";
-//import fse from "fs-extra";
-import { IHiveAccountWorker } from "@withonevision/omnihive-hive-worker/interfaces/IHiveAccountWorker";
-import http from "http";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
+import swaggerUi from "swagger-ui-express";
+import { parse } from "url";
 
 export class NodeStore {
 
@@ -126,7 +123,7 @@ export class NodeStore {
             definitions: {}
         };
 
-        const accessTokenWorker = HiveWorkerFactory.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemAccessToken");
+        const accessTokenWorker = QueenStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemAccessToken");
 
         if (accessTokenWorker) {
             const accessTokenInstance: IRestEndpointWorker = accessTokenWorker[1] as IRestEndpointWorker;
@@ -140,7 +137,7 @@ export class NodeStore {
             }
         }
 
-        const checkSettingsWorker = HiveWorkerFactory.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemCheckSettings");
+        const checkSettingsWorker = QueenStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemCheckSettings");
 
         if (checkSettingsWorker) {
             const checkSettingInstance: IRestEndpointWorker = checkSettingsWorker[1] as IRestEndpointWorker;
@@ -154,7 +151,7 @@ export class NodeStore {
             }
         }
 
-        const refreshWorker = HiveWorkerFactory.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemRefresh");
+        const refreshWorker = QueenStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemRefresh");
 
         if (refreshWorker) {
             const refreshInstance: IRestEndpointWorker = refreshWorker[1] as IRestEndpointWorker;
@@ -168,7 +165,7 @@ export class NodeStore {
             }
         }
 
-        const statusWorker = HiveWorkerFactory.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemStatus");
+        const statusWorker = QueenStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemStatus");
 
         if (statusWorker) {
             const statusInstance: IRestEndpointWorker = statusWorker[1] as IRestEndpointWorker;
@@ -222,7 +219,7 @@ export class NodeStore {
                     }
                 });
 
-                await HiveWorkerFactory.getInstance().registerWorker(coreWorker);
+                await QueenStore.getInstance().registerWorker(coreWorker);
                 QueenStore.getInstance().settings.workers.push(coreWorker);
             }
         }
@@ -231,7 +228,7 @@ export class NodeStore {
             throw new Error("Settings path must be given to init function");
         }
 
-        const fileSystemWorker: IFileSystemWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem, "ohreqFileSystemWorker");
+        const fileSystemWorker: IFileSystemWorker | undefined = await QueenStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem, "ohreqFileSystemWorker");
 
         if (!fileSystemWorker) {
             throw new Error("Core FileSystem Worker Not Found.  Server needs the core file worker ohreqFileSystemWorker");
@@ -241,7 +238,7 @@ export class NodeStore {
         const settingsJson: SystemSettings = JSON.parse(fileSystemWorker.readFile(`${settingsPath}`));
         QueenStore.getInstance().settings = settingsJson;
 
-        const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+        const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  App worker needs the core log worker ohreqLogWorker");
@@ -379,12 +376,12 @@ export class NodeStore {
 
         // Register hive workers
         logWorker.write(OmniHiveLogLevel.Debug, "Working on hive workers...");
-        await HiveWorkerFactory.getInstance().init(QueenStore.getInstance().settings.workers);
+        await QueenStore.getInstance().initWorkers(QueenStore.getInstance().settings.workers);
         logWorker.write(OmniHiveLogLevel.Debug, "Hive Workers Initiated...");
 
         // Get account if hive worker exists
-        if (HiveWorkerFactory.getInstance().workers.some((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount)) {
-            const accoutWorker: [HiveWorker, any] | undefined = HiveWorkerFactory.getInstance().workers.find((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount);
+        if (QueenStore.getInstance().workers.some((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount)) {
+            const accoutWorker: [HiveWorker, any] | undefined = QueenStore.getInstance().workers.find((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount);
 
             if (accoutWorker) {
                 const accountWorkerInstance: IHiveAccountWorker = accoutWorker[1] as IHiveAccountWorker;
@@ -414,7 +411,7 @@ export class NodeStore {
 
     public serverChangeHandler = async (): Promise<void> => {
 
-        const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+        const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");

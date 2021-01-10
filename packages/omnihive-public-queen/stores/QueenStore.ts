@@ -1,30 +1,56 @@
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { serializeError } from 'serialize-error';
-import { IHiveWorker } from './interfaces/IHiveWorker';
+import { serializeError } from "serialize-error";
+import { ServerStatus } from "../enums/ServerStatus";
+import { AwaitHelper } from "../helpers/AwaitHelper";
+import { IHiveWorker } from "../interfaces/IHiveWorker";
+import { HiveAccount } from "../models/HiveAccount";
+import { HiveWorker } from "../models/HiveWorker";
+import { SystemSettings } from "../models/SystemSettings";
+import { SystemStatus } from "../models/SystemStatus";
 
-export class HiveWorkerFactory {
+export class QueenStore {
 
-    private static instance: HiveWorkerFactory;
-
-    public workers: [HiveWorker, any][] = [];
+    private static instance: QueenStore;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() { }
 
-    public static getInstance = (): HiveWorkerFactory => {
-        if (!HiveWorkerFactory.instance) {
-            HiveWorkerFactory.instance = new HiveWorkerFactory();
+    public static getInstance = (): QueenStore => {
+        if (!QueenStore.instance) {
+            QueenStore.instance = new QueenStore();
         }
 
-        return HiveWorkerFactory.instance;
+        return QueenStore.instance;
     }
 
-    public static getNew = (): HiveWorkerFactory => {
-        return new HiveWorkerFactory();
+    public static getNew = (): QueenStore => {
+        return new QueenStore();
     }
 
-    public init = async (configs: HiveWorker[]): Promise<void> => {
+    public account: HiveAccount = new HiveAccount();
+    public settings: SystemSettings = new SystemSettings();
+    public workers: [HiveWorker, any][] = [];
+
+    private _status: SystemStatus = new SystemStatus();
+
+    public get status(): SystemStatus {
+        return this._status;
+    }
+
+    public changeSystemStatus = (serverStatus: ServerStatus, error?: Error): void => {
+
+        const systemStatus: SystemStatus = new SystemStatus();
+        systemStatus.serverStatus = serverStatus;
+
+        if (error) {
+            systemStatus.serverError = serializeError(error);
+        } else {
+            systemStatus.serverError = {};
+        }
+
+        this._status = systemStatus;
+    }
+
+    public initWorkers = async (configs: HiveWorker[]): Promise<void> => {
         try {
             for (const hiveWorker of configs) {
                 if (!hiveWorker.enabled) {

@@ -1,4 +1,4 @@
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
+import { HiveWorker } from "../models/HiveWorker";
 
 export interface IHiveWorker {
     afterInit: () => Promise<void>;

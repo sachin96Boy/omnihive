@@ -1,7 +1,7 @@
-import { ObjectHelper } from "@withonevision/omnihive-hive-common/helpers/ObjectHelper";
-import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
+import { ObjectHelper } from "../helpers/ObjectHelper";
+import { StringHelper } from "../helpers/StringHelper";
 import { IHiveWorker } from '../interfaces/IHiveWorker';
+import { HiveWorker } from "./HiveWorker";
 
 export abstract class HiveWorkerBase implements IHiveWorker {
 

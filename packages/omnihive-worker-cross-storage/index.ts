@@ -1,12 +1,12 @@
 
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { IEncryptionWorker } from "@withonevision/omnihive-hive-worker/interfaces/IEncryptionWorker";
-import { IStorageWorker } from "@withonevision/omnihive-hive-worker/interfaces/IStorageWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
+import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-public-queen/interfaces/IEncryptionWorker";
+import { IStorageWorker } from "@withonevision/omnihive-public-queen/interfaces/IStorageWorker";
+import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
+import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
 import { CrossStorageClient, CrossStorageClientOptions } from "cross-storage";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
 
 export class CrossStorageStorageWorkerMetadata {
     public hubLocation: string = "";
@@ -35,7 +35,7 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
 
     public async afterInit(): Promise<void> {
         this.encryptionWorker = await AwaitHelper.execute<IEncryptionWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+            QueenStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if(!this.encryptionWorker) {
             throw new Error("Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker.");

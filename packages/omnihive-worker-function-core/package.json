@@ -7,9 +7,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-hive-common": "^4.0.0",
-        "@withonevision/omnihive-hive-queen": "^4.0.0",
-        "@withonevision/omnihive-hive-worker": "^4.0.0",
+        "@withonevision/omnihive-public-queen": "^4.0.0",
         "express": "4.17.1",
         "swagger-ui-express": "4.1.6"
     },

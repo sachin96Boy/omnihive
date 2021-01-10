@@ -1,5 +1,5 @@
-import { LifecycleWorkerAction } from "@withonevision/omnihive-hive-common/enums/LifecycleWorkerAction";
-import { LifecycleWorkerStage } from "@withonevision/omnihive-hive-common/enums/LifecycleWorkerStage";
+import { LifecycleWorkerAction } from "../enums/LifecycleWorkerAction";
+import { LifecycleWorkerStage } from "../enums/LifecycleWorkerStage";
 
 export class HiveWorkerMetadataLifecycleFunction {
     public lifecycleAction: LifecycleWorkerAction = LifecycleWorkerAction.None;

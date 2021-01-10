@@ -1,4 +1,4 @@
-import { PubSubListener } from "@withonevision/omnihive-hive-common/models/PubSubListener";
+import { PubSubListener } from "../models/PubSubListener";
 import { IHiveWorker } from "./IHiveWorker";
 
 export interface IPubSubClientWorker extends IHiveWorker {

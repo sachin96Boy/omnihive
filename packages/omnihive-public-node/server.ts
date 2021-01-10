@@ -1,24 +1,24 @@
 #!/usr/bin/env node
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
-import { ServerStatus } from "@withonevision/omnihive-hive-common/enums/ServerStatus";
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { StringBuilder } from "@withonevision/omnihive-hive-common/helpers/StringBuilder";
-import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
-import { StoredProcSchema } from "@withonevision/omnihive-hive-common/models/StoredProcSchema";
-import { TableSchema } from "@withonevision/omnihive-hive-common/models/TableSchema";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { IDatabaseWorker } from "@withonevision/omnihive-hive-worker/interfaces/IDatabaseWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
-import { IGraphBuildWorker } from "@withonevision/omnihive-hive-worker/interfaces/IGraphBuildWorker";
-import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
-import { IPubSubClientWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubClientWorker";
-import { IPubSubServerWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubServerWorker";
-import { IRestEndpointWorker } from "@withonevision/omnihive-hive-worker/interfaces/IRestEndpointWorker";
-import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-hive-worker/models/HiveWorkerMetadataGraphBuilder";
+
+import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-public-queen/enums/OmniHiveLogLevel";
+import { ServerStatus } from "@withonevision/omnihive-public-queen/enums/ServerStatus";
+import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
+import { StringBuilder } from "@withonevision/omnihive-public-queen/helpers/StringBuilder";
+import { StringHelper } from "@withonevision/omnihive-public-queen/helpers/StringHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-public-queen/interfaces/IDatabaseWorker";
+import { IFileSystemWorker } from "@withonevision/omnihive-public-queen/interfaces/IFileSystemWorker";
+import { IGraphBuildWorker } from "@withonevision/omnihive-public-queen/interfaces/IGraphBuildWorker";
+import { ILogWorker } from "@withonevision/omnihive-public-queen/interfaces/ILogWorker";
+import { IPubSubClientWorker } from "@withonevision/omnihive-public-queen/interfaces/IPubSubClientWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-public-queen/interfaces/IPubSubServerWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-public-queen/interfaces/IRestEndpointWorker";
+import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
+import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-public-queen/models/HiveWorkerMetadataGraphBuilder";
+import { OmniHiveConstants } from "@withonevision/omnihive-public-queen/models/OmniHiveConstants";
+import { StoredProcSchema } from "@withonevision/omnihive-public-queen/models/StoredProcSchema";
+import { TableSchema } from "@withonevision/omnihive-public-queen/models/TableSchema";
+import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import dotenv from "dotenv";
@@ -43,18 +43,18 @@ const start = async (): Promise<void> => {
 
     // Intialize "backbone" hive workers
 
-    const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+    const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
     if (!logWorker) {
         throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
     }
 
     const adminPubSubServer: IPubSubServerWorker | undefined = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-        HiveWorkerFactory.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
+        QueenStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
 
 
     const adminPubSubClient: IPubSubClientWorker | undefined = await AwaitHelper.execute<IPubSubClientWorker | undefined>(
-        HiveWorkerFactory.getInstance().getHiveWorker<IPubSubClientWorker>(HiveWorkerType.PubSubClient, OmniHiveConstants.ADMIN_PUBSUB_CLIENT_WORKER_INSTANCE));
+        QueenStore.getInstance().getHiveWorker<IPubSubClientWorker>(HiveWorkerType.PubSubClient, OmniHiveConstants.ADMIN_PUBSUB_CLIENT_WORKER_INSTANCE));
 
 
     adminPubSubClient?.joinChannel(QueenStore.getInstance().settings.server.serverGroupName);
@@ -138,13 +138,13 @@ const start = async (): Promise<void> => {
 
 const buildServer = async (): Promise<void> => {
 
-    const fileSystemWorker: IFileSystemWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem, "ohreqFileSystemWorker");
+    const fileSystemWorker: IFileSystemWorker | undefined = await QueenStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem, "ohreqFileSystemWorker");
 
     if (!fileSystemWorker) {
         throw new Error("Core FileSystem Worker Not Found.  Server needs the core log worker ohreqFileSystemWorker");
     }
 
-    const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+    const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
     if (!logWorker) {
         throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
@@ -168,7 +168,7 @@ const buildServer = async (): Promise<void> => {
         logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Written`);
 
         // Get build workers
-        const buildWorkers: [HiveWorker, any][] = HiveWorkerFactory.getInstance().workers.filter((worker: [HiveWorker, any]) =>
+        const buildWorkers: [HiveWorker, any][] = QueenStore.getInstance().workers.filter((worker: [HiveWorker, any]) =>
             worker[0].type === HiveWorkerType.GraphBuilder && worker[0].enabled === true);
 
         // Get db workers
@@ -178,13 +178,13 @@ const buildServer = async (): Promise<void> => {
             const buildWorkerMetadata: HiveWorkerMetadataGraphBuilder = worker[0].metadata as HiveWorkerMetadataGraphBuilder;
 
             if (buildWorkerMetadata.dbWorkers.includes("*")) {
-                HiveWorkerFactory.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.Database && worker[0].enabled === true)
+                QueenStore.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.Database && worker[0].enabled === true)
                     .forEach((dbWorker: [HiveWorker, any]) => {
                         dbWorkers.push([dbWorker[0], dbWorker[1], worker[0].name]);
                     });
             } else {
                 buildWorkerMetadata.dbWorkers.forEach((value: string) => {
-                    const dbWorker: [HiveWorker, any] | undefined = HiveWorkerFactory.getInstance().workers
+                    const dbWorker: [HiveWorker, any] | undefined = QueenStore.getInstance().workers
                         .find((worker: [HiveWorker, any]) => worker[0].name === value && worker[0].type === HiveWorkerType.Database && worker[0].enabled === true)
                     if (dbWorker) {
                         dbWorkers.push([dbWorker[0], dbWorker[1], worker[0].name]);
@@ -261,18 +261,18 @@ const buildServer = async (): Promise<void> => {
         }
 
         // Build custom graph workers
-        const customGraphWorkers: [HiveWorker, any][] = HiveWorkerFactory.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true)
+        const customGraphWorkers: [HiveWorker, any][] = QueenStore.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true)
         if (customGraphWorkers.length > 0) {
 
             const builder: StringBuilder = new StringBuilder();
 
             // Build imports
             builder.appendLine(`var { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`);
-            builder.appendLine(`var { GraphQLJSONObject } = require("@withonevision/omnihive-hive-common/models/GraphQLJSON");`);
-            builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-hive-common/helpers/AwaitHelper");`);
-            builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-hive-worker/interfaces/ITokenWorker");`);
-            builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-hive-common/enums/HiveWorkerType");`);
-            builder.appendLine(`var { HiveWorkerFactory } = require("@withonevision/omnihive-hive-worker/HiveWorkerFactory");`);
+            builder.appendLine(`var { GraphQLJSONObject } = require("@withonevision/omnihive-public-queen/models/GraphQLJSON");`);
+            builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-public-queen/helpers/AwaitHelper");`);
+            builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-public-queen/interfaces/ITokenWorker");`);
+            builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-public-queen/enums/HiveWorkerType");`);
+            builder.appendLine(`var { QueenStore } = require("@withonevision/omnihive-public-queen/stores/QueenStore");`);
             builder.appendLine();
 
             customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
@@ -388,7 +388,7 @@ const buildServer = async (): Promise<void> => {
         // Register custom graph apollo server
         logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Graph Endpoint Registering`);
 
-        if (HiveWorkerFactory.getInstance().workers.some((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true)) {
+        if (QueenStore.getInstance().workers.some((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true)) {
 
             const functionFileName: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/CustomFunctionFederatedGraphSchema.js`;
             const functionDynamicModule: any = await import(functionFileName);
@@ -427,7 +427,7 @@ const buildServer = async (): Promise<void> => {
         logWorker.write(OmniHiveLogLevel.Info, `REST Server Generation Started`);
 
         // Register "custom" REST endpoints
-        if (HiveWorkerFactory.getInstance().workers.some((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true)) {
+        if (QueenStore.getInstance().workers.some((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true)) {
 
             const swaggerDefinition: swaggerUi.JsonObject = {
                 info: {
@@ -444,7 +444,7 @@ const buildServer = async (): Promise<void> => {
                 ],
             };
 
-            for (const restWorker of HiveWorkerFactory.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true)) {
+            for (const restWorker of QueenStore.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true)) {
 
                 const workerInstance: IRestEndpointWorker = restWorker[1] as IRestEndpointWorker;
                 workerInstance.register(app, OmniHiveConstants.CUSTOM_REST_ROOT);

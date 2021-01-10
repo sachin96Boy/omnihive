@@ -1,16 +1,16 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-public-queen/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-public-queen/helpers/StringHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-public-queen/interfaces/IFileSystemWorker";
+import { ILogWorker } from "@withonevision/omnihive-public-queen/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
+import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
+import dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
 import minimist from "minimist";
 import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
-import dotenv from "dotenv";
-import dotenvExpand from "dotenv-expand";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
 import { NodeStore } from "./stores/NodeStore";
 
 // Set up args and variables
@@ -31,13 +31,13 @@ async function taskRunner(workerName: string, argsFile: string) {
 
     await NodeStore.getInstance().initApp(process.env.OH_SERVER_SETTINGS, packageJson);
 
-    const fileSystemWorker: IFileSystemWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
+    const fileSystemWorker: IFileSystemWorker | undefined = await QueenStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
 
     if (!fileSystemWorker && argsFile && !StringHelper.isNullOrWhiteSpace(argFile)) {
         throw new Error("FileSystem Worker Not Found...Cannot Read Args")
     }
 
-    const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+    const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
     if (!logWorker) {
         throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
@@ -45,7 +45,7 @@ async function taskRunner(workerName: string, argsFile: string) {
 
     // Get TaskWorker
 
-    const taskWorker: [HiveWorker, any] | undefined = HiveWorkerFactory.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === workerName && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction);
+    const taskWorker: [HiveWorker, any] | undefined = QueenStore.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === workerName && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction);
 
     if (!taskWorker) {
         logError(workerName, new Error(`Task Worker ${workerName} was not found in server configuration, is disabled, or is not of the right type`));
@@ -80,7 +80,7 @@ async function taskRunner(workerName: string, argsFile: string) {
 
 async function logError(workerName: string, err: Error) {
 
-    const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+    const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
     if (!logWorker) {
         throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");

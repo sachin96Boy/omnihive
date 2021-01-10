@@ -1,14 +1,13 @@
 import os from "os";
 import dayjs from "dayjs";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { IPubSubServerWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubServerWorker";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-public-queen/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
+import { ILogWorker } from "@withonevision/omnihive-public-queen/interfaces/ILogWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-public-queen/interfaces/IPubSubServerWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
+import { OmniHiveConstants } from "@withonevision/omnihive-public-queen/models/OmniHiveConstants";
+import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
 
@@ -24,7 +23,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         }
 
         const adminPubSubServer = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
+            QueenStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
 
         if (adminPubSubServer) {
 
@@ -36,7 +35,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
         }
 
-        const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+        const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(QueenStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
         if (logWorker) {
             logWorker.write(logLevel, logString);

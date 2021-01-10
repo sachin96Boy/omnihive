@@ -7,8 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-hive-common": "^4.0.0",
-    "@withonevision/omnihive-hive-worker": "^4.0.0",
+    "@withonevision/omnihive-public-queen": "^4.0.0",
     "knex": "0.21.15",
     "mssql": "6.3.1",
     "tedious": "9.2.3"

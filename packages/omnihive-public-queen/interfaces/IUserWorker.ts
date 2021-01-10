@@ -1,4 +1,4 @@
-import { AuthUser } from '@withonevision/omnihive-hive-common/models/AuthUser';
+import { AuthUser } from '../models/AuthUser';
 import { IHiveWorker } from './IHiveWorker';
 
 

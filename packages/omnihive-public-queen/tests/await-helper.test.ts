@@ -1,4 +1,4 @@
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
+import { AwaitHelper } from '../helpers/AwaitHelper';
 import { assert } from 'chai';
 import { serializeError } from 'serialize-error';
 

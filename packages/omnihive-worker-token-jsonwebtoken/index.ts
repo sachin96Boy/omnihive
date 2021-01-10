@@ -1,11 +1,11 @@
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { ITokenWorker } from "@withonevision/omnihive-hive-worker/interfaces/ITokenWorker";
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
 import jwt from "jsonwebtoken";
 import { serializeError } from "serialize-error";
 import { v4 as uuidv4 } from "uuid";
 import { nanoid } from "nanoid";
+import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
+import { ITokenWorker } from "@withonevision/omnihive-public-queen/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
 
 export class JsonWebTokenWorkerMetadata {
     public tokenSecret: string = "";

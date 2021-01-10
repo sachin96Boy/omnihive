@@ -28,7 +28,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        this.hiveWorkerHelper.checkMetadata<HiveWorkerMetadataGraphBuilder>(HiveWorkerMetadataGraphBuilder, config.metadata);
+        this.checkMetadata<HiveWorkerMetadataGraphBuilder>(HiveWorkerMetadataGraphBuilder, config.metadata);
     }
 
     public async afterInit(): Promise<void> {

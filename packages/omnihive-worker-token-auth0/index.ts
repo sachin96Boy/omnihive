@@ -31,7 +31,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.hiveWorkerHelper.checkMetadata<AuthZeroTokenWorkerMetadata>(AuthZeroTokenWorkerMetadata, config.metadata);
+        this.metadata = this.checkMetadata<AuthZeroTokenWorkerMetadata>(AuthZeroTokenWorkerMetadata, config.metadata);
         this.authClient = new AuthenticationClient({
             domain: this.metadata.domain,
             clientId: this.metadata.clientId,

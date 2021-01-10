@@ -21,10 +21,11 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.hiveWorkerHelper.checkMetadata<HiveWorkerMetadataRestFunction>(HiveWorkerMetadataRestFunction, config.metadata);
+        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(HiveWorkerMetadataRestFunction, config.metadata);
     }
 
-    public async afterInit(): Promise<void> {
+    public async register(app: core.Express, restRoot: string): Promise<void> {
+
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
             HiveWorkerFactory.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
 
@@ -33,9 +34,6 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
         }
 
         this.tokenWorker = tokenWorker;
-    }
-
-    public async register(app: core.Express, restRoot: string): Promise<void> {
 
         app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: core.Request, res: core.Response) => {
 

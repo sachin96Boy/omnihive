@@ -1,0 +1,15 @@
+{
+  "name": "@withonevision/omnihive-worker-log-server-default",
+  "version": "4.0.0",
+  "description": "OmniHive Default Server Log Worker",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@withonevision/omnihive-hive-common": "^4.0.0",
+    "@withonevision/omnihive-hive-queen": "^4.0.0",
+    "@withonevision/omnihive-hive-worker": "^4.0.0",
+    "dayjs": "1.10.2"
+  }
+}

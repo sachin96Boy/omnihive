@@ -77,6 +77,66 @@
       "swagger-ui-express": "4.1.6",
       "tailwindcss": "2.0.2"
     },
+    "coreWorkers": [
+      {
+        "name": "ohreqLogWorker",
+        "type": "log",
+        "package": "@withonevision/omnihive-worker-log-server-default",
+        "version": "^4.0.0",
+        "classPath": "@withonevision/omnihive-worker-log-server-default/index",
+        "default": true,
+        "enabled": true,
+        "metadata": {}
+      },
+      {
+        "name": "ohreqRestSystemAccessToken",
+        "type": "restEndpointFunction",
+        "package": "@withonevision/omnihive-worker-rest-server-default",
+        "version": "^4.0.0",
+        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemAccessTokenWorker",
+        "default": false,
+        "enabled": true,
+        "metadata": {
+          "methodUrl": "/accessToken"
+        }
+      },
+      {
+        "name": "ohreqRestSystemCheckSettings",
+        "type": "restEndpointFunction",
+        "package": "@withonevision/omnihive-worker-rest-server-default",
+        "version": "^4.0.0",
+        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemCheckSettingsWorker",
+        "default": false,
+        "enabled": true,
+        "metadata": {
+          "methodUrl": "/checkSettings"
+        }
+      },
+      {
+        "name": "ohreqRestSystemRefresh",
+        "type": "restEndpointFunction",
+        "package": "@withonevision/omnihive-worker-rest-server-default",
+        "version": "^4.0.0",
+        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemRefreshWorker",
+        "default": false,
+        "enabled": true,
+        "metadata": {
+          "methodUrl": "/refresh"
+        }
+      },
+      {
+        "name": "ohreqRestSystemStatus",
+        "type": "restEndpointFunction",
+        "package": "@withonevision/omnihive-worker-rest-server-default",
+        "version": "^4.0.0",
+        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemStatusWorker",
+        "default": false,
+        "enabled": true,
+        "metadata": {
+          "methodUrl": "/status"
+        }
+      }
+    ],
     "defaultWorkers": [
       {
         "name": "defaultBuildWorker",
@@ -138,16 +198,6 @@
         "metadata": {}
       },
       {
-        "name": "defaultLogWorker",
-        "type": "log",
-        "package": "@withonevision/omnihive-worker-log-console",
-        "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-log-console/index",
-        "default": true,
-        "enabled": true,
-        "metadata": {}
-      },
-      {
         "name": "defaultServerWorker",
         "type": "server",
         "package": "@withonevision/omnihive-worker-server-v1",
@@ -173,56 +223,6 @@
           "audience": "${OH_DEFAULT_WORKER_TOKEN_AUDIENCE}",
           "tokenSecret": "${OH_DEFAULT_WORKER_TOKEN_SECRET}",
           "verifyOn": false
-        }
-      }
-    ],
-    "requiredWorkers": [
-      {
-        "name": "ohreqRestSystemAccessToken",
-        "type": "restEndpointFunction",
-        "package": "@withonevision/omnihive-worker-rest-server-default",
-        "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemAccessTokenWorker",
-        "default": false,
-        "enabled": true,
-        "metadata": {
-          "methodUrl": "/accessToken"
-        }
-      },
-      {
-        "name": "ohreqRestSystemCheckSettings",
-        "type": "restEndpointFunction",
-        "package": "@withonevision/omnihive-worker-rest-server-default",
-        "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemCheckSettingsWorker",
-        "default": false,
-        "enabled": true,
-        "metadata": {
-          "methodUrl": "/checkSettings"
-        }
-      },
-      {
-        "name": "ohreqRestSystemRefresh",
-        "type": "restEndpointFunction",
-        "package": "@withonevision/omnihive-worker-rest-server-default",
-        "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemRefreshWorker",
-        "default": false,
-        "enabled": true,
-        "metadata": {
-          "methodUrl": "/refresh"
-        }
-      },
-      {
-        "name": "ohreqRestSystemStatus",
-        "type": "restEndpointFunction",
-        "package": "@withonevision/omnihive-worker-rest-server-default",
-        "version": "^4.0.0",
-        "classPath": "@withonevision/omnihive-worker-rest-server-default/SystemStatusWorker",
-        "default": false,
-        "enabled": true,
-        "metadata": {
-          "methodUrl": "/status"
         }
       }
     ]

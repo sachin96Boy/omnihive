@@ -35,7 +35,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            this.metadata = this.hiveWorkerHelper.checkMetadata<MssqlDatabaseWorkerMetadata>(MssqlDatabaseWorkerMetadata, config.metadata);
+            this.metadata = this.checkMetadata<MssqlDatabaseWorkerMetadata>(MssqlDatabaseWorkerMetadata, config.metadata);
 
             this.sqlConfig = {
                 user: this.metadata.userName,

@@ -46,7 +46,7 @@ export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase im
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: LaunchDarklyNodeFeatureFlagWorkerMetadata = this.hiveWorkerHelper.checkMetadata<LaunchDarklyNodeFeatureFlagWorkerMetadata>(LaunchDarklyNodeFeatureFlagWorkerMetadata, config.metadata);
+            const metadata: LaunchDarklyNodeFeatureFlagWorkerMetadata = this.checkMetadata<LaunchDarklyNodeFeatureFlagWorkerMetadata>(LaunchDarklyNodeFeatureFlagWorkerMetadata, config.metadata);
 
             const ldInstance: LaunchDarkly.LDClient = LaunchDarkly.init(metadata.sdkKey);
 

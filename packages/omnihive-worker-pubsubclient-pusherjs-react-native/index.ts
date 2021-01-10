@@ -16,6 +16,7 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
     private pusher!: Pusher;
     private listeners: PubSubListener[] = [];
     private channels: Channel[] = [];
+    private metadata!: PusherJsReactNativePubSubClientWorkerMetadata;
 
     constructor() {
         super();
@@ -23,6 +24,7 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
+        this.metadata = this.checkMetadata<PusherJsReactNativePubSubClientWorkerMetadata>(PusherJsReactNativePubSubClientWorkerMetadata, this.config.metadata);
         await AwaitHelper.execute<void>(this.connect());
     }
 
@@ -68,9 +70,7 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
     }
 
     public connect = async (): Promise<void> => {
-
-        const metadata: PusherJsReactNativePubSubClientWorkerMetadata = this.hiveWorkerHelper.checkMetadata<PusherJsReactNativePubSubClientWorkerMetadata>(PusherJsReactNativePubSubClientWorkerMetadata, this.config.metadata);
-        this.pusher = new Pusher(metadata.key, { cluster: metadata.cluster });
+        this.pusher = new Pusher(this.metadata.key, { cluster: this.metadata.cluster });
         this.connected = true;
     }
 

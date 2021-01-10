@@ -3,7 +3,6 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/Omni
 import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
 import { AppService } from "@withonevision/omnihive-hive-queen/services/AppService";
-import { LogService } from "@withonevision/omnihive-hive-queen/services/LogService";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
 import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
 import minimist from "minimist";
@@ -12,6 +11,7 @@ import { serializeError } from "serialize-error";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
+import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
 
 // Set up args and variables
 const args = minimist(process.argv.slice(2));
@@ -36,6 +36,12 @@ async function taskRunner(workerName: string, argsFile: string) {
 
     if (!fileSystemWorker && argsFile && !StringHelper.isNullOrWhiteSpace(argFile)) {
         throw new Error("FileSystem Worker Not Found...Cannot Read Args")
+    }
+
+    const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+
+    if (!logWorker) {
+        throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
     }
 
     // Get TaskWorker
@@ -75,10 +81,14 @@ async function taskRunner(workerName: string, argsFile: string) {
 
 async function logError(workerName: string, err: Error) {
 
-    const logService: LogService = LogService.getInstance();
+    const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+
+    if (!logWorker) {
+        throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
+    }
 
     console.log(err);
-    logService.write(OmniHiveLogLevel.Error, `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
+    logWorker.write(OmniHiveLogLevel.Error, `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
     throw new Error(`Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
 }
 

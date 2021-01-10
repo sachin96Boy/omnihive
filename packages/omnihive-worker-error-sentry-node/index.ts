@@ -20,7 +20,7 @@ export default class SentryErrorWorker extends HiveWorkerBase implements IErrorW
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: SentryErrorWorkerMetadata = this.hiveWorkerHelper.checkMetadata<SentryErrorWorkerMetadata>(SentryErrorWorkerMetadata, config.metadata);
+            const metadata: SentryErrorWorkerMetadata = this.checkMetadata<SentryErrorWorkerMetadata>(SentryErrorWorkerMetadata, config.metadata);
 
             Sentry.init({
                 dsn: metadata.sentryDsn,

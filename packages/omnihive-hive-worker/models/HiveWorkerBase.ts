@@ -1,11 +1,11 @@
+import { ObjectHelper } from "@withonevision/omnihive-hive-common/helpers/ObjectHelper";
+import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
 import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { HiveWorkerHelper } from '../helpers/HiveWorkerHelper';
 import { IHiveWorker } from '../interfaces/IHiveWorker';
 
 export abstract class HiveWorkerBase implements IHiveWorker {
 
     public config!: HiveWorker;
-    protected hiveWorkerHelper!: HiveWorkerHelper; 
 
     public async afterInit(): Promise<void> {
         return;
@@ -18,6 +18,29 @@ export abstract class HiveWorkerBase implements IHiveWorker {
         }
 
         this.config = config;
-        this.hiveWorkerHelper = new HiveWorkerHelper(config);
+    }
+
+    public checkMetadata = <T extends object>(type: { new (): T }, model: any | null): T => {
+
+        const metadata: T = ObjectHelper.createStrict<T>(type, model);
+        const metaAny: any = metadata as any;
+
+        Object.keys(metadata).forEach((key: string) => {
+            if(!metaAny[key]) {
+                throw new Error(`Metadata key ${key} is null or undefined on hive worker ${this.config.name}`);
+            }
+
+            if (metaAny[key] && typeof metaAny[key] === "string" && StringHelper.isNullOrWhiteSpace(metaAny[key])) {
+                throw new Error(`Metadata key ${key} is a string but it is blank on hive worker ${this.config.name}`);
+            }
+
+            if (metaAny[key] && Array.isArray(metaAny[key])) {
+                if ((metaAny[key] as Array<any>).length === 0) {
+                    throw new Error(`Metadata key ${key} is an array but it is empty on hive worker ${this.config.name}`);
+                }
+            }
+        });
+
+        return metadata;
     }
 }

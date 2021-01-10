@@ -26,8 +26,8 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
+        this.metadata = this.checkMetadata<PusherJsPubSubClientWorkerMetadata>(PusherJsPubSubClientWorkerMetadata, config.metadata);
         await AwaitHelper.execute<void>(this.connect());
-        this.metadata = this.hiveWorkerHelper.checkMetadata<PusherJsPubSubClientWorkerMetadata>(PusherJsPubSubClientWorkerMetadata, config.metadata);
     }
 
     public getListeners = (): PubSubListener[] => {
@@ -85,8 +85,7 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
                 return;
             }
 
-            const metadata: PusherJsPubSubClientWorkerMetadata = this.hiveWorkerHelper.checkMetadata<PusherJsPubSubClientWorkerMetadata>(PusherJsPubSubClientWorkerMetadata, this.config.metadata);
-            this.pusher = new Pusher(metadata.key, { cluster: metadata.cluster });
+            this.pusher = new Pusher(this.metadata.key, { cluster: this.metadata.cluster });
             this.connected = true;
         } catch (err) {
             if (retry <= this.metadata.maxRetries) {

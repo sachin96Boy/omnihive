@@ -24,7 +24,7 @@ export default class PusherPubSubServerWorker extends HiveWorkerBase implements 
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: PusherPubSubServerWorkerMetadata = this.hiveWorkerHelper.checkMetadata<PusherPubSubServerWorkerMetadata>(PusherPubSubServerWorkerMetadata, config.metadata);
+            const metadata: PusherPubSubServerWorkerMetadata = this.checkMetadata<PusherPubSubServerWorkerMetadata>(PusherPubSubServerWorkerMetadata, config.metadata);
             this.server = new PusherServer({ appId: metadata.appId, key: metadata.key, secret: metadata.secret, cluster: metadata.cluster });
         } catch (err) {
             throw new Error(JSON.stringify(serializeError(err)));

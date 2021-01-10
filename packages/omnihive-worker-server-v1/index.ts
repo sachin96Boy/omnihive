@@ -8,12 +8,12 @@ import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorke
 import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
 import { StoredProcSchema } from "@withonevision/omnihive-hive-common/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-hive-common/models/TableSchema";
-import { LogService } from "@withonevision/omnihive-hive-queen/services/LogService";
 import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
 import { IDatabaseWorker } from "@withonevision/omnihive-hive-worker/interfaces/IDatabaseWorker";
 import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
 import { IGraphBuildWorker } from "@withonevision/omnihive-hive-worker/interfaces/IGraphBuildWorker";
+import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-hive-worker/interfaces/IRestEndpointWorker";
 import { IServerWorker } from "@withonevision/omnihive-hive-worker/interfaces/IServerWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
@@ -27,6 +27,10 @@ import swaggerUi from "swagger-ui-express";
 
 export default class ServerWorker extends HiveWorkerBase implements IServerWorker {
 
+    private metadata!: HiveWorkerMetadataServer;
+    private fileSystemWorker!: IFileSystemWorker;
+    private logWorker!: ILogWorker;
+
     constructor() {
         super();
     }
@@ -34,7 +38,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        this.hiveWorkerHelper.checkMetadata<HiveWorkerMetadataServer>(HiveWorkerMetadataServer, config.metadata);
+        this.metadata = this.checkMetadata<HiveWorkerMetadataServer>(HiveWorkerMetadataServer, config.metadata);
     }
 
     public async afterInit(): Promise<void> {
@@ -43,34 +47,41 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
         if (!fileSystemWorker) {
             throw new Error("FileSystem Worker Not Found.  Server must be able to read from the filesystem");
         }
+
+        this.fileSystemWorker = fileSystemWorker;
+
+        const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+
+        if (!logWorker) {
+            throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
+        }
+
+        this.logWorker = logWorker;
     }
 
     public buildServer = async (): Promise<void> => {
-
-        const fileSystemWorker: IFileSystemWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
 
         try {
 
             // Start setting up server
             const app = ServerStore.getInstance().getCleanAppServer();
-            const metadata: HiveWorkerMetadataServer = this.config.metadata as HiveWorkerMetadataServer;
 
             // Clear schema directories
-            fileSystemWorker?.ensureFolderExists(`${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}`);
+            this.fileSystemWorker.ensureFolderExists(`${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}`);
 
-            fileSystemWorker?.ensureFolderExists(`${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections`);
-            fileSystemWorker?.removeFilesFromDirectory(`${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections`);
+            this.fileSystemWorker.ensureFolderExists(`${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections`);
+            this.fileSystemWorker.removeFilesFromDirectory(`${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections`);
 
-            fileSystemWorker?.ensureFolderExists(`${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql`);
-            fileSystemWorker?.removeFilesFromDirectory(`${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql`);
+            this.fileSystemWorker.ensureFolderExists(`${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql`);
+            this.fileSystemWorker.removeFilesFromDirectory(`${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql`);
 
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Schema Folder Reset`);
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Written`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Schema Folder Reset`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Written`);
 
             // Get build workers
             const buildWorkers: [HiveWorker, any][] = HiveWorkerFactory.getInstance().workers.filter((worker: [HiveWorker, any]) =>
                 worker[0].type === HiveWorkerType.GraphBuilder && worker[0].enabled === true &&
-                (metadata.buildWorkers.includes(worker[0].name) || metadata.buildWorkers.includes("*")));
+                (this.metadata.buildWorkers.includes(worker[0].name) || this.metadata.buildWorkers.includes("*")));
 
             // Get db workers
             const dbWorkers: [HiveWorker, any, string][] = [];
@@ -97,9 +108,9 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
             // Write database schemas
             for (const worker of dbWorkers) {
 
-                LogService.getInstance().write(OmniHiveLogLevel.Info, `Writing ${worker[0].name} Schema`);
+                this.logWorker.write(OmniHiveLogLevel.Info, `Writing ${worker[0].name} Schema`);
 
-                const path: string = `${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections/${worker[0].name}.json`;
+                const path: string = `${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections/${worker[0].name}.json`;
                 console.log("Config service waiting on schema");
 
                 const result: { tables: TableSchema[], storedProcs: StoredProcSchema[] } =
@@ -135,11 +146,11 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                     schema.columnNameEntity = columnWorkingName.toString();
                 });
 
-                fileSystemWorker?.writeJsonToFile(path, result);
+                this.fileSystemWorker.writeJsonToFile(path, result);
             }
 
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Connection Schemas Completed`);
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Writing Graph Generation Files`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Completed`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Writing Graph Generation Files`);
 
             // Get all build workers and write out their graph schema
 
@@ -150,16 +161,14 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                 dbWorkers
                     .filter((worker: [HiveWorker, any, string]) => worker[2] === buildWorker.config.name)
                     .forEach((dbWorker: [HiveWorker, any, string]) => {
-                        if (fileSystemWorker) {
-                            const databaseWorker: IDatabaseWorker = dbWorker[1] as IDatabaseWorker;
+                        const databaseWorker: IDatabaseWorker = dbWorker[1] as IDatabaseWorker;
 
-                            const schemaFilePath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections/${dbWorker[0].name}.json`;
-                            const jsonSchema: any = JSON.parse(fileSystemWorker.readFile(schemaFilePath));
+                        const schemaFilePath: string = `${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections/${dbWorker[0].name}.json`;
+                        const jsonSchema: any = JSON.parse(this.fileSystemWorker.readFile(schemaFilePath));
 
-                            const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, { tables: jsonSchema["tables"], storedProcs: jsonSchema["storedProcs"] });
-                            const masterPath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/${buildWorker.config.name}_${dbWorker[0].name}_FederatedGraphSchema.js`;
-                            fileSystemWorker.writeDataToFile(masterPath, fileString);
-                        }
+                        const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, { tables: jsonSchema["tables"], storedProcs: jsonSchema["storedProcs"] });
+                        const masterPath: string = `${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/${buildWorker.config.name}_${dbWorker[0].name}_FederatedGraphSchema.js`;
+                        this.fileSystemWorker.writeDataToFile(masterPath, fileString);
                     });
             }
 
@@ -210,16 +219,16 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                 builder.appendLine(`\t}),`);
                 builder.appendLine(`});`);
 
-                const functionPath: string = `${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/CustomFunctionFederatedGraphSchema.js`;
-                fileSystemWorker?.writeDataToFile(functionPath, builder.outputString());
+                const functionPath: string = `${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/CustomFunctionFederatedGraphSchema.js`;
+                this.fileSystemWorker.writeDataToFile(functionPath, builder.outputString());
             }
 
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Generation Files Completed`);
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Schema Build Completed Successfully`);
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Booting Up Graph Server`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Generation Files Completed`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Schema Build Completed Successfully`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Booting Up Graph Server`);
 
             // Register graph builder databases
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registering`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registering`);
 
             for (const builder of buildWorkers) {
 
@@ -234,7 +243,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
 
                     for (const databaseWorker of builderDbWorkers) {
 
-                        const databaseFileName: string = `${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/${builder[0].name}_${databaseWorker[0].name}_FederatedGraphSchema.js`;
+                        const databaseFileName: string = `${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/${builder[0].name}_${databaseWorker[0].name}_FederatedGraphSchema.js`;
                         const databaseDynamicModule: any = await import(databaseFileName);
                         const databaseQuerySchema: any = databaseDynamicModule.FederatedGraphQuerySchema;
 
@@ -244,7 +253,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                             graphDatabaseSchema = mergeSchemas({ schemas: [graphDatabaseSchema, databaseQuerySchema] });
                         }
 
-                        LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Query Schema Merged`);
+                        this.logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Query Schema Merged`);
 
                         const procSchema: any = databaseDynamicModule.FederatedGraphStoredProcSchema;
 
@@ -252,7 +261,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                             graphDatabaseSchema = mergeSchemas({ schemas: [graphDatabaseSchema, procSchema] });
                         }
 
-                        LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Stored Proc Schema Merged`);
+                        this.logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Stored Proc Schema Merged`);
 
                         databaseWorkerIndex++;
                     }
@@ -286,14 +295,14 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                 }
             }
 
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registered`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registered`);
 
             // Register custom graph apollo server
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Graph Endpoint Registering`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Graph Endpoint Registering`);
 
             if (HiveWorkerFactory.getInstance().workers.some((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true)) {
 
-                const functionFileName: string = `${fileSystemWorker?.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/CustomFunctionFederatedGraphSchema.js`;
+                const functionFileName: string = `${this.fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/graphql/CustomFunctionFederatedGraphSchema.js`;
                 const functionDynamicModule: any = await import(functionFileName);
                 const graphFunctionSchema: any = functionDynamicModule.FederatedCustomFunctionQuerySchema;
 
@@ -326,8 +335,8 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
 
             }
 
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Endpoint Registered`);
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `REST Server Generation Started`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Endpoint Registered`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `REST Server Generation Started`);
 
             // Register "custom" REST endpoints
             if (HiveWorkerFactory.getInstance().workers.some((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true)) {
@@ -364,7 +373,7 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                 }
             }
 
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
             QueenStore.getInstance().changeSystemStatus(ServerStatus.Online);
 
             app.get("/", (_req, res) => {
@@ -372,14 +381,14 @@ export default class ServerWorker extends HiveWorkerBase implements IServerWorke
                 return res.status(200).json(QueenStore.getInstance().status);
             });
 
-            LogService.getInstance().write(OmniHiveLogLevel.Info, `New Server Built`);
+            this.logWorker.write(OmniHiveLogLevel.Info, `New Server Built`);
 
             // Rebuild server
             ServerStore.getInstance().appServer = app;
 
 
         } catch (err) {
-            LogService.getInstance().write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
+            this.logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
             throw new Error(err);
         }
 

@@ -1,4 +1,5 @@
 export enum HiveWorkerType {
+    Application = "application",
     Cache = "cache",
     Date = "date",
     Database = "database",

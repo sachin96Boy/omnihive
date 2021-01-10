@@ -20,7 +20,7 @@ export default class RedisCacheWorker extends HiveWorkerBase implements ICacheWo
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: RedisCacheWorkerMetadata = this.hiveWorkerHelper.checkMetadata<RedisCacheWorkerMetadata>(RedisCacheWorkerMetadata, config.metadata);
+            const metadata: RedisCacheWorkerMetadata = this.checkMetadata<RedisCacheWorkerMetadata>(RedisCacheWorkerMetadata, config.metadata);
             this.redis = new Redis(metadata.connectionString);
         } catch (err) {
             throw new Error("Redis Init Error => " + JSON.stringify(serializeError(err)));

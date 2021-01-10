@@ -5,7 +5,6 @@ import { ServerStatus } from "@withonevision/omnihive-hive-common/enums/ServerSt
 import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
 import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
 import { AppService } from "@withonevision/omnihive-hive-queen/services/AppService";
-import { LogService } from "@withonevision/omnihive-hive-queen/services/LogService";
 import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
 import { IPubSubClientWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubClientWorker";
@@ -18,6 +17,7 @@ import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import http, { Server } from "http";
 import { ServerStore } from "./stores/ServerStore";
+import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
 
 const start = async (): Promise<void> => {
 
@@ -33,6 +33,12 @@ const start = async (): Promise<void> => {
     await appService.init(process.env.OH_SERVER_SETTINGS, packageJson);
 
     // Intialize "backbone" hive workers
+
+    const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+
+    if (!logWorker) {
+        throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
+    }
 
     const serverWorker: IServerWorker | undefined = await AwaitHelper.execute<IServerWorker | undefined>(
         HiveWorkerFactory.getInstance().getHiveWorker<IServerWorker>(HiveWorkerType.Server));
@@ -50,7 +56,7 @@ const start = async (): Promise<void> => {
 
 
     adminPubSubClient?.joinChannel(QueenStore.getInstance().settings.server.serverGroupName);
-    LogService.getInstance().write(OmniHiveLogLevel.Info, "Admin Pusher Channel => Connected");
+    logWorker.write(OmniHiveLogLevel.Info, "Admin Pusher Channel => Connected");
 
     adminPubSubClient?.addListener(QueenStore.getInstance().settings.server.serverGroupName, "server-reset-request", (data: { reset: boolean; }) => {
 
@@ -67,7 +73,7 @@ const start = async (): Promise<void> => {
                         .then(() => {
                             serverChangeHandler();
 
-                            LogService.getInstance().write(OmniHiveLogLevel.Info, `Server Spin-Up Complete => Online `);
+                            logWorker.write(OmniHiveLogLevel.Info, `Server Spin-Up Complete => Online `);
                             adminPubSubServer?.emit(
                                 QueenStore.getInstance().settings.server.serverGroupName,
                                 "server-reset-result",
@@ -82,7 +88,7 @@ const start = async (): Promise<void> => {
 
                             serverChangeHandler();
 
-                            LogService.getInstance().write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
+                            logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
                             adminPubSubServer?.emit(
                                 QueenStore.getInstance().settings.server.serverGroupName,
                                 "server-reset-result",
@@ -98,7 +104,7 @@ const start = async (): Promise<void> => {
 
                     serverChangeHandler();
 
-                    LogService.getInstance().write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
+                    logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
                     adminPubSubServer?.emit(
                         QueenStore.getInstance().settings.server.serverGroupName,
                         "server-reset-result",
@@ -124,13 +130,19 @@ const start = async (): Promise<void> => {
         // Problem...spin up admin server
         ServerStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
         serverChangeHandler();
-        LogService.getInstance().write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
+        logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
     }
 }
 
-const serverChangeHandler = (): void => {
+const serverChangeHandler = async (): Promise<void> => {
 
-    LogService.getInstance().write(OmniHiveLogLevel.Info, `Server Change Handler Started`);
+    const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+
+    if (!logWorker) {
+        throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
+    }
+
+    logWorker.write(OmniHiveLogLevel.Info, `Server Change Handler Started`);
 
     const server: Server = http.createServer(ServerStore.getInstance().appServer);
 
@@ -141,10 +153,10 @@ const serverChangeHandler = (): void => {
     ServerStore.getInstance().webServer = server;
 
     ServerStore.getInstance().webServer?.listen(QueenStore.getInstance().settings.server.portNumber, () => {
-        LogService.getInstance().write(OmniHiveLogLevel.Info, `New Server Listening on process ${process.pid} using port ${QueenStore.getInstance().settings.server.portNumber}`);
+        logWorker.write(OmniHiveLogLevel.Info, `New Server Listening on process ${process.pid} using port ${QueenStore.getInstance().settings.server.portNumber}`);
     });
 
-    LogService.getInstance().write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
+    logWorker.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
 
 }
 

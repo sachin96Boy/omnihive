@@ -1,4 +1,3 @@
-import { QueenStore } from "../stores/QueenStore";
 import os from "os";
 import dayjs from "dayjs";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
@@ -8,26 +7,12 @@ import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorke
 import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
 import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
+import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
+import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 
-export class LogService {
+export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
 
-    private static instance: LogService;
     public logEntryNumber: number = 0;
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() { }
-
-    public static getInstance = (): LogService => {
-        if (!LogService.instance) {
-            LogService.instance = new LogService();
-        }
-
-        return LogService.instance;
-    }
-
-    public static getNew = (): LogService => {
-        return new LogService();
-    }
 
     public write = async (logLevel: OmniHiveLogLevel, logString: string): Promise<void> => {
 
@@ -50,7 +35,7 @@ export class LogService {
             try {
                 adminPubSubServer.emit(QueenStore.getInstance().settings.server.serverGroupName, "server-log-entry", { entryNumber: this.logEntryNumber, log: formattedLogString });
             } catch {
-                console.log("Pusher server log could not be synchronized");
+                console.log("Pub sub server log could not be synchronized");
             }
 
         }

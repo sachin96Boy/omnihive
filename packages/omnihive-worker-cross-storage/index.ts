@@ -26,7 +26,7 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.hiveWorkerHelper.checkMetadata<CrossStorageStorageWorkerMetadata>(CrossStorageStorageWorkerMetadata, config.metadata);
+        this.metadata = this.checkMetadata<CrossStorageStorageWorkerMetadata>(CrossStorageStorageWorkerMetadata, config.metadata);
         
         const options: CrossStorageClientOptions = {};
         const storage = new CrossStorageClient(this.metadata.hubLocation, options);

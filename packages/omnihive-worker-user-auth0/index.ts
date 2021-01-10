@@ -44,7 +44,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            this.metadata = this.hiveWorkerHelper.checkMetadata<AuthZeroUserWorkerMetadata>(AuthZeroUserWorkerMetadata, config.metadata);
+            this.metadata = this.checkMetadata<AuthZeroUserWorkerMetadata>(AuthZeroUserWorkerMetadata, config.metadata);
 
             this.authClient = new AuthenticationClient({
                 domain: this.metadata.domain,

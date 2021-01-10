@@ -25,7 +25,7 @@ export default class ElasticLogWorker extends HiveWorkerBase implements ILogWork
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        const metadata: ElasticLogWorkerMetadata = this.hiveWorkerHelper.checkMetadata<ElasticLogWorkerMetadata>(ElasticLogWorkerMetadata, config.metadata);
+        const metadata: ElasticLogWorkerMetadata = this.checkMetadata<ElasticLogWorkerMetadata>(ElasticLogWorkerMetadata, config.metadata);
 
         this.logIndex = metadata.logIndex;
 

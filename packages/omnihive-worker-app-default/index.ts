@@ -2,36 +2,70 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/Omni
 import { StringBuilder } from "@withonevision/omnihive-hive-common/helpers/StringBuilder";
 import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
 import { SystemSettings } from "@withonevision/omnihive-hive-common/models/SystemSettings";
-import { QueenStore } from "../stores/QueenStore";
 import spawn from "cross-spawn";
 import { NormalizedReadResult } from "read-pkg-up";
 import fse from "fs-extra";
 import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { LogService } from "./LogService";
 import { StringHelper } from "@withonevision/omnihive-hive-common/helpers/StringHelper";
 import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
 import { IHiveAccountWorker } from "@withonevision/omnihive-hive-worker/interfaces/IHiveAccountWorker";
+import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
+import { IAppWorker } from "@withonevision/omnihive-hive-worker/interfaces/IAppWorker";
 
-export class AppService {
+export class AppWorker extends HiveWorkerBase implements IAppWorker {
 
-    public init = async (settingsPath: string | undefined, packageJson: NormalizedReadResult | undefined): Promise<void> => {
-
-        if (!settingsPath || StringHelper.isNullOrWhiteSpace(settingsPath)) {
-            throw new Error("Settings path must be given to init function");
-        }
+    public initApp = async (settingsPath: string | undefined, packageJson: NormalizedReadResult | undefined): Promise<void> => {
 
         if (!packageJson) {
             throw new Error("Package.json must be given to load packages");
         }
 
-        // Get Server Settings
-        LogService.getInstance().write(OmniHiveLogLevel.Info, `Getting server settings...`);
+        // Load Core Workers
+        if (packageJson && packageJson.packageJson && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.coreWorkers) {
+            const coreWorkers: HiveWorker[] = packageJson.packageJson.omniHive.coreWorkers as HiveWorker[];
 
+            coreWorkers.forEach((coreWorker: HiveWorker) => {
+
+                Object.keys(coreWorker.metadata).forEach((metaKey: string) => {
+                    if (typeof coreWorker.metadata[metaKey] === "string") {
+                        if ((coreWorker.metadata[metaKey] as string).startsWith("${") && (coreWorker.metadata[metaKey] as string).endsWith("}")) {
+                            let metaValue: string = coreWorker.metadata[metaKey] as string;
+
+                            metaValue = metaValue.substr(2, metaValue.length - 3);
+                            const envValue: string | undefined = process.env[metaValue];
+
+                            if (envValue) {
+                                coreWorker.metadata[metaKey] = envValue;
+                            }
+                        }
+                    }
+                });
+
+                HiveWorkerFactory.getInstance().registerWorker(coreWorker);
+                QueenStore.getInstance().settings.workers.push(coreWorker);
+            });
+        }
+
+        if (!settingsPath || StringHelper.isNullOrWhiteSpace(settingsPath)) {
+            throw new Error("Settings path must be given to init function");
+        }
+
+        // Get Server Settings
         const settingsJson: SystemSettings = JSON.parse(fse.readFileSync(`${settingsPath}`, { encoding: "utf8" }));
         QueenStore.getInstance().settings = settingsJson;
 
+        const logWorker: ILogWorker | undefined = await HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+
+        if (!logWorker) {
+            throw new Error("Core Log Worker Not Found.  App worker needs the core log worker ohreqLogWorker");
+        }
+
+        logWorker.write(OmniHiveLogLevel.Info, `Server Settings Retrieved...`);
+
         // Load Workers
-        LogService.getInstance().write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
+        logWorker.write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
 
         // Load Default Workers
         if (packageJson && packageJson.packageJson && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.defaultWorkers) {
@@ -61,35 +95,7 @@ export class AppService {
             });
         }
 
-        // Load Required Workers
-        if (packageJson && packageJson.packageJson && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.requiredWorkers) {
-            const requiredWorkers: HiveWorker[] = packageJson.packageJson.omniHive.requiredWorkers as HiveWorker[];
-
-            requiredWorkers.forEach((requiredWorker: HiveWorker) => {
-
-                if (!QueenStore.getInstance().settings.workers.some((hiveWorker: HiveWorker) => hiveWorker.name === requiredWorker.name)) {
-                    Object.keys(requiredWorker.metadata).forEach((metaKey: string) => {
-                        if (typeof requiredWorker.metadata[metaKey] === "string") {
-                            if ((requiredWorker.metadata[metaKey] as string).startsWith("${") && (requiredWorker.metadata[metaKey] as string).endsWith("}")) {
-                                let metaValue: string = requiredWorker.metadata[metaKey] as string;
-
-                                metaValue = metaValue.substr(2, metaValue.length - 3);
-                                const envValue: string | undefined = process.env[metaValue];
-
-                                if (envValue) {
-                                    requiredWorker.metadata[metaKey] = envValue;
-                                }
-                            }
-                        }
-                    });
-
-                    QueenStore.getInstance().settings.workers.push(requiredWorker);
-                }
-
-            });
-        }
-
-        LogService.getInstance().write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
+        logWorker.write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
 
         if (packageJson && packageJson.packageJson && packageJson.packageJson.dependencies && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.coreDependencies) {
 
@@ -130,9 +136,9 @@ export class AppService {
             }
 
             if (packagesToRemove.length === 0) {
-                LogService.getInstance().write(OmniHiveLogLevel.Info, `No Custom Packages to Uninstall...Moving On`);
+                logWorker.write(OmniHiveLogLevel.Info, `No Custom Packages to Uninstall...Moving On`);
             } else {
-                LogService.getInstance().write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Custom Package(s)`);
+                logWorker.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Custom Package(s)`);
                 const removeCommand = new StringBuilder();
                 removeCommand.append("yarn remove ");
 
@@ -166,9 +172,9 @@ export class AppService {
             }
 
             if (packagesToAdd.length === 0) {
-                LogService.getInstance().write(OmniHiveLogLevel.Info, `No Custom Packages to Add...Moving On`);
+                logWorker.write(OmniHiveLogLevel.Info, `No Custom Packages to Add...Moving On`);
             } else {
-                LogService.getInstance().write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Custom Package(s)`);
+                logWorker.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Custom Package(s)`);
                 const addCommand = new StringBuilder();
                 addCommand.append("yarn add ");
 
@@ -184,12 +190,12 @@ export class AppService {
             }
         }
 
-        LogService.getInstance().write(OmniHiveLogLevel.Debug, "Custom packages complete");
+        logWorker.write(OmniHiveLogLevel.Debug, "Custom packages complete");
 
         // Register hive workers
-        LogService.getInstance().write(OmniHiveLogLevel.Debug, "Working on hive workers...");
+        logWorker.write(OmniHiveLogLevel.Debug, "Working on hive workers...");
         await HiveWorkerFactory.getInstance().init(QueenStore.getInstance().settings.workers);
-        LogService.getInstance().write(OmniHiveLogLevel.Debug, "Hive Workers Initiated...");
+        logWorker.write(OmniHiveLogLevel.Debug, "Hive Workers Initiated...");
 
         // Get account if hive worker exists
         if (HiveWorkerFactory.getInstance().workers.some((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount)) {

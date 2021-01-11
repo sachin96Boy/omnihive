@@ -82,14 +82,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`const accessTokenChecker = async (accessToken) => {`);
         builder.appendLine(`\tconst tokenWorker = await AwaitHelper.execute(CommonStore.getInstance().getHiveWorker(HiveWorkerType.Token));`);
         builder.appendLine();
-        builder.appendLine(`\tif (!accessToken || !tokenWorker || accessToken === "") {`);
-        builder.appendLine(`\t\tthrow new Error("ohAccessError: Access token is either the wrong client, invalid, or expired");`)
-        builder.appendLine(`\t}`);
+        builder.appendLine(`\tif (accessToken) {`);
+        builder.appendLine(`\t\tconst verified = await AwaitHelper.execute(tokenWorker.verify(accessToken));`);
         builder.appendLine();
-        builder.appendLine(`\tconst verified = await AwaitHelper.execute(tokenWorker.verify(accessToken));`);
-        builder.appendLine();
-        builder.appendLine(`\tif (verified === false) {`);
-        builder.appendLine(`\t\tthrow new Error("ohAccessError: Access token is either the wrong client, invalid, or expired");`)
+        builder.appendLine(`\t\tif (verified === false) {`);
+        builder.appendLine(`\t\t\tthrow new Error("ohAccessError: Access token is either the wrong client, invalid, or expired");`)
+        builder.appendLine(`\t\t}`);
         builder.appendLine(`\t}`);
         builder.appendLine();
         builder.appendLine(`\treturn true;`);

@@ -8,7 +8,7 @@
     "server-debug": "nodemon --config ./nodemon.server.json"
   },
   "dependencies": {
-    "@withonevision/omnihive-hive-queen": "^4.0.0",
+    "@withonevision/omnihive-common": "^4.0.0",
     "@withonevision/omnihive-worker-cache-nodecache": "^4.0.0",
     "@withonevision/omnihive-worker-date-dayjs": "^4.0.0",
     "@withonevision/omnihive-worker-encryption-nodeforge": "^4.0.0",
@@ -55,7 +55,7 @@
   },
   "omniHive": {
     "coreDependencies": {
-      "@withonevision/omnihive-hive-queen": "^4.0.0",
+      "@withonevision/omnihive-common": "^4.0.0",
       "@withonevision/omnihive-worker-filesystem-fsextra": "^4.0.0",
       "@withonevision/omnihive-worker-function-core": "^4.0.0",
       "@withonevision/omnihive-worker-log-core": "^4.0.0",

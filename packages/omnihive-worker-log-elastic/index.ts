@@ -1,10 +1,10 @@
 import { ApiResponse, Client } from "@elastic/elasticsearch";
 import { Context } from "@elastic/elasticsearch/lib/Transport";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-queen/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { ILogWorker } from "@withonevision/omnihive-hive-queen/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 
 export class ElasticLogWorkerMetadata {
     public cloudId: string = "";

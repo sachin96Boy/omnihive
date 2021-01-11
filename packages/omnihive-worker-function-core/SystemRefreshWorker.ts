@@ -1,14 +1,14 @@
 
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { IHiveWorker } from "@withonevision/omnihive-hive-queen/interfaces/IHiveWorker";
-import { IPubSubServerWorker } from "@withonevision/omnihive-hive-queen/interfaces/IPubSubServerWorker";
-import { ITokenWorker } from "@withonevision/omnihive-hive-queen/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-hive-queen/models/HiveWorkerMetadataRestFunction";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-queen/models/OmniHiveConstants";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IHiveWorker } from "@withonevision/omnihive-common/interfaces/IHiveWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
+import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-common/models/HiveWorkerMetadataRestFunction";
+import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
 
@@ -29,7 +29,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IHive
     public async register(app: core.Express, restRoot: string): Promise<void> {
 
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
+            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
 
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");
@@ -48,13 +48,13 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IHive
                 }
 
                 const adminPubSubServer: IPubSubServerWorker | undefined = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-                    QueenStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
+                    CommonStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
 
                 if (!adminPubSubServer) {
                     throw new Error("No admin pub-sub server hive worker found");
                 }
 
-                adminPubSubServer.emit(QueenStore.getInstance().settings.server.serverGroupName, "server-reset-request", { reset: true });
+                adminPubSubServer.emit(CommonStore.getInstance().settings.server.serverGroupName, "server-reset-request", { reset: true });
 
                 return res.send("Server Refresh/Reset Initiated");
             }
@@ -79,7 +79,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IHive
             throw new Error(`Request Denied`);
         }
 
-        if (req.body.adminPassword !== QueenStore.getInstance().settings.server.adminPassword) {
+        if (req.body.adminPassword !== CommonStore.getInstance().settings.server.adminPassword) {
             throw new Error(`Request Denied`);
         }
     }

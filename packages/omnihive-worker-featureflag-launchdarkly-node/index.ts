@@ -1,11 +1,11 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-queen/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { IFeatureFlagWorker } from "@withonevision/omnihive-hive-queen/interfaces/IFeatureFlagWorker";
-import { ILogWorker } from "@withonevision/omnihive-hive-queen/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IFeatureFlagWorker } from "@withonevision/omnihive-common/interfaces/IFeatureFlagWorker";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import LaunchDarkly, { LDUser } from 'launchdarkly-node-server-sdk';
 import { serializeError } from 'serialize-error';
 
@@ -64,7 +64,7 @@ export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase im
     }
 
     public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(QueenStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
         if (!this.logWorker) {
             throw new Error("Log Worker Not Defined.  Cross-Storage Will Not Function Without Log Worker.");

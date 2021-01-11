@@ -1,14 +1,14 @@
 
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-queen/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { StringHelper } from "@withonevision/omnihive-hive-queen/helpers/StringHelper";
-import { ILogWorker } from "@withonevision/omnihive-hive-queen/interfaces/ILogWorker";
-import { IUserWorker } from "@withonevision/omnihive-hive-queen/interfaces/IUserWorker";
-import { AuthUser } from "@withonevision/omnihive-hive-queen/models/AuthUser";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { IUserWorker } from "@withonevision/omnihive-common/interfaces/IUserWorker";
+import { AuthUser } from "@withonevision/omnihive-common/models/AuthUser";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import {
     AppMetadata,
     AuthenticationClient,
@@ -65,7 +65,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     }
 
     public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(QueenStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
         if (!this.logWorker) {
             throw new Error("Log Worker Not Defined.  Cross-Storage Will Not Function Without Log Worker.");

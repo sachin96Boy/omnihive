@@ -1,6 +1,6 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { assert } from 'chai';
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
@@ -38,9 +38,9 @@ describe('cache (node) worker tests', function () {
 
     const init = async function (): Promise<void> {
         try {
-            await AwaitHelper.execute(QueenStore.getInstance()
+            await AwaitHelper.execute(CommonStore.getInstance()
                 .initWorkers(configs));
-            const newWorker = QueenStore
+            const newWorker = CommonStore
                 .getInstance()
                 .workers
                 .find((x) => x[0].type === HiveWorkerType.Cache);

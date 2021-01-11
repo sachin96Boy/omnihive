@@ -7,23 +7,23 @@ import { HiveWorker } from "../models/HiveWorker";
 import { SystemSettings } from "../models/SystemSettings";
 import { SystemStatus } from "../models/SystemStatus";
 
-export class QueenStore {
+export class CommonStore {
 
-    private static instance: QueenStore;
+    private static instance: CommonStore;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() { }
 
-    public static getInstance = (): QueenStore => {
-        if (!QueenStore.instance) {
-            QueenStore.instance = new QueenStore();
+    public static getInstance = (): CommonStore => {
+        if (!CommonStore.instance) {
+            CommonStore.instance = new CommonStore();
         }
 
-        return QueenStore.instance;
+        return CommonStore.instance;
     }
 
-    public static getNew = (): QueenStore => {
-        return new QueenStore();
+    public static getNew = (): CommonStore => {
+        return new CommonStore();
     }
 
     public account: HiveAccount = new HiveAccount();

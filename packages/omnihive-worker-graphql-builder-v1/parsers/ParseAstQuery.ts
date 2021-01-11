@@ -1,17 +1,17 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-queen/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { StringHelper } from "@withonevision/omnihive-hive-queen/helpers/StringHelper";
-import { ICacheWorker } from "@withonevision/omnihive-hive-queen/interfaces/ICacheWorker";
-import { IDateWorker } from "@withonevision/omnihive-hive-queen/interfaces/IDateWorker";
-import { IEncryptionWorker } from "@withonevision/omnihive-hive-queen/interfaces/IEncryptionWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-queen/interfaces/IFileSystemWorker";
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-hive-queen/interfaces/IKnexDatabaseWorker";
-import { ILogWorker } from "@withonevision/omnihive-hive-queen/interfaces/ILogWorker";
-import { ConverterSqlInfo } from "@withonevision/omnihive-hive-queen/models/ConverterSqlInfo";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-queen/models/OmniHiveConstants";
-import { TableSchema } from "@withonevision/omnihive-hive-queen/models/TableSchema";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
+import { ICacheWorker } from "@withonevision/omnihive-common/interfaces/ICacheWorker";
+import { IDateWorker } from "@withonevision/omnihive-common/interfaces/IDateWorker";
+import { IEncryptionWorker } from "@withonevision/omnihive-common/interfaces/IEncryptionWorker";
+import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
+import { IKnexDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IKnexDatabaseWorker";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { ConverterSqlInfo } from "@withonevision/omnihive-common/models/ConverterSqlInfo";
+import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
+import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { FieldNode, GraphQLArgument, GraphQLField, GraphQLFieldMap, GraphQLList, GraphQLObjectType, GraphQLResolveInfo, SelectionNode } from "graphql";
 import knex from "knex";
 import _ from "lodash";
@@ -39,38 +39,38 @@ export class ParseAstQuery {
     public parse = async (workerName: string, resolveInfo: GraphQLResolveInfo, cacheSetting: string, cacheTime: string): Promise<any> => {
 
         const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<IFileSystemWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
+            CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
 
         if (!fileSystemWorker) {
             throw new Error("FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker.");
         }
 
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+            CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
         if (!logWorker) {
             throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
         }
 
         const databaseWorker: IKnexDatabaseWorker | undefined = await AwaitHelper.execute<IKnexDatabaseWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
+            CommonStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
 
         if (!databaseWorker) {
             throw new Error("FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker.");
         }
 
         const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<IEncryptionWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+            CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if (!encryptionWorker) {
             throw new Error("Encryption Worker Not Defined.  This graph converter with Cache worker enabled will not work without an Encryption worker.");
         }
 
         this.cacheWorker = await AwaitHelper.execute<ICacheWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<ICacheWorker | undefined>(HiveWorkerType.Cache));
+            CommonStore.getInstance().getHiveWorker<ICacheWorker | undefined>(HiveWorkerType.Cache));
 
         this.dateWorker = await AwaitHelper.execute<IDateWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<IDateWorker | undefined>(HiveWorkerType.Date));
+            CommonStore.getInstance().getHiveWorker<IDateWorker | undefined>(HiveWorkerType.Date));
 
         this.logWorker = logWorker;
         this.databaseWorker = databaseWorker;

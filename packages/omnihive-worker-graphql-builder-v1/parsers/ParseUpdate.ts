@@ -1,10 +1,10 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-queen/interfaces/IFileSystemWorker";
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-hive-queen/interfaces/IKnexDatabaseWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-queen/models/OmniHiveConstants";
-import { TableSchema } from "@withonevision/omnihive-hive-queen/models/TableSchema";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
+import { IKnexDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IKnexDatabaseWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
+import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { QueryBuilder } from "knex";
 
 export class ParseUpdate {
@@ -19,14 +19,14 @@ export class ParseUpdate {
         }
 
         const databaseWorker: IKnexDatabaseWorker | undefined = await AwaitHelper.execute<IKnexDatabaseWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
+            CommonStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
 
         if (!databaseWorker) {
             throw new Error("Database Worker Not Defined.  This graph converter will not work without a Database worker.");
         }
 
         const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<IFileSystemWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
+            CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
 
         if (!fileSystemWorker) {
             throw new Error("FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker.");

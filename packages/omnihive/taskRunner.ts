@@ -1,17 +1,17 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-queen/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { StringHelper } from "@withonevision/omnihive-hive-queen/helpers/StringHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-queen/interfaces/IFileSystemWorker";
-import { ILogWorker } from "@withonevision/omnihive-hive-queen/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import minimist from "minimist";
 import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
-import { NodeStore } from "./stores/NodeStore";
+import { OmniHiveStore } from "./stores/OmniHiveStore";
 
 // Set up args and variables
 const args = minimist(process.argv.slice(2));
@@ -29,15 +29,15 @@ async function taskRunner(workerName: string, argsFile: string) {
 
     const packageJson: NormalizedReadResult | undefined = await AwaitHelper.execute<NormalizedReadResult | undefined>(readPkgUp());
 
-    await NodeStore.getInstance().initApp(process.env.OH_SERVER_SETTINGS, packageJson);
+    await OmniHiveStore.getInstance().initApp(process.env.OH_SERVER_SETTINGS, packageJson);
 
-    const fileSystemWorker: IFileSystemWorker | undefined = await QueenStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
+    const fileSystemWorker: IFileSystemWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
 
     if (!fileSystemWorker && argsFile && !StringHelper.isNullOrWhiteSpace(argFile)) {
         throw new Error("FileSystem Worker Not Found...Cannot Read Args")
     }
 
-    const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+    const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
     if (!logWorker) {
         throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
@@ -45,7 +45,7 @@ async function taskRunner(workerName: string, argsFile: string) {
 
     // Get TaskWorker
 
-    const taskWorker: [HiveWorker, any] | undefined = QueenStore.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === workerName && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction);
+    const taskWorker: [HiveWorker, any] | undefined = CommonStore.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === workerName && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction);
 
     if (!taskWorker) {
         logError(workerName, new Error(`Task Worker ${workerName} was not found in server configuration, is disabled, or is not of the right type`));
@@ -80,7 +80,7 @@ async function taskRunner(workerName: string, argsFile: string) {
 
 async function logError(workerName: string, err: Error) {
 
-    const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+    const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
     if (!logWorker) {
         throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");

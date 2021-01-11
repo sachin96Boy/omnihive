@@ -1,11 +1,11 @@
 
 import * as socketio from "socket.io-client";
 import { serializeError } from "serialize-error";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { IPubSubClientWorker } from "@withonevision/omnihive-hive-queen/interfaces/IPubSubClientWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
-import { PubSubListener } from "@withonevision/omnihive-hive-queen/models/PubSubListener";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IPubSubClientWorker } from "@withonevision/omnihive-common/interfaces/IPubSubClientWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
 
 export class SocketIoPubSubClientWorkerMetadata {
     public serverUrl: string = "";

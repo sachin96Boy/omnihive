@@ -1,12 +1,12 @@
 
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { IRestEndpointWorker } from "@withonevision/omnihive-hive-queen/interfaces/IRestEndpointWorker";
-import { ITokenWorker } from "@withonevision/omnihive-hive-queen/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-hive-queen/models/HiveWorkerMetadataRestFunction";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IRestEndpointWorker } from "@withonevision/omnihive-common/interfaces/IRestEndpointWorker";
+import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-common/models/HiveWorkerMetadataRestFunction";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
 
@@ -27,7 +27,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
     public async register(app: core.Express, restRoot: string): Promise<void> {
 
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            QueenStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
+            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
 
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");

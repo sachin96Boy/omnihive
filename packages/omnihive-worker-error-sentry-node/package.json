@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "@sentry/node": "5.29.2",
-    "@withonevision/omnihive-hive-queen": "^4.0.0"
+    "@withonevision/omnihive-common": "^4.0.0"
   }
 }

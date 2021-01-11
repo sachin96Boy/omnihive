@@ -1,9 +1,9 @@
 
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { StringHelper } from "@withonevision/omnihive-hive-queen/helpers/StringHelper";
-import { ITokenWorker } from "@withonevision/omnihive-hive-queen/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
+import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import { AuthenticationClient, ClientCredentialsGrantOptions } from 'auth0';
 import axios, { AxiosResponse } from 'axios';
 import jwtDecode from 'jwt-decode';

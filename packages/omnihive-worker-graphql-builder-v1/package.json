@@ -7,7 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-hive-queen": "^4.0.0",
+    "@withonevision/omnihive-common": "^4.0.0",
     "graphql": "15.4.0",
     "knex": "0.21.15",
     "lodash": "4.17.20",

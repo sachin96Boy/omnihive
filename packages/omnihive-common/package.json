@@ -1,7 +1,7 @@
 {
-    "name": "@withonevision/omnihive-hive-queen",
+    "name": "@withonevision/omnihive-common",
     "version": "4.0.0",
-    "description": "OmniHive Queen",
+    "description": "OmniHive Common Library",
     "license": "MIT",
     "scripts": {
       "build": "tsc"

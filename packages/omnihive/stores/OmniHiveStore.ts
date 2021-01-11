@@ -1,16 +1,16 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-queen/enums/OmniHiveLogLevel";
-import { ServerStatus } from "@withonevision/omnihive-hive-queen/enums/ServerStatus";
-import { StringBuilder } from "@withonevision/omnihive-hive-queen/helpers/StringBuilder";
-import { StringHelper } from "@withonevision/omnihive-hive-queen/helpers/StringHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-queen/interfaces/IFileSystemWorker";
-import { IHiveAccountWorker } from "@withonevision/omnihive-hive-queen/interfaces/IHiveAccountWorker";
-import { ILogWorker } from "@withonevision/omnihive-hive-queen/interfaces/ILogWorker";
-import { IRestEndpointWorker } from "@withonevision/omnihive-hive-queen/interfaces/IRestEndpointWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-queen/models/OmniHiveConstants";
-import { SystemSettings } from "@withonevision/omnihive-hive-queen/models/SystemSettings";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { ServerStatus } from "@withonevision/omnihive-common/enums/ServerStatus";
+import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
+import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
+import { IHiveAccountWorker } from "@withonevision/omnihive-common/interfaces/IHiveAccountWorker";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-common/interfaces/IRestEndpointWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
+import { SystemSettings } from "@withonevision/omnihive-common/models/SystemSettings";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import bodyParser from "body-parser";
 import cors from "cors";
 import spawn from "cross-spawn";
@@ -24,23 +24,23 @@ import { NormalizedReadResult } from "read-pkg-up";
 import swaggerUi from "swagger-ui-express";
 import { parse } from "url";
 
-export class NodeStore {
+export class OmniHiveStore {
 
-    private static instance: NodeStore;
+    private static instance: OmniHiveStore;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() { }
 
-    public static getInstance = (): NodeStore => {
-        if (!NodeStore.instance) {
-            NodeStore.instance = new NodeStore();
+    public static getInstance = (): OmniHiveStore => {
+        if (!OmniHiveStore.instance) {
+            OmniHiveStore.instance = new OmniHiveStore();
         }
 
-        return NodeStore.instance;
+        return OmniHiveStore.instance;
     }
 
-    public static getNew = (): NodeStore => {
-        return new NodeStore();
+    public static getNew = (): OmniHiveStore => {
+        return new OmniHiveStore();
     }
 
     public adminServer: NextServer | undefined = undefined;
@@ -75,7 +75,7 @@ export class NodeStore {
 
             this.adminServerPreparing = true;
 
-            const nextApp = next({ dev: QueenStore.getInstance().settings.server.developerMode });
+            const nextApp = next({ dev: CommonStore.getInstance().settings.server.developerMode });
             nextApp.prepare().then(() => {
                 this.adminServer = nextApp;
                 this.adminServerPreparing = false;
@@ -116,14 +116,14 @@ export class NodeStore {
             openapi: "3.0.0",
             servers: [
                 {
-                    url: `${QueenStore.getInstance().settings.server.rootUrl}${OmniHiveConstants.SYSTEM_REST_ROOT}`,
+                    url: `${CommonStore.getInstance().settings.server.rootUrl}${OmniHiveConstants.SYSTEM_REST_ROOT}`,
                 },
             ],
             paths: {},
             definitions: {}
         };
 
-        const accessTokenWorker = QueenStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemAccessToken");
+        const accessTokenWorker = CommonStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemAccessToken");
 
         if (accessTokenWorker) {
             const accessTokenInstance: IRestEndpointWorker = accessTokenWorker[1] as IRestEndpointWorker;
@@ -137,7 +137,7 @@ export class NodeStore {
             }
         }
 
-        const checkSettingsWorker = QueenStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemCheckSettings");
+        const checkSettingsWorker = CommonStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemCheckSettings");
 
         if (checkSettingsWorker) {
             const checkSettingInstance: IRestEndpointWorker = checkSettingsWorker[1] as IRestEndpointWorker;
@@ -151,7 +151,7 @@ export class NodeStore {
             }
         }
 
-        const refreshWorker = QueenStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemRefresh");
+        const refreshWorker = CommonStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemRefresh");
 
         if (refreshWorker) {
             const refreshInstance: IRestEndpointWorker = refreshWorker[1] as IRestEndpointWorker;
@@ -165,7 +165,7 @@ export class NodeStore {
             }
         }
 
-        const statusWorker = QueenStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemStatus");
+        const statusWorker = CommonStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemStatus");
 
         if (statusWorker) {
             const statusInstance: IRestEndpointWorker = statusWorker[1] as IRestEndpointWorker;
@@ -179,7 +179,7 @@ export class NodeStore {
             }
         }
 
-        if (QueenStore.getInstance().settings.server.enableSwagger) {
+        if (CommonStore.getInstance().settings.server.enableSwagger) {
             app.use(`${OmniHiveConstants.SYSTEM_REST_ROOT}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
         }
 
@@ -188,7 +188,7 @@ export class NodeStore {
     }
 
     public getRootUrlPathName = (): string => {
-        const rootUrl: URL = new URL(QueenStore.getInstance().settings.server.rootUrl);
+        const rootUrl: URL = new URL(CommonStore.getInstance().settings.server.rootUrl);
         return rootUrl.pathname;
     }
 
@@ -219,8 +219,8 @@ export class NodeStore {
                     }
                 });
 
-                await QueenStore.getInstance().registerWorker(coreWorker);
-                QueenStore.getInstance().settings.workers.push(coreWorker);
+                await CommonStore.getInstance().registerWorker(coreWorker);
+                CommonStore.getInstance().settings.workers.push(coreWorker);
             }
         }
 
@@ -228,7 +228,7 @@ export class NodeStore {
             throw new Error("Settings path must be given to init function");
         }
 
-        const fileSystemWorker: IFileSystemWorker | undefined = await QueenStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem, "ohreqFileSystemWorker");
+        const fileSystemWorker: IFileSystemWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem, "ohreqFileSystemWorker");
 
         if (!fileSystemWorker) {
             throw new Error("Core FileSystem Worker Not Found.  Server needs the core file worker ohreqFileSystemWorker");
@@ -236,9 +236,9 @@ export class NodeStore {
 
         // Get Server Settings
         const settingsJson: SystemSettings = JSON.parse(fileSystemWorker.readFile(`${settingsPath}`));
-        QueenStore.getInstance().settings = settingsJson;
+        CommonStore.getInstance().settings = settingsJson;
 
-        const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  App worker needs the core log worker ohreqLogWorker");
@@ -255,7 +255,7 @@ export class NodeStore {
 
             defaultWorkers.forEach((defaultWorker: HiveWorker) => {
 
-                if (!QueenStore.getInstance().settings.workers.some((hiveWorker: HiveWorker) => hiveWorker.type === defaultWorker.type)) {
+                if (!CommonStore.getInstance().settings.workers.some((hiveWorker: HiveWorker) => hiveWorker.type === defaultWorker.type)) {
                     Object.keys(defaultWorker.metadata).forEach((metaKey: string) => {
                         if (typeof defaultWorker.metadata[metaKey] === "string") {
                             if ((defaultWorker.metadata[metaKey] as string).startsWith("${") && (defaultWorker.metadata[metaKey] as string).endsWith("}")) {
@@ -271,7 +271,7 @@ export class NodeStore {
                         }
                     });
 
-                    QueenStore.getInstance().settings.workers.push(defaultWorker);
+                    CommonStore.getInstance().settings.workers.push(defaultWorker);
                 }
 
             });
@@ -286,7 +286,7 @@ export class NodeStore {
             const loadedPackages: any = packageJson.packageJson.dependencies;
             const workerPackages: any = {};
 
-            QueenStore.getInstance().settings.workers.forEach((hiveWorker: HiveWorker) => {
+            CommonStore.getInstance().settings.workers.forEach((hiveWorker: HiveWorker) => {
                 workerPackages[hiveWorker.package] = hiveWorker.version;
             });
 
@@ -376,34 +376,34 @@ export class NodeStore {
 
         // Register hive workers
         logWorker.write(OmniHiveLogLevel.Debug, "Working on hive workers...");
-        await QueenStore.getInstance().initWorkers(QueenStore.getInstance().settings.workers);
+        await CommonStore.getInstance().initWorkers(CommonStore.getInstance().settings.workers);
         logWorker.write(OmniHiveLogLevel.Debug, "Hive Workers Initiated...");
 
         // Get account if hive worker exists
-        if (QueenStore.getInstance().workers.some((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount)) {
-            const accoutWorker: [HiveWorker, any] | undefined = QueenStore.getInstance().workers.find((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount);
+        if (CommonStore.getInstance().workers.some((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount)) {
+            const accoutWorker: [HiveWorker, any] | undefined = CommonStore.getInstance().workers.find((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount);
 
             if (accoutWorker) {
                 const accountWorkerInstance: IHiveAccountWorker = accoutWorker[1] as IHiveAccountWorker;
-                QueenStore.getInstance().account = await accountWorkerInstance.getHiveAccount();
+                CommonStore.getInstance().account = await accountWorkerInstance.getHiveAccount();
             }
         }
     }
 
     public loadSpecialStatusApp = async (status: ServerStatus, error?: Error): Promise<void> => {
 
-        if (QueenStore.getInstance().status.serverStatus === ServerStatus.Admin ||
-            QueenStore.getInstance().status.serverStatus === ServerStatus.Rebuilding) {
+        if (CommonStore.getInstance().status.serverStatus === ServerStatus.Admin ||
+            CommonStore.getInstance().status.serverStatus === ServerStatus.Rebuilding) {
             return;
         }
 
-        QueenStore.getInstance().changeSystemStatus(status, error);
+        CommonStore.getInstance().changeSystemStatus(status, error);
 
         const app: core.Express = this.getCleanAppServer();
 
         app.get("/", (_req, res) => {
             res.setHeader('Content-Type', 'application/json');
-            return res.status(200).json(QueenStore.getInstance().status);
+            return res.status(200).json(CommonStore.getInstance().status);
         });
 
         this.appServer = app;
@@ -411,7 +411,7 @@ export class NodeStore {
 
     public serverChangeHandler = async (): Promise<void> => {
 
-        const logWorker: ILogWorker | undefined = await QueenStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
@@ -427,8 +427,8 @@ export class NodeStore {
 
         this.webServer = server;
 
-        this.webServer.listen(QueenStore.getInstance().settings.server.portNumber, () => {
-            logWorker.write(OmniHiveLogLevel.Info, `New Server Listening on process ${process.pid} using port ${QueenStore.getInstance().settings.server.portNumber}`);
+        this.webServer.listen(CommonStore.getInstance().settings.server.portNumber, () => {
+            logWorker.write(OmniHiveLogLevel.Info, `New Server Listening on process ${process.pid} using port ${CommonStore.getInstance().settings.server.portNumber}`);
         });
 
         logWorker.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);

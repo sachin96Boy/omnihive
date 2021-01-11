@@ -7,7 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-hive-queen": "^4.0.0",
+    "@withonevision/omnihive-common": "^4.0.0",
     "cross-storage": "1.0.0"
   },
   "devDependencies": {

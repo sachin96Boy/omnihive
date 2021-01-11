@@ -7,7 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-hive-queen": "^4.0.0",
+    "@withonevision/omnihive-common": "^4.0.0",
     "auth0": "2.31.1"
   },
   "devDependencies": {

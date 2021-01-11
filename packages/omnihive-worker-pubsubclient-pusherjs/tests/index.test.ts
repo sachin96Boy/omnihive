@@ -4,10 +4,10 @@ import fs from 'fs';
 import { serializeError } from 'serialize-error';
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
-import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
-import { PubSubListener } from "@withonevision/omnihive-hive-queen/models/PubSubListener";
-import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 
 const getConfigs = function (): any | undefined {
     try {
@@ -39,9 +39,9 @@ describe('pubsub client worker tests', function () {
 
     const init = async (): Promise<void> => {
         try {
-            await AwaitHelper.execute(QueenStore.getInstance()
+            await AwaitHelper.execute(CommonStore.getInstance()
                 .initWorkers(configs));
-            const newWorker = QueenStore
+            const newWorker = CommonStore
                 .getInstance()
                 .workers
                 .find((x) => x[0].type === HiveWorkerType.PubSubClient);

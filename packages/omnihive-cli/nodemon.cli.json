@@ -1,0 +1,6 @@
+{
+    "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git", "**/node_modules"],
+    "watch": ["./**/*.ts", "../**/*.ts"],
+    "exec": "node --inspect=127.0.0.1:9231 -r ts-node/register --trace-warnings ./index.ts",
+    "ext": "ts"
+}

@@ -1,10 +1,10 @@
 import { ApiResponse, Client } from "@elastic/elasticsearch";
 import { Context } from "@elastic/elasticsearch/lib/Transport";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 
 export class ElasticLogWorkerMetadata {
     public cloudId: string = "";
@@ -25,7 +25,7 @@ export default class ElasticLogWorker extends HiveWorkerBase implements ILogWork
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        const metadata: ElasticLogWorkerMetadata = this.hiveWorkerHelper.checkMetadata<ElasticLogWorkerMetadata>(ElasticLogWorkerMetadata, config.metadata);
+        const metadata: ElasticLogWorkerMetadata = this.checkMetadata<ElasticLogWorkerMetadata>(ElasticLogWorkerMetadata, config.metadata);
 
         this.logIndex = metadata.logIndex;
 

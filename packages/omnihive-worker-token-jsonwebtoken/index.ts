@@ -1,11 +1,11 @@
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { ITokenWorker } from "@withonevision/omnihive-hive-worker/interfaces/ITokenWorker";
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
 import jwt from "jsonwebtoken";
 import { serializeError } from "serialize-error";
 import { v4 as uuidv4 } from "uuid";
 import { nanoid } from "nanoid";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 
 export class JsonWebTokenWorkerMetadata {
     public tokenSecret: string = "";
@@ -29,7 +29,7 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
         let metadata: JsonWebTokenWorkerMetadata;
 
         try {
-            metadata = this.hiveWorkerHelper.checkMetadata<JsonWebTokenWorkerMetadata>(JsonWebTokenWorkerMetadata, config.metadata);
+            metadata = this.checkMetadata<JsonWebTokenWorkerMetadata>(JsonWebTokenWorkerMetadata, config.metadata);
         } catch {
             metadata = { 
                 audience: uuidv4(),

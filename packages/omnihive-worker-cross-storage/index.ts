@@ -1,12 +1,12 @@
 
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { IEncryptionWorker } from "@withonevision/omnihive-hive-worker/interfaces/IEncryptionWorker";
-import { IStorageWorker } from "@withonevision/omnihive-hive-worker/interfaces/IStorageWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-common/interfaces/IEncryptionWorker";
+import { IStorageWorker } from "@withonevision/omnihive-common/interfaces/IStorageWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { CrossStorageClient, CrossStorageClientOptions } from "cross-storage";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
 
 export class CrossStorageStorageWorkerMetadata {
     public hubLocation: string = "";
@@ -26,7 +26,7 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.hiveWorkerHelper.checkMetadata<CrossStorageStorageWorkerMetadata>(CrossStorageStorageWorkerMetadata, config.metadata);
+        this.metadata = this.checkMetadata<CrossStorageStorageWorkerMetadata>(CrossStorageStorageWorkerMetadata, config.metadata);
         
         const options: CrossStorageClientOptions = {};
         const storage = new CrossStorageClient(this.metadata.hubLocation, options);
@@ -35,7 +35,7 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
 
     public async afterInit(): Promise<void> {
         this.encryptionWorker = await AwaitHelper.execute<IEncryptionWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+            CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if(!this.encryptionWorker) {
             throw new Error("Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker.");

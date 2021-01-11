@@ -1,11 +1,11 @@
-import { HiveWorkerType } from '@withonevision/omnihive-hive-common/enums/HiveWorkerType';
-import { OmniHiveLogLevel } from '@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel';
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { HiveWorkerFactory } from '@withonevision/omnihive-hive-worker/HiveWorkerFactory';
-import { IFeatureFlagWorker } from '@withonevision/omnihive-hive-worker/interfaces/IFeatureFlagWorker';
-import { ILogWorker } from '@withonevision/omnihive-hive-worker/interfaces/ILogWorker';
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IFeatureFlagWorker } from "@withonevision/omnihive-common/interfaces/IFeatureFlagWorker";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import LaunchDarkly, { LDUser } from 'launchdarkly-node-server-sdk';
 import { serializeError } from 'serialize-error';
 
@@ -46,7 +46,7 @@ export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase im
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: LaunchDarklyNodeFeatureFlagWorkerMetadata = this.hiveWorkerHelper.checkMetadata<LaunchDarklyNodeFeatureFlagWorkerMetadata>(LaunchDarklyNodeFeatureFlagWorkerMetadata, config.metadata);
+            const metadata: LaunchDarklyNodeFeatureFlagWorkerMetadata = this.checkMetadata<LaunchDarklyNodeFeatureFlagWorkerMetadata>(LaunchDarklyNodeFeatureFlagWorkerMetadata, config.metadata);
 
             const ldInstance: LaunchDarkly.LDClient = LaunchDarkly.init(metadata.sdkKey);
 
@@ -64,7 +64,7 @@ export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase im
     }
 
     public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
         if (!this.logWorker) {
             throw new Error("Log Worker Not Defined.  Cross-Storage Will Not Function Without Log Worker.");

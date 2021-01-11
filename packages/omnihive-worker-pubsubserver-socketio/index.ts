@@ -1,7 +1,8 @@
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
-import { IPubSubServerWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubServerWorker";
+
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import * as socketio from "socket.io";
 
 export class SocketIoPubSubServerWorkerMetadata {
@@ -18,7 +19,7 @@ export default class SocketIoPubSubServerWorker extends HiveWorkerBase implement
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        const metadata: SocketIoPubSubServerWorkerMetadata = this.hiveWorkerHelper.checkMetadata<SocketIoPubSubServerWorkerMetadata>(SocketIoPubSubServerWorkerMetadata, this.config.metadata);
+        const metadata: SocketIoPubSubServerWorkerMetadata = this.checkMetadata<SocketIoPubSubServerWorkerMetadata>(SocketIoPubSubServerWorkerMetadata, this.config.metadata);
 
         this.ioServer = new socketio.Server();
         this.ioServer.listen(metadata.port);

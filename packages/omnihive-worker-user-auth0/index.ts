@@ -1,13 +1,14 @@
-import { HiveWorkerType } from '@withonevision/omnihive-hive-common/enums/HiveWorkerType';
-import { OmniHiveLogLevel } from '@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel';
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { StringHelper } from '@withonevision/omnihive-hive-common/helpers/StringHelper';
-import { AuthUser } from '@withonevision/omnihive-hive-common/models/AuthUser';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { HiveWorkerFactory } from '@withonevision/omnihive-hive-worker/HiveWorkerFactory';
-import { ILogWorker } from '@withonevision/omnihive-hive-worker/interfaces/ILogWorker';
-import { IUserWorker } from '@withonevision/omnihive-hive-worker/interfaces/IUserWorker';
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
+
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { IUserWorker } from "@withonevision/omnihive-common/interfaces/IUserWorker";
+import { AuthUser } from "@withonevision/omnihive-common/models/AuthUser";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import {
     AppMetadata,
     AuthenticationClient,
@@ -44,7 +45,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            this.metadata = this.hiveWorkerHelper.checkMetadata<AuthZeroUserWorkerMetadata>(AuthZeroUserWorkerMetadata, config.metadata);
+            this.metadata = this.checkMetadata<AuthZeroUserWorkerMetadata>(AuthZeroUserWorkerMetadata, config.metadata);
 
             this.authClient = new AuthenticationClient({
                 domain: this.metadata.domain,
@@ -64,7 +65,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     }
 
     public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
         if (!this.logWorker) {
             throw new Error("Log Worker Not Defined.  Cross-Storage Will Not Function Without Log Worker.");

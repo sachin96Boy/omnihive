@@ -1,8 +1,9 @@
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { StringHelper } from '@withonevision/omnihive-hive-common/helpers/StringHelper';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { ITokenWorker } from '@withonevision/omnihive-hive-worker/interfaces/ITokenWorker';
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
+
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
+import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import { AuthenticationClient, ClientCredentialsGrantOptions } from 'auth0';
 import axios, { AxiosResponse } from 'axios';
 import jwtDecode from 'jwt-decode';
@@ -31,7 +32,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.hiveWorkerHelper.checkMetadata<AuthZeroTokenWorkerMetadata>(AuthZeroTokenWorkerMetadata, config.metadata);
+        this.metadata = this.checkMetadata<AuthZeroTokenWorkerMetadata>(AuthZeroTokenWorkerMetadata, config.metadata);
         this.authClient = new AuthenticationClient({
             domain: this.metadata.domain,
             clientId: this.metadata.clientId,

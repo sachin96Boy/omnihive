@@ -7,11 +7,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-hive-common": "^4.0.0",
-    "@withonevision/omnihive-hive-worker": "^4.0.0",
+    "@withonevision/omnihive-common": "^4.0.0",
     "ioredis": "4.19.4"
   },
   "devDependencies": {
-    "@types/ioredis": "4.17.10"
+    "@types/ioredis": "4.17.11"
   }
 }

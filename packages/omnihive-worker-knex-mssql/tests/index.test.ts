@@ -1,14 +1,14 @@
 import MssqlDatabaseWorker from '..';
-import { HiveWorkerType } from '@withonevision/omnihive-hive-common/enums/HiveWorkerType';
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { StoredProcSchema } from '@withonevision/omnihive-hive-common/models/StoredProcSchema';
-import { HiveWorkerFactory } from '@withonevision/omnihive-hive-worker/HiveWorkerFactory';
 import { assert } from 'chai';
 import fs from 'fs';
 import { serializeError } from 'serialize-error';
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 
 const getConfigs = function (): any | undefined {
     try {
@@ -42,9 +42,9 @@ describe('mssql database worker tests', function () {
 
     const init = async function (testingConfigs: any): Promise<void> {
         try {
-            await AwaitHelper.execute(HiveWorkerFactory.getInstance()
-                .init(testingConfigs));
-            const newWorker = HiveWorkerFactory
+            await AwaitHelper.execute(CommonStore.getInstance()
+                .initWorkers(testingConfigs));
+            const newWorker = CommonStore
                 .getInstance()
                 .workers
                 .find((x) => x[0].type === HiveWorkerType.Database);
@@ -64,7 +64,7 @@ describe('mssql database worker tests', function () {
     describe("Init Functions", function () {
 
         beforeEach(async function () {
-            HiveWorkerFactory.getInstance().clearWorkers();
+            CommonStore.getInstance().clearWorkers();
         });
 
         it('test valid init', async function () {

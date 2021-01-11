@@ -1,16 +1,16 @@
-import { HiveWorkerType } from '@withonevision/omnihive-hive-common/enums/HiveWorkerType';
-import { OmniHiveLogLevel } from '@withonevision/omnihive-hive-common/enums/OmniHiveLogLevel';
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { ObjectHelper } from '@withonevision/omnihive-hive-common/helpers/ObjectHelper';
-import { StringBuilder } from '@withonevision/omnihive-hive-common/helpers/StringBuilder';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { StoredProcSchema } from '@withonevision/omnihive-hive-common/models/StoredProcSchema';
-import { TableSchema } from '@withonevision/omnihive-hive-common/models/TableSchema';
-import { HiveWorkerFactory } from '@withonevision/omnihive-hive-worker/HiveWorkerFactory';
-import { IKnexDatabaseWorker } from '@withonevision/omnihive-hive-worker/interfaces/IKnexDatabaseWorker';
-import { ILogWorker } from '@withonevision/omnihive-hive-worker/interfaces/ILogWorker';
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
-import { HiveWorkerMetadataDatabase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerMetadataDatabase';
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
+import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
+import { IKnexDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IKnexDatabaseWorker";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-common/models/HiveWorkerMetadataDatabase";
+import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
+import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import knex from 'knex';
 import sql from 'mssql';
 import { serializeError } from 'serialize-error';
@@ -35,7 +35,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            this.metadata = this.hiveWorkerHelper.checkMetadata<MssqlDatabaseWorkerMetadata>(MssqlDatabaseWorkerMetadata, config.metadata);
+            this.metadata = this.checkMetadata<MssqlDatabaseWorkerMetadata>(MssqlDatabaseWorkerMetadata, config.metadata);
 
             this.sqlConfig = {
                 user: this.metadata.userName,
@@ -64,7 +64,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
 
     public async afterInit(): Promise<void> {
         try {
-            this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+            this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
             if (!this.logWorker) {
                 throw new Error("Log Worker Not Defined.  Database Worker Will Not Function Without Log Worker.");

@@ -1,7 +1,7 @@
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { IEncryptionWorker } from '@withonevision/omnihive-hive-worker/interfaces/IEncryptionWorker';
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-common/interfaces/IEncryptionWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import forge from 'node-forge';
 
 export class NodeForgeEncryptionWorkerMetadata {
@@ -19,7 +19,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
   public async init(config: HiveWorker): Promise<void> {
 
     await AwaitHelper.execute<void>(super.init(config));
-    this.metadata = this.hiveWorkerHelper.checkMetadata<NodeForgeEncryptionWorkerMetadata>(NodeForgeEncryptionWorkerMetadata, config.metadata);
+    this.metadata = this.checkMetadata<NodeForgeEncryptionWorkerMetadata>(NodeForgeEncryptionWorkerMetadata, config.metadata);
   }
 
   public base64Encode = (toEncode: string): string => {

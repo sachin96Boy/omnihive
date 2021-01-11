@@ -1,7 +1,7 @@
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { IPubSubServerWorker } from '@withonevision/omnihive-hive-worker/interfaces/IPubSubServerWorker';
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import PusherServer from 'pusher';
 import { serializeError } from 'serialize-error';
 
@@ -24,7 +24,7 @@ export default class PusherPubSubServerWorker extends HiveWorkerBase implements 
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: PusherPubSubServerWorkerMetadata = this.hiveWorkerHelper.checkMetadata<PusherPubSubServerWorkerMetadata>(PusherPubSubServerWorkerMetadata, config.metadata);
+            const metadata: PusherPubSubServerWorkerMetadata = this.checkMetadata<PusherPubSubServerWorkerMetadata>(PusherPubSubServerWorkerMetadata, config.metadata);
             this.server = new PusherServer({ appId: metadata.appId, key: metadata.key, secret: metadata.secret, cluster: metadata.cluster });
         } catch (err) {
             throw new Error(JSON.stringify(serializeError(err)));

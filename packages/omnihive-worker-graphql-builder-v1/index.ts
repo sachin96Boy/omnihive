@@ -1,25 +1,23 @@
-import { StringBuilder } from "@withonevision/omnihive-hive-common/helpers/StringBuilder";
-import { LifecycleDrone } from "@withonevision/omnihive-hive-common/models/LifecycleDrone";
-import { StoredProcSchema } from "@withonevision/omnihive-hive-common/models/StoredProcSchema";
-import { TableSchema } from "@withonevision/omnihive-hive-common/models/TableSchema";
-import { IDatabaseWorker } from "@withonevision/omnihive-hive-worker/interfaces/IDatabaseWorker";
 import pluralize from "pluralize";
 import _ from "lodash";
-import { DroneType } from "@withonevision/omnihive-hive-common/enums/DroneType";
-import { LifecycleDroneStage } from "@withonevision/omnihive-hive-common/enums/LifecycleDroneStage";
-import { LifecycleDroneAction } from "@withonevision/omnihive-hive-common/enums/LifecycleDroneAction";
-import { Drone } from "@withonevision/omnihive-hive-common/models/Drone";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
-import { IGraphBuildWorker } from "@withonevision/omnihive-hive-worker/interfaces/IGraphBuildWorker";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-hive-worker/models/HiveWorkerMetadataGraphBuilder";
 import { GraphHelper } from "./helpers/GraphHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import { IEncryptionWorker } from "@withonevision/omnihive-hive-worker/interfaces/IEncryptionWorker";
-import { ILogWorker } from "@withonevision/omnihive-hive-worker/interfaces/ILogWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { LifecycleWorkerAction } from "@withonevision/omnihive-common/enums/LifecycleWorkerAction";
+import { LifecycleWorkerStage } from "@withonevision/omnihive-common/enums/LifecycleWorkerStage";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
+import { IDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IDatabaseWorker";
+import { IEncryptionWorker } from "@withonevision/omnihive-common/interfaces/IEncryptionWorker";
+import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
+import { IGraphBuildWorker } from "@withonevision/omnihive-common/interfaces/IGraphBuildWorker";
+import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-common/models/HiveWorkerMetadataGraphBuilder";
+import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-common/models/HiveWorkerMetadataLifecycleFunction";
+import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
+import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 
 export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildWorker {
 
@@ -30,59 +28,59 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        this.hiveWorkerHelper.checkMetadata<HiveWorkerMetadataGraphBuilder>(HiveWorkerMetadataGraphBuilder, config.metadata);
+        this.checkMetadata<HiveWorkerMetadataGraphBuilder>(HiveWorkerMetadataGraphBuilder, config.metadata);
     }
 
     public async afterInit(): Promise<void> {
-        
+
         const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<IFileSystemWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
+            CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
 
         if (!fileSystemWorker) {
             throw new Error("FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker.");
         }
 
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+            CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
 
         if (!logWorker) {
             throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
         }
 
         const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<IEncryptionWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+            CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if (!encryptionWorker) {
             throw new Error("Encryption Worker Not Defined.  This graph converter with Cache worker enabled will not work without an Encryption worker.");
         }
     }
 
-    public buildDatabaseWorkerSchema = (databaseWorker: IDatabaseWorker, databaseSchema: { tables: TableSchema[], storedProcs: StoredProcSchema[] }, drones: Drone[]): string => {
+    public buildDatabaseWorkerSchema = (databaseWorker: IDatabaseWorker, databaseSchema: { tables: TableSchema[], storedProcs: StoredProcSchema[] }): string => {
 
-        drones = drones.filter((drone: Drone) => drone.enabled === true);
+        const enabledWorkers: [HiveWorker, any][] = CommonStore.getInstance().workers.filter((worker: [HiveWorker, any]) => worker[0].enabled === true);
 
         const tables = _.uniqBy(databaseSchema.tables, "tableName");
-        const lifecycleDrones: LifecycleDrone[] = drones.filter((drone: Drone) => drone.type === DroneType.Lifecycle && drone.enabled === true) as LifecycleDrone[];
+        const lifecycleWorkers: [HiveWorker, any][] = enabledWorkers.filter((worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.DataLifecycleFunction);
         const builder: StringBuilder = new StringBuilder();
         const graphHelper: GraphHelper = new GraphHelper();
 
         // Get imports
         builder.appendLine(`var { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`);
-        builder.appendLine(`var { GraphQLJSONObject } = require("@withonevision/omnihive-hive-common/models/GraphQLJSON");`);
-        builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-hive-common/helpers/AwaitHelper");`);
-        builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-hive-worker/interfaces/ITokenWorker");`);
-        builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-hive-common/enums/HiveWorkerType");`);
-        builder.appendLine(`var { HiveWorkerFactory } = require("@withonevision/omnihive-hive-worker/HiveWorkerFactory");`);
+        builder.appendLine(`var { GraphQLJSONObject } = require("@withonevision/omnihive-common/models/GraphQLJSON");`);
+        builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-common/helpers/AwaitHelper");`);
+        builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-common/interfaces/ITokenWorker");`);
+        builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-common/enums/HiveWorkerType");`);
+        builder.appendLine(`var { CommonStore } = require("@withonevision/omnihive-common/stores/CommonStore");`);
         builder.appendLine(`var { ParseMaster } = require("@withonevision/omnihive-worker-graphql-builder-v1/parsers/ParseMaster");`);
         builder.appendLine();
 
-        drones.forEach((drone: Drone) => {
-            builder.appendLine(`var ${drone.name} = require("${drone.classPath}");`);
+        enabledWorkers.forEach((worker: [HiveWorker, any]) => {
+            builder.appendLine(`var ${worker[0].name} = require("${worker[0].classPath}");`);
         });
 
         // Token checker
         builder.appendLine(`const accessTokenChecker = async (accessToken) => {`);
-        builder.appendLine(`\tconst tokenWorker = await AwaitHelper.execute(HiveWorkerFactory.getInstance().getHiveWorker(HiveWorkerType.Token));`);
+        builder.appendLine(`\tconst tokenWorker = await AwaitHelper.execute(CommonStore.getInstance().getHiveWorker(HiveWorkerType.Token));`);
         builder.appendLine();
         builder.appendLine(`\tif (!accessToken || !tokenWorker || accessToken === "") {`);
         builder.appendLine(`\t\tthrow new Error("ohAccessError: Access token is either the wrong client, invalid, or expired");`)
@@ -632,39 +630,43 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`);
 
             // Before insert custom function
-            const beforeInsertArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.Before && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Insert &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+
+            const beforeInsertArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.Before && metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    beforeInsertArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (beforeInsertArray.length > 0) {
-                beforeInsertArray.forEach((lifecycleDrone: LifecycleDrone) => {
-                    builder.appendLine(`\t\t\t\t\t\t{${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs);`);
+                _.orderBy(beforeInsertArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
+                    builder.appendLine(`\t\t\t\t\t\t{${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs);`);
                 });
             }
 
             builder.appendLine();
 
             // Instead of insert custom function
-            const insteadOfInsertArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.InsteadOf && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Insert &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+
+            const insteadOfInsertArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf && metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    insteadOfInsertArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (insteadOfInsertArray.length > 0) {
-                insteadOfInsertArray.forEach((lifecycleDrone: LifecycleDrone, index: number) => {
+                _.orderBy(insteadOfInsertArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker, index) => {
                     if (index === insteadOfInsertArray.length - 1) {
-                        builder.appendLine(`\t\t\t\t\t\tvar insertResponse = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs);`);
+                        builder.appendLine(`\t\t\t\t\t\tvar insertResponse = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs);`);
                     } else {
-                        builder.appendLine(`\t\t\t\t\t\t{${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs);`);
+                        builder.appendLine(`\t\t\t\t\t\t{${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs);`);
                     }
                 });
             } else {
@@ -674,18 +676,20 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // After insert custom function
-            const afterInsertArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.After && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Insert &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+
+            const afterInsertArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.After && metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    afterInsertArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (afterInsertArray.length > 0) {
-                afterInsertArray.forEach((lifecycleDrone: LifecycleDrone) => {
-                    builder.appendLine(`\t\t\t\t\t\t{insertResponse, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", insertResponse, customDmlArgs);`);
+                _.orderBy(afterInsertArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
+                    builder.appendLine(`\t\t\t\t\t\t{insertResponse, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", insertResponse, customDmlArgs);`);
                 });
             }
 
@@ -719,39 +723,41 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`);
 
             // Before update custom function
-            const beforeUpdateArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.Before && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Update &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+            const beforeUpdateArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.Before && metadata.lifecycleAction == LifecycleWorkerAction.Update &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    beforeUpdateArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (beforeUpdateArray.length > 0) {
-                beforeUpdateArray.forEach((lifecycleDrone: LifecycleDrone) => {
-                    builder.appendLine(`\t\t\t\t\t\t{updateObject, whereObject, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`);
+                _.orderBy(beforeUpdateArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
+                    builder.appendLine(`\t\t\t\t\t\t{updateObject, whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`);
                 });
             }
 
             builder.appendLine();
 
             // Instead of update custom function
-            const insteadOfUpdateArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.InsteadOf && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Update &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+            const insteadOfUpdateArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf && metadata.lifecycleAction == LifecycleWorkerAction.Update &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    insteadOfUpdateArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (insteadOfUpdateArray.length > 0) {
-                insteadOfUpdateArray.forEach((lifecycleDrone: LifecycleDrone, index: number) => {
+                _.orderBy(beforeUpdateArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker, index) => {
                     if (index === insteadOfUpdateArray.length - 1) {
-                        builder.appendLine(`\t\t\t\t\t\tvar updateCount = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`);
+                        builder.appendLine(`\t\t\t\t\t\tvar updateCount = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`);
                     } else {
-                        builder.appendLine(`\t\t\t\t\t\t{updateObject, whereObject, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`);
+                        builder.appendLine(`\t\t\t\t\t\t{updateObject, whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`);
                     }
                 });
             } else {
@@ -761,18 +767,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // After update custom function
-            const afterUpdateArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.After && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Update &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+            const afterUpdateArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.After && metadata.lifecycleAction == LifecycleWorkerAction.Update &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    afterUpdateArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (afterUpdateArray.length > 0) {
-                afterUpdateArray.forEach((lifecycleDrone: LifecycleDrone) => {
-                    builder.appendLine(`\t\t\t\t\t\t{updateCount, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateCount, customDmlArgs);`);
+                _.orderBy(afterUpdateArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
+                    builder.appendLine(`\t\t\t\t\t\t{updateCount, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateCount, customDmlArgs);`);
                 });
             }
 
@@ -803,40 +810,42 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`);
 
             // Before delete custom function
-            const beforeDeleteArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.Before && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Delete &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+            const beforeDeleteArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.Before && metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    beforeDeleteArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (beforeDeleteArray.length > 0) {
-                beforeDeleteArray.forEach((lifecycleDrone: LifecycleDrone) => {
-                    builder.appendLine(`\t\t\t\t\t\t{whereObject, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`);
+                _.orderBy(beforeDeleteArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
+                    builder.appendLine(`\t\t\t\t\t\t{whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`);
                 });
             }
 
             builder.appendLine();
 
             // Instead of delete custom function
-            const insteadOfDeleteArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.InsteadOf && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Delete &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+            const insteadOfDeleteArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf && metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    insteadOfDeleteArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (insteadOfDeleteArray.length > 0) {
-                insteadOfDeleteArray.forEach((lifecycleDrone: LifecycleDrone, index: number) => {
+                _.orderBy(insteadOfDeleteArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker, index) => {
 
                     if (index === insteadOfDeleteArray.length - 1) {
-                        builder.appendLine(`\t\t\t\t\t\tvar deleteCount = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`);
+                        builder.appendLine(`\t\t\t\t\t\tvar deleteCount = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`);
                     } else {
-                        builder.appendLine(`\t\t\t\t\t\t{whereObject, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`);
+                        builder.appendLine(`\t\t\t\t\t\t{whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`);
                     }
                 });
             } else {
@@ -846,18 +855,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // After delete custom function
-            const afterDeleteArray: LifecycleDrone[] =
-                _.orderBy(
-                    lifecycleDrones.filter((lifecycleDrone: LifecycleDrone) =>
-                        lifecycleDrone.type == DroneType.Lifecycle && lifecycleDrone.lifecycleStage == LifecycleDroneStage.After && lifecycleDrone.lifecycleAction == LifecycleDroneAction.Delete &&
-                        lifecycleDrone.lifecycleWorker === databaseWorker.config.name && lifecycleDrone.enabled === true &&
-                        lifecycleDrone.lifecycleTables.some(
-                            (lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")),
-                    ["lifecycleOrder", "id"], ["asc", "asc"]);
+            const afterDeleteArray: { worker: HiveWorker, instance: any, order: number }[] = [];
+
+            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0].metadata as HiveWorkerMetadataLifecycleFunction;
+                if (lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction && metadata.lifecycleStage == LifecycleWorkerStage.After && metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
+                    metadata.lifecycleWorker === databaseWorker.config.name && metadata.lifecycleTables.some((lifecycleTable) => lifecycleTable === tableSchema[0].tableName || lifecycleTable === "*")) {
+                    afterDeleteArray.push({ worker: lifecycleWorker[0], instance: lifecycleWorker[1], order: metadata.lifecycleOrder });
+                }
+            });
 
             if (afterDeleteArray.length > 0) {
-                afterDeleteArray.forEach((lifecycleDrone: LifecycleDrone) => {
-                    builder.appendLine(`\t\t\t\t\t{deleteCount, customDmlArgs} = ${lifecycleDrone.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", deleteCount, customDmlArgs);`);
+                _.orderBy(afterDeleteArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
+                    builder.appendLine(`\t\t\t\t\t{deleteCount, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", deleteCount, customDmlArgs);`);
                 });
             }
 

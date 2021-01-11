@@ -1,24 +1,24 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
-import { StoredProcSchema } from "@withonevision/omnihive-hive-common/models/StoredProcSchema";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { IDatabaseWorker } from "@withonevision/omnihive-hive-worker/interfaces/IDatabaseWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IDatabaseWorker";
+import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
+import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { FieldNode, GraphQLResolveInfo, SelectionNode } from "graphql";
 
 export class ParseStoredProcedure {
     public parse = async (workerName: string, resolveInfo: GraphQLResolveInfo): Promise<{ procName: string, results: any[][] }[]> => {
 
         const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<IFileSystemWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
+            CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
 
         if (!fileSystemWorker) {
             throw new Error("FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker.");
         }
 
         const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
+            CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
 
         if (!databaseWorker) {
             throw new Error("FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker.");

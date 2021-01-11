@@ -1,10 +1,11 @@
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
+
 import * as socketio from "socket.io-client";
-import { IPubSubClientWorker } from "@withonevision/omnihive-hive-worker/interfaces/IPubSubClientWorker";
-import { PubSubListener } from "@withonevision/omnihive-hive-common/models/PubSubListener";
 import { serializeError } from "serialize-error";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IPubSubClientWorker } from "@withonevision/omnihive-common/interfaces/IPubSubClientWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
 
 export class SocketIoPubSubClientWorkerMetadata {
     public serverUrl: string = "";
@@ -25,7 +26,7 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.hiveWorkerHelper.checkMetadata<SocketIoPubSubClientWorkerMetadata>(SocketIoPubSubClientWorkerMetadata, this.config.metadata);
+        this.metadata = this.checkMetadata<SocketIoPubSubClientWorkerMetadata>(SocketIoPubSubClientWorkerMetadata, this.config.metadata);
         this.ioClient = socketio.io({ path: this.metadata.serverUrl });
 
         this.ioClient.on("connect", () => {

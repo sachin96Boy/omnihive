@@ -1,7 +1,7 @@
-import { AwaitHelper } from '@withonevision/omnihive-hive-common/helpers/AwaitHelper';
-import { HiveWorker } from '@withonevision/omnihive-hive-common/models/HiveWorker';
-import { ICacheWorker } from '@withonevision/omnihive-hive-worker/interfaces/ICacheWorker';
-import { HiveWorkerBase } from '@withonevision/omnihive-hive-worker/models/HiveWorkerBase';
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { ICacheWorker } from "@withonevision/omnihive-common/interfaces/ICacheWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import Redis from 'ioredis';
 import { serializeError } from 'serialize-error';
 
@@ -20,7 +20,7 @@ export default class RedisCacheWorker extends HiveWorkerBase implements ICacheWo
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: RedisCacheWorkerMetadata = this.hiveWorkerHelper.checkMetadata<RedisCacheWorkerMetadata>(RedisCacheWorkerMetadata, config.metadata);
+            const metadata: RedisCacheWorkerMetadata = this.checkMetadata<RedisCacheWorkerMetadata>(RedisCacheWorkerMetadata, config.metadata);
             this.redis = new Redis(metadata.connectionString);
         } catch (err) {
             throw new Error("Redis Init Error => " + JSON.stringify(serializeError(err)));

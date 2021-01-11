@@ -1,7 +1,7 @@
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { HiveWorker } from "@withonevision/omnihive-hive-common/models/HiveWorker";
-import { IDateWorker } from "@withonevision/omnihive-hive-worker/interfaces/IDateWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-hive-worker/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IDateWorker } from "@withonevision/omnihive-common/interfaces/IDateWorker";
+import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import dayjs from "dayjs";
 import tz from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
@@ -21,7 +21,7 @@ export default class DayJsDateWorker extends HiveWorkerBase implements IDateWork
     public async init(config: HiveWorker): Promise<void> {
 
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.hiveWorkerHelper.checkMetadata<DayJsDateWorkerMetadata>(DayJsDateWorkerMetadata, config.metadata);
+        this.metadata = this.checkMetadata<DayJsDateWorkerMetadata>(DayJsDateWorkerMetadata, config.metadata);
     }
 
     public convertDateBetweenTimezones = (date: Date, toTimezone: string, fromTimezone?: string): string => {

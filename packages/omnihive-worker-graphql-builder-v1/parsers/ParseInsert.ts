@@ -1,10 +1,10 @@
-import { HiveWorkerType } from "@withonevision/omnihive-hive-common/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-hive-common/helpers/AwaitHelper";
-import { OmniHiveConstants } from "@withonevision/omnihive-hive-common/models/OmniHiveConstants";
-import { TableSchema } from "@withonevision/omnihive-hive-common/models/TableSchema";
-import { HiveWorkerFactory } from "@withonevision/omnihive-hive-worker/HiveWorkerFactory";
-import { IFileSystemWorker } from "@withonevision/omnihive-hive-worker/interfaces/IFileSystemWorker";
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-hive-worker/interfaces/IKnexDatabaseWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
+import { IKnexDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IKnexDatabaseWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
+import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { QueryBuilder } from "knex";
 
 export class ParseInsert {
@@ -16,14 +16,14 @@ export class ParseInsert {
         }
 
         const databaseWorker: IKnexDatabaseWorker | undefined = await AwaitHelper.execute<IKnexDatabaseWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
+            CommonStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
 
         if (!databaseWorker) {
             throw new Error("Database Worker Not Defined.  This graph converter will not work without a Database worker.");
         }
 
         const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<IFileSystemWorker | undefined>(
-            HiveWorkerFactory.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
+            CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
 
         if (!fileSystemWorker) {
             throw new Error("FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker.");

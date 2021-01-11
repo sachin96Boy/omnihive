@@ -1,10 +1,10 @@
-import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { IDatabaseWorker } from "@withonevision/omnihive-public-queen/interfaces/IDatabaseWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-public-queen/interfaces/IFileSystemWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-public-queen/models/OmniHiveConstants";
-import { StoredProcSchema } from "@withonevision/omnihive-public-queen/models/StoredProcSchema";
-import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-queen/interfaces/IDatabaseWorker";
+import { IFileSystemWorker } from "@withonevision/omnihive-queen/interfaces/IFileSystemWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-queen/models/OmniHiveConstants";
+import { StoredProcSchema } from "@withonevision/omnihive-queen/models/StoredProcSchema";
+import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
 import { FieldNode, GraphQLResolveInfo, SelectionNode } from "graphql";
 
 export class ParseStoredProcedure {

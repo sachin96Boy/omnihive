@@ -1,7 +1,7 @@
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { ICacheWorker } from "@withonevision/omnihive-public-queen/interfaces/ICacheWorker";
-import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { ICacheWorker } from "@withonevision/omnihive-queen/interfaces/ICacheWorker";
+import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
 import NodeCache from "node-cache";
 
 export default class NodeCacheWorker extends HiveWorkerBase implements ICacheWorker {

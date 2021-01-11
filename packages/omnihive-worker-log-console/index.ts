@@ -1,6 +1,6 @@
-import { OmniHiveLogLevel } from "@withonevision/omnihive-public-queen/enums/OmniHiveLogLevel";
-import { ILogWorker } from "@withonevision/omnihive-public-queen/interfaces/ILogWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-queen/enums/OmniHiveLogLevel";
+import { ILogWorker } from "@withonevision/omnihive-queen/interfaces/ILogWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
 
 export default class DefaultLogWorker extends HiveWorkerBase implements ILogWorker {
 

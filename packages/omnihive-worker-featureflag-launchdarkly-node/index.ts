@@ -1,11 +1,11 @@
-import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-public-queen/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { IFeatureFlagWorker } from "@withonevision/omnihive-public-queen/interfaces/IFeatureFlagWorker";
-import { ILogWorker } from "@withonevision/omnihive-public-queen/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
-import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-queen/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { IFeatureFlagWorker } from "@withonevision/omnihive-queen/interfaces/IFeatureFlagWorker";
+import { ILogWorker } from "@withonevision/omnihive-queen/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
+import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
 import LaunchDarkly, { LDUser } from 'launchdarkly-node-server-sdk';
 import { serializeError } from 'serialize-error';
 

@@ -1,6 +1,6 @@
-import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
 import { assert } from 'chai';
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";

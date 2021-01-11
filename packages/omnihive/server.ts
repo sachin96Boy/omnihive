@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 
-import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-public-queen/enums/OmniHiveLogLevel";
-import { ServerStatus } from "@withonevision/omnihive-public-queen/enums/ServerStatus";
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { StringBuilder } from "@withonevision/omnihive-public-queen/helpers/StringBuilder";
-import { StringHelper } from "@withonevision/omnihive-public-queen/helpers/StringHelper";
-import { IDatabaseWorker } from "@withonevision/omnihive-public-queen/interfaces/IDatabaseWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-public-queen/interfaces/IFileSystemWorker";
-import { IGraphBuildWorker } from "@withonevision/omnihive-public-queen/interfaces/IGraphBuildWorker";
-import { ILogWorker } from "@withonevision/omnihive-public-queen/interfaces/ILogWorker";
-import { IPubSubClientWorker } from "@withonevision/omnihive-public-queen/interfaces/IPubSubClientWorker";
-import { IPubSubServerWorker } from "@withonevision/omnihive-public-queen/interfaces/IPubSubServerWorker";
-import { IRestEndpointWorker } from "@withonevision/omnihive-public-queen/interfaces/IRestEndpointWorker";
-import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
-import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-public-queen/models/HiveWorkerMetadataGraphBuilder";
-import { OmniHiveConstants } from "@withonevision/omnihive-public-queen/models/OmniHiveConstants";
-import { StoredProcSchema } from "@withonevision/omnihive-public-queen/models/StoredProcSchema";
-import { TableSchema } from "@withonevision/omnihive-public-queen/models/TableSchema";
-import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-queen/enums/OmniHiveLogLevel";
+import { ServerStatus } from "@withonevision/omnihive-queen/enums/ServerStatus";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { StringBuilder } from "@withonevision/omnihive-queen/helpers/StringBuilder";
+import { StringHelper } from "@withonevision/omnihive-queen/helpers/StringHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-queen/interfaces/IDatabaseWorker";
+import { IFileSystemWorker } from "@withonevision/omnihive-queen/interfaces/IFileSystemWorker";
+import { IGraphBuildWorker } from "@withonevision/omnihive-queen/interfaces/IGraphBuildWorker";
+import { ILogWorker } from "@withonevision/omnihive-queen/interfaces/ILogWorker";
+import { IPubSubClientWorker } from "@withonevision/omnihive-queen/interfaces/IPubSubClientWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-queen/interfaces/IPubSubServerWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-queen/interfaces/IRestEndpointWorker";
+import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
+import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-queen/models/HiveWorkerMetadataGraphBuilder";
+import { OmniHiveConstants } from "@withonevision/omnihive-queen/models/OmniHiveConstants";
+import { StoredProcSchema } from "@withonevision/omnihive-queen/models/StoredProcSchema";
+import { TableSchema } from "@withonevision/omnihive-queen/models/TableSchema";
+import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import dotenv from "dotenv";
@@ -268,11 +268,11 @@ const buildServer = async (): Promise<void> => {
 
             // Build imports
             builder.appendLine(`var { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`);
-            builder.appendLine(`var { GraphQLJSONObject } = require("@withonevision/omnihive-public-queen/models/GraphQLJSON");`);
-            builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-public-queen/helpers/AwaitHelper");`);
-            builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-public-queen/interfaces/ITokenWorker");`);
-            builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-public-queen/enums/HiveWorkerType");`);
-            builder.appendLine(`var { QueenStore } = require("@withonevision/omnihive-public-queen/stores/QueenStore");`);
+            builder.appendLine(`var { GraphQLJSONObject } = require("@withonevision/omnihive-queen/models/GraphQLJSON");`);
+            builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-queen/helpers/AwaitHelper");`);
+            builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-queen/interfaces/ITokenWorker");`);
+            builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-queen/enums/HiveWorkerType");`);
+            builder.appendLine(`var { QueenStore } = require("@withonevision/omnihive-queen/stores/QueenStore");`);
             builder.appendLine();
 
             customGraphWorkers.forEach((worker: [HiveWorker, any]) => {

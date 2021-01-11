@@ -14,7 +14,7 @@
     "deploy": "gulp clean-prod",
     "reinstall": "lerna clean --yes && lerna bootstrap",
     "test": "OH_ENV_FILE=\"/Library/Application Support/OmniHive/omnihive.env\" nyc mocha -r ts-node/register 'packages/**/tests/**/*.ts' --timeout 5000 --retries 5",
-    "server-debug": "cd packages/omnihive-public-node && yarn run server-debug"
+    "server-debug": "cd packages/omnihive && yarn run server-debug"
   },
   "dependencies": {
     "dotenv": "8.2.0",

@@ -1,11 +1,11 @@
 
-import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { IEncryptionWorker } from "@withonevision/omnihive-public-queen/interfaces/IEncryptionWorker";
-import { IStorageWorker } from "@withonevision/omnihive-public-queen/interfaces/IStorageWorker";
-import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
-import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-queen/interfaces/IEncryptionWorker";
+import { IStorageWorker } from "@withonevision/omnihive-queen/interfaces/IStorageWorker";
+import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
+import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
 import { CrossStorageClient, CrossStorageClientOptions } from "cross-storage";
 
 export class CrossStorageStorageWorkerMetadata {

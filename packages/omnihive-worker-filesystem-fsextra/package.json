@@ -7,7 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-public-queen": "^4.0.0",
+    "@withonevision/omnihive-queen": "^4.0.0",
     "fs-extra": "9.0.1"
   },
   "devDependencies": {

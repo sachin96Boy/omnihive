@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/node';
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { IErrorWorker } from "@withonevision/omnihive-public-queen/interfaces/IErrorWorker";
-import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { IErrorWorker } from "@withonevision/omnihive-queen/interfaces/IErrorWorker";
+import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
 import { serializeError } from 'serialize-error';
 
 export class SentryErrorWorkerMetadata {

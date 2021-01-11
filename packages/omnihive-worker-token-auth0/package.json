@@ -7,7 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-public-queen": "^4.0.0",
+    "@withonevision/omnihive-queen": "^4.0.0",
     "axios": "0.21.1",
     "jwt-decode": "3.1.2",
     "node-jose": "2.0.0"

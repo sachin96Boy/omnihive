@@ -1,12 +1,12 @@
 
-import { HiveWorkerType } from "@withonevision/omnihive-public-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { IRestEndpointWorker } from "@withonevision/omnihive-public-queen/interfaces/IRestEndpointWorker";
-import { ITokenWorker } from "@withonevision/omnihive-public-queen/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-public-queen/models/HiveWorkerMetadataRestFunction";
-import { QueenStore } from "@withonevision/omnihive-public-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { IRestEndpointWorker } from "@withonevision/omnihive-queen/interfaces/IRestEndpointWorker";
+import { ITokenWorker } from "@withonevision/omnihive-queen/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-queen/models/HiveWorkerMetadataRestFunction";
+import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
 import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
 

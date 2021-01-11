@@ -2,10 +2,10 @@ import jwt from "jsonwebtoken";
 import { serializeError } from "serialize-error";
 import { v4 as uuidv4 } from "uuid";
 import { nanoid } from "nanoid";
-import { AwaitHelper } from "@withonevision/omnihive-public-queen/helpers/AwaitHelper";
-import { ITokenWorker } from "@withonevision/omnihive-public-queen/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-public-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-public-queen/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
+import { ITokenWorker } from "@withonevision/omnihive-queen/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
 
 export class JsonWebTokenWorkerMetadata {
     public tokenSecret: string = "";

@@ -1,10 +1,10 @@
-import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-queen/interfaces/IFileSystemWorker";
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-queen/interfaces/IKnexDatabaseWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-queen/models/OmniHiveConstants";
-import { TableSchema } from "@withonevision/omnihive-queen/models/TableSchema";
-import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-hive-queen/interfaces/IFileSystemWorker";
+import { IKnexDatabaseWorker } from "@withonevision/omnihive-hive-queen/interfaces/IKnexDatabaseWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-hive-queen/models/OmniHiveConstants";
+import { TableSchema } from "@withonevision/omnihive-hive-queen/models/TableSchema";
+import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 import { QueryBuilder } from "knex";
 
 export class ParseDelete {

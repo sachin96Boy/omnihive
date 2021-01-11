@@ -1,13 +1,13 @@
 import os from "os";
 import dayjs from "dayjs";
-import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-queen/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
-import { ILogWorker } from "@withonevision/omnihive-queen/interfaces/ILogWorker";
-import { IPubSubServerWorker } from "@withonevision/omnihive-queen/interfaces/IPubSubServerWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
-import { OmniHiveConstants } from "@withonevision/omnihive-queen/models/OmniHiveConstants";
-import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-hive-queen/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
+import { ILogWorker } from "@withonevision/omnihive-hive-queen/interfaces/ILogWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-hive-queen/interfaces/IPubSubServerWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
+import { OmniHiveConstants } from "@withonevision/omnihive-hive-queen/models/OmniHiveConstants";
+import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
 

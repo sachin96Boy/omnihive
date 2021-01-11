@@ -1,7 +1,7 @@
-import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
-import { IEncryptionWorker } from "@withonevision/omnihive-queen/interfaces/IEncryptionWorker";
-import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-hive-queen/interfaces/IEncryptionWorker";
+import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
 import forge from 'node-forge';
 
 export class NodeForgeEncryptionWorkerMetadata {

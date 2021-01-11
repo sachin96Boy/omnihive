@@ -4,11 +4,11 @@ import fs from 'fs';
 import { serializeError } from 'serialize-error';
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
-import { HiveWorkerType } from "@withonevision/omnihive-queen/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
-import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
-import { StoredProcSchema } from "@withonevision/omnihive-queen/models/StoredProcSchema";
-import { QueenStore } from "@withonevision/omnihive-queen/stores/QueenStore";
+import { HiveWorkerType } from "@withonevision/omnihive-hive-queen/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
+import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
+import { StoredProcSchema } from "@withonevision/omnihive-hive-queen/models/StoredProcSchema";
+import { QueenStore } from "@withonevision/omnihive-hive-queen/stores/QueenStore";
 
 const getConfigs = function (): any | undefined {
     try {

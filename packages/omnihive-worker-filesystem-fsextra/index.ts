@@ -1,6 +1,6 @@
 
-import { IFileSystemWorker } from "@withonevision/omnihive-queen/interfaces/IFileSystemWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
+import { IFileSystemWorker } from "@withonevision/omnihive-hive-queen/interfaces/IFileSystemWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
 import fse from 'fs-extra';
 
 export default class FileSystemWorker extends HiveWorkerBase implements IFileSystemWorker {

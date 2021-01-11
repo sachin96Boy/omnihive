@@ -1,7 +1,7 @@
-import { AwaitHelper } from "@withonevision/omnihive-queen/helpers/AwaitHelper";
-import { IPubSubServerWorker } from "@withonevision/omnihive-queen/interfaces/IPubSubServerWorker";
-import { HiveWorker } from "@withonevision/omnihive-queen/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-queen/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-hive-queen/helpers/AwaitHelper";
+import { IPubSubServerWorker } from "@withonevision/omnihive-hive-queen/interfaces/IPubSubServerWorker";
+import { HiveWorker } from "@withonevision/omnihive-hive-queen/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-hive-queen/models/HiveWorkerBase";
 import PusherServer from 'pusher';
 import { serializeError } from 'serialize-error';
 

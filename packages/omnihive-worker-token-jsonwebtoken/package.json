@@ -7,7 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-queen": "^4.0.0",
+    "@withonevision/omnihive-hive-queen": "^4.0.0",
     "jsonwebtoken": "8.5.1",
     "nanoid": "3.1.20",
     "uuid": "8.3.2"

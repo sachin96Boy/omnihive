@@ -7,7 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@withonevision/omnihive-queen": "^4.0.0",
+    "@withonevision/omnihive-hive-queen": "^4.0.0",
     "pusher-js": "7.0.2"
   }
 }

@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@withonevision/omnihive-common": "^4.0.0",
+    "chalk": "4.1.0",
     "dayjs": "1.10.3"
   }
 }

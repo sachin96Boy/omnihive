@@ -6,8 +6,8 @@ import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper"
 import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
 import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
-import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import chalk from "chalk";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
 
@@ -17,20 +17,22 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
         const formattedLogString = `(${dayjs().format("YYYY-MM-DD HH:mm:ss")}) OmniHive Server ${os.hostname()} => ${logString}`;
 
-        if (CommonStore.getInstance().settings.server.developerMode) {
-            console.log(formattedLogString);
+        if (CommonStore.getInstance().settings.config.developerMode) {
+            this.chalkConsole(logLevel, formattedLogString);
             return;
         }
 
+        const adminPubSubServerWorkerName: string | undefined = CommonStore.getInstance().settings.constants["adminPubSubServerWorkerInstance"];
+
         const adminPubSubServer = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
+            CommonStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, adminPubSubServerWorkerName));
 
         if (adminPubSubServer) {
 
             try {
-                adminPubSubServer.emit(CommonStore.getInstance().settings.server.serverGroupName, "server-log-entry", { entryNumber: this.logEntryNumber, log: formattedLogString });
+                adminPubSubServer.emit(CommonStore.getInstance().settings.config.serverGroupName, "server-log-entry", { entryNumber: this.logEntryNumber, log: formattedLogString });
             } catch {
-                console.log("Pub sub server log could not be synchronized");
+                this.chalkConsole(OmniHiveLogLevel.Warn, "Pub sub server log could not be synchronized");
             }
 
         }
@@ -42,7 +44,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         }
 
         if (!logWorker || (logWorker && logWorker.config.package !== "@withonevision/omnihive-worker-log-console")) {
-            console.log(formattedLogString);
+            this.chalkConsole(logLevel, formattedLogString);
         }
 
         if (this.logEntryNumber > 100000) {
@@ -50,6 +52,26 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         }
 
         this.logEntryNumber++;
+    }
+
+    private chalkConsole = (logLevel: OmniHiveLogLevel, logString: string) => {
+        switch (logLevel) {
+            case OmniHiveLogLevel.Debug:
+                console.log(chalk.green(logString));
+                break;
+            case OmniHiveLogLevel.Info:
+                console.log(chalk.blue(logString));
+                break;
+            case OmniHiveLogLevel.Warn:
+                console.log(chalk.yellow(logString));
+                break;
+            case OmniHiveLogLevel.Error:
+                console.log(chalk.red(logString));
+                break;
+            default:
+                console.log(logString);
+                break;
+        }
     }
 
 }

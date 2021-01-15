@@ -67,7 +67,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IHiveW
             throw new Error(`Request Denied`);
         }
 
-        if (req.body.adminPassword !== CommonStore.getInstance().settings.server.adminPassword) {
+        if (req.body.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     }

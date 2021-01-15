@@ -66,7 +66,7 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
             throw new Error(`Request Denied`);
         }
 
-        if (req.body.adminPassword !== CommonStore.getInstance().settings.server.adminPassword) {
+        if (req.body.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
 
@@ -74,7 +74,7 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
             throw new Error(`Request Denied`);
         }
 
-        if (req.body.serverGroupName !== CommonStore.getInstance().settings.server.serverGroupName) {
+        if (req.body.serverGroupName !== CommonStore.getInstance().settings.config.serverGroupName) {
             throw new Error(`Request Denied`);
         }
     }

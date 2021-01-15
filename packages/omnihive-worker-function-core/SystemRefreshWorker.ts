@@ -7,7 +7,6 @@ import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWo
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-common/models/HiveWorkerMetadataRestFunction";
-import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
@@ -47,14 +46,16 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IHive
                     throw new Error("Invalid Access Token");
                 }
 
+                const adminPubSubServerWorkerName: string | undefined = CommonStore.getInstance().settings.constants["adminPubSubServerWorkerInstance"];
+
                 const adminPubSubServer: IPubSubServerWorker | undefined = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-                    CommonStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, OmniHiveConstants.ADMIN_PUBSUB_SERVER_WORKER_INSTANCE));
+                    CommonStore.getInstance().getHiveWorker<IPubSubServerWorker>(HiveWorkerType.PubSubServer, adminPubSubServerWorkerName));
 
                 if (!adminPubSubServer) {
                     throw new Error("No admin pub-sub server hive worker found");
                 }
 
-                adminPubSubServer.emit(CommonStore.getInstance().settings.server.serverGroupName, "server-reset-request", { reset: true });
+                adminPubSubServer.emit(CommonStore.getInstance().settings.config.serverGroupName, "server-reset-request", { reset: true });
 
                 return res.send("Server Refresh/Reset Initiated");
             }
@@ -79,7 +80,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IHive
             throw new Error(`Request Denied`);
         }
 
-        if (req.body.adminPassword !== CommonStore.getInstance().settings.server.adminPassword) {
+        if (req.body.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     }

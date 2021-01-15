@@ -4,7 +4,7 @@ import { AwaitHelper } from "../helpers/AwaitHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveAccount } from "../models/HiveAccount";
 import { HiveWorker } from "../models/HiveWorker";
-import { SystemSettings } from "../models/SystemSettings";
+import { ServerSettings } from "../models/ServerSettings";
 import { SystemStatus } from "../models/SystemStatus";
 
 export class CommonStore {
@@ -27,7 +27,7 @@ export class CommonStore {
     }
 
     public account: HiveAccount = new HiveAccount();
-    public settings: SystemSettings = new SystemSettings();
+    public settings: ServerSettings = new ServerSettings();
     public workers: [HiveWorker, any][] = [];
 
     private _status: SystemStatus = new SystemStatus();

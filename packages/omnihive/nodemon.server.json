@@ -1,6 +1,6 @@
 {
     "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git", "**/node_modules", "/.omnihive/**", "/.next/**", "/src/pages/**"],
     "watch": ["./**/*.ts", "../**/*.ts"],
-    "exec": "OH_ENV_FILE=\"/Library/Application Support/OmniHive/omnihive.env\" node --inspect=127.0.0.1:9228 -r ts-node/register --trace-warnings --stack-size=2048 --max-old-space-size=16384 ./server.ts",
+    "exec": "node --inspect=127.0.0.1:9228 -r ts-node/register --trace-warnings --stack-size=2048 --max-old-space-size=16384 ./omnihive.ts taskRunner -w hello -a hello",
     "ext": "ts"
 }

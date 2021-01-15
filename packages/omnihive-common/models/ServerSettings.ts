@@ -1,10 +1,8 @@
+import { HiveWorker } from "./HiveWorker";
+import { ServerConfigSettings } from "./ServerConfigSettings";
 
 export class ServerSettings {
-    public adminPassword: string = "";
-    public serverGroupName: string = "";
-    public developerMode: boolean = false;
-    public enableGraphPlayground: boolean = true;
-    public enableSwagger: boolean = true;
-    public portNumber: number = 3001;
-    public rootUrl: string = "";
+    public config: ServerConfigSettings = new ServerConfigSettings();
+    public constants: { [key: string]: string } = {};
+    public workers: HiveWorker[] = [];
 }

@@ -1,18 +1,22 @@
+import Conf from "conf";
+
 export class InstanceService {
+
+    public config = new Conf({ projectName: "omnihive", configName: "omnihive" });
 
     public list = async (): Promise<void> => {
         return;
     }
 
-    public add = async (_instanceName: string, _settingsFile: string | undefined): Promise<void> => {
+    public add = async (_name: string, _settings: string | undefined): Promise<void> => {
         return;
     }
 
-    public edit = async (_instanceName: string, _settingsFile: string): Promise<void> => {
+    public edit = async (_name: string, _settings: string): Promise<void> => {
         return;
     }
 
-    public remove = async (_instanceName: string): Promise<void> => {
+    public remove = async (_name: string): Promise<void> => {
         return;
     }
 }

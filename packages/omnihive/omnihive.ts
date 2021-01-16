@@ -1,23 +1,15 @@
 #!/usr/bin/env node
 
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import chalk from "chalk";
-import Conf from "conf";
 import figlet from "figlet";
-import fse from "fs-extra";
 import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import yargs from 'yargs';
-import { AppService } from "./services/AppService";
 import { InstanceService } from "./services/InstanceService";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
-
-// Set up args and variables
-
-const config = new Conf({ configName: "omnihive", projectName: "omnihive" });
+import { TestService } from "./services/TestService";
 
 const init = async () => {
 
@@ -68,15 +60,15 @@ const init = async () => {
                         description: "Remove an existing instance"
                     }
                 )
-                .option("instance",
+                .option("name",
                     {
-                        alias: "i",
+                        alias: "n",
                         type: "string",
                         demandOption: false,
                         description: "Name of the instance you wish to launch"
                     }
                 )
-                .option("settingsFile",
+                .option("settings",
                     {
                         alias: "s",
                         type: "string",
@@ -85,22 +77,38 @@ const init = async () => {
                     }
                 )
                 .usage(usage.instance())
-                .epilogue("If you specify -a, -u, or -d, you must specify -i.  If you specify -u, you also must specify both -i and -s.")
-                .check(async (args) => {
-                    await checks.instance(args);
+                .epilogue("If you specify -a, -u, or -d, you must specify -n.  If you specify -u, you also must specify both -n and -s.")
+                .check((args) => {
+                    if (args.list && (args.add || args.edit || args.settings || args.name || args.remove)) {
+                        throw new Error("-l cannot be paired with any other argument");
+                    }
+
+                    if (args.add && !args.name) {
+                        throw new Error("-a must be paired with -n to set a new instance.  You can also add -s if you have an existing settings file");
+                    }
+
+                    if (args.edit && (!args.name || !args.settings)) {
+                        throw new Error("-e must have both -n and -s to know which instance to edit and what file to use");
+                    }
+
+                    if (args.remove && !args.name) {
+                        throw new Error("-r must be paired with -n to know which name to remove");
+                    }
+
+                    return true;
                 });
         })
         .command("server", "Run the OmniHive Server", (args) => {
             return args
-                .option("instance",
+                .option("name",
                     {
-                        alias: "i",
+                        alias: "n",
                         type: "string",
                         demandOption: false,
                         description: "Name of the instance you wish to launch"
                     }
                 )
-                .option("settingsFile",
+                .option("settings",
                     {
                         alias: "s",
                         type: "string",
@@ -109,54 +117,30 @@ const init = async () => {
                     }
                 )
                 .usage(usage.server())
-                .epilogue("Specifying -i loads the given instance.  Specifying -s loads the given settings file.")
+                .epilogue("Specifying -n loads the given instance name.  Specifying -s loads the given settings file.")
                 .check((args) => {
-                    if (!args.settingsFile && !args.instance) {
-                        throw new Error("You must specify -i or -s to load a settings file")
+                    if (!args.name && !args.settings) {
+                        throw new Error("You must specify -n or -s to load a settings file.  Use -n for a saved instance or -s to load a settings file directly.")
                     }
 
-                    if (args.settingsFile && args.instance) {
-                        throw new Error("You cannot specify both an instance and a settings file.  Either load a settings file, load an instance, or manage the instances through the command line");
+                    if (args.name && args.settings) {
+                        throw new Error("You cannot specify both -n and -s.  Either load a settings file, load an instance name, or manage the instances through the command line");
                     }
 
                     return true;
                 })
-        }, (handler) => {
-            if (handler.settingsFile && !handler.instance) {
-                const settingsOnly = JSON.parse(fse.readFileSync(handler.settingsFile, { encoding: "utf8" }));
-
-                try {
-                    ObjectHelper.createStrict<ServerSettings>(ServerSettings, settingsOnly);
-                } catch {
-                    throw new Error("Settings file path cannot be parsed into a valid server settings model");
-                }
-            }
-
-            if (handler.instance && !handler.settingsFile) {
-                try {
-                    const instanceFile: string = config.get(handler.instance as string) as string;
-
-                    if (!instanceFile) {
-                        throw new Error("Instance cannot be found");
-                    }
-
-                    ObjectHelper.createStrict<ServerSettings>(ServerSettings, instanceFile);
-                } catch {
-                    throw new Error("Instance file cannot be parsed into a valid server settings model");
-                }
-            }
         })
         .command("taskRunner", "Run a Specific Task Runner", (args) => {
             return args
-                .option("instance",
+                .option("name",
                     {
-                        alias: "i",
+                        alias: "n",
                         type: "string",
                         demandOption: false,
                         description: "Name of the instance you wish to launch"
                     }
                 )
-                .option("settingsFile",
+                .option("settings",
                     {
                         alias: "s",
                         type: "string",
@@ -164,7 +148,7 @@ const init = async () => {
                         description: "Full path to settings file"
                     }
                 )
-                .option("workerName",
+                .option("worker",
                     {
                         alias: "w",
                         type: "string",
@@ -172,7 +156,7 @@ const init = async () => {
                         description: "Registered worker to invoke"
                     }
                 )
-                .option("argsFile",
+                .option("args",
                     {
                         alias: "a",
                         type: "string",
@@ -181,42 +165,50 @@ const init = async () => {
                     }
                 )
                 .usage(usage.taskRunner())
-                .epilogue("Specifying -i loads the given instance.  Specifying -s loads the given settings file.")
+                .epilogue("Specifying -n loads the given instance name.  Specifying -s loads the given settings file.")
                 .check((args) => {
-                    if (!args.settingsFile && !args.instance) {
-                        throw new Error("You must specify -i or -s to load a settings file")
+                    if (!args.settings && !args.instance) {
+                        throw new Error("You must specify -n or -s to load a settings file")
                     }
 
-                    if (args.settingsFile && args.instance) {
-                        throw new Error("You cannot specify both an instance and a settings file.  Either load a settings file, load an instance, or manage the instances through the command line");
+                    if (args.name && args.settings) {
+                        throw new Error("You cannot specify both -n and -s.  Either load a settings file, load an instance name, or manage the instances through the command line");
                     }
 
                     return true;
                 });
-        }, (handler) => {
-            if (handler.settingsFile && !handler.instance) {
-                const settingsOnly = JSON.parse(fse.readFileSync(handler.settingsFile, { encoding: "utf8" }));
-
-                try {
-                    ObjectHelper.createStrict<ServerSettings>(ServerSettings, settingsOnly);
-                } catch {
-                    throw new Error("Settings file path cannot be parsed into a valid server settings model");
-                }
-            }
-
-            if (handler.instance && !handler.settingsFile) {
-                try {
-                    const instanceFile: string = config.get(handler.instance as string) as string;
-
-                    if (!instanceFile) {
-                        throw new Error("Instance cannot be found");
+        })
+        .command("test", "Run all mocha tests for the OmniHive Suite", (args) => {
+            return args
+                .option("name",
+                    {
+                        alias: "n",
+                        type: "string",
+                        demandOption: false,
+                        description: "Name of the instance you wish to launch"
+                    }
+                )
+                .option("settings",
+                    {
+                        alias: "s",
+                        type: "string",
+                        demandOption: false,
+                        description: "Full path to settings file"
+                    }
+                )
+                .usage(usage.test())
+                .epilogue("Specifying -n loads the given instance name.  Specifying -s loads the given settings file.")
+                .check((args) => {
+                    if (!args.name && !args.settings) {
+                        throw new Error("You must specify -n or -s to load a settings file.  Use -n for a saved instance or -s to load a settings file directly.")
                     }
 
-                    ObjectHelper.createStrict<ServerSettings>(ServerSettings, instanceFile);
-                } catch {
-                    throw new Error("Instance file cannot be parsed into a valid server settings model");
-                }
-            }
+                    if (args.name && args.settings) {
+                        throw new Error("You cannot specify both -n and -s.  Either load a settings file, load an instance name, or manage the instances through the command line");
+                    }
+
+                    return true;
+                })
         }).argv;
 
     switch (args.argv._[0]) {
@@ -229,59 +221,63 @@ const init = async () => {
             }
 
             if (args.argv.add) {
-                if (args.argv.settingsFile) {
-                    instanceService.add(args.argv.instanceName as string, args.argv.settingsFile as string);
+                if (args.argv.settings) {
+                    instanceService.add(args.argv.name as string, args.argv.settings as string);
                 } else {
-                    instanceService.add(args.argv.instanceName as string, undefined);
+                    instanceService.add(args.argv.name as string, undefined);
                 }
 
                 return;
             }
 
             if (args.argv.edit) {
-                instanceService.edit(args.argv.instanceName as string, args.argv.settingsFile as string);
+                instanceService.edit(args.argv.name as string, args.argv.settings as string);
                 return;
             }
 
             if (args.argv.remove) {
-                instanceService.remove(args.argv.instanceName as string);
+                instanceService.remove(args.argv.name as string);
             }
 
             break;
         case "server":
-            const serverAppService: AppService = new AppService();
             const serverService: ServerService = new ServerService();
 
-            serverAppService.initApp(args.argv.settingsFile as string);
-            serverService.start();
+            if (args.argv.settings) {
+                serverService.start(undefined, args.argv.settings as string)
+            }
+
+            if (args.argv.name) {
+                serverService.start(args.argv.name as string, undefined)
+            }
+
             break;
         case "taskRunner":
-            const runnerAppService: AppService = new AppService();
             const runnerService: TaskRunnerService = new TaskRunnerService();
 
-            runnerAppService.initApp(args.argv.settingsFile as string);
-            runnerService.start(args.argv.workerName as string, args.argv.argsFile as string);
+            if (args.argv.settings) {
+                runnerService.start(undefined, args.argv.settings as string, args.argv.worker as string, args.argv.args as string);
+            }
+
+            if (args.argv.name) {
+                runnerService.start(args.argv.name as string, undefined, args.argv.worker as string, args.argv.args as string);
+            }
+
+            break;
+        case "test":
+            const testService: TestService = new TestService();
+
+            if (args.argv.settings) {
+                testService.start(undefined, args.argv.settings as string)
+            }
+
+            if (args.argv.name) {
+                testService.start(args.argv.name as string, undefined)
+            }
+
             break;
         default:
             return;
-    }
-}
-
-const checks = {
-    instance: async (_args: yargs.Arguments<{
-        list: boolean | undefined;
-    } & {
-        add: boolean | undefined;
-    } & {
-        edit: boolean | undefined;
-    } & {
-        remove: boolean | undefined;
-    } & {
-        instance: string | undefined;
-    } & {
-        settingsFile: string | undefined;
-    }>): Promise<boolean> => {
-        return true;
     }
 }
 
@@ -326,7 +322,17 @@ const usage = {
         builder.append(`  omnihive taskRunner <options>`);
 
         return builder.outputString();
-    }
+    },
+    test: (): string => {
+        const builder: StringBuilder = new StringBuilder();
+
+        builder.appendLine();
+        builder.appendLine(`${chalk.yellow(figlet.textSync("OMNIHIVE"))}`);
+        builder.appendLine(`Test Usage:`);
+        builder.append(`  omnihive test <options>`);
+
+        return builder.outputString();
+    },
 }
 
 init();

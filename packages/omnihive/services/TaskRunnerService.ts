@@ -4,16 +4,23 @@ import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelpe
 import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
 import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { serializeError } from "serialize-error";
+import { AppHelper } from "../helpers/AppHelper";
 
 export class TaskRunnerService {
 
-    public start = async (workerName: string, argsFile: string): Promise<void> => {
+    public start = async (name: string | undefined, settings: string | undefined, worker: string, args: string): Promise<void> => {
+
+        // Run basic app service
+        const appHelper: AppHelper = new AppHelper();
+        const [, appSettings]: [string, ServerSettings] = appHelper.getServerSettings(name, settings);
+        await appHelper.initApp(appSettings);
 
         const fileSystemWorker: IFileSystemWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
 
-        if (!fileSystemWorker && argsFile && !StringHelper.isNullOrWhiteSpace(argsFile)) {
+        if (!fileSystemWorker && args && !StringHelper.isNullOrWhiteSpace(args)) {
             throw new Error("FileSystem Worker Not Found...Cannot Read Args")
         }
 
@@ -25,23 +32,23 @@ export class TaskRunnerService {
 
         // Get TaskWorker
 
-        const taskWorker: [HiveWorker, any] | undefined = CommonStore.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === workerName && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction);
+        const taskWorker: [HiveWorker, any] | undefined = CommonStore.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === worker && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction);
 
         if (!taskWorker) {
-            this.logError(workerName, new Error(`Task Worker ${workerName} was not found in server configuration, is disabled, or is not of the right type`));
+            this.logError(worker, new Error(`Task Worker ${worker} was not found in server configuration, is disabled, or is not of the right type`));
             return;
         }
 
         // Set up worker args
         let workerArgs: any = null;
 
-        if (argsFile && argsFile !== "") {
+        if (args && args !== "") {
             try {
                 if (fileSystemWorker) {
-                    workerArgs = JSON.parse(fileSystemWorker.readFile(argsFile));
+                    workerArgs = JSON.parse(fileSystemWorker.readFile(args));
                 }
             } catch (err) {
-                this.logError(workerName, err);
+                this.logError(worker, err);
             }
         }
 
@@ -54,7 +61,7 @@ export class TaskRunnerService {
             }
 
         } catch (err) {
-            this.logError(workerName, err);
+            this.logError(worker, err);
         }
     }
 

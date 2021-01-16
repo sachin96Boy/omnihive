@@ -2,40 +2,41 @@ import MssqlDatabaseWorker from '..';
 import { assert } from 'chai';
 import fs from 'fs';
 import { serializeError } from 'serialize-error';
-import dotenv from "dotenv";
-import dotenvExpand from "dotenv-expand";
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
+import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 
-const getConfigs = function (): any | undefined {
+const getConfig = function (): ServerSettings | undefined {
     try {
-        if (!process.env.OH_ENV_FILE) {
+        if (!process.env.OH_SETTINGS_FILE) {
             return undefined;
         }
 
-        dotenvExpand(dotenv.config({ path: process.env.OH_ENV_FILE }));
-
-        return JSON.parse(fs.readFileSync(`${process.env.OH_TEST_WORKER_KNEX_MSSQL}`,
-            { encoding: "utf8" }));
+        return ObjectHelper.createStrict(ServerSettings, JSON.parse(
+            fs.readFileSync(`${process.env.OH_SETTINGS_FILE}`,
+                { encoding: "utf8" })));
     } catch {
         return undefined;
     }
 }
 
-
-let configs: HiveWorker[] | undefined;
+let settings: ServerSettings;
 
 describe('mssql database worker tests', function () {
 
     before(function () {
-        configs = getConfigs();
+        const config: ServerSettings | undefined = getConfig();
 
-        if (!configs) {
+        if (!config) {
             this.skip();
         }
+
+        CommonStore.getInstance().clearWorkers();
+        settings = config;
     });
 
     let worker: MssqlDatabaseWorker = new MssqlDatabaseWorker();
@@ -69,7 +70,7 @@ describe('mssql database worker tests', function () {
 
         it('test valid init', async function () {
             try {
-                const results = await AwaitHelper.execute<void>(init(configs));
+                const results = await AwaitHelper.execute<void>(init(settings.workers));
                 await sleep(1000);
 
                 assert.isUndefined(results);
@@ -80,7 +81,7 @@ describe('mssql database worker tests', function () {
 
         it('test invalid database config', async function () {
             try {
-                const partialConfig = JSON.parse(JSON.stringify(configs));
+                const partialConfig = JSON.parse(JSON.stringify(settings.workers));
                 partialConfig.forEach((x: HiveWorker) => {
                     if (x.type === HiveWorkerType.Database) {
                         x.metadata = {};
@@ -95,7 +96,7 @@ describe('mssql database worker tests', function () {
 
         it('test missing log config', async function () {
             try {
-                const partialConfig = configs?.filter((x: HiveWorker) =>
+                const partialConfig = settings.workers?.filter((x: HiveWorker) =>
                     x.type !== HiveWorkerType.Log);
 
                 await AwaitHelper.execute<void>(init(partialConfig));
@@ -106,7 +107,7 @@ describe('mssql database worker tests', function () {
 
         it('test invalid log config', async function () {
             try {
-                const partialConfig = JSON.parse(JSON.stringify(configs));
+                const partialConfig = JSON.parse(JSON.stringify(settings.workers));
                 partialConfig.forEach((x: HiveWorker) => {
                     if (x.type === HiveWorkerType.Log) {
                         x.metadata = {};
@@ -131,7 +132,7 @@ describe('mssql database worker tests', function () {
         }
 
         before(async function () {
-            await init(configs);
+            await init(settings.workers);
             await sleep(1000);
         });
 

@@ -2,44 +2,46 @@ import PusherPubSubServerWorker from '..';
 import { assert } from 'chai';
 import fs from 'fs';
 import { serializeError } from 'serialize-error';
-import dotenv from "dotenv";
-import dotenvExpand from "dotenv-expand";
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
+import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 
-const getConfigs = function (): any | undefined {
+const getConfig = function (): ServerSettings | undefined {
     try {
-        if (!process.env.OH_ENV_FILE) {
+        if (!process.env.OH_SETTINGS_FILE) {
             return undefined;
         }
 
-        dotenvExpand(dotenv.config({ path: process.env.OH_ENV_FILE }));
-
-        return JSON.parse(fs.readFileSync(`${process.env.OH_TEST_WORKER_PUBSUBSERVER_PUSHER}`,
-            { encoding: "utf8" }));
+        return ObjectHelper.createStrict(ServerSettings, JSON.parse(
+            fs.readFileSync(`${process.env.OH_SETTINGS_FILE}`,
+                { encoding: "utf8" })));
     } catch {
         return undefined;
     }
 }
 
+let settings: ServerSettings;
+let worker: PusherPubSubServerWorker = new PusherPubSubServerWorker();
 
 describe('pubsub server worker tests', function () {
-    let configs: any | undefined;
-    let worker: PusherPubSubServerWorker = new PusherPubSubServerWorker();
 
     before(function () {
-        configs = getConfigs();
-        
-        if (!configs) {
+        const config: ServerSettings | undefined = getConfig();
+
+        if (!config) {
             this.skip();
         }
+
+        CommonStore.getInstance().clearWorkers();
+        settings = config;
     });
 
     const init = async function (): Promise<void> {
         try {
             await AwaitHelper.execute(CommonStore.getInstance()
-                .initWorkers(configs));
+                .initWorkers(settings.workers));
             const newWorker = CommonStore
                 .getInstance()
                 .workers

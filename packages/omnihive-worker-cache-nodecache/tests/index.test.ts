@@ -1,45 +1,47 @@
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
+import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { assert } from 'chai';
-import dotenv from "dotenv";
-import dotenvExpand from "dotenv-expand";
 import fs from 'fs';
 import { serializeError } from 'serialize-error';
 import NodeCacheWorker from '..';
 
-const getConfigs = function (): any | undefined {
+const getConfig = function (): ServerSettings | undefined {
     try {
-        if (!process.env.OH_ENV_FILE) {
+        if (!process.env.OH_SETTINGS_FILE) {
             return undefined;
         }
 
-        dotenvExpand(dotenv.config({ path: process.env.OH_ENV_FILE }));
-
-        return JSON.parse(fs.readFileSync(`${process.env.OH_TEST_WORKER_CACHE_NODECACHE}`,
-            { encoding: "utf8" }));
+        return ObjectHelper.createStrict(ServerSettings, JSON.parse(
+            fs.readFileSync(`${process.env.OH_SETTINGS_FILE}`,
+                { encoding: "utf8" })));
     } catch {
         return undefined;
     }
 }
 
+let settings: ServerSettings;
 let worker: NodeCacheWorker = new NodeCacheWorker();
-let configs: any | undefined;
 
 describe('cache (node) worker tests', function () {
 
     before(function () {
-        configs = getConfigs();
+        const config: ServerSettings | undefined = getConfig();
 
-        if (!configs) {
+        if (!config) {
             this.skip();
         }
+
+        CommonStore.getInstance().clearWorkers();
+        settings = config;
     });
 
     const init = async function (): Promise<void> {
         try {
             await AwaitHelper.execute(CommonStore.getInstance()
-                .initWorkers(configs));
+                .initWorkers(settings.workers));
             const newWorker = CommonStore
                 .getInstance()
                 .workers

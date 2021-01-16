@@ -13,7 +13,7 @@
     "clean": "gulp clean-dev",
     "deploy": "gulp clean-prod",
     "reinstall": "lerna clean --yes && lerna bootstrap",
-    "test": "OH_ENV_FILE=\"/Library/Application Support/OmniHive/omnihive.env\" nyc mocha -r ts-node/register 'packages/**/tests/**/*.ts' --timeout 5000 --retries 5",
+    "test": "OH_SETTINGS_FILE=\"/Library/Application Support/OmniHive/omnihive_config.json\" nyc mocha -r ts-node/register 'packages/**/tests/**/*.ts' --timeout 5000 --retries 5",
     "server-debug": "cd packages/omnihive && yarn run server-debug"
   },
   "dependencies": {
@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@types/chai": "4.2.14",
+    "@types/fs-extra": "9.0.6",
     "@types/mocha": "8.2.0",
     "@types/node": "14.14.20",
     "@typescript-eslint/eslint-plugin": "4.12.0",
@@ -29,6 +30,7 @@
     "chai": "4.2.0",
     "del": "6.0.0",
     "eslint": "7.17.0",
+    "fs-extra": "9.0.1",
     "gulp": "4.0.2",
     "jest": "26.6.3",
     "lerna": "3.22.1",

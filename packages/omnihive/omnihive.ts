@@ -9,7 +9,6 @@ import yargs from 'yargs';
 import { InstanceService } from "./services/InstanceService";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
-import { TestService } from "./services/TestService";
 
 const init = async () => {
 
@@ -177,38 +176,6 @@ const init = async () => {
 
                     return true;
                 });
-        })
-        .command("test", "Run all mocha tests for the OmniHive Suite", (args) => {
-            return args
-                .option("name",
-                    {
-                        alias: "n",
-                        type: "string",
-                        demandOption: false,
-                        description: "Name of the instance you wish to launch"
-                    }
-                )
-                .option("settings",
-                    {
-                        alias: "s",
-                        type: "string",
-                        demandOption: false,
-                        description: "Full path to settings file"
-                    }
-                )
-                .usage(usage.test())
-                .epilogue("Specifying -n loads the given instance name.  Specifying -s loads the given settings file.")
-                .check((args) => {
-                    if (!args.name && !args.settings) {
-                        throw new Error("You must specify -n or -s to load a settings file.  Use -n for a saved instance or -s to load a settings file directly.")
-                    }
-
-                    if (args.name && args.settings) {
-                        throw new Error("You cannot specify both -n and -s.  Either load a settings file, load an instance name, or manage the instances through the command line");
-                    }
-
-                    return true;
-                })
         }).argv;
 
     switch (args.argv._[0]) {
@@ -264,18 +231,6 @@ const init = async () => {
             }
 
             break;
-        case "test":
-            const testService: TestService = new TestService();
-
-            if (args.argv.settings) {
-                testService.start(undefined, args.argv.settings as string)
-            }
-
-            if (args.argv.name) {
-                testService.start(args.argv.name as string, undefined)
-            }
-
-            break;
         default:
             return;
     }
@@ -322,17 +277,7 @@ const usage = {
         builder.append(`  omnihive taskRunner <options>`);
 
         return builder.outputString();
-    },
-    test: (): string => {
-        const builder: StringBuilder = new StringBuilder();
-
-        builder.appendLine();
-        builder.appendLine(`${chalk.yellow(figlet.textSync("OMNIHIVE"))}`);
-        builder.appendLine(`Test Usage:`);
-        builder.append(`  omnihive test <options>`);
-
-        return builder.outputString();
-    },
+    }
 }
 
 init();

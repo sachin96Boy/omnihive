@@ -2,45 +2,47 @@ import PusherJsPubSubClientWorker from '..';
 import { assert } from 'chai';
 import fs from 'fs';
 import { serializeError } from 'serialize-error';
-import dotenv from "dotenv";
-import dotenvExpand from "dotenv-expand";
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
+import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 
-const getConfigs = function (): any | undefined {
+const getConfig = function (): ServerSettings | undefined {
     try {
-        if (!process.env.OH_ENV_FILE) {
+        if (!process.env.OH_SETTINGS_FILE) {
             return undefined;
         }
 
-        dotenvExpand(dotenv.config({ path: process.env.OH_ENV_FILE }));
-
-        return JSON.parse(fs.readFileSync(`${process.env.OH_TEST_WORKER_PUBSUBCLIENT_PUSHERJS}`,
-            { encoding: "utf8" }));
+        return ObjectHelper.createStrict(ServerSettings, JSON.parse(
+            fs.readFileSync(`${process.env.OH_SETTINGS_FILE}`,
+                { encoding: "utf8" })));
     } catch {
         return undefined;
     }
 }
 
+let settings: ServerSettings;
+let worker: PusherJsPubSubClientWorker = new PusherJsPubSubClientWorker();
 
 describe('pubsub client worker tests', function () {
-    let configs: any | undefined;
-    let worker: PusherJsPubSubClientWorker = new PusherJsPubSubClientWorker();
 
     before(function () {
-        configs = getConfigs();
+        const config: ServerSettings | undefined = getConfig();
 
-        if (!configs) {
+        if (!config) {
             this.skip();
         }
+
+        CommonStore.getInstance().clearWorkers();
+        settings = config;
     });
 
     const init = async (): Promise<void> => {
         try {
             await AwaitHelper.execute(CommonStore.getInstance()
-                .initWorkers(configs));
+                .initWorkers(settings.workers));
             const newWorker = CommonStore
                 .getInstance()
                 .workers

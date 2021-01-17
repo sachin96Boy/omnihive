@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
+import { RegisteredInstance } from "@withonevision/omnihive-common/models/RegisteredInstance";
 import chalk from "chalk";
+import Table from "cli-table";
 import figlet from "figlet";
 import yargs from 'yargs';
 import { InstanceService } from "./services/InstanceService";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
-import packageJson from "./package.json";
 
 const init = async () => {
 
@@ -74,6 +74,10 @@ const init = async () => {
                 .check((args) => {
                     if (args.list && (args.add || args.edit || args.settings || args.name || args.remove)) {
                         throw new Error("-l cannot be paired with any other argument");
+                    }
+
+                    if (args.add && (!args.name || !args.settings)) {
+                        throw new Error("-a must have both -n and -s to know which instance to edit and what file to use");
                     }
 
                     if (args.edit && (!args.name || !args.settings)) {
@@ -173,27 +177,58 @@ const init = async () => {
             const instanceService: InstanceService = new InstanceService();
 
             if (args.argv.list) {
-                instanceService.list();
+                const instances: RegisteredInstance[] = instanceService.getAll();
+
+                if (instances.length === 0) {
+                    console.log(chalk.yellow("There are no registered OmniHive instances"));
+                    return;
+                }
+        
+                const table = new Table({
+                    head: ['Name', 'Settings Location'],
+                    colWidths: [100, 200]
+                });
+        
+                instances.forEach((instance: RegisteredInstance) => {
+                    table.push([instance.name, instance.settings]);
+                });
+        
+                console.log(table.toString());
                 return;
             }
 
             if (args.argv.add) {
-                if (args.argv.settings) {
-                    instanceService.add(args.argv.name as string, args.argv.settings as string);
+                const add: boolean = instanceService.add(args.argv.name as string, args.argv.settings as string);
+
+                if (add) {
+                    console.log(chalk.green(`OmniHive instance ${args.argv.name as string} successfully added`));
                 } else {
-                    instanceService.add(args.argv.name as string, undefined);
+                    console.log(chalk.red(`OmniHive instance ${args.argv.name as string} already exists or could not be edited with the given settings file`));
                 }
 
                 return;
             }
 
             if (args.argv.edit) {
-                instanceService.edit(args.argv.name as string, args.argv.settings as string);
+                const edit: boolean = instanceService.edit(args.argv.name as string, args.argv.settings as string);
+
+                if (edit) {
+                    console.log(chalk.green(`OmniHive instance ${args.argv.name as string} successfully edited`));
+                } else {
+                    console.log(chalk.red(`OmniHive instance ${args.argv.name as string} could not be edited with the given settings file`));
+                }
+
                 return;
             }
 
             if (args.argv.remove) {
-                instanceService.remove(args.argv.name as string);
+                const remove: boolean = instanceService.remove(args.argv.name as string);
+
+                if(remove) {
+                    console.log(chalk.green(`OmniHive instance ${args.argv.name as string} successfully removed`));
+                } else {
+                    console.log(chalk.red(`OmniHive instance ${args.argv.name as string} not found in registered instances`));
+                }
             }
 
             break;

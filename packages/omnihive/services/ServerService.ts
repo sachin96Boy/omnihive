@@ -23,17 +23,17 @@ import swaggerUi from "swagger-ui-express";
 import { IPubSubClientWorker } from "@withonevision/omnihive-common/interfaces/IPubSubClientWorker";
 import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
 import os from "os";
-import { AppHelper } from "../helpers/AppHelper";
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
+import { AppService } from "./AppService";
 
 export class ServerService {
 
     public start = async (name: string | undefined, settings: string | undefined): Promise<void> => {
 
         // Run basic app service
-        const appHelper: AppHelper = new AppHelper();
-        const appSettings: ServerSettings = appHelper.getServerSettings(name, settings);
-        await appHelper.initApp(appSettings);
+        const appService: AppService = new AppService();
+        const appSettings: ServerSettings = appService.getServerSettings(name, settings);
+        await appService.initApp(appSettings);
 
         // Intialize "backbone" hive workers
 

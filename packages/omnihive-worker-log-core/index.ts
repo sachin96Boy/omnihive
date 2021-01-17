@@ -60,7 +60,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
                 console.log(chalk.green(logString));
                 break;
             case OmniHiveLogLevel.Info:
-                console.log(chalk.blue(logString));
+                console.log(chalk.gray(logString));
                 break;
             case OmniHiveLogLevel.Warn:
                 console.log(chalk.yellow(logString));

@@ -12,9 +12,10 @@ import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSett
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import spawn from "cross-spawn";
 import fse from "fs-extra";
-import { InstanceHelper } from "./InstanceHelper";
+import { InstanceService } from "./InstanceService";
 import packageJson from "../package.json";
-export class AppHelper {
+
+export class AppService {
 
     public getServerSettings = (name: string | undefined, settings: string | undefined): ServerSettings => {
 
@@ -34,8 +35,8 @@ export class AppHelper {
             }
         }
 
-        const instanceHelper: InstanceHelper = new InstanceHelper();
-        const configInstance: RegisteredInstance | undefined = instanceHelper.get(name ?? "");
+        const instanceService: InstanceService = new InstanceService();
+        const configInstance: RegisteredInstance | undefined = instanceService.get(name ?? "");
 
         if (!configInstance || StringHelper.isNullOrWhiteSpace(configInstance.settings)) {
             throw new Error("The given instance name has not been registered.  Please use the command line to add a new instance");

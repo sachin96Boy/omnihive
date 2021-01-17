@@ -1,56 +1,105 @@
-import chalk from "chalk";
-import { InstanceHelper } from "../helpers/InstanceHelper";
-import Table from 'cli-table';
 import { RegisteredInstance } from "@withonevision/omnihive-common/models/RegisteredInstance";
+import Conf from "conf";
+import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
+import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
+import fs from "fs";
 
 export class InstanceService {
 
-    private instanceHelper: InstanceHelper = new InstanceHelper();
+    private config = new Conf({ projectName: "omnihive", configName: "omnihive" });
 
-    public list = (): void => {
+    public add = (name: string, settings: string): boolean => {
 
-        const instances: RegisteredInstance[] = this.instanceHelper.getAll();
-
-        if (instances.length === 0) {
-            console.log("There are no registered OmniHive instances");
-            return;
+        if (!this.checkSettings(settings)) {
+            return false;
         }
 
-        const table = new Table({
-            head: ['Name', 'Settings Location'],
-            colWidths: [100, 200]
-        });
+        const instances: RegisteredInstance[] = this.getAll();
+        const instance: RegisteredInstance | undefined = this.get(name);
 
-        instances.forEach((instance: RegisteredInstance) => {
-            table.push([instance.name, instance.settings]);
-        });
+        if (instance) {
+            return false;
+        }
 
-        console.log(table.toString());
+        instances.push({ name, settings });
+        this.writeInstances(instances);
+        return true;
     }
 
-    public add = (_name: string, _settings: string | undefined): void => {
-        return;
+    public get = (name: string): RegisteredInstance | undefined => {
+
+        const instance: RegisteredInstance | undefined = this.getAll().find((value: RegisteredInstance) => value.name === name);
+
+        if (!instance) {
+            return undefined;
+        }
+
+        return instance;
     }
 
-    public edit = (name: string, settings: string): void => {
-        if (this.instanceHelper.get(name)) {
-            this.instanceHelper.edit({ name, settings });
-            console.log(chalk.green(`OmniHive instance ${name} successfully edited`));
+    public getAll = (): RegisteredInstance[] => {
+        const instances: unknown = this.config.get("instances");
+
+        if (!instances) {
+            return [];
         } else {
-            this.instanceHelper.add({ name, settings });
-            console.log(chalk.green(`OmniHive instance ${name} not found.  Adding instead.`));
+            return ObjectHelper.createArrayStrict(RegisteredInstance, instances as RegisteredInstance[]);
         }
     }
 
-    public remove = (name: string): void => {
+    public edit = (name: string, settings: string): boolean => {
 
-        if (this.instanceHelper.get(name)) {
-            this.instanceHelper.remove(name);
-            console.log(chalk.green(`OmniHive instance ${name} successfully removed`));
-        } else {
-            console.log(chalk.red(`OmniHive instance ${name} not found in registered instances`));
+        if (!this.checkSettings(settings)) {
+            return false;
         }
 
-        return;
+        const instances: RegisteredInstance[] = this.getAll();
+        const instance: RegisteredInstance | undefined = this.get(name);
+
+        if (instance) {
+            instances.filter((value: RegisteredInstance) => value.name !== instance.name);
+            instances.push(instance);
+            this.writeInstances(instances);
+        } else {
+            instances.push({ name, settings });
+            this.writeInstances(instances);
+        }
+
+        return true;
+    }
+
+    public remove = (name: string): boolean => {
+
+        let instances: RegisteredInstance[] = this.getAll();
+        const instance: RegisteredInstance | undefined = this.get(name);
+
+        if (!instance) {
+            return false;
+        }
+
+        instances = instances.filter((instance: RegisteredInstance) => instance.name !== name);
+        this.writeInstances(instances);
+        return true;
+    }
+
+    public writeInstances = (instances: RegisteredInstance[]) => {
+        this.config.set("instances", instances);
+    }
+
+    private checkSettings = (settingsPath: string): boolean => {
+
+        try {
+            const config: ServerSettings = ObjectHelper.createStrict(ServerSettings, JSON.parse(
+                fs.readFileSync(`${settingsPath}`, { encoding: "utf8" })));
+
+            if (config) {
+                return true;
+            }
+
+            return false;
+        } catch {
+            return false;
+        }
+
     }
 }

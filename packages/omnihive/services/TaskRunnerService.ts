@@ -7,16 +7,16 @@ import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { serializeError } from "serialize-error";
-import { AppHelper } from "../helpers/AppHelper";
+import { AppService } from "./AppService";
 
 export class TaskRunnerService {
 
     public start = async (name: string | undefined, settings: string | undefined, worker: string, args: string): Promise<void> => {
 
         // Run basic app service
-        const appHelper: AppHelper = new AppHelper();
-        const appSettings: ServerSettings = appHelper.getServerSettings(name, settings);
-        await appHelper.initApp(appSettings);
+        const appService: AppService = new AppService();
+        const appSettings: ServerSettings = appService.getServerSettings(name, settings);
+        await appService.initApp(appSettings);
 
         const fileSystemWorker: IFileSystemWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
 

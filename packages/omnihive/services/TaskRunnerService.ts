@@ -15,7 +15,7 @@ export class TaskRunnerService {
 
         // Run basic app service
         const appHelper: AppHelper = new AppHelper();
-        const [, appSettings]: [string, ServerSettings] = appHelper.getServerSettings(name, settings);
+        const appSettings: ServerSettings = appHelper.getServerSettings(name, settings);
         await appHelper.initApp(appSettings);
 
         const fileSystemWorker: IFileSystemWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);

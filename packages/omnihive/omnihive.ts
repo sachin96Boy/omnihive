@@ -4,19 +4,13 @@ import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper"
 import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
 import chalk from "chalk";
 import figlet from "figlet";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import yargs from 'yargs';
 import { InstanceService } from "./services/InstanceService";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
+import packageJson from "./package.json";
 
 const init = async () => {
-
-    const packageJson: NormalizedReadResult | undefined = await AwaitHelper.execute<NormalizedReadResult | undefined>(readPkgUp());
-
-    if (!packageJson) {
-        throw new Error("Package.json must be given to load packages");
-    }
 
     const args = yargs(process.argv.slice(2));
 
@@ -80,10 +74,6 @@ const init = async () => {
                 .check((args) => {
                     if (args.list && (args.add || args.edit || args.settings || args.name || args.remove)) {
                         throw new Error("-l cannot be paired with any other argument");
-                    }
-
-                    if (args.add && !args.name) {
-                        throw new Error("-a must be paired with -n to set a new instance.  You can also add -s if you have an existing settings file");
                     }
 
                     if (args.edit && (!args.name || !args.settings)) {

@@ -32,7 +32,7 @@ export class ServerService {
 
         // Run basic app service
         const appHelper: AppHelper = new AppHelper();
-        const [, appSettings]: [string, ServerSettings] = appHelper.getServerSettings(name, settings);
+        const appSettings: ServerSettings = appHelper.getServerSettings(name, settings);
         await appHelper.initApp(appSettings);
 
         // Intialize "backbone" hive workers

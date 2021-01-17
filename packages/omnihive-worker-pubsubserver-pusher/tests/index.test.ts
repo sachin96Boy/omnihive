@@ -2,21 +2,28 @@ import PusherPubSubServerWorker from '..';
 import { assert } from 'chai';
 import fs from 'fs';
 import { serializeError } from 'serialize-error';
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
+import packageJson from "../package.json";
 
 const getConfig = function (): ServerSettings | undefined {
+    
     try {
         if (!process.env.OH_SETTINGS_FILE) {
             return undefined;
         }
 
-        return ObjectHelper.createStrict(ServerSettings, JSON.parse(
+        const config: ServerSettings = ObjectHelper.createStrict(ServerSettings, JSON.parse(
             fs.readFileSync(`${process.env.OH_SETTINGS_FILE}`,
                 { encoding: "utf8" })));
+
+        if (!config.workers.some((worker) => worker.package === packageJson.name)) {
+            return undefined;
+        }
+
+        return config;
     } catch {
         return undefined;
     }
@@ -45,7 +52,7 @@ describe('pubsub server worker tests', function () {
             const newWorker = CommonStore
                 .getInstance()
                 .workers
-                .find((x) => x[0].type === HiveWorkerType.PubSubServer);
+                .find((x) => x[0].package === packageJson.name);
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];

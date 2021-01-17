@@ -1,6 +1,5 @@
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
 import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
@@ -8,16 +7,16 @@ import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFi
 import { IHiveAccountWorker } from "@withonevision/omnihive-common/interfaces/IHiveAccountWorker";
 import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { RegisteredInstance } from "@withonevision/omnihive-common/models/RegisteredInstance";
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
-import Conf from "conf";
 import spawn from "cross-spawn";
 import fse from "fs-extra";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
-
+import { InstanceHelper } from "./InstanceHelper";
+import packageJson from "../package.json";
 export class AppHelper {
 
-    public getServerSettings = (name: string | undefined, settings: string | undefined): [string, ServerSettings] => {
+    public getServerSettings = (name: string | undefined, settings: string | undefined): ServerSettings => {
 
         if (name && settings) {
             throw new Error("You cannot provide both an instance name and a settings file to the configuration handler");
@@ -28,25 +27,25 @@ export class AppHelper {
 
             try {
                 const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(ServerSettings, settingsJson);
-                return [settings, serverSettings];
+                return serverSettings;
             }
             catch {
                 throw new Error("Given settings file cannot be successfully parsed into a ServerSettings object");
             }
         }
 
-        const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
-        const configSettingPath = config.get(name ?? "");
+        const instanceHelper: InstanceHelper = new InstanceHelper();
+        const configInstance: RegisteredInstance | undefined = instanceHelper.get(name ?? "");
 
-        if (!configSettingPath || StringHelper.isNullOrWhiteSpace(configSettingPath as string)) {
+        if (!configInstance || StringHelper.isNullOrWhiteSpace(configInstance.settings)) {
             throw new Error("The given instance name has not been registered.  Please use the command line to add a new instance");
         }
 
-        const settingsJson = JSON.parse(fse.readFileSync(configSettingPath as string, { encoding: "utf8" }));
+        const settingsJson = JSON.parse(fse.readFileSync(configInstance.settings, { encoding: "utf8" }));
 
         try {
             const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(ServerSettings, settingsJson);
-            return [configSettingPath as string, serverSettings];
+            return serverSettings;
         }
         catch {
             throw new Error("Given settings file cannot be successfully parsed into a ServerSettings object");
@@ -55,15 +54,9 @@ export class AppHelper {
 
     public initApp = async (serverSettings: ServerSettings) => {
 
-        const packageJson: NormalizedReadResult | undefined = await AwaitHelper.execute<NormalizedReadResult | undefined>(readPkgUp());
-
-        if (!packageJson) {
-            throw new Error("Package.json must be given to load packages");
-        }
-
         // Load Core Workers
-        if (packageJson && packageJson.packageJson && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.coreWorkers) {
-            const coreWorkers: HiveWorker[] = packageJson.packageJson.omniHive.coreWorkers as HiveWorker[];
+        if (packageJson && packageJson.omniHive && packageJson.omniHive.coreWorkers) {
+            const coreWorkers: HiveWorker[] = packageJson.omniHive.coreWorkers as HiveWorker[];
 
             for (const coreWorker of coreWorkers) {
                 await CommonStore.getInstance().registerWorker(coreWorker);
@@ -92,8 +85,8 @@ export class AppHelper {
         logWorker.write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
 
         // Load Default Workers
-        if (packageJson && packageJson.packageJson && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.defaultWorkers) {
-            const defaultWorkers: HiveWorker[] = packageJson.packageJson.omniHive.defaultWorkers as HiveWorker[];
+        if (packageJson && packageJson.omniHive && packageJson.omniHive.defaultWorkers) {
+            const defaultWorkers: HiveWorker[] = packageJson.omniHive.defaultWorkers as HiveWorker[];
 
             defaultWorkers.forEach((defaultWorker: HiveWorker) => {
 
@@ -129,11 +122,11 @@ export class AppHelper {
 
         logWorker.write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
 
-        if (packageJson && packageJson.packageJson && packageJson.packageJson.dependencies && packageJson.packageJson.omniHive && packageJson.packageJson.omniHive.coreDependencies) {
+        if (packageJson && packageJson.dependencies && packageJson.omniHive && packageJson.omniHive.coreDependencies) {
 
             // Build lists
-            const corePackages: any = packageJson.packageJson.omniHive.coreDependencies;
-            const loadedPackages: any = packageJson.packageJson.dependencies;
+            const corePackages: any = packageJson.omniHive.coreDependencies;
+            const loadedPackages: any = packageJson.dependencies;
             const workerPackages: any = {};
 
             CommonStore.getInstance().settings.workers.forEach((hiveWorker: HiveWorker) => {
@@ -238,7 +231,5 @@ export class AppHelper {
                 CommonStore.getInstance().account = await accountWorkerInstance.getHiveAccount();
             }
         }
-
     }
-
 }

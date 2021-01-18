@@ -100,7 +100,7 @@ export class ParseAstQuery {
                 const keyExists: boolean = await this.cacheWorker.exists(cacheKey);
 
                 if (keyExists) {
-                    this.logWorker.write(OmniHiveLogLevel.Debug, `(Retrieved from Cache) => ${workerName} => ${converterInfo.sql}`);
+                    this.logWorker.write(OmniHiveLogLevel.Info, `(Retrieved from Cache) => ${workerName} => ${converterInfo.sql}`);
                     const cacheResults: string | undefined = await this.cacheWorker.get(cacheKey);
 
                     try {
@@ -120,7 +120,7 @@ export class ParseAstQuery {
 
         if (this.cacheWorker) {
             if (!StringHelper.isNullOrWhiteSpace(cacheSetting) && cacheSetting !== "none") {
-                this.logWorker.write(OmniHiveLogLevel.Debug, `(Written to Cache) => ${workerName} => ${converterInfo.sql}`);
+                this.logWorker.write(OmniHiveLogLevel.Info, `(Written to Cache) => ${workerName} => ${converterInfo.sql}`);
                 this.cacheWorker.set(cacheKey, JSON.stringify(treeResults), cacheSeconds);
             }
         }

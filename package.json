@@ -13,13 +13,14 @@
     "clean": "gulp clean-dev",
     "deploy": "gulp clean-prod",
     "reinstall": "lerna clean --yes && lerna bootstrap",
-    "test": "OH_SETTINGS_FILE=\"/Library/Application Support/OmniHive/omnihive_config.json\" nyc mocha -r ts-node/register 'packages/**/tests/**/*.ts' --timeout 5000 --retries 5",
+    "test": "OH_SETTINGS_FILE=\"/Library/Application Support/OmniHive/omnihive_config.json\" nyc mocha -r ts-node/register 'packages/**/tests/**/*.ts' --timeout 5000 --retries 5 --colors",
     "server-debug": "cd packages/omnihive && yarn run server-debug"
   },
   "dependencies": {
     "serialize-error": "8.0.0"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "1.0.1",
     "@types/chai": "4.2.14",
     "@types/fs-extra": "9.0.6",
     "@types/mocha": "8.2.0",
@@ -35,6 +36,7 @@
     "mocha": "8.2.1",
     "nodemon": "2.0.7",
     "nyc": "15.1.0",
+    "source-map-support": "0.5.19",
     "ts-jest": "26.4.4",
     "ts-node": "9.1.1",
     "typescript": "4.1.3"

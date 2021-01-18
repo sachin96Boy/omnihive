@@ -1,5 +1,5 @@
-const NodeStore = require("./stores/NodeStore");
+const OmniHiveStore = require("./stores/OmniHiveStore");
 
 module.exports = {
-  basePath: `${NodeStore.NodeStore.getInstance().getRootUrlPathName() === "/" ? "/admin" : NodeStore.NodeStore.getInstance().getRootUrlPathName() + "/admin"}`,
+  basePath: `${OmniHiveStore.OmniHiveStore.getInstance().getRootUrlPathName() === "/" ? "/admin" : OmniHiveStore.OmniHiveStore.getInstance().getRootUrlPathName() + "/admin"}`,
 }

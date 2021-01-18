@@ -216,12 +216,12 @@ export class AppService {
             }
         }
 
-        logWorker.write(OmniHiveLogLevel.Debug, "Custom packages complete");
+        logWorker.write(OmniHiveLogLevel.Info, "Custom packages complete");
 
         // Register hive workers
-        logWorker.write(OmniHiveLogLevel.Debug, "Working on hive workers...");
+        logWorker.write(OmniHiveLogLevel.Info, "Working on hive workers...");
         await CommonStore.getInstance().initWorkers(CommonStore.getInstance().settings.workers);
-        logWorker.write(OmniHiveLogLevel.Debug, "Hive Workers Initiated...");
+        logWorker.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
 
         // Get account if hive worker exists
         if (CommonStore.getInstance().workers.some((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount)) {

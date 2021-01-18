@@ -76,7 +76,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
 
     public executeQuery = async (query: string): Promise<any[][]> => {
 
-        this.logWorker?.write(OmniHiveLogLevel.Debug, query);
+        this.logWorker?.write(OmniHiveLogLevel.Info, query);
 
         const poolRequest = this.connectionPool.request();
         const result = await AwaitHelper.execute<any>(poolRequest.query(query));

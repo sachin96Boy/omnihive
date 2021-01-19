@@ -46,7 +46,11 @@ const init = async () => {
                 .epilogue("Specifying -n loads the given instance name.  Specifying -s loads the given settings file.")
                 .check((args) => {
                     if (!args.name && !args.settings) {
-                        throw new Error("You must specify -n or -s to load a settings file.  Use -n for a saved instance or -s to load a settings file directly.")
+                        if (!process.env.omnihive_settings) {
+                            throw new Error("You must specify -n or -s to load a settings file.  Use -n for a saved instance or -s to load a settings file directly.");
+                        } else {
+                            args.settings = process.env.omnihive_settings as string;
+                        }
                     }
 
                     if (args.name && args.settings) {
@@ -224,10 +228,10 @@ const init = async () => {
                 {
                     type: "input",
                     name: "path",
-                    message: "Where do you want to save the setting file (full folder path)",
-                    validate: (value, answers) => {
+                    message: "Where do you want to save the setting file (full JSON file path)",
+                    validate: (value) => {
                         try {
-                            const path: string = `${value as string}/omnihive_${answers.name as string}.json`;
+                            const path: string = `${value as string}`;
                             const exists: boolean = fs.existsSync(path);
 
                             if (!exists) {

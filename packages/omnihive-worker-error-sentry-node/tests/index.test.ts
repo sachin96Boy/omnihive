@@ -11,12 +11,12 @@ import packageJson from "../package.json";
 const getConfig = function (): ServerSettings | undefined {
     
     try {
-        if (!process.env.OH_SETTINGS_FILE) {
+        if (!process.env.omnihive_test_worker_error_sentry_node) {
             return undefined;
         }
 
-        const config: ServerSettings = ObjectHelper.createStrict(ServerSettings, JSON.parse(
-            fs.readFileSync(`${process.env.OH_SETTINGS_FILE}`,
+        const config: ServerSettings = ObjectHelper.create(ServerSettings, JSON.parse(
+            fs.readFileSync(`${process.env.omnihive_test_worker_error_sentry_node}`,
                 { encoding: "utf8" })));
 
         if (!config.workers.some((worker) => worker.package === packageJson.name)) {

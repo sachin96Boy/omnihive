@@ -11,7 +11,7 @@ import { RegisteredInstance } from "@withonevision/omnihive-common/models/Regist
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import spawn from "cross-spawn";
-import fse from "fs-extra";
+import fs from "fs";
 import { InstanceService } from "./InstanceService";
 import packageJson from "../package.json";
 
@@ -24,7 +24,7 @@ export class AppService {
         }
 
         if (!name && settings) {
-            const settingsJson = JSON.parse(fse.readFileSync(settings, { encoding: "utf8" }));
+            const settingsJson = JSON.parse(fs.readFileSync(settings, { encoding: "utf8" }));
 
             try {
                 const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(ServerSettings, settingsJson);
@@ -42,7 +42,7 @@ export class AppService {
             throw new Error("The given instance name has not been registered.  Please use the command line to add a new instance");
         }
 
-        const settingsJson = JSON.parse(fse.readFileSync(configInstance.settings, { encoding: "utf8" }));
+        const settingsJson = JSON.parse(fs.readFileSync(configInstance.settings, { encoding: "utf8" }));
 
         try {
             const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(ServerSettings, settingsJson);

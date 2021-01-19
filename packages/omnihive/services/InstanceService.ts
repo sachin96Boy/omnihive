@@ -3,6 +3,7 @@ import Conf from "conf";
 import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import fs from "fs";
+import chalk from "chalk";
 
 export class InstanceService {
 
@@ -23,6 +24,11 @@ export class InstanceService {
 
         instances.push({ name, settings });
         this.writeInstances(instances);
+
+        if (instances.length === 1) {
+            this.setLatestInstance(name);
+        }
+
         return true;
     }
 
@@ -47,22 +53,23 @@ export class InstanceService {
         }
     }
 
+    public getLatest = (): RegisteredInstance | undefined => {
+        return this.get("latest");
+    }
+
     public edit = (name: string, settings: string): boolean => {
 
         if (!this.checkSettings(settings)) {
             return false;
         }
 
-        const instances: RegisteredInstance[] = this.getAll();
         const instance: RegisteredInstance | undefined = this.get(name);
 
         if (instance) {
-            instances.filter((value: RegisteredInstance) => value.name !== instance.name);
-            instances.push(instance);
-            this.writeInstances(instances);
+            this.remove(name);
+            this.add(name, settings);
         } else {
-            instances.push({ name, settings });
-            this.writeInstances(instances);
+            this.add(name, settings);
         }
 
         return true;
@@ -74,11 +81,29 @@ export class InstanceService {
         const instance: RegisteredInstance | undefined = this.get(name);
 
         if (!instance) {
-            return false;
+            console.log(chalk.yellow("No instance found...continuing on."));
+            return true;
+        }
+
+        try {
+            fs.unlinkSync(instance.settings);
+        } catch {
+            console.log(chalk.yellow("Instance settings file not found...continuing on"));
+        }
+
+        const latest: RegisteredInstance | undefined = this.getLatest();
+
+        if (latest && latest.name === name) {
+            this.config.set("latest", undefined);
         }
 
         instances = instances.filter((instance: RegisteredInstance) => instance.name !== name);
         this.writeInstances(instances);
+        return true;
+    }
+
+    public setLatestInstance = (name: string): boolean => {
+        this.config.set("latest", this.get(name));
         return true;
     }
 

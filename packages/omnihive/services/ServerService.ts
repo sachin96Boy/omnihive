@@ -25,10 +25,41 @@ import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/I
 import os from "os";
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import { AppService } from "./AppService";
+import { InstanceService } from "./InstanceService";
+import { RegisteredInstance } from "@withonevision/omnihive-common/models/RegisteredInstance";
 
 export class ServerService {
 
     public start = async (name: string | undefined, settings: string | undefined): Promise<void> => {
+
+        const instanceService: InstanceService = new InstanceService();
+
+        if (name && settings) {
+            throw new Error("You cannot start the server with a named instance and a settings location.  You must choose one or the other.");
+        }
+
+        // Check for latest instance
+
+        if (!name && !settings) {
+            const latestInstance: RegisteredInstance | undefined = instanceService.getLatest();
+
+            if (!latestInstance) {
+                throw new Error("No name and no settings given...but also cannot find latest instance");
+            }
+
+            name = latestInstance.name;
+        }
+
+        // Check instance name
+        if (name) {
+            const instance: RegisteredInstance | undefined = instanceService.get(name);
+
+            if (instance) {
+                instanceService.setLatestInstance(name);
+            } else {
+                throw new Error("Instance name provided has not been set or does not exist");
+            }
+        }
 
         // Run basic app service
         const appService: AppService = new AppService();

@@ -1,4 +1,3 @@
-
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
@@ -10,7 +9,6 @@ export class SocketIoPubSubServerWorkerMetadata {
 }
 
 export default class SocketIoPubSubServerWorker extends HiveWorkerBase implements IPubSubServerWorker {
-
     private ioServer!: socketio.Server;
 
     constructor() {
@@ -19,7 +17,10 @@ export default class SocketIoPubSubServerWorker extends HiveWorkerBase implement
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        const metadata: SocketIoPubSubServerWorkerMetadata = this.checkMetadata<SocketIoPubSubServerWorkerMetadata>(SocketIoPubSubServerWorkerMetadata, this.config.metadata);
+        const metadata: SocketIoPubSubServerWorkerMetadata = this.checkMetadata<SocketIoPubSubServerWorkerMetadata>(
+            SocketIoPubSubServerWorkerMetadata,
+            this.config.metadata
+        );
 
         this.ioServer = new socketio.Server();
         this.ioServer.listen(metadata.port);
@@ -31,12 +32,11 @@ export default class SocketIoPubSubServerWorker extends HiveWorkerBase implement
 
             socket.on("leave-room", (room: string) => {
                 socket.leave(room);
-            })
+            });
         });
-
     }
 
     public emit = async (channelName: string, eventName: string, message: any): Promise<void> => {
         this.ioServer.to(channelName).emit(eventName, { room: channelName, data: message });
-    }
+    };
 }

@@ -1,26 +1,26 @@
-import MssqlDatabaseWorker from '..';
-import { assert } from 'chai';
-import fs from 'fs';
-import { serializeError } from 'serialize-error';
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
+import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
+import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
 import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
-import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
+import { assert } from "chai";
+import fs from "fs";
+import { serializeError } from "serialize-error";
+import MssqlDatabaseWorker from "..";
 import packageJson from "../package.json";
 
 const getConfig = function (): ServerSettings | undefined {
-    
     try {
         if (!process.env.omnihive_test_worker_knex_mssql) {
             return undefined;
         }
 
-        const config: ServerSettings = ObjectHelper.create(ServerSettings, JSON.parse(
-            fs.readFileSync(`${process.env.omnihive_test_worker_knex_mssql}`,
-                { encoding: "utf8" })));
+        const config: ServerSettings = ObjectHelper.create(
+            ServerSettings,
+            JSON.parse(fs.readFileSync(`${process.env.omnihive_test_worker_knex_mssql}`, { encoding: "utf8" }))
+        );
 
         if (!config.workers.some((worker) => worker.package === packageJson.name)) {
             return undefined;
@@ -30,12 +30,11 @@ const getConfig = function (): ServerSettings | undefined {
     } catch {
         return undefined;
     }
-}
+};
 
 let settings: ServerSettings;
 
-describe('mssql database worker tests', function () {
-
+describe("mssql database worker tests", function () {
     before(function () {
         const config: ServerSettings | undefined = getConfig();
 
@@ -51,12 +50,8 @@ describe('mssql database worker tests', function () {
 
     const init = async function (testingConfigs: any): Promise<void> {
         try {
-            await AwaitHelper.execute(CommonStore.getInstance()
-                .initWorkers(testingConfigs));
-            const newWorker = CommonStore
-                .getInstance()
-                .workers
-                .find((x) => x[0].package === packageJson.name);
+            await AwaitHelper.execute(CommonStore.getInstance().initWorkers(testingConfigs));
+            const newWorker = CommonStore.getInstance().workers.find((x) => x[0].package === packageJson.name);
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];
@@ -64,19 +59,18 @@ describe('mssql database worker tests', function () {
         } catch (err) {
             throw new Error(err.message);
         }
-    }
+    };
 
     const sleep = async function (milliseconds: number): Promise<void> {
-        return new Promise<void>(resolve => setTimeout(resolve, milliseconds));
-    }
+        return new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+    };
 
     describe("Init Functions", function () {
-
         beforeEach(async function () {
             CommonStore.getInstance().clearWorkers();
         });
 
-        it('test valid init', async function () {
+        it("test valid init", async function () {
             try {
                 const results = await AwaitHelper.execute<void>(init(settings.workers));
                 await sleep(1000);
@@ -87,7 +81,7 @@ describe('mssql database worker tests', function () {
             }
         });
 
-        it('test invalid database config', async function () {
+        it("test invalid database config", async function () {
             try {
                 const partialConfig = JSON.parse(JSON.stringify(settings.workers));
                 partialConfig.forEach((x: HiveWorker) => {
@@ -102,10 +96,9 @@ describe('mssql database worker tests', function () {
             }
         });
 
-        it('test missing log config', async function () {
+        it("test missing log config", async function () {
             try {
-                const partialConfig = settings.workers?.filter((x: HiveWorker) =>
-                    x.type !== HiveWorkerType.Log);
+                const partialConfig = settings.workers?.filter((x: HiveWorker) => x.type !== HiveWorkerType.Log);
 
                 await AwaitHelper.execute<void>(init(partialConfig));
             } catch (err) {
@@ -113,7 +106,7 @@ describe('mssql database worker tests', function () {
             }
         });
 
-        it('test invalid log config', async function () {
+        it("test invalid log config", async function () {
             try {
                 const partialConfig = JSON.parse(JSON.stringify(settings.workers));
                 partialConfig.forEach((x: HiveWorker) => {
@@ -129,15 +122,13 @@ describe('mssql database worker tests', function () {
         });
     });
 
-
     describe("Worker Functions", function () {
-
         const wipeData = async function (): Promise<void> {
             const schema: StoredProcSchema = new StoredProcSchema();
             schema.schema = "dbo";
-            schema.storedProcName = "test_truncate_jest_testing"
+            schema.storedProcName = "test_truncate_jest_testing";
             await worker.executeStoredProcedure(schema, []);
-        }
+        };
 
         before(async function () {
             await init(settings.workers);
@@ -150,7 +141,7 @@ describe('mssql database worker tests', function () {
 
         afterEach(async function () {
             await wipeData();
-        })
+        });
 
         it("execute query", async function () {
             const proc = `
@@ -173,11 +164,10 @@ describe('mssql database worker tests', function () {
             const schema: StoredProcSchema = new StoredProcSchema();
             schema.schema = "dbo";
             schema.storedProcName = "test_stored_proc_call";
-            const result = await worker.executeStoredProcedure(schema,
-                [
-                    { name: "Value", value: "Testing Values ", isString: true },
-                    { name: "Numeric", value: 1, isString: false }
-                ]);
+            const result = await worker.executeStoredProcedure(schema, [
+                { name: "Value", value: "Testing Values ", isString: true },
+                { name: "Numeric", value: 1, isString: false },
+            ]);
 
             assert.equal(result[0][0].data, "Testing Values 1");
         });
@@ -185,11 +175,10 @@ describe('mssql database worker tests', function () {
         it("execute stored procedure with no schema", async function () {
             const schema: StoredProcSchema = new StoredProcSchema();
             schema.storedProcName = "test_stored_proc_call";
-            const result = await worker.executeStoredProcedure(schema,
-                [
-                    { name: "Value", value: "Testing Values ", isString: true },
-                    { name: "Numeric", value: 1, isString: false }
-                ]);
+            const result = await worker.executeStoredProcedure(schema, [
+                { name: "Value", value: "Testing Values ", isString: true },
+                { name: "Numeric", value: 1, isString: false },
+            ]);
 
             assert.equal(result[0][0].data, "Testing Values 1");
         });
@@ -201,4 +190,4 @@ describe('mssql database worker tests', function () {
             assert.equal(results.storedProcs.length, 5);
         });
     });
-})
+});

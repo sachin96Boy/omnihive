@@ -1,7 +1,7 @@
-import { assert } from 'chai';
-import { serializeError } from 'serialize-error';
-import { ObjectHelper } from '../helpers/ObjectHelper';
-import { HiveWorker } from '../models/HiveWorker';
+import { assert } from "chai";
+import { serializeError } from "serialize-error";
+import { ObjectHelper } from "../helpers/ObjectHelper";
+import { HiveWorker } from "../models/HiveWorker";
 
 describe("ObjectHelper Tests", function () {
     const testObject = "Test Object";
@@ -10,7 +10,7 @@ describe("ObjectHelper Tests", function () {
         try {
             const model = {
                 name: testObject,
-            }
+            };
             const obj = ObjectHelper.create<HiveWorker>(HiveWorker, model);
 
             const comparer = Object.keys(new HiveWorker());
@@ -24,7 +24,6 @@ describe("ObjectHelper Tests", function () {
     });
 
     it("create object generic", function () {
-
         const obj = ObjectHelper.create<HiveWorker>(HiveWorker, null);
 
         const comparer = Object.keys(new HiveWorker());
@@ -38,7 +37,7 @@ describe("ObjectHelper Tests", function () {
         try {
             const model = {
                 name: testObject,
-            }
+            };
             const obj = ObjectHelper.createStrict<HiveWorker>(HiveWorker, model);
 
             const comparer = Object.keys(new HiveWorker());
@@ -65,7 +64,7 @@ describe("ObjectHelper Tests", function () {
         try {
             const model = {
                 fakeProperty: testObject,
-            }
+            };
             ObjectHelper.createStrict<HiveWorker>(HiveWorker, model);
 
             assert.fail("Strict can not create with a bad property");
@@ -78,7 +77,7 @@ describe("ObjectHelper Tests", function () {
         try {
             const model = {
                 name: testObject,
-            }
+            };
             const obj = ObjectHelper.createArray<HiveWorker>(HiveWorker, [model, model]);
 
             const comparer = Object.keys(new HiveWorker());
@@ -88,7 +87,10 @@ describe("ObjectHelper Tests", function () {
             assert.deepEqual(obj0Keys, comparer);
             assert.deepEqual(obj1Keys, comparer);
             assert.equal(obj.length, 2);
-            assert.deepEqual(obj.map((x: HiveWorker) => x.name), [testObject, testObject]);
+            assert.deepEqual(
+                obj.map((x: HiveWorker) => x.name),
+                [testObject, testObject]
+            );
         } catch (err) {
             throw new Error(JSON.stringify(serializeError(err)));
         }
@@ -98,7 +100,7 @@ describe("ObjectHelper Tests", function () {
         try {
             const model = {
                 name: testObject,
-            }
+            };
             const obj = ObjectHelper.createArrayStrict<HiveWorker>(HiveWorker, [model, model]);
 
             const comparer = Object.keys(new HiveWorker());
@@ -108,7 +110,10 @@ describe("ObjectHelper Tests", function () {
             assert.deepEqual(obj0Keys, comparer);
             assert.deepEqual(obj1Keys, comparer);
             assert.equal(obj.length, 2);
-            assert.deepEqual(obj.map((x: HiveWorker) => x.name), [testObject, testObject]);
+            assert.deepEqual(
+                obj.map((x: HiveWorker) => x.name),
+                [testObject, testObject]
+            );
         } catch (err) {
             throw new Error(JSON.stringify(serializeError(err)));
         }
@@ -128,7 +133,7 @@ describe("ObjectHelper Tests", function () {
         try {
             const model = {
                 fakeProperty: testObject,
-            }
+            };
             ObjectHelper.createArrayStrict<HiveWorker>(HiveWorker, [model, model]);
 
             assert.fail("Strict can not create with a bad property");

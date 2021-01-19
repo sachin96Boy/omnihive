@@ -1,23 +1,23 @@
-import AuthZeroTokenWorker from '..';
-import { assert } from 'chai';
-import fs from 'fs';
-import { serializeError } from 'serialize-error';
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { assert } from "chai";
+import fs from "fs";
+import { serializeError } from "serialize-error";
+import AuthZeroTokenWorker from "..";
 import packageJson from "../package.json";
 
 const getConfig = function (): ServerSettings | undefined {
-    
     try {
         if (!process.env.omnihive_test_worker_token_auth0) {
             return undefined;
         }
 
-        const config: ServerSettings = ObjectHelper.create(ServerSettings, JSON.parse(
-            fs.readFileSync(`${process.env.omnihive_test_worker_token_auth0}`,
-                { encoding: "utf8" })));
+        const config: ServerSettings = ObjectHelper.create(
+            ServerSettings,
+            JSON.parse(fs.readFileSync(`${process.env.omnihive_test_worker_token_auth0}`, { encoding: "utf8" }))
+        );
 
         if (!config.workers.some((worker) => worker.package === packageJson.name)) {
             return undefined;
@@ -27,12 +27,12 @@ const getConfig = function (): ServerSettings | undefined {
     } catch {
         return undefined;
     }
-}
+};
 
 let settings: ServerSettings;
 let worker: AuthZeroTokenWorker = new AuthZeroTokenWorker();
 
-describe('token worker tests', function () {
+describe("token worker tests", function () {
     let token: string = "";
 
     before(function () {
@@ -48,12 +48,8 @@ describe('token worker tests', function () {
 
     const init = async function (): Promise<void> {
         try {
-            await AwaitHelper.execute(CommonStore.getInstance()
-                .initWorkers(settings.workers));
-            const newWorker = CommonStore
-                .getInstance()
-                .workers
-                .find((x) => x[0].package === packageJson.name);
+            await AwaitHelper.execute(CommonStore.getInstance().initWorkers(settings.workers));
+            const newWorker = CommonStore.getInstance().workers.find((x) => x[0].package === packageJson.name);
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];
@@ -61,15 +57,14 @@ describe('token worker tests', function () {
         } catch (err) {
             throw new Error("init error: " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     describe("Init functions", function () {
-        it('test init', async function () {
+        it("test init", async function () {
             const result = await init();
             assert.isUndefined(result);
         });
     });
-
 
     describe("Worker Functions", function () {
         before(async function () {
@@ -96,13 +91,11 @@ describe('token worker tests', function () {
             } else {
                 token = await AwaitHelper.execute<string>(worker.get());
             }
-        }
+        };
 
         it("Get Token", async function () {
             try {
-                token = await AwaitHelper.execute<string>(
-                    worker.get()
-                );
+                token = await AwaitHelper.execute<string>(worker.get());
 
                 assert.isTrue(token && token.length > 0);
             } catch (err) {
@@ -113,9 +106,7 @@ describe('token worker tests', function () {
         it("Get Token - after token is retrieved", async function () {
             try {
                 await AwaitHelper.execute<string>(worker.get());
-                token = await AwaitHelper.execute<string>(
-                    worker.get()
-                );
+                token = await AwaitHelper.execute<string>(worker.get());
 
                 assert.isTrue(token && token.length > 0);
             } catch (err) {
@@ -137,7 +128,7 @@ describe('token worker tests', function () {
         it("Check Expired Token - Expired Token", async function () {
             try {
                 await verifyStartState();
-                const tempToken = 'blah';
+                const tempToken = "blah";
 
                 const expired = await worker.expired(tempToken);
 
@@ -150,7 +141,7 @@ describe('token worker tests', function () {
         it("Check Expired Token - Invalid Token", async function () {
             try {
                 await verifyStartState();
-                const tempToken = '';
+                const tempToken = "";
 
                 const expired = await worker.expired(tempToken);
 
@@ -172,7 +163,7 @@ describe('token worker tests', function () {
 
         it("Verify Token - null token", async function () {
             try {
-                await AwaitHelper.execute<boolean>(worker.verify(''));
+                await AwaitHelper.execute<boolean>(worker.verify(""));
 
                 assert.fail("Expected an error");
             } catch (err) {
@@ -182,7 +173,7 @@ describe('token worker tests', function () {
 
         it("Verify Token - null token", async function () {
             try {
-                await AwaitHelper.execute<boolean>(worker.verify(' '));
+                await AwaitHelper.execute<boolean>(worker.verify(" "));
 
                 assert.fail("Expected an error");
             } catch (err) {
@@ -192,7 +183,7 @@ describe('token worker tests', function () {
 
         it("Verify Token - expired token", async function () {
             try {
-                await AwaitHelper.execute<boolean>(worker.verify('blah'));
+                await AwaitHelper.execute<boolean>(worker.verify("blah"));
 
                 assert.fail("Expected an error");
             } catch (err) {
@@ -202,18 +193,18 @@ describe('token worker tests', function () {
 
         it("Verify Token - mismatching client", async function () {
             try {
-                await AwaitHelper.execute<boolean>(worker.verify(''));
+                await AwaitHelper.execute<boolean>(worker.verify(""));
 
                 assert.fail("Expected an error");
             } catch (err) {
                 assert.equal(err.message, "Signature verification failed");
-                    //"No audience granted");
+                //"No audience granted");
             }
         });
 
-        it("Verify Token - verify turned off", async function() {
+        it("Verify Token - verify turned off", async function () {
             try {
-                worker.config.metadata.verifyOn = 'false';
+                worker.config.metadata.verifyOn = "false";
                 await AwaitHelper.execute(worker.init(worker.config));
                 const results = await AwaitHelper.execute<boolean>(worker.verify(""));
 
@@ -223,4 +214,4 @@ describe('token worker tests', function () {
             }
         });
     });
-})
+});

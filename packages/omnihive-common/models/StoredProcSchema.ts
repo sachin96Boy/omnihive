@@ -1,4 +1,3 @@
-
 export class StoredProcSchema {
     public schema: string = "";
     public storedProcName: string = "";

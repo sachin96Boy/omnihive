@@ -14,7 +14,6 @@ export class ElasticLogWorkerMetadata {
 }
 
 export default class ElasticLogWorker extends HiveWorkerBase implements ILogWorker {
-
     private elasticClient!: Client;
     private logIndex!: string;
 
@@ -23,32 +22,34 @@ export default class ElasticLogWorker extends HiveWorkerBase implements ILogWork
     }
 
     public async init(config: HiveWorker): Promise<void> {
-
         await AwaitHelper.execute<void>(super.init(config));
-        const metadata: ElasticLogWorkerMetadata = this.checkMetadata<ElasticLogWorkerMetadata>(ElasticLogWorkerMetadata, config.metadata);
+        const metadata: ElasticLogWorkerMetadata = this.checkMetadata<ElasticLogWorkerMetadata>(
+            ElasticLogWorkerMetadata,
+            config.metadata
+        );
 
         this.logIndex = metadata.logIndex;
 
         this.elasticClient = new Client({
             cloud: {
-                id: metadata.cloudId
+                id: metadata.cloudId,
             },
             auth: {
                 username: metadata.cloudUser,
-                password: metadata.cloudPassword
-            }
+                password: metadata.cloudPassword,
+            },
         });
 
-        this.elasticClient.indices.exists({ index: metadata.logIndex })
+        this.elasticClient.indices
+            .exists({ index: metadata.logIndex })
             .then((indexExists: ApiResponse<boolean, Context>) => {
                 if (!indexExists.body) {
-                    this.elasticClient.indices.create({ index: metadata.logIndex })
+                    this.elasticClient.indices.create({ index: metadata.logIndex });
                 }
             });
     }
 
     public write = async (logLevel: OmniHiveLogLevel, logString: string): Promise<void> => {
-
         const logDate = new Date();
 
         try {
@@ -57,12 +58,11 @@ export default class ElasticLogWorker extends HiveWorkerBase implements ILogWork
                 body: {
                     logDate,
                     severity: logLevel,
-                    logString: logString
-                }
+                    logString: logString,
+                },
             });
         } catch {
             throw new Error("Elastic log could not be synchronized");
         }
-
-    }
+    };
 }

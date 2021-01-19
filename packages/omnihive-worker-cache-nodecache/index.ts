@@ -5,7 +5,6 @@ import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorker
 import NodeCache from "node-cache";
 
 export default class NodeCacheWorker extends HiveWorkerBase implements ICacheWorker {
-
     private nodeCache!: NodeCache;
 
     constructor() {
@@ -19,7 +18,7 @@ export default class NodeCacheWorker extends HiveWorkerBase implements ICacheWor
 
     public exists = async (key: string): Promise<boolean> => {
         return this.nodeCache.has(key);
-    }
+    };
 
     public get = async (key: string): Promise<string | undefined> => {
         const value: string | undefined = this.nodeCache.get<string | undefined>(key);
@@ -29,15 +28,15 @@ export default class NodeCacheWorker extends HiveWorkerBase implements ICacheWor
         }
 
         return value as string;
-    }
+    };
 
     public set = async (key: string, value: string, expireSeconds: number): Promise<boolean> => {
         this.nodeCache.set<string>(key, value, expireSeconds);
         return true;
-    }
+    };
 
     public remove = async (key: string): Promise<boolean> => {
         this.nodeCache.del(key);
         return true;
-    }
+    };
 }

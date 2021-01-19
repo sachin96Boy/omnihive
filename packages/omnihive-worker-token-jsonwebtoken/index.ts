@@ -1,11 +1,11 @@
-import jwt from "jsonwebtoken";
-import { serializeError } from "serialize-error";
-import { v4 as uuidv4 } from "uuid";
-import { nanoid } from "nanoid";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import jwt from "jsonwebtoken";
+import { nanoid } from "nanoid";
+import { serializeError } from "serialize-error";
+import { v4 as uuidv4 } from "uuid";
 
 export class JsonWebTokenWorkerMetadata {
     public tokenSecret: string = "";
@@ -14,7 +14,6 @@ export class JsonWebTokenWorkerMetadata {
 }
 
 export default class JsonWebTokenWorker extends HiveWorkerBase implements ITokenWorker {
-
     private tokenSecret: string = "";
     private audience: string = "";
     private token: string = "";
@@ -24,32 +23,30 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
     }
 
     public async init(config: HiveWorker): Promise<void> {
-
         await AwaitHelper.execute<void>(super.init(config));
         let metadata: JsonWebTokenWorkerMetadata;
 
         try {
             metadata = this.checkMetadata<JsonWebTokenWorkerMetadata>(JsonWebTokenWorkerMetadata, config.metadata);
         } catch {
-            metadata = { 
+            metadata = {
                 audience: uuidv4(),
                 tokenSecret: nanoid(64),
-                verifyOn: true
-            }
+                verifyOn: true,
+            };
         }
 
         this.tokenSecret = metadata.tokenSecret;
     }
 
     public get = async (payload?: object): Promise<string> => {
-
         try {
             if (this.token !== "" && !this.expired(this.token)) {
                 return this.token;
             }
 
             if (!payload) {
-                payload = { accessOnly: true }
+                payload = { accessOnly: true };
             }
 
             this.token = jwt.sign(payload, this.tokenSecret);
@@ -57,22 +54,21 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
         } catch (err) {
             throw new Error(`Get Token Error => ${JSON.stringify(serializeError(err))}`);
         }
-    }
+    };
 
     public expired = async (token: string): Promise<boolean> => {
         return this.verify(token);
-    }
+    };
 
     public verify = async (accessToken: string): Promise<boolean> => {
-
         if (this.config.metadata.verifyOn === false) {
             return true;
         }
-        
+
         try {
             const decoded = jwt.verify(accessToken, this.tokenSecret, { audience: this.audience });
 
-            if(decoded) {
+            if (decoded) {
                 return true;
             } else {
                 return false;
@@ -80,7 +76,5 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
         } catch {
             return false;
         }
-    }
-
-
+    };
 }

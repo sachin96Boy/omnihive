@@ -11,17 +11,15 @@ import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-common/model
 import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
-import knex from 'knex';
-import sql from 'mssql';
-import { serializeError } from 'serialize-error';
-
+import knex from "knex";
+import sql from "mssql";
+import { serializeError } from "serialize-error";
 
 export class MssqlDatabaseWorkerMetadata extends HiveWorkerMetadataDatabase {
     public schemaName: string = "";
 }
 
 export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnexDatabaseWorker {
-
     public connection!: knex;
     private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: sql.config;
@@ -35,7 +33,10 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            this.metadata = this.checkMetadata<MssqlDatabaseWorkerMetadata>(MssqlDatabaseWorkerMetadata, config.metadata);
+            this.metadata = this.checkMetadata<MssqlDatabaseWorkerMetadata>(
+                MssqlDatabaseWorkerMetadata,
+                config.metadata
+            );
 
             this.sqlConfig = {
                 user: this.metadata.userName,
@@ -45,8 +46,8 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
                 database: this.metadata.databaseName,
                 options: {
                     enableArithAbort: true,
-                    encrypt: false
-                }
+                    encrypt: false,
+                },
             };
 
             this.connectionPool = new sql.ConnectionPool(this.sqlConfig);
@@ -59,12 +60,13 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
         } catch (err) {
             throw new Error("MSSQL Init Error => " + JSON.stringify(serializeError(err)));
         }
-
     }
 
     public async afterInit(): Promise<void> {
         try {
-            this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+            this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
+                CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            );
 
             if (!this.logWorker) {
                 throw new Error("Log Worker Not Defined.  Database Worker Will Not Function Without Log Worker.");
@@ -75,15 +77,17 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
     }
 
     public executeQuery = async (query: string): Promise<any[][]> => {
-
         this.logWorker?.write(OmniHiveLogLevel.Info, query);
 
         const poolRequest = this.connectionPool.request();
         const result = await AwaitHelper.execute<any>(poolRequest.query(query));
         return result.recordsets;
-    }
+    };
 
-    public executeStoredProcedure = async (storedProcSchema: StoredProcSchema, args: { name: string, value: any, isString: boolean }[]): Promise<any[][]> => {
+    public executeStoredProcedure = async (
+        storedProcSchema: StoredProcSchema,
+        args: { name: string; value: any; isString: boolean }[]
+    ): Promise<any[][]> => {
         const builder: StringBuilder = new StringBuilder();
 
         builder.append(`exec `);
@@ -94,8 +98,8 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
             builder.append(storedProcSchema.schema + `.` + storedProcSchema.storedProcName + ` `);
         }
 
-        args.forEach((arg: { name: string, value: any, isString: boolean }, index: number) => {
-            builder.append(`@${arg.name}=${arg.isString ? `'` : ''}${arg.value}${arg.isString ? `'` : ''}`);
+        args.forEach((arg: { name: string; value: any; isString: boolean }, index: number) => {
+            builder.append(`@${arg.name}=${arg.isString ? `'` : ""}${arg.value}${arg.isString ? `'` : ""}`);
 
             if (index < args.length - 1) {
                 builder.append(`, `);
@@ -103,20 +107,22 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnex
         });
 
         return this.executeQuery(builder.outputString());
-    }
+    };
 
-    public getSchema = async (): Promise<{ tables: TableSchema[], storedProcs: StoredProcSchema[] }> => {
-        const result: { tables: TableSchema[], storedProcs: StoredProcSchema[] } = {
+    public getSchema = async (): Promise<{ tables: TableSchema[]; storedProcs: StoredProcSchema[] }> => {
+        const result: { tables: TableSchema[]; storedProcs: StoredProcSchema[] } = {
             tables: [],
             storedProcs: [],
         };
 
         const tableResult = await AwaitHelper.execute<any[][]>(this.executeQuery("exec oh_get_schema"));
-        const storedProcResult = await AwaitHelper.execute<any[][]>(this.executeQuery("exec oh_get_stored_proc_schema"));
+        const storedProcResult = await AwaitHelper.execute<any[][]>(
+            this.executeQuery("exec oh_get_stored_proc_schema")
+        );
 
         result.tables = ObjectHelper.createArray(TableSchema, tableResult[0]);
         result.storedProcs = ObjectHelper.createArray(StoredProcSchema, storedProcResult[0]);
 
         return result;
-    }
+    };
 }

@@ -1,4 +1,4 @@
 export enum GraphPostType {
     Mutation,
-    Query
+    Query,
 }

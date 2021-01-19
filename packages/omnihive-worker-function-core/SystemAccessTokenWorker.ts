@@ -1,4 +1,3 @@
-
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-common/interfaces/IRestEndpointWorker";
@@ -11,7 +10,6 @@ import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
 
 export default class SystemAccessTokenWorker extends HiveWorkerBase implements IRestEndpointWorker {
-
     private tokenWorker!: ITokenWorker;
     private metadata!: HiveWorkerMetadataRestFunction;
 
@@ -21,13 +19,16 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(HiveWorkerMetadataRestFunction, config.metadata);
+        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(
+            HiveWorkerMetadataRestFunction,
+            config.metadata
+        );
     }
 
     public async register(app: core.Express, restRoot: string): Promise<void> {
-
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
+            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+        );
 
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");
@@ -47,7 +48,6 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
     }
 
     private checkRequest = async (req: core.Request) => {
-
         if (!req.body) {
             throw new Error(`Request body incorrectly formed`);
         }
@@ -60,63 +60,65 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
             throw new Error(`A client secret must be provided`);
         }
 
-        if (!this.tokenWorker || !this.tokenWorker.config.metadata || !this.tokenWorker.config.metadata.clientId || !this.tokenWorker.config.metadata.clientSecret) {
+        if (
+            !this.tokenWorker ||
+            !this.tokenWorker.config.metadata ||
+            !this.tokenWorker.config.metadata.clientId ||
+            !this.tokenWorker.config.metadata.clientSecret
+        ) {
             throw new Error("A token worker cannot be found");
         }
-    }
+    };
 
     public getSwaggerDefinition = (): swaggerUi.JsonObject | undefined => {
         return {
-            "definitions": {
-                "GetAccessTokenParameters": {
-                    "required": [
-                        "clientId",
-                        "clientSecret"
-                    ],
-                    "properties": {
-                        "clientId": {
-                            "type": "string"
+            definitions: {
+                GetAccessTokenParameters: {
+                    required: ["clientId", "clientSecret"],
+                    properties: {
+                        clientId: {
+                            type: "string",
                         },
-                        "clientSecret": {
-                            "type": "string"
-                        }
-                    }
-                }
+                        clientSecret: {
+                            type: "string",
+                        },
+                    },
+                },
             },
-            "paths": {
+            paths: {
                 "/accessToken": {
-                    "post": {
-                        "description": "Retrieve an OmniHive access token",
-                        "tags": [
+                    post: {
+                        description: "Retrieve an OmniHive access token",
+                        tags: [
                             {
-                                "name": "System",
-                            }
+                                name: "System",
+                            },
                         ],
-                        "requestBody": {
-                            "required": true,
-                            "content": {
+                        requestBody: {
+                            required: true,
+                            content: {
                                 "application/json": {
-                                    "schema": {
-                                        "$ref": "#/definitions/GetAccessTokenParameters"
-                                    }
-                                }
-                            }
+                                    schema: {
+                                        $ref: "#/definitions/GetAccessTokenParameters",
+                                    },
+                                },
+                            },
                         },
-                        "responses": {
+                        responses: {
                             "200": {
-                                "description": "OmniHive access token",
-                                "content": {
+                                description: "OmniHive access token",
+                                content: {
                                     "text/plain": {
-                                        "schema": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+                                        schema: {
+                                            type: "string",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    };
 }

@@ -1,4 +1,3 @@
-
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { IHiveWorker } from "@withonevision/omnihive-common/interfaces/IHiveWorker";
@@ -11,7 +10,6 @@ import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
 
 export default class SystemCheckSettingsWorker extends HiveWorkerBase implements IHiveWorker {
-
     private tokenWorker!: ITokenWorker;
     private metadata!: HiveWorkerMetadataRestFunction;
 
@@ -21,13 +19,16 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(HiveWorkerMetadataRestFunction, config.metadata);
+        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(
+            HiveWorkerMetadataRestFunction,
+            config.metadata
+        );
     }
 
     public async register(app: core.Express, restRoot: string): Promise<void> {
-
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
+            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+        );
 
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");
@@ -36,11 +37,12 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
         this.tokenWorker = tokenWorker;
 
         app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: core.Request, res: core.Response) => {
-
             try {
                 await AwaitHelper.execute<void>(this.checkRequest(req));
                 const accessToken: string | undefined = req.headers.ohAccess?.toString();
-                const verified: boolean = await AwaitHelper.execute<boolean>(this.tokenWorker.verify(accessToken ?? ""));
+                const verified: boolean = await AwaitHelper.execute<boolean>(
+                    this.tokenWorker.verify(accessToken ?? "")
+                );
                 return res.send(verified);
             } catch (e) {
                 return res.status(400).send(e.message);
@@ -49,7 +51,6 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
     }
 
     private checkRequest = async (req: core.Request) => {
-
         if (!req.headers) {
             throw new Error(`Request Denied`);
         }
@@ -77,70 +78,67 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
         if (req.body.serverGroupName !== CommonStore.getInstance().settings.config.serverGroupName) {
             throw new Error(`Request Denied`);
         }
-    }
+    };
 
     public getSwaggerDefinition = (): swaggerUi.JsonObject | undefined => {
         return {
-            "definitions": {
-                "CheckSettingsParameters": {
-                    "required": [
-                        "adminPassword",
-                        "serverGroupName"
-                    ],
-                    "properties": {
-                        "adminPassword": {
-                            "type": "string"
+            definitions: {
+                CheckSettingsParameters: {
+                    required: ["adminPassword", "serverGroupName"],
+                    properties: {
+                        adminPassword: {
+                            type: "string",
                         },
-                        "serverGroupName": {
-                            "type": "string"
-                        }
-                    }
-                }
+                        serverGroupName: {
+                            type: "string",
+                        },
+                    },
+                },
             },
-            "paths": {
+            paths: {
                 "/checkSettings": {
-                    "post": {
-                        "description": "Checks if your admin settings are correct",
-                        "tags": [
+                    post: {
+                        description: "Checks if your admin settings are correct",
+                        tags: [
                             {
-                                "name": "System"
-                            }
+                                name: "System",
+                            },
                         ],
-                        "parameters": [
+                        parameters: [
                             {
-                                "in": "header",
-                                "name": "ohaccess",
-                                "required": true,
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
+                                in: "header",
+                                name: "ohaccess",
+                                required: true,
+                                schema: {
+                                    type: "string",
+                                },
+                            },
                         ],
-                        "requestBody": {
-                            "required": true,
-                            "content": {
+                        requestBody: {
+                            required: true,
+                            content: {
                                 "application/json": {
-                                    "schema": {
-                                        "$ref": "#/definitions/CheckSettingsParameters"
-                                    }
-                                }
-                            }
+                                    schema: {
+                                        $ref: "#/definitions/CheckSettingsParameters",
+                                    },
+                                },
+                            },
                         },
-                        "responses": {
+                        responses: {
                             "200": {
-                                "description": "OmniHive Check Settings Response",
-                                "content": {
+                                description: "OmniHive Check Settings Response",
+                                content: {
                                     "text/plain": {
-                                        "schema": {
-                                            "type": "boolean"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+                                        schema: {
+                                            type: "boolean",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    };
 }

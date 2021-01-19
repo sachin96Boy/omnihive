@@ -1,6 +1,5 @@
-import { AuthUser } from '../models/AuthUser';
-import { IHiveWorker } from './IHiveWorker';
-
+import { AuthUser } from "../models/AuthUser";
+import { IHiveWorker } from "./IHiveWorker";
 
 export interface IUserWorker extends IHiveWorker {
     create: (email: string, password: string) => Promise<AuthUser>;

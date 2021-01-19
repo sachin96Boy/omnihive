@@ -3,5 +3,5 @@ export enum RestMethod {
     GET,
     PATCH,
     POST,
-    PUT
+    PUT,
 }

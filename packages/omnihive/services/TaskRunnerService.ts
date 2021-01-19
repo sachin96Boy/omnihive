@@ -10,21 +10,29 @@ import { serializeError } from "serialize-error";
 import { AppService } from "./AppService";
 
 export class TaskRunnerService {
-
-    public start = async (name: string | undefined, settings: string | undefined, worker: string, args: string): Promise<void> => {
-
+    public start = async (
+        name: string | undefined,
+        settings: string | undefined,
+        worker: string,
+        args: string
+    ): Promise<void> => {
         // Run basic app service
         const appService: AppService = new AppService();
         const appSettings: ServerSettings = appService.getServerSettings(name, settings);
         await appService.initApp(appSettings);
 
-        const fileSystemWorker: IFileSystemWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
+        const fileSystemWorker:
+            | IFileSystemWorker
+            | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
 
         if (!fileSystemWorker && args && !StringHelper.isNullOrWhiteSpace(args)) {
-            throw new Error("FileSystem Worker Not Found...Cannot Read Args")
+            throw new Error("FileSystem Worker Not Found...Cannot Read Args");
         }
 
-        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
@@ -32,10 +40,18 @@ export class TaskRunnerService {
 
         // Get TaskWorker
 
-        const taskWorker: [HiveWorker, any] | undefined = CommonStore.getInstance().workers.find((w: [HiveWorker, any]) => w[0].name === worker && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction);
+        const taskWorker: [HiveWorker, any] | undefined = CommonStore.getInstance().workers.find(
+            (w: [HiveWorker, any]) =>
+                w[0].name === worker && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction
+        );
 
         if (!taskWorker) {
-            this.logError(worker, new Error(`Task Worker ${worker} was not found in server configuration, is disabled, or is not of the right type`));
+            this.logError(
+                worker,
+                new Error(
+                    `Task Worker ${worker} was not found in server configuration, is disabled, or is not of the right type`
+                )
+            );
             return;
         }
 
@@ -59,22 +75,26 @@ export class TaskRunnerService {
             } else {
                 await taskWorker[1]();
             }
-
         } catch (err) {
             this.logError(worker, err);
         }
-    }
+    };
 
     private logError = async (workerName: string, err: Error) => {
-
-        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
         }
 
         console.log(err);
-        logWorker.write(OmniHiveLogLevel.Error, `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
+        logWorker.write(
+            OmniHiveLogLevel.Error,
+            `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`
+        );
         throw new Error(`Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
-    }
+    };
 }

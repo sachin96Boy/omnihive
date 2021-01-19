@@ -1,11 +1,10 @@
-
-import * as socketio from "socket.io-client";
-import { serializeError } from "serialize-error";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { IPubSubClientWorker } from "@withonevision/omnihive-common/interfaces/IPubSubClientWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
+import { serializeError } from "serialize-error";
+import * as socketio from "socket.io-client";
 
 export class SocketIoPubSubClientWorkerMetadata {
     public serverUrl: string = "";
@@ -13,7 +12,6 @@ export class SocketIoPubSubClientWorkerMetadata {
 }
 
 export default class SocketIoPubSubClientWorker extends HiveWorkerBase implements IPubSubClientWorker {
-
     private connected: boolean = false;
     private ioClient!: socketio.Socket;
     private listeners: PubSubListener[] = [];
@@ -26,7 +24,10 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<SocketIoPubSubClientWorkerMetadata>(SocketIoPubSubClientWorkerMetadata, this.config.metadata);
+        this.metadata = this.checkMetadata<SocketIoPubSubClientWorkerMetadata>(
+            SocketIoPubSubClientWorkerMetadata,
+            this.config.metadata
+        );
         this.ioClient = socketio.io({ path: this.metadata.serverUrl });
 
         this.ioClient.on("connect", () => {
@@ -35,16 +36,16 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
 
         this.ioClient.on("disconnect", () => {
             this.disconnect();
-        })
+        });
     }
 
     public getListeners = (): PubSubListener[] => {
         return this.listeners;
-    }
+    };
 
     public getJoinedChannels = (): string[] => {
         return this.rooms;
-    }
+    };
 
     public addListener = (channelName: string, eventName: string, callback?: Function): void => {
         this.checkConnection();
@@ -57,8 +58,8 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
             this.removeListener(channelName, eventName);
 
             if (!this.listeners.some((listener: PubSubListener) => listener.eventName === eventName)) {
-                this.ioClient.on(eventName, (packet: { room: string, data: any }) => {
-                    if (packet.room === channelName && callback && typeof (callback) === 'function') {
+                this.ioClient.on(eventName, (packet: { room: string; data: any }) => {
+                    if (packet.room === channelName && callback && typeof callback === "function") {
                         callback(packet.data);
                     }
                 });
@@ -68,23 +69,34 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
         } catch (err) {
             throw new Error("PubSub Add Listener Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     public removeListener = (channelName: string, eventName: string): void => {
         this.checkConnection();
 
         try {
-            if (this.listeners.some((listener: PubSubListener) => listener.channelName == channelName && listener.eventName === eventName)) {
-                this.listeners = this.listeners.filter((listener: PubSubListener) => listener.channelName == channelName && listener.eventName !== eventName);
+            if (
+                this.listeners.some(
+                    (listener: PubSubListener) =>
+                        listener.channelName == channelName && listener.eventName === eventName
+                )
+            ) {
+                this.listeners = this.listeners.filter(
+                    (listener: PubSubListener) =>
+                        listener.channelName == channelName && listener.eventName !== eventName
+                );
 
-                if (!this.listeners.some((listener: PubSubListener) => listener.eventName === eventName) && this.ioClient.hasListeners(eventName)) {
+                if (
+                    !this.listeners.some((listener: PubSubListener) => listener.eventName === eventName) &&
+                    this.ioClient.hasListeners(eventName)
+                ) {
                     this.ioClient.off(eventName);
                 }
             }
         } catch (err) {
             throw new Error("PubSub Remove Listener Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     public connect = async (retry: number = 0): Promise<void> => {
         try {
@@ -98,15 +110,14 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
             if (retry <= this.metadata.maxRetries) {
                 this.connect(retry++);
             } else {
-                throw new Error("The maximum amount of retries to connect has been reached.")
+                throw new Error("The maximum amount of retries to connect has been reached.");
             }
         }
-    }
+    };
 
     public disconnect = (): void => {
-
         if (!this.ioClient) {
-            throw new Error("Socket.IO is not instantiated.")
+            throw new Error("Socket.IO is not instantiated.");
         }
 
         try {
@@ -131,12 +142,11 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
         } catch (err) {
             throw new Error("PubSub Disconnect Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     public joinChannel = (channelName: string): void => {
-
         if (!this.ioClient) {
-            throw new Error("Socket.IO is not instantiated.")
+            throw new Error("Socket.IO is not instantiated.");
         }
 
         this.checkConnection();
@@ -147,15 +157,13 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
                 this.rooms.push(channelName);
             }
         } catch (err) {
-            throw new Error("PubSub Join Channel Error => " + JSON.stringify(serializeError(err)))
+            throw new Error("PubSub Join Channel Error => " + JSON.stringify(serializeError(err)));
         }
-
-    }
+    };
 
     public leaveChannel = (channelName: string): void => {
-
         if (!this.ioClient) {
-            throw new Error("Socket.IO is not instantiated.")
+            throw new Error("Socket.IO is not instantiated.");
         }
 
         this.checkConnection();
@@ -168,7 +176,7 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
         } catch (err) {
             throw new Error("PubSub Leave Channel Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     private checkConnection = (autoConnect: boolean = true): boolean => {
         if (!this.connected && autoConnect) {
@@ -177,12 +185,12 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
 
                 return true;
             } catch (err) {
-                throw new Error(err.message)
+                throw new Error(err.message);
             }
         } else if (!this.connected && !autoConnect) {
             return false;
         } else {
             return true;
         }
-    }
+    };
 }

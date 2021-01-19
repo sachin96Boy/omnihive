@@ -2,9 +2,8 @@ import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper"
 import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
-import PusherServer from 'pusher';
-import { serializeError } from 'serialize-error';
-
+import PusherServer from "pusher";
+import { serializeError } from "serialize-error";
 
 export class PusherPubSubServerWorkerMetadata {
     public appId: string = "";
@@ -14,7 +13,6 @@ export class PusherPubSubServerWorkerMetadata {
 }
 
 export default class PusherPubSubServerWorker extends HiveWorkerBase implements IPubSubServerWorker {
-
     private server!: PusherServer;
 
     constructor() {
@@ -24,8 +22,16 @@ export default class PusherPubSubServerWorker extends HiveWorkerBase implements 
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: PusherPubSubServerWorkerMetadata = this.checkMetadata<PusherPubSubServerWorkerMetadata>(PusherPubSubServerWorkerMetadata, config.metadata);
-            this.server = new PusherServer({ appId: metadata.appId, key: metadata.key, secret: metadata.secret, cluster: metadata.cluster });
+            const metadata: PusherPubSubServerWorkerMetadata = this.checkMetadata<PusherPubSubServerWorkerMetadata>(
+                PusherPubSubServerWorkerMetadata,
+                config.metadata
+            );
+            this.server = new PusherServer({
+                appId: metadata.appId,
+                key: metadata.key,
+                secret: metadata.secret,
+                cluster: metadata.cluster,
+            });
         } catch (err) {
             throw new Error(JSON.stringify(serializeError(err)));
         }
@@ -37,6 +43,5 @@ export default class PusherPubSubServerWorker extends HiveWorkerBase implements 
         } catch (err) {
             throw new Error(JSON.stringify(serializeError(err)));
         }
-    }
-
+    };
 }

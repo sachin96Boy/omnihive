@@ -1,6 +1,6 @@
-import { assert } from 'chai';
-import { serializeError } from 'serialize-error';
-import { StringHelper } from '../helpers/StringHelper';
+import { assert } from "chai";
+import { serializeError } from "serialize-error";
+import { StringHelper } from "../helpers/StringHelper";
 
 describe("StringHelper Tests", function () {
     it("isNullOrWhiteSpace empty string", function () {
@@ -18,7 +18,7 @@ describe("StringHelper Tests", function () {
             throw new Error(JSON.stringify(serializeError(err)));
         }
     });
-    
+
     it("isNullOrWhiteSpace undefined string", function () {
         try {
             assert.equal(StringHelper.isNullOrWhiteSpace("undefined"), true);
@@ -26,7 +26,7 @@ describe("StringHelper Tests", function () {
             throw new Error(JSON.stringify(serializeError(err)));
         }
     });
-    
+
     it("isNullOrWhiteSpace spaces only", function () {
         try {
             assert.equal(StringHelper.isNullOrWhiteSpace("    "), true);
@@ -34,7 +34,7 @@ describe("StringHelper Tests", function () {
             throw new Error(JSON.stringify(serializeError(err)));
         }
     });
-    
+
     it("isNullOrWhiteSpace bad arg", function () {
         try {
             const badArg: any = undefined;
@@ -43,7 +43,7 @@ describe("StringHelper Tests", function () {
             throw new Error(JSON.stringify(serializeError(err)));
         }
     });
-    
+
     it("isNullOrWhiteSpace real texts", function () {
         try {
             assert.equal(StringHelper.isNullOrWhiteSpace("This is real text"), false);
@@ -51,7 +51,7 @@ describe("StringHelper Tests", function () {
             throw new Error(JSON.stringify(serializeError(err)));
         }
     });
-    
+
     it("capitalizeFirstLetter", function () {
         try {
             assert.equal(StringHelper.capitalizeFirstLetter("first name"), "First name");

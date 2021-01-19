@@ -1,9 +1,9 @@
-import * as Sentry from '@sentry/node';
+import * as Sentry from "@sentry/node";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { IErrorWorker } from "@withonevision/omnihive-common/interfaces/IErrorWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
-import { serializeError } from 'serialize-error';
+import { serializeError } from "serialize-error";
 
 export class SentryErrorWorkerMetadata {
     public sentryDsn: string = "";
@@ -12,7 +12,6 @@ export class SentryErrorWorkerMetadata {
 }
 
 export default class SentryErrorWorker extends HiveWorkerBase implements IErrorWorker {
-
     constructor() {
         super();
     }
@@ -20,7 +19,10 @@ export default class SentryErrorWorker extends HiveWorkerBase implements IErrorW
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: SentryErrorWorkerMetadata = this.checkMetadata<SentryErrorWorkerMetadata>(SentryErrorWorkerMetadata, config.metadata);
+            const metadata: SentryErrorWorkerMetadata = this.checkMetadata<SentryErrorWorkerMetadata>(
+                SentryErrorWorkerMetadata,
+                config.metadata
+            );
 
             Sentry.init({
                 dsn: metadata.sentryDsn,

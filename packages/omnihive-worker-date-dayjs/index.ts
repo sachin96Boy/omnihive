@@ -11,7 +11,6 @@ export class DayJsDateWorkerMetadata {
 }
 
 export default class DayJsDateWorker extends HiveWorkerBase implements IDateWorker {
-
     private metadata!: DayJsDateWorkerMetadata;
 
     constructor() {
@@ -19,13 +18,11 @@ export default class DayJsDateWorker extends HiveWorkerBase implements IDateWork
     }
 
     public async init(config: HiveWorker): Promise<void> {
-
         await AwaitHelper.execute<void>(super.init(config));
         this.metadata = this.checkMetadata<DayJsDateWorkerMetadata>(DayJsDateWorkerMetadata, config.metadata);
     }
 
     public convertDateBetweenTimezones = (date: Date, toTimezone: string, fromTimezone?: string): string => {
-
         dayjs.extend(utc);
         dayjs.extend(tz);
 
@@ -44,14 +41,13 @@ export default class DayJsDateWorker extends HiveWorkerBase implements IDateWork
         } catch {
             throw new Error("Could not convert timezones.  Check to make sure timezones are IANA-specific");
         }
-    }
+    };
 
     public getFormattedDateString = (date: Date, format?: string): string => {
-
         if (!format) {
             format = this.metadata.dateFormat;
         }
 
         return dayjs(date).format(format);
-    }
+    };
 }

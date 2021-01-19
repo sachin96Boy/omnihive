@@ -1,15 +1,13 @@
-
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
 import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
-import { AuthenticationClient, ClientCredentialsGrantOptions } from 'auth0';
-import axios, { AxiosResponse } from 'axios';
-import jwtDecode from 'jwt-decode';
-import jose from 'node-jose';
-import { serializeError } from 'serialize-error';
-
+import { AuthenticationClient, ClientCredentialsGrantOptions } from "auth0";
+import axios, { AxiosResponse } from "axios";
+import jwtDecode from "jwt-decode";
+import jose from "node-jose";
+import { serializeError } from "serialize-error";
 
 export class AuthZeroTokenWorkerMetadata {
     public clientId: string = "";
@@ -20,17 +18,15 @@ export class AuthZeroTokenWorkerMetadata {
 }
 
 export default class AuthZeroTokenWorker extends HiveWorkerBase implements ITokenWorker {
-
-    private metadata!: AuthZeroTokenWorkerMetadata
+    private metadata!: AuthZeroTokenWorkerMetadata;
     private token: string = "";
-    private authClient!: AuthenticationClient
+    private authClient!: AuthenticationClient;
 
     constructor() {
         super();
     }
 
     public async init(config: HiveWorker): Promise<void> {
-
         await AwaitHelper.execute<void>(super.init(config));
         this.metadata = this.checkMetadata<AuthZeroTokenWorkerMetadata>(AuthZeroTokenWorkerMetadata, config.metadata);
         this.authClient = new AuthenticationClient({
@@ -56,10 +52,9 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         } catch (err) {
             throw new Error(`Get Token Error => ${JSON.stringify(serializeError(err))}`);
         }
-    }
+    };
 
     public expired = async (token: string): Promise<boolean> => {
-
         const clientId = token.split("||")[0];
         token = token.split("||")[1];
 
@@ -67,7 +62,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
             const currentTimestamp = Math.floor(Date.now().valueOf() / 1000);
             const decoded: any = jwtDecode(token);
 
-            if (decoded.azp !== clientId || decoded.exp === 'undefined' || currentTimestamp > decoded.exp) {
+            if (decoded.azp !== clientId || decoded.exp === "undefined" || currentTimestamp > decoded.exp) {
                 throw new Error("Access token is either the wrong client or expired");
             }
 
@@ -75,10 +70,9 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         } catch {
             throw new Error("Access token is either the wrong client or expired");
         }
-    }
+    };
 
     public verify = async (token: string): Promise<boolean> => {
-
         if (this.metadata.verifyOn === false) {
             return true;
         }
@@ -101,7 +95,9 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         let jwks: AxiosResponse<any>;
 
         try {
-            jwks = await AwaitHelper.execute<AxiosResponse<any>>(axios.get(`https://${this.metadata.domain}/.well-known/jwks.json`));
+            jwks = await AwaitHelper.execute<AxiosResponse<any>>(
+                axios.get(`https://${this.metadata.domain}/.well-known/jwks.json`)
+            );
         } catch (e) {
             throw new Error("JWKS Url Not Responding");
         }
@@ -139,7 +135,9 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         let jwkVerification: jose.JWS.VerificationResult;
 
         try {
-            jwkVerification = await AwaitHelper.execute<jose.JWS.VerificationResult>(jose.JWS.createVerify(jwkKey).verify(token));
+            jwkVerification = await AwaitHelper.execute<jose.JWS.VerificationResult>(
+                jose.JWS.createVerify(jwkKey).verify(token)
+            );
         } catch (e) {
             throw new Error("Signature verification failed");
         }
@@ -148,7 +146,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         const claims = JSON.parse(jwkVerification.payload.toString());
 
         // additionally we can verify the token expiration
-        const currentTimestamp = Math.floor((new Date()).valueOf() / 1000);
+        const currentTimestamp = Math.floor(new Date().valueOf() / 1000);
 
         if (currentTimestamp > claims.exp) {
             throw new Error("Token expired");
@@ -160,5 +158,5 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         }
 
         return true;
-    }
+    };
 }

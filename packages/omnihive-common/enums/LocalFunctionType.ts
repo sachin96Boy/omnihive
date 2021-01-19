@@ -3,5 +3,5 @@ export enum LocalFunctionType {
     Lifecycle = "lifecycle",
     Rest = "rest",
     Task = "task",
-    Workflow = "workflow"
+    Workflow = "workflow",
 }

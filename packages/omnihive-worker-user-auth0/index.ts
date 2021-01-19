@@ -1,4 +1,3 @@
-
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
@@ -19,10 +18,9 @@ import {
     TokenResponse,
     UpdateUserData,
     User,
-    UserMetadata
-    } from 'auth0';
-import { serializeError } from 'serialize-error';
-
+    UserMetadata,
+} from "auth0";
+import { serializeError } from "serialize-error";
 
 export class AuthZeroUserWorkerMetadata {
     public clientId: string = "";
@@ -32,7 +30,6 @@ export class AuthZeroUserWorkerMetadata {
 }
 
 export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserWorker {
-
     private metadata!: AuthZeroUserWorkerMetadata;
     private authClient!: AuthenticationClient;
     private managementClient!: ManagementClient;
@@ -65,7 +62,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     }
 
     public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log));
+        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
+            CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+        );
 
         if (!this.logWorker) {
             throw new Error("Log Worker Not Defined.  Cross-Storage Will Not Function Without Log Worker.");
@@ -73,7 +72,6 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     }
 
     public create = async (email: string, password: string): Promise<AuthUser> => {
-
         if (StringHelper.isNullOrWhiteSpace(email) || StringHelper.isNullOrWhiteSpace(password)) {
             throw new Error("All parameters must be valid strings");
         }
@@ -82,7 +80,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             const authUser: AuthUser = new AuthUser();
             const createUserData: CreateUserData = { connection: this.metadata.connection, email, password };
 
-            await AwaitHelper.execute<User<AppMetadata, UserMetadata>>(this.managementClient.createUser(createUserData));
+            await AwaitHelper.execute<User<AppMetadata, UserMetadata>>(
+                this.managementClient.createUser(createUserData)
+            );
             authUser.email = email;
 
             return authUser;
@@ -91,10 +91,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             this.logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
-    }
+    };
 
     public get = async (email: string): Promise<AuthUser> => {
-
         if (StringHelper.isNullOrWhiteSpace(email)) {
             throw new Error("Must have an email to search by");
         }
@@ -103,10 +102,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         let user: User | undefined = undefined;
 
         try {
-            const users: User<AppMetadata, UserMetadata>[] = await AwaitHelper.
-                execute<User<AppMetadata, UserMetadata>[]>(
-                    this.managementClient.getUsersByEmail(email)
-                );
+            const users: User<AppMetadata, UserMetadata>[] = await AwaitHelper.execute<
+                User<AppMetadata, UserMetadata>[]
+            >(this.managementClient.getUsersByEmail(email));
 
             if (users.length === 0) {
                 throw new Error("User cannot be found");
@@ -118,7 +116,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
                 throw new Error("User cannot be found");
             }
 
-            fullUser = await AwaitHelper.execute<User<AppMetadata, UserMetadata>>(this.managementClient.getUser({ id: user.user_id }));
+            fullUser = await AwaitHelper.execute<User<AppMetadata, UserMetadata>>(
+                this.managementClient.getUser({ id: user.user_id })
+            );
 
             if (!fullUser) {
                 throw new Error("Full user cannot be found");
@@ -139,13 +139,21 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
                 authUser.phoneNumber = fullUser.phone_number;
             }
 
-            if ((fullUser.email && fullUser.nickname && fullUser.email.includes(fullUser.nickname)) || (!user || !user.nickname)) {
+            if (
+                (fullUser.email && fullUser.nickname && fullUser.email.includes(fullUser.nickname)) ||
+                !user ||
+                !user.nickname
+            ) {
                 authUser.nickname = "";
             } else {
                 authUser.nickname = user.nickname;
             }
 
-            if ((!StringHelper.isNullOrWhiteSpace(authUser.firstName) || !StringHelper.isNullOrWhiteSpace(authUser.nickname)) && !StringHelper.isNullOrWhiteSpace(authUser.lastName)) {
+            if (
+                (!StringHelper.isNullOrWhiteSpace(authUser.firstName) ||
+                    !StringHelper.isNullOrWhiteSpace(authUser.nickname)) &&
+                !StringHelper.isNullOrWhiteSpace(authUser.lastName)
+            ) {
                 if (!StringHelper.isNullOrWhiteSpace(authUser.nickname)) {
                     authUser.fullName = fullUser.nickname + " " + fullUser.family_name;
                 } else {
@@ -153,7 +161,13 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
                 }
             }
 
-            if (fullUser.user_metadata && fullUser.user_metadata.address && user?.user_metadata && user.user_metadata.address && !StringHelper.isNullOrWhiteSpace(user.user_metadata.address)) {
+            if (
+                fullUser.user_metadata &&
+                fullUser.user_metadata.address &&
+                user?.user_metadata &&
+                user.user_metadata.address &&
+                !StringHelper.isNullOrWhiteSpace(user.user_metadata.address)
+            ) {
                 authUser.address = fullUser.user_metadata.address;
             }
 
@@ -163,18 +177,20 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             this.logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
-    }
+    };
 
     public login = async (email: string, password: string): Promise<AuthUser> => {
-
         if (StringHelper.isNullOrWhiteSpace(email) || StringHelper.isNullOrWhiteSpace(password)) {
             throw new Error("All parameters must be valid strings");
         }
 
         try {
-            const databaseLoginData: PasswordGrantOptions = { realm: this.metadata.connection, username: email, password };
+            const databaseLoginData: PasswordGrantOptions = {
+                realm: this.metadata.connection,
+                username: email,
+                password,
+            };
             await AwaitHelper.execute<TokenResponse>(this.authClient.passwordGrant(databaseLoginData));
-
         } catch (err) {
             const error = `Login Error => ${JSON.stringify(serializeError(err))}`;
             this.logWorker?.write(OmniHiveLogLevel.Error, error);
@@ -182,11 +198,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         }
 
         return this.get(email);
-
-    }
+    };
 
     public passwordChangeRequest = async (email: string): Promise<boolean> => {
-
         if (StringHelper.isNullOrWhiteSpace(email)) {
             throw new Error("All parameters must be valid strings");
         }
@@ -202,10 +216,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         }
 
         return true;
-    }
+    };
 
     public update = async (userName: string, authUser: AuthUser): Promise<AuthUser> => {
-
         if (StringHelper.isNullOrWhiteSpace(userName) || !authUser) {
             throw new Error("Must have a username and some valid properties to update.");
         }
@@ -213,7 +226,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         let user: User | undefined = undefined;
 
         try {
-            const users = await AwaitHelper.execute<User<AppMetadata, UserMetadata>[]>(this.managementClient.getUsersByEmail(userName));
+            const users = await AwaitHelper.execute<User<AppMetadata, UserMetadata>[]>(
+                this.managementClient.getUsersByEmail(userName)
+            );
             user = users[0];
 
             if (!user || !user.user_id) {
@@ -237,11 +252,20 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
                 userData.family_name = authUser.lastName;
             }
 
-            if (user.email && user.nickname && user.email.includes(user.nickname) && !StringHelper.isNullOrWhiteSpace(authUser.firstName)) {
+            if (
+                user.email &&
+                user.nickname &&
+                user.email.includes(user.nickname) &&
+                !StringHelper.isNullOrWhiteSpace(authUser.firstName)
+            ) {
                 userData.nickname = authUser.firstName;
             }
 
-            if ((!StringHelper.isNullOrWhiteSpace(authUser.firstName) || !StringHelper.isNullOrWhiteSpace(authUser.nickname)) && !StringHelper.isNullOrWhiteSpace(authUser.lastName)) {
+            if (
+                (!StringHelper.isNullOrWhiteSpace(authUser.firstName) ||
+                    !StringHelper.isNullOrWhiteSpace(authUser.nickname)) &&
+                !StringHelper.isNullOrWhiteSpace(authUser.lastName)
+            ) {
                 if (!StringHelper.isNullOrWhiteSpace(authUser.nickname)) {
                     userData.name = authUser.nickname + " " + authUser.lastName;
                 } else {
@@ -257,7 +281,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
                 userData.phone_number = authUser.phoneNumber;
             }
 
-            await AwaitHelper.execute<User<AppMetadata, UserMetadata>>(this.managementClient.updateUser({ id: user.user_id }, userData));
+            await AwaitHelper.execute<User<AppMetadata, UserMetadata>>(
+                this.managementClient.updateUser({ id: user.user_id }, userData)
+            );
 
             const userMetaData: any = {};
 
@@ -265,8 +291,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
                 userMetaData.address = authUser.address;
             }
 
-            await AwaitHelper.execute<User<AppMetadata, UserMetadata>>(this.managementClient.updateUserMetadata({ id: user.user_id }, userMetaData));
-
+            await AwaitHelper.execute<User<AppMetadata, UserMetadata>>(
+                this.managementClient.updateUserMetadata({ id: user.user_id }, userMetaData)
+            );
         } catch (err) {
             const error = `Update User Error => ${JSON.stringify(serializeError(err))}`;
             this.logWorker?.write(OmniHiveLogLevel.Error, error);
@@ -274,11 +301,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         }
 
         return this.get(authUser.email);
-
-    }
+    };
 
     public delete = async (id: string): Promise<string> => {
-
         if (StringHelper.isNullOrWhiteSpace(id)) {
             throw new Error("All parameters must be valid strings");
         }
@@ -294,7 +319,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             this.logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
-    }
+    };
 
     public getUserIdByEmail = async (email: string): Promise<string | undefined> => {
         if (StringHelper.isNullOrWhiteSpace(email)) {
@@ -304,10 +329,9 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         let user: User | undefined = undefined;
 
         try {
-            const users = await AwaitHelper
-                .execute<User<AppMetadata, UserMetadata>[]>(
-                    this.managementClient.getUsersByEmail(email)
-                );
+            const users = await AwaitHelper.execute<User<AppMetadata, UserMetadata>[]>(
+                this.managementClient.getUsersByEmail(email)
+            );
             user = users[0];
 
             if (!user || !user.user_id) {
@@ -320,6 +344,5 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             this.logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
-    }
-
+    };
 }

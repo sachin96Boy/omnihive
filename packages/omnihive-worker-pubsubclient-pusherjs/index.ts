@@ -3,8 +3,8 @@ import { IPubSubClientWorker } from "@withonevision/omnihive-common/interfaces/I
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
-import Pusher, { Channel } from 'pusher-js';
-import { serializeError } from 'serialize-error';
+import Pusher, { Channel } from "pusher-js";
+import { serializeError } from "serialize-error";
 
 export class PusherJsPubSubClientWorkerMetadata {
     public key: string = "";
@@ -13,7 +13,6 @@ export class PusherJsPubSubClientWorkerMetadata {
 }
 
 export default class PusherJsPubSubClientWorker extends HiveWorkerBase implements IPubSubClientWorker {
-
     private connected: boolean = false;
     private pusher!: Pusher;
     private listeners: PubSubListener[] = [];
@@ -26,13 +25,16 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<PusherJsPubSubClientWorkerMetadata>(PusherJsPubSubClientWorkerMetadata, config.metadata);
+        this.metadata = this.checkMetadata<PusherJsPubSubClientWorkerMetadata>(
+            PusherJsPubSubClientWorkerMetadata,
+            config.metadata
+        );
         await AwaitHelper.execute<void>(this.connect());
     }
 
     public getListeners = (): PubSubListener[] => {
         return this.listeners;
-    }
+    };
 
     public getJoinedChannels = (): string[] => {
         const channelNames: string[] = [];
@@ -42,7 +44,7 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
         });
 
         return channelNames;
-    }
+    };
 
     public addListener = (channelName: string, eventName: string, callback?: Function): void => {
         this.checkConnection();
@@ -54,30 +56,40 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
 
             this.removeListener(channelName, eventName);
 
-            this.channels.filter((channel: Channel) => channel.name === channelName)[0].bind(eventName, (data: any) => {
-                if (callback && typeof (callback) === 'function') {
-                    callback(data);
-                }
-            });
+            this.channels
+                .filter((channel: Channel) => channel.name === channelName)[0]
+                .bind(eventName, (data: any) => {
+                    if (callback && typeof callback === "function") {
+                        callback(data);
+                    }
+                });
 
             this.listeners.push({ channelName, eventName, callback });
         } catch (err) {
             throw new Error("PubSub Add Listener Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     public removeListener = (channelName: string, eventName: string): void => {
         this.checkConnection();
 
         try {
-            if (this.listeners.some((listener: PubSubListener) => listener.channelName == channelName && listener.eventName === eventName)) {
-                this.listeners = this.listeners.filter((listener: PubSubListener) => listener.channelName == channelName && listener.eventName !== eventName);
+            if (
+                this.listeners.some(
+                    (listener: PubSubListener) =>
+                        listener.channelName == channelName && listener.eventName === eventName
+                )
+            ) {
+                this.listeners = this.listeners.filter(
+                    (listener: PubSubListener) =>
+                        listener.channelName == channelName && listener.eventName !== eventName
+                );
                 this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind(eventName);
             }
         } catch (err) {
             throw new Error("PubSub Remove Listener Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     public connect = async (retry: number = 0): Promise<void> => {
         try {
@@ -91,15 +103,14 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
             if (retry <= this.metadata.maxRetries) {
                 this.connect(retry++);
             } else {
-                throw new Error("The maximum amount of retries to connect has been reached.")
+                throw new Error("The maximum amount of retries to connect has been reached.");
             }
         }
-    }
+    };
 
     public disconnect = (): void => {
-
         if (!this.pusher) {
-            throw new Error("Pusher is not instantiated.")
+            throw new Error("Pusher is not instantiated.");
         }
 
         try {
@@ -124,12 +135,11 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
         } catch (err) {
             throw new Error("PubSub Disconnect Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     public joinChannel = (channelName: string): void => {
-
         if (!this.pusher) {
-            throw new Error("Pusher is not instantiated.")
+            throw new Error("Pusher is not instantiated.");
         }
 
         this.checkConnection();
@@ -139,15 +149,13 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
                 this.channels.push(this.pusher.subscribe(channelName));
             }
         } catch (err) {
-            throw new Error("PubSub Join Channel Error => " + JSON.stringify(serializeError(err)))
+            throw new Error("PubSub Join Channel Error => " + JSON.stringify(serializeError(err)));
         }
-
-    }
+    };
 
     public leaveChannel = (channelName: string): void => {
-
         if (!this.pusher) {
-            throw new Error("Pusher is not instantiated.")
+            throw new Error("Pusher is not instantiated.");
         }
 
         this.checkConnection();
@@ -161,7 +169,7 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
         } catch (err) {
             throw new Error("PubSub Leave Channel Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     private checkConnection = (autoConnect: boolean = true): boolean => {
         if (!this.connected && autoConnect) {
@@ -170,12 +178,12 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
 
                 return true;
             } catch (err) {
-                throw new Error(err.message)
+                throw new Error(err.message);
             }
         } else if (!this.connected && !autoConnect) {
             return false;
         } else {
             return true;
         }
-    }
+    };
 }

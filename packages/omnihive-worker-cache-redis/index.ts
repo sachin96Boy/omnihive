@@ -2,15 +2,14 @@ import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper"
 import { ICacheWorker } from "@withonevision/omnihive-common/interfaces/ICacheWorker";
 import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
-import Redis from 'ioredis';
-import { serializeError } from 'serialize-error';
+import Redis from "ioredis";
+import { serializeError } from "serialize-error";
 
 export class RedisCacheWorkerMetadata {
     public connectionString: string = "";
 }
 
 export default class RedisCacheWorker extends HiveWorkerBase implements ICacheWorker {
-
     private redis!: Redis.Redis;
 
     constructor() {
@@ -20,7 +19,10 @@ export default class RedisCacheWorker extends HiveWorkerBase implements ICacheWo
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: RedisCacheWorkerMetadata = this.checkMetadata<RedisCacheWorkerMetadata>(RedisCacheWorkerMetadata, config.metadata);
+            const metadata: RedisCacheWorkerMetadata = this.checkMetadata<RedisCacheWorkerMetadata>(
+                RedisCacheWorkerMetadata,
+                config.metadata
+            );
             this.redis = new Redis(metadata.connectionString);
         } catch (err) {
             throw new Error("Redis Init Error => " + JSON.stringify(serializeError(err)));
@@ -28,8 +30,8 @@ export default class RedisCacheWorker extends HiveWorkerBase implements ICacheWo
     }
 
     public exists = async (key: string): Promise<boolean> => {
-        return await AwaitHelper.execute<number>(this.redis.exists(key)) === 1;
-    }
+        return (await AwaitHelper.execute<number>(this.redis.exists(key))) === 1;
+    };
 
     public get = async (key: string): Promise<string | undefined> => {
         const value: string | null = await AwaitHelper.execute<string | null>(this.redis.get(key));
@@ -39,15 +41,15 @@ export default class RedisCacheWorker extends HiveWorkerBase implements ICacheWo
         }
 
         return value;
-    }
+    };
 
     public set = async (key: string, value: string, expireSeconds: number): Promise<boolean> => {
-        this.redis.set(key, value, 'EX', expireSeconds);
+        this.redis.set(key, value, "EX", expireSeconds);
         return true;
-    }
+    };
 
     public remove = async (key: string): Promise<boolean> => {
         this.redis.del(key);
         return true;
-    }
+    };
 }

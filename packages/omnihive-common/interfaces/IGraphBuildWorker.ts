@@ -4,5 +4,8 @@ import { IDatabaseWorker } from "./IDatabaseWorker";
 import { IHiveWorker } from "./IHiveWorker";
 
 export interface IGraphBuildWorker extends IHiveWorker {
-    buildDatabaseWorkerSchema: (databaseWorker: IDatabaseWorker, schema: { tables: TableSchema[], storedProcs: StoredProcSchema[] }) => string;
+    buildDatabaseWorkerSchema: (
+        databaseWorker: IDatabaseWorker,
+        schema: { tables: TableSchema[]; storedProcs: StoredProcSchema[] }
+    ) => string;
 }

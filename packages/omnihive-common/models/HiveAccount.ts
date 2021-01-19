@@ -1,5 +1,5 @@
-import { HiveAccountType } from "./HiveAccountType";
 import { Customer } from "./Customer";
+import { HiveAccountType } from "./HiveAccountType";
 
 export class HiveAccount {
     public id: number = 0;

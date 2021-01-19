@@ -7,9 +7,7 @@ function identity(value: any) {
 
 function ensureObject(value: any) {
     if (!value || typeof value !== "object") {
-        throw new Error(
-            `JSONObject cannot represent non-object value: ${value}`,
-        );
+        throw new Error(`JSONObject cannot represent non-object value: ${value}`);
     }
 
     return value;
@@ -23,7 +21,7 @@ function parseObject(ast: any, variables: any) {
             value[element.name] = parseObject(element, variables);
         });
     } else {
-        ast.fields.forEach((field: { name: { value: string | number; }; value: any; }) => {
+        ast.fields.forEach((field: { name: { value: string | number }; value: any }) => {
             // eslint-disable-next-line no-use-before-define
             value[field.name.value] = parseLiteral(field.value, variables);
         });

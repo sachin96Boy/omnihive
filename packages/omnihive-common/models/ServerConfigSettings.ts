@@ -1,4 +1,3 @@
-
 export class ServerConfigSettings {
     public adminPassword: string = "";
     public serverGroupName: string = "";

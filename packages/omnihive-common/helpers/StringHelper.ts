@@ -1,5 +1,4 @@
 export class StringHelper {
-
     public static isNullOrWhiteSpace(value: string): boolean {
         try {
             if (!value || value === "undefined" || value === "null" || value === "") {
@@ -14,5 +13,5 @@ export class StringHelper {
 
     public static capitalizeFirstLetter(value: string) {
         return value.charAt(0).toUpperCase() + value.slice(1);
-      }
+    }
 }

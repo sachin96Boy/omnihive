@@ -1,24 +1,26 @@
-import PusherJsPubSubClientWorker from '..';
-import { assert } from 'chai';
-import fs from 'fs';
-import { serializeError } from 'serialize-error';
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
+import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
 import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
+import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { assert } from "chai";
+import fs from "fs";
+import { serializeError } from "serialize-error";
+import PusherJsPubSubClientWorker from "..";
 import packageJson from "../package.json";
 
 const getConfig = function (): ServerSettings | undefined {
-    
     try {
         if (!process.env.omnihive_test_worker_pubsubclient_pusherjs) {
             return undefined;
         }
 
-        const config: ServerSettings = ObjectHelper.create(ServerSettings, JSON.parse(
-            fs.readFileSync(`${process.env.omnihive_test_worker_pubsubclient_pusherjs}`,
-                { encoding: "utf8" })));
+        const config: ServerSettings = ObjectHelper.create(
+            ServerSettings,
+            JSON.parse(
+                fs.readFileSync(`${process.env.omnihive_test_worker_pubsubclient_pusherjs}`, { encoding: "utf8" })
+            )
+        );
 
         if (!config.workers.some((worker) => worker.package === packageJson.name)) {
             return undefined;
@@ -28,13 +30,12 @@ const getConfig = function (): ServerSettings | undefined {
     } catch {
         return undefined;
     }
-}
+};
 
 let settings: ServerSettings;
 let worker: PusherJsPubSubClientWorker = new PusherJsPubSubClientWorker();
 
-describe('pubsub client worker tests', function () {
-
+describe("pubsub client worker tests", function () {
     before(function () {
         const config: ServerSettings | undefined = getConfig();
 
@@ -48,12 +49,8 @@ describe('pubsub client worker tests', function () {
 
     const init = async (): Promise<void> => {
         try {
-            await AwaitHelper.execute(CommonStore.getInstance()
-                .initWorkers(settings.workers));
-            const newWorker = CommonStore
-                .getInstance()
-                .workers
-                .find((x) => x[0].package === packageJson.name);
+            await AwaitHelper.execute(CommonStore.getInstance().initWorkers(settings.workers));
+            const newWorker = CommonStore.getInstance().workers.find((x) => x[0].package === packageJson.name);
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];
@@ -61,15 +58,14 @@ describe('pubsub client worker tests', function () {
         } catch (err) {
             throw new Error("init error: " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     describe("Init functions", function () {
-        it('test init', async function () {
+        it("test init", async function () {
             const result = await init();
             assert.isUndefined(result);
         });
     });
-
 
     describe("Worker Functions", function () {
         before(async function () {
@@ -79,7 +75,6 @@ describe('pubsub client worker tests', function () {
         const channelName: string = "jest-test-channel";
         const eventName: string = "jest-test-event";
         const message: string = "I clicked it, it works!";
-
 
         const verifyStartState = (addListener: boolean = false): void => {
             try {
@@ -93,7 +88,7 @@ describe('pubsub client worker tests', function () {
             } catch (err) {
                 throw new Error("setup error: " + JSON.stringify(serializeError(err)));
             }
-        }
+        };
 
         it("connect", function () {
             assert.doesNotThrow(worker.connect);
@@ -102,25 +97,33 @@ describe('pubsub client worker tests', function () {
         it("join channel", function () {
             verifyStartState();
 
-            assert.doesNotThrow(function () { worker.joinChannel(channelName) });
+            assert.doesNotThrow(function () {
+                worker.joinChannel(channelName);
+            });
         });
 
         it("leave channel", function () {
             verifyStartState(true);
 
-            assert.doesNotThrow(function () { worker.leaveChannel(channelName) });
+            assert.doesNotThrow(function () {
+                worker.leaveChannel(channelName);
+            });
         });
 
         it("add listener", function () {
             verifyStartState();
 
-            assert.doesNotThrow(function () { worker.addListener(channelName, eventName) });
+            assert.doesNotThrow(function () {
+                worker.addListener(channelName, eventName);
+            });
         });
 
         it("remove listener", function () {
             verifyStartState(true);
 
-            assert.doesNotThrow(function () { worker.removeListener(channelName, eventName) });
+            assert.doesNotThrow(function () {
+                worker.removeListener(channelName, eventName);
+            });
         });
 
         it("get channels", function () {
@@ -137,16 +140,16 @@ describe('pubsub client worker tests', function () {
             const listeners = worker.getListeners();
             const retrievedValues = listeners.map((x: PubSubListener) => ({
                 channelName: x.channelName,
-                eventName: x.eventName
+                eventName: x.eventName,
             }));
             const verifiedValue = {
                 channelName,
-                eventName
-            }
+                eventName,
+            };
 
             assert.equal(retrievedValues[0].channelName, verifiedValue.channelName);
-            assert.equal(retrievedValues[0].eventName, verifiedValue.eventName)
-        })
+            assert.equal(retrievedValues[0].eventName, verifiedValue.eventName);
+        });
 
         it("disconnect", function () {
             verifyStartState();
@@ -156,4 +159,4 @@ describe('pubsub client worker tests', function () {
 
         // TODO: Test with server to verify emits are heard.
     });
-})
+});

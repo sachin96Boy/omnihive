@@ -53,7 +53,6 @@ interface IData {
 }
 
 export class GraphHelper {
-
     private typeHandlers = {
         NUMBER(cellValue: any) {
             return parseFloat(cellValue);
@@ -72,8 +71,11 @@ export class GraphHelper {
      * the data has column names that follow a particular convention then a
      * nested structures can also be created.
      */
-    public nestHydrate(data: any, structPropToColumnMap: IDefinition | IDefinition[] | null | boolean, verbose = false): any {
-
+    public nestHydrate(
+        data: any,
+        structPropToColumnMap: IDefinition | IDefinition[] | null | boolean,
+        verbose = false
+    ): any {
         let table;
 
         // VALIDATE PARAMS AND BASIC INITIALIZATION
@@ -81,7 +83,7 @@ export class GraphHelper {
         // Determines that on no results, and empty list is used instead of null. // NOTE: fact check this
         let listOnEmpty = false;
 
-        if (typeof structPropToColumnMap === 'undefined') {
+        if (typeof structPropToColumnMap === "undefined") {
             structPropToColumnMap = null;
         }
 
@@ -89,9 +91,13 @@ export class GraphHelper {
             return null;
         }
 
-        if (!Array.isArray(structPropToColumnMap) && !_.isPlainObject(structPropToColumnMap) &&
-            structPropToColumnMap !== null && structPropToColumnMap !== true) {
-            throw new Error('nest expects param structPropToColumnMap to be an array, plain object, null, or true');
+        if (
+            !Array.isArray(structPropToColumnMap) &&
+            !_.isPlainObject(structPropToColumnMap) &&
+            structPropToColumnMap !== null &&
+            structPropToColumnMap !== true
+        ) {
+            throw new Error("nest expects param structPropToColumnMap to be an array, plain object, null, or true");
         }
 
         if (_.isPlainObject(data)) {
@@ -102,7 +108,9 @@ export class GraphHelper {
             table = data;
         } else {
             // tslint:disable-next-line: max-line-length
-            throw Error(`nest expects param data to be in the form of a plain object or an array of plain objects (forming a table)`);
+            throw Error(
+                `nest expects param data to be in the form of a plain object or an array of plain objects (forming a table)`
+            );
         }
 
         // structPropToColumnMap can be set to true as a tie break between
@@ -134,7 +142,6 @@ export class GraphHelper {
 
         // defines function that can be called recursively
         const recursiveNest = (row: IDictionary<any>, idColumns: string[]) => {
-
             // Obj is the actual object that will end up in the final structure
             let obj: IData;
 
@@ -147,18 +154,22 @@ export class GraphHelper {
             // If any of the values are null, we'll check and see if we need to set defaults
             vals = vals.map((value, idx) => {
                 if (value === null) {
-                    if (objMeta.defaults[idColumns[idx]] !== null && typeof objMeta.defaults[idColumns[idx]] !== 'undefined') {
+                    if (
+                        objMeta.defaults[idColumns[idx]] !== null &&
+                        typeof objMeta.defaults[idColumns[idx]] !== "undefined"
+                    ) {
                         return objMeta.defaults[idColumns[idx]];
                     }
                 }
                 return value;
             });
 
-            if (vals.indexOf(null) !== -1) { return; }
+            if (vals.indexOf(null) !== -1) {
+                return;
+            }
 
             // check if object already exists in cache
-            if (typeof objMeta.cache[this.createCompositeKey(vals)] !== 'undefined') {
-
+            if (typeof objMeta.cache[this.createCompositeKey(vals)] !== "undefined") {
                 // not already placed as to-many relation in container
                 obj = objMeta.cache[this.createCompositeKey(vals)];
 
@@ -172,7 +183,9 @@ export class GraphHelper {
                     }
                 }
 
-                if (objMeta.containingIdUsage === null) { return; }
+                if (objMeta.containingIdUsage === null) {
+                    return;
+                }
 
                 // We know for certain that containing column is set if
                 // containingIdUsage is not null and can cast it as a string
@@ -180,10 +193,14 @@ export class GraphHelper {
                 // check and see if this has already been linked to the parent,
                 // and if so we don't need to continue
                 const containingIds = (objMeta.containingColumn as string[]).map((column) => row[column]);
-                if (typeof objMeta.containingIdUsage[this.createCompositeKey(vals)] !== 'undefined'
-                    && typeof objMeta.containingIdUsage[this.createCompositeKey(vals)][this.createCompositeKey(containingIds)] !== 'undefined'
-                ) { return; }
-
+                if (
+                    typeof objMeta.containingIdUsage[this.createCompositeKey(vals)] !== "undefined" &&
+                    typeof objMeta.containingIdUsage[this.createCompositeKey(vals)][
+                        this.createCompositeKey(containingIds)
+                    ] !== "undefined"
+                ) {
+                    return;
+                }
             } else {
                 // don't have an object defined for this yet, create it and set the cache
                 obj = {};
@@ -233,8 +250,10 @@ export class GraphHelper {
                 }
             } else {
                 const containingIds = objMeta.containingColumn.map((column) => row[column]);
-                const container = meta.idMap[this.createCompositeKey(objMeta.containingColumn)]
-                    .cache[this.createCompositeKey(containingIds)];
+                const container =
+                    meta.idMap[this.createCompositeKey(objMeta.containingColumn)].cache[
+                        this.createCompositeKey(containingIds)
+                    ];
 
                 // If a container exists, it must not be a root, and thus there should
                 // be an ownProp set
@@ -251,7 +270,7 @@ export class GraphHelper {
                 // record the containing id so we don't do this again (return in earlier
                 // part of this method)
                 const containingIdUsage = objMeta.containingIdUsage as IDictionary<IDictionary<boolean>>;
-                if (typeof (containingIdUsage)[this.createCompositeKey(vals)] === 'undefined') {
+                if (typeof containingIdUsage[this.createCompositeKey(vals)] === "undefined") {
                     containingIdUsage[this.createCompositeKey(vals)] = {};
                 }
                 containingIdUsage[this.createCompositeKey(vals)][this.createCompositeKey(containingIds)] = true;
@@ -262,7 +281,9 @@ export class GraphHelper {
         this.struct = null;
 
         // tslint:disable-next-line: no-console
-        if (verbose) { console.log(meta); }
+        if (verbose) {
+            console.log(meta);
+        }
 
         for (const row of table) {
             for (const primeIdColumn of meta.primeIdColumnList) {
@@ -280,40 +301,38 @@ export class GraphHelper {
      *
      */
     public structPropToColumnMapFromColumnHints(columnList: string[], renameMapping?: IDictionary<string>) {
-
-        if (typeof renameMapping === 'undefined') {
+        if (typeof renameMapping === "undefined") {
             renameMapping = {};
         }
 
         const propertyMapping: any = { base: null };
 
         for (const column of columnList) {
-
-            const columnType = column.split('___');
+            const columnType = column.split("___");
 
             let type = null;
             let idFlagSet = false;
             let arrayFlagSet = false;
             for (let j = 1; j < columnType.length; j++) {
-                if (columnType[j] === 'ID') {
+                if (columnType[j] === "ID") {
                     idFlagSet = true;
-                } else if (typeof this.typeHandlers[columnType[j]] !== 'undefined') {
+                } else if (typeof this.typeHandlers[columnType[j]] !== "undefined") {
                     type = columnType[j];
                 }
-                if (columnType[j] === 'ARRAY') {
+                if (columnType[j] === "ARRAY") {
                     arrayFlagSet = true;
                 }
             }
 
             let pointer = propertyMapping; // point to base on each new column
-            let prop: string | number = 'base';
+            let prop: string | number = "base";
 
-            const navList = columnType[0].split('_');
+            const navList = columnType[0].split("_");
 
             for (let j = 0; j < navList.length; j++) {
                 const nav = navList[j];
 
-                if (nav === '') {
+                if (nav === "") {
                     if (pointer[prop] === null) {
                         pointer[prop] = [null];
                     }
@@ -323,11 +342,9 @@ export class GraphHelper {
                     if (pointer[prop] === null) {
                         pointer[prop] = {};
                     }
-                    if (typeof pointer[prop][nav] === 'undefined') {
-                        let renamedColumn: any = typeof renameMapping[column] === 'undefined'
-                            ? column
-                            : renameMapping[column]
-                            ;
+                    if (typeof pointer[prop][nav] === "undefined") {
+                        let renamedColumn: any =
+                            typeof renameMapping[column] === "undefined" ? column : renameMapping[column];
                         if (type !== null || idFlagSet || arrayFlagSet) {
                             // no longer a simple mapping, has need of the type or id properties
                             renamedColumn = { column: renamedColumn };
@@ -343,10 +360,10 @@ export class GraphHelper {
                         if (arrayFlagSet) {
                             renamedColumn.array = true;
                         }
-                        pointer[prop][nav] = j === (navList.length - 1)
-                            ? renamedColumn // is leaf node, store full column string
-                            : null // iteration will replace with object or array
-                            ;
+                        pointer[prop][nav] =
+                            j === navList.length - 1
+                                ? renamedColumn // is leaf node, store full column string
+                                : null; // iteration will replace with object or array
                     }
                     pointer = pointer[prop];
                     prop = nav;
@@ -360,7 +377,7 @@ export class GraphHelper {
     /* Registers a custom type handler */
     public registerType(name: string, handler: ITypeHandler) {
         if (this.typeHandlers[name]) {
-            throw new Error('Handler with type, ' + name + ', already exists');
+            throw new Error("Handler with type, " + name + ", already exists");
         }
 
         this.typeHandlers[name] = handler;
@@ -373,14 +390,14 @@ export class GraphHelper {
 
             if (typeof props.type === "function") {
                 valueTypeFunction = props.type as ITypeHandler;
-            } else if (typeof props.type === 'string') {
+            } else if (typeof props.type === "string") {
                 valueTypeFunction = this.typeHandlers[props.type];
             }
 
             if (valueTypeFunction) {
                 cellValue = valueTypeFunction(cellValue);
             }
-        } else if (typeof props.default !== 'undefined') {
+        } else if (typeof props.default !== "undefined") {
             cellValue = props.default;
         }
         return cellValue;
@@ -390,7 +407,6 @@ export class GraphHelper {
      * reference and action for the workings of the nest method.
      */
     private buildMeta(structPropToColumnMap: IDefinition | IDefinition[]): IMetaData {
-
         // eslint-disable-next-line prefer-const
         let meta: IMetaData;
 
@@ -400,14 +416,16 @@ export class GraphHelper {
             structPropToColumnMap: IDefinition,
             isOneOfMany: boolean,
             containingColumn: string[] | null,
-            ownProp: string | null) => {
-
+            ownProp: string | null
+        ) => {
             const idProps = [];
             let idColumns = [];
 
             const propList = _.keys(structPropToColumnMap);
             if (propList.length === 0) {
-                throw new Error('invalid structPropToColumnMap format - property \'' + ownProp + '\' can not be an empty array');
+                throw new Error(
+                    "invalid structPropToColumnMap format - property '" + ownProp + "' can not be an empty array"
+                );
             }
 
             // Add all of the columns flagged as id to the array
@@ -433,9 +451,10 @@ export class GraphHelper {
             const defaults: IDictionary<string | null> = {};
 
             idProps.forEach((prop) => {
-                defaults[prop] = typeof (structPropToColumnMap[prop] as IDefinitionColumn).default === 'undefined' ?
-                    null :
-                    (structPropToColumnMap[prop] as IDefinitionColumn).default;
+                defaults[prop] =
+                    typeof (structPropToColumnMap[prop] as IDefinitionColumn).default === "undefined"
+                        ? null
+                        : (structPropToColumnMap[prop] as IDefinitionColumn).default;
             });
 
             const objMeta: IMetaColumnData = {
@@ -452,13 +471,13 @@ export class GraphHelper {
             };
 
             for (const prop of propList) {
-                if (typeof structPropToColumnMap[prop] === 'string') {
+                if (typeof structPropToColumnMap[prop] === "string") {
                     // value property
                     objMeta.valueList.push({
                         prop,
                         column: structPropToColumnMap[prop] as string,
                         type: undefined,
-                        default: undefined
+                        default: undefined,
                     });
                 } else if ((structPropToColumnMap[prop] as IDefinitionColumn).column) {
                     // value property
@@ -487,15 +506,15 @@ export class GraphHelper {
                     const subIdProps = [];
 
                     for (const value of _.values(structPropToColumnMap[prop])) {
-                        if (typeof value === 'object' && value.id === true) {
-                            subIdProps.push(value.column)
+                        if (typeof value === "object" && value.id === true) {
+                            subIdProps.push(value.column);
                         }
                     }
 
                     // If no columns are flagged as id, then use the first value in the prop list
                     if (subIdProps.length === 0) {
                         const column = _.values(structPropToColumnMap[prop])[0];
-                        subIdProps.push(typeof column === 'object' ? column.column : column);
+                        subIdProps.push(typeof column === "object" ? column.column : column);
                     }
 
                     objMeta.toOneList.push({
@@ -504,8 +523,11 @@ export class GraphHelper {
                     });
                     recursiveBuildMeta(structPropToColumnMap[prop] as IDefinition, false, idColumns, prop);
                 } else {
-                    throw new Error('invalid structPropToColumnMap format - property \'' + prop +
-                        '\' must be either a string, a plain object or an array');
+                    throw new Error(
+                        "invalid structPropToColumnMap format - property '" +
+                            prop +
+                            "' must be either a string, a plain object or an array"
+                    );
                 }
             }
 
@@ -521,17 +543,18 @@ export class GraphHelper {
         if (Array.isArray(structPropToColumnMap)) {
             if (structPropToColumnMap.length !== 1) {
                 // tslint:disable-next-line: max-line-length
-                throw new Error(`invalid structPropToColumnMap format - can not have multiple roots for structPropToColumnMap, if an array it must only have one item`);
+                throw new Error(
+                    `invalid structPropToColumnMap format - can not have multiple roots for structPropToColumnMap, if an array it must only have one item`
+                );
             }
             // call with first object, but inform _buildMeta it is an array
             recursiveBuildMeta((structPropToColumnMap as IDefinition[])[0], true, null, null);
         } else if (_.isPlainObject(structPropToColumnMap)) {
-
             // register first column as prime id column
             const columns = _.values(structPropToColumnMap) as any[];
 
             if (columns.length === 0) {
-                throw new Error('invalid structPropToColumnMap format - the base object can not be an empty object');
+                throw new Error("invalid structPropToColumnMap format - the base object can not be an empty object");
             }
 
             // First determine if there are any keys set on the columns
@@ -544,9 +567,9 @@ export class GraphHelper {
 
             // If there were no keys set, then take the first column as the id
             if (idColumns.length === 0) {
-                if (typeof columns[0] === 'string') {
+                if (typeof columns[0] === "string") {
                     idColumns.push(columns[0]);
-                } else if (typeof columns[0].column === 'string') {
+                } else if (typeof columns[0].column === "string") {
                     idColumns.push(columns[0].column);
                 }
             }
@@ -559,9 +582,9 @@ export class GraphHelper {
         return meta;
     }
 
-    private createCompositeKey = (vals: Array<string | number>, separator = ', '): string => {
+    private createCompositeKey = (vals: Array<string | number>, separator = ", "): string => {
         return vals.join(separator);
-    }
+    };
 
     /** Used to help the builder */
     public getGraphTypeFromEntityType = (entityType: string): string => {
@@ -577,5 +600,5 @@ export class GraphHelper {
             default:
                 return `GraphQLString`;
         }
-    }
+    };
 }

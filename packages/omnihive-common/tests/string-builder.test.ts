@@ -1,6 +1,6 @@
-import { assert } from 'chai';
-import { serializeError } from 'serialize-error';
-import { StringBuilder } from '../helpers/StringBuilder';
+import { assert } from "chai";
+import { serializeError } from "serialize-error";
+import { StringBuilder } from "../helpers/StringBuilder";
 
 describe("StringBuilder Tests", function () {
     const testString = "Test Sting Here";

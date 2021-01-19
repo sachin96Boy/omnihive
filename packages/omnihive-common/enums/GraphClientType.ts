@@ -4,5 +4,5 @@ export enum GraphClientType {
     HiveCustom,
     HiveDatabase,
     HiveSystem,
-    System
+    System,
 }

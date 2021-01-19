@@ -1,4 +1,4 @@
-import { IHiveWorker } from './IHiveWorker';
+import { IHiveWorker } from "./IHiveWorker";
 
 export interface ITokenWorker extends IHiveWorker {
     get: (payload?: object) => Promise<string>;

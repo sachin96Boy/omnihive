@@ -8,11 +8,10 @@ import { ServerSettings } from "../models/ServerSettings";
 import { SystemStatus } from "../models/SystemStatus";
 
 export class CommonStore {
-
     private static instance: CommonStore;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() { }
+    private constructor() {}
 
     public static getInstance = (): CommonStore => {
         if (!CommonStore.instance) {
@@ -20,11 +19,11 @@ export class CommonStore {
         }
 
         return CommonStore.instance;
-    }
+    };
 
     public static getNew = (): CommonStore => {
         return new CommonStore();
-    }
+    };
 
     public account: HiveAccount = new HiveAccount();
     public settings: ServerSettings = new ServerSettings();
@@ -37,7 +36,6 @@ export class CommonStore {
     }
 
     public changeSystemStatus = (serverStatus: ServerStatus, error?: Error): void => {
-
         const systemStatus: SystemStatus = new SystemStatus();
         systemStatus.serverStatus = serverStatus;
 
@@ -48,7 +46,7 @@ export class CommonStore {
         }
 
         this._status = systemStatus;
-    }
+    };
 
     public initWorkers = async (configs: HiveWorker[]): Promise<void> => {
         try {
@@ -58,7 +56,9 @@ export class CommonStore {
                 }
 
                 if (!hiveWorker.classPath || hiveWorker.classPath === "") {
-                    throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no classPath`);
+                    throw new Error(
+                        `Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no classPath`
+                    );
                 }
 
                 const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.classPath));
@@ -74,14 +74,16 @@ export class CommonStore {
         } catch (err) {
             throw new Error("Worker Factory Init Error => " + JSON.stringify(serializeError(err)));
         }
-    }
+    };
 
     public clearWorkers = (): void => {
         this.workers = [];
-    }
+    };
 
-    public getHiveWorker = async <T extends IHiveWorker | undefined>(type: string, name?: string): Promise<T | undefined> => {
-
+    public getHiveWorker = async <T extends IHiveWorker | undefined>(
+        type: string,
+        name?: string
+    ): Promise<T | undefined> => {
         if (this.workers.length === 0) {
             return undefined;
         }
@@ -89,21 +91,25 @@ export class CommonStore {
         let hiveWorker: [HiveWorker, any] | undefined = undefined;
 
         if (!name) {
-            hiveWorker = this.workers.find((d: [HiveWorker, any]) => d[0].type === type && d[0].default === true && d[0].enabled === true);
+            hiveWorker = this.workers.find(
+                (d: [HiveWorker, any]) => d[0].type === type && d[0].default === true && d[0].enabled === true
+            );
 
             if (!hiveWorker) {
-
-                const anyWorkers: [HiveWorker, any][] = this.workers.filter((d: [HiveWorker, any]) => d[0].type === type && d[0].enabled === true);
+                const anyWorkers: [HiveWorker, any][] = this.workers.filter(
+                    (d: [HiveWorker, any]) => d[0].type === type && d[0].enabled === true
+                );
 
                 if (anyWorkers && anyWorkers.length > 0) {
-                    hiveWorker = anyWorkers[0]
+                    hiveWorker = anyWorkers[0];
                 } else {
                     return undefined;
                 }
             }
-
         } else {
-            hiveWorker = this.workers.find((d: [HiveWorker, any]) => d[0].type === type && d[0].name === name && d[0].enabled === true);
+            hiveWorker = this.workers.find(
+                (d: [HiveWorker, any]) => d[0].type === type && d[0].name === name && d[0].enabled === true
+            );
 
             if (!hiveWorker) {
                 return undefined;
@@ -111,10 +117,9 @@ export class CommonStore {
         }
 
         return hiveWorker[1] as T;
-    }
+    };
 
     public registerWorker = async (hiveWorker: HiveWorker): Promise<void> => {
-
         if (!hiveWorker.classPath || hiveWorker.classPath === "") {
             throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no classPath`);
         }
@@ -125,5 +130,5 @@ export class CommonStore {
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).afterInit());
 
         this.workers.push([hiveWorker, newWorkerInstance]);
-    }
+    };
 }

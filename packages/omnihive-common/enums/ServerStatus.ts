@@ -4,5 +4,5 @@ export enum ServerStatus {
     Offline = "offline",
     Online = "online",
     Rebuilding = "rebuilding",
-    Unknown = "unknown"
+    Unknown = "unknown",
 }

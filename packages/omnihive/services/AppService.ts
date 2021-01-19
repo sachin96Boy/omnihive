@@ -12,25 +12,27 @@ import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSett
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import spawn from "cross-spawn";
 import fs from "fs";
-import { InstanceService } from "./InstanceService";
 import packageJson from "../package.json";
+import { InstanceService } from "./InstanceService";
 
 export class AppService {
-
     public getServerSettings = (name: string | undefined, settings: string | undefined): ServerSettings => {
-
         if (name && settings) {
-            throw new Error("You cannot provide both an instance name and a settings file to the configuration handler");
+            throw new Error(
+                "You cannot provide both an instance name and a settings file to the configuration handler"
+            );
         }
 
         if (!name && settings) {
             const settingsJson = JSON.parse(fs.readFileSync(settings, { encoding: "utf8" }));
 
             try {
-                const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(ServerSettings, settingsJson);
+                const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
+                    ServerSettings,
+                    settingsJson
+                );
                 return serverSettings;
-            }
-            catch {
+            } catch {
                 throw new Error("Given settings file cannot be successfully parsed into a ServerSettings object");
             }
         }
@@ -39,22 +41,25 @@ export class AppService {
         const configInstance: RegisteredInstance | undefined = instanceService.get(name ?? "");
 
         if (!configInstance || StringHelper.isNullOrWhiteSpace(configInstance.settings)) {
-            throw new Error("The given instance name has not been registered.  Please use the command line to add a new instance");
+            throw new Error(
+                "The given instance name has not been registered.  Please use the command line to add a new instance"
+            );
         }
 
         const settingsJson = JSON.parse(fs.readFileSync(configInstance.settings, { encoding: "utf8" }));
 
         try {
-            const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(ServerSettings, settingsJson);
+            const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
+                ServerSettings,
+                settingsJson
+            );
             return serverSettings;
-        }
-        catch {
+        } catch {
             throw new Error("Given settings file cannot be successfully parsed into a ServerSettings object");
         }
-    }
+    };
 
     public initApp = async (serverSettings: ServerSettings) => {
-
         // Load Core Workers
         if (packageJson && packageJson.omniHive && packageJson.omniHive.coreWorkers) {
             const coreWorkers: HiveWorker[] = packageJson.omniHive.coreWorkers as HiveWorker[];
@@ -65,16 +70,26 @@ export class AppService {
             }
         }
 
-        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  App worker needs the core log worker ohreqLogWorker");
         }
 
-        const fileSystemWorker: IFileSystemWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(HiveWorkerType.FileSystem, "ohreqFileSystemWorker");
+        const fileSystemWorker:
+            | IFileSystemWorker
+            | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(
+            HiveWorkerType.FileSystem,
+            "ohreqFileSystemWorker"
+        );
 
         if (!fileSystemWorker) {
-            throw new Error("Core FileSystem Worker Not Found.  App worker needs the core log worker ohreqFileSystemWorker");
+            throw new Error(
+                "Core FileSystem Worker Not Found.  App worker needs the core log worker ohreqFileSystemWorker"
+            );
         }
 
         // Get Server Settings
@@ -90,24 +105,34 @@ export class AppService {
             const defaultWorkers: HiveWorker[] = packageJson.omniHive.defaultWorkers as HiveWorker[];
 
             defaultWorkers.forEach((defaultWorker: HiveWorker) => {
-
-                if (!CommonStore.getInstance().settings.workers.some((hiveWorker: HiveWorker) => hiveWorker.type === defaultWorker.type)) {
-
+                if (
+                    !CommonStore.getInstance().settings.workers.some(
+                        (hiveWorker: HiveWorker) => hiveWorker.type === defaultWorker.type
+                    )
+                ) {
                     let registerWorker: boolean = true;
 
                     Object.keys(defaultWorker.metadata).forEach((metaKey: string) => {
                         if (typeof defaultWorker.metadata[metaKey] === "string") {
-                            if ((defaultWorker.metadata[metaKey] as string).startsWith("${") && (defaultWorker.metadata[metaKey] as string).endsWith("}")) {
+                            if (
+                                (defaultWorker.metadata[metaKey] as string).startsWith("${") &&
+                                (defaultWorker.metadata[metaKey] as string).endsWith("}")
+                            ) {
                                 let metaValue: string = defaultWorker.metadata[metaKey] as string;
 
                                 metaValue = metaValue.substr(2, metaValue.length - 3);
-                                const envValue: string | undefined = CommonStore.getInstance().settings.constants[metaValue];
+                                const envValue: string | undefined = CommonStore.getInstance().settings.constants[
+                                    metaValue
+                                ];
 
                                 if (envValue) {
                                     defaultWorker.metadata[metaKey] = envValue;
                                 } else {
                                     registerWorker = false;
-                                    logWorker.write(OmniHiveLogLevel.Warn, `Cannot register ${defaultWorker.name}...missing ${metaKey} in constants`);
+                                    logWorker.write(
+                                        OmniHiveLogLevel.Warn,
+                                        `Cannot register ${defaultWorker.name}...missing ${metaKey} in constants`
+                                    );
                                 }
                             }
                         }
@@ -117,14 +142,12 @@ export class AppService {
                         CommonStore.getInstance().settings.workers.push(defaultWorker);
                     }
                 }
-
             });
         }
 
         logWorker.write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
 
         if (packageJson && packageJson.dependencies && packageJson.omniHive && packageJson.omniHive.coreDependencies) {
-
             // Build lists
             const corePackages: any = packageJson.omniHive.coreDependencies;
             const loadedPackages: any = packageJson.dependencies;
@@ -176,7 +199,10 @@ export class AppService {
                     }
                 });
 
-                spawn.sync(removeCommand.outputString(), { shell: true, cwd: process.cwd() });
+                spawn.sync(removeCommand.outputString(), {
+                    shell: true,
+                    cwd: process.cwd(),
+                });
             }
 
             //Find out what to add
@@ -212,7 +238,10 @@ export class AppService {
                     }
                 });
 
-                spawn.sync(addCommand.outputString(), { shell: true, cwd: process.cwd() });
+                spawn.sync(addCommand.outputString(), {
+                    shell: true,
+                    cwd: process.cwd(),
+                });
             }
         }
 
@@ -224,13 +253,19 @@ export class AppService {
         logWorker.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
 
         // Get account if hive worker exists
-        if (CommonStore.getInstance().workers.some((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount)) {
-            const accoutWorker: [HiveWorker, any] | undefined = CommonStore.getInstance().workers.find((hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount);
+        if (
+            CommonStore.getInstance().workers.some(
+                (hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount
+            )
+        ) {
+            const accoutWorker: [HiveWorker, any] | undefined = CommonStore.getInstance().workers.find(
+                (hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount
+            );
 
             if (accoutWorker) {
                 const accountWorkerInstance: IHiveAccountWorker = accoutWorker[1] as IHiveAccountWorker;
                 CommonStore.getInstance().account = await accountWorkerInstance.getHiveAccount();
             }
         }
-    }
+    };
 }

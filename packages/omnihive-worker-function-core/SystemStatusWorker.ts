@@ -1,4 +1,3 @@
-
 import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
 import { IHiveWorker } from "@withonevision/omnihive-common/interfaces/IHiveWorker";
@@ -11,7 +10,6 @@ import * as core from "express-serve-static-core";
 import swaggerUi from "swagger-ui-express";
 
 export default class SystemStatusWorker extends HiveWorkerBase implements IHiveWorker {
-
     private tokenWorker!: ITokenWorker;
     private metadata!: HiveWorkerMetadataRestFunction;
 
@@ -21,13 +19,16 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IHiveW
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(HiveWorkerMetadataRestFunction, config.metadata);
+        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(
+            HiveWorkerMetadataRestFunction,
+            config.metadata
+        );
     }
 
     public async register(app: core.Express, restRoot: string): Promise<void> {
-
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token));
+            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+        );
 
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");
@@ -38,14 +39,16 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IHiveW
         app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: core.Request, res: core.Response) => {
             try {
                 await AwaitHelper.execute<void>(this.checkRequest(req));
-                const accessToken: string | undefined = req.headers.ohAccess?.toString();                
-                const verified: boolean = await AwaitHelper.execute<boolean>(this.tokenWorker.verify(accessToken ?? ""));
+                const accessToken: string | undefined = req.headers.ohAccess?.toString();
+                const verified: boolean = await AwaitHelper.execute<boolean>(
+                    this.tokenWorker.verify(accessToken ?? "")
+                );
 
                 if (!verified) {
                     throw new Error("Invalid Access Token");
                 }
 
-                res.setHeader('Content-Type', 'application/json');
+                res.setHeader("Content-Type", "application/json");
                 return res.status(200).json(CommonStore.getInstance().status);
             } catch (e) {
                 return res.status(400).send(e.message);
@@ -54,7 +57,6 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IHiveW
     }
 
     private checkRequest = async (req: core.Request) => {
-
         if (!req.body) {
             throw new Error(`Request Denied`);
         }
@@ -70,76 +72,74 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IHiveW
         if (req.body.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
-    }
+    };
 
     public getSwaggerDefinition = (): swaggerUi.JsonObject => {
         return {
-            "definitions": {
-                "GetStatusParameters": {
-                    "required": [
-                        "adminPassword"
-                    ],
-                    "properties": {
-                        "adminPassword": {
-                            "type": "string"
-                        }
-                    }
+            definitions: {
+                GetStatusParameters: {
+                    required: ["adminPassword"],
+                    properties: {
+                        adminPassword: {
+                            type: "string",
+                        },
+                    },
                 },
-                "GetStatusReturn": {
-                    "properties": {
-                        "serverStatus": {
-                            "type": "string"
+                GetStatusReturn: {
+                    properties: {
+                        serverStatus: {
+                            type: "string",
                         },
-                        "serverError": {
-                            "type": "string"
-                        }
-                    }
-                }
+                        serverError: {
+                            type: "string",
+                        },
+                    },
+                },
             },
-            "paths": {
+            paths: {
                 "/status": {
-                    "post": {
-                        "description": "Gets the OmniHive server status",
-                        "tags": [
+                    post: {
+                        description: "Gets the OmniHive server status",
+                        tags: [
                             {
-                                "name": "System"
-                            }
+                                name: "System",
+                            },
                         ],
-                        "parameters": [
+                        parameters: [
                             {
-                                "in": "header",
-                                "name": "ohaccess",
-                                "required": true,
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
+                                in: "header",
+                                name: "ohaccess",
+                                required: true,
+                                schema: {
+                                    type: "string",
+                                },
+                            },
                         ],
-                        "requestBody": {
-                            "required": true,
-                            "content": {
+                        requestBody: {
+                            required: true,
+                            content: {
                                 "application/json": {
-                                    "schema": {
-                                        "$ref": "#/definitions/GetStatusParameters"
-                                    }
-                                }
-                            }
+                                    schema: {
+                                        $ref: "#/definitions/GetStatusParameters",
+                                    },
+                                },
+                            },
                         },
-                        "responses": {
+                        responses: {
                             "200": {
-                                "description": "OmniHive Check Settings Response",
-                                "content": {
+                                description: "OmniHive Check Settings Response",
+                                content: {
                                     "application/json": {
-                                        "schema": {
-                                            "$ref": "#/definitions/GetStatusReturn"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+                                        schema: {
+                                            $ref: "#/definitions/GetStatusReturn",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    };
 }

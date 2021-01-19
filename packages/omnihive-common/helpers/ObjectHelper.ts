@@ -1,5 +1,4 @@
 export class ObjectHelper {
-
     public static create = <T extends unknown>(type: { new (): T }, model: any | null): T => {
         const generic: T = new type();
 
@@ -14,7 +13,7 @@ export class ObjectHelper {
         });
 
         return generic;
-    }
+    };
 
     public static createStrict = <T extends unknown>(type: { new (): T }, model: any | null): T => {
         const generic: T = new type();
@@ -32,7 +31,7 @@ export class ObjectHelper {
         });
 
         return generic;
-    }
+    };
 
     public static createArray = <T extends unknown>(type: { new (): T }, array: any[]): T[] => {
         const genericArray: T[] = [];
@@ -42,7 +41,7 @@ export class ObjectHelper {
         });
 
         return genericArray;
-    }
+    };
 
     public static createArrayStrict = <T extends unknown>(type: { new (): T }, array: any[]): T[] => {
         const genericArray: T[] = [];
@@ -52,5 +51,5 @@ export class ObjectHelper {
         });
 
         return genericArray;
-    }
+    };
 }

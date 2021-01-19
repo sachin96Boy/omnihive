@@ -18,11 +18,10 @@ import swaggerUi from "swagger-ui-express";
 import { parse } from "url";
 
 export class OmniHiveStore {
-
     private static instance: OmniHiveStore;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() { }
+    private constructor() {}
 
     public static getInstance = (): OmniHiveStore => {
         if (!OmniHiveStore.instance) {
@@ -30,11 +29,11 @@ export class OmniHiveStore {
         }
 
         return OmniHiveStore.instance;
-    }
+    };
 
     public static getNew = (): OmniHiveStore => {
         return new OmniHiveStore();
-    }
+    };
 
     public adminServer: NextServer | undefined = undefined;
     public adminServerPreparing: boolean = false;
@@ -42,7 +41,6 @@ export class OmniHiveStore {
     public webServer: Server | undefined = undefined;
 
     public getCleanAppServer = (): core.Express => {
-
         // Build app
 
         const app = express();
@@ -65,7 +63,6 @@ export class OmniHiveStore {
         // Register admin
 
         if (!this.adminServer && this.adminServerPreparing === false) {
-
             this.adminServerPreparing = true;
 
             const nextApp = next({ dev: CommonStore.getInstance().settings.config.developerMode });
@@ -77,7 +74,7 @@ export class OmniHiveStore {
 
         app.get("/admin", (req, res) => {
             if (!this.adminServer) {
-                res.setHeader('Content-Type', 'application/json');
+                res.setHeader("Content-Type", "application/json");
                 return res.status(200).json({ adminStatus: "loading" });
             }
 
@@ -88,7 +85,7 @@ export class OmniHiveStore {
 
         app.get("/admin/*", (req, res) => {
             if (!this.adminServer) {
-                res.setHeader('Content-Type', 'application/json');
+                res.setHeader("Content-Type", "application/json");
                 return res.status(200).json({ adminStatus: "loading" });
             }
 
@@ -113,10 +110,12 @@ export class OmniHiveStore {
                 },
             ],
             paths: {},
-            definitions: {}
+            definitions: {},
         };
 
-        const accessTokenWorker = CommonStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemAccessToken");
+        const accessTokenWorker = CommonStore.getInstance().workers.find(
+            (worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemAccessToken"
+        );
 
         if (accessTokenWorker) {
             const accessTokenInstance: IRestEndpointWorker = accessTokenWorker[1] as IRestEndpointWorker;
@@ -130,7 +129,9 @@ export class OmniHiveStore {
             }
         }
 
-        const checkSettingsWorker = CommonStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemCheckSettings");
+        const checkSettingsWorker = CommonStore.getInstance().workers.find(
+            (worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemCheckSettings"
+        );
 
         if (checkSettingsWorker) {
             const checkSettingInstance: IRestEndpointWorker = checkSettingsWorker[1] as IRestEndpointWorker;
@@ -140,11 +141,16 @@ export class OmniHiveStore {
 
             if (checkSettingsSwagger) {
                 swaggerDefinition.paths = { ...swaggerDefinition.paths, ...checkSettingsSwagger.paths };
-                swaggerDefinition.definitions = { ...swaggerDefinition.definitions, ...checkSettingsSwagger.definitions };
+                swaggerDefinition.definitions = {
+                    ...swaggerDefinition.definitions,
+                    ...checkSettingsSwagger.definitions,
+                };
             }
         }
 
-        const refreshWorker = CommonStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemRefresh");
+        const refreshWorker = CommonStore.getInstance().workers.find(
+            (worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemRefresh"
+        );
 
         if (refreshWorker) {
             const refreshInstance: IRestEndpointWorker = refreshWorker[1] as IRestEndpointWorker;
@@ -154,11 +160,16 @@ export class OmniHiveStore {
 
             if (refreshWorkerSwagger) {
                 swaggerDefinition.paths = { ...swaggerDefinition.paths, ...refreshWorkerSwagger.paths };
-                swaggerDefinition.definitions = { ...swaggerDefinition.definitions, ...refreshWorkerSwagger.definitions };
+                swaggerDefinition.definitions = {
+                    ...swaggerDefinition.definitions,
+                    ...refreshWorkerSwagger.definitions,
+                };
             }
         }
 
-        const statusWorker = CommonStore.getInstance().workers.find((worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemStatus");
+        const statusWorker = CommonStore.getInstance().workers.find(
+            (worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemStatus"
+        );
 
         if (statusWorker) {
             const statusInstance: IRestEndpointWorker = statusWorker[1] as IRestEndpointWorker;
@@ -168,27 +179,34 @@ export class OmniHiveStore {
 
             if (statusWorkerSwagger) {
                 swaggerDefinition.paths = { ...swaggerDefinition.paths, ...statusWorkerSwagger.paths };
-                swaggerDefinition.definitions = { ...swaggerDefinition.definitions, ...statusWorkerSwagger.definitions };
+                swaggerDefinition.definitions = {
+                    ...swaggerDefinition.definitions,
+                    ...statusWorkerSwagger.definitions,
+                };
             }
         }
 
         if (CommonStore.getInstance().settings.config.enableSwagger) {
-            app.use(`${OmniHiveConstants.SYSTEM_REST_ROOT}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
+            app.use(
+                `${OmniHiveConstants.SYSTEM_REST_ROOT}/api-docs`,
+                swaggerUi.serve,
+                swaggerUi.setup(swaggerDefinition)
+            );
         }
 
         return app;
-
-    }
+    };
 
     public getRootUrlPathName = (): string => {
         const rootUrl: URL = new URL(CommonStore.getInstance().settings.config.rootUrl);
         return rootUrl.pathname;
-    }
+    };
 
     public loadSpecialStatusApp = async (status: ServerStatus, error?: Error): Promise<void> => {
-
-        if (CommonStore.getInstance().status.serverStatus === ServerStatus.Admin ||
-            CommonStore.getInstance().status.serverStatus === ServerStatus.Rebuilding) {
+        if (
+            CommonStore.getInstance().status.serverStatus === ServerStatus.Admin ||
+            CommonStore.getInstance().status.serverStatus === ServerStatus.Rebuilding
+        ) {
             return;
         }
 
@@ -197,16 +215,18 @@ export class OmniHiveStore {
         const app: core.Express = this.getCleanAppServer();
 
         app.get("/", (_req, res) => {
-            res.setHeader('Content-Type', 'application/json');
+            res.setHeader("Content-Type", "application/json");
             return res.status(200).json(CommonStore.getInstance().status);
         });
 
         this.appServer = app;
-    }
+    };
 
     public serverChangeHandler = async (): Promise<void> => {
-
-        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(HiveWorkerType.Log, "ohreqLogWorker");
+        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
@@ -223,10 +243,14 @@ export class OmniHiveStore {
         this.webServer = server;
 
         this.webServer.listen(CommonStore.getInstance().settings.config.portNumber, () => {
-            logWorker.write(OmniHiveLogLevel.Info, `New Server Listening on process ${process.pid} using port ${CommonStore.getInstance().settings.config.portNumber}`);
+            logWorker.write(
+                OmniHiveLogLevel.Info,
+                `New Server Listening on process ${process.pid} using port ${
+                    CommonStore.getInstance().settings.config.portNumber
+                }`
+            );
         });
 
         logWorker.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
-
-    }
+    };
 }

@@ -1,18 +1,16 @@
 import { ObjectHelper } from "../helpers/ObjectHelper";
 import { StringHelper } from "../helpers/StringHelper";
-import { IHiveWorker } from '../interfaces/IHiveWorker';
+import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "./HiveWorker";
 
 export abstract class HiveWorkerBase implements IHiveWorker {
-
     public config!: HiveWorker;
 
     public async afterInit(): Promise<void> {
         return;
     }
-    
-    public async init(config: HiveWorker): Promise<void> {
 
+    public async init(config: HiveWorker): Promise<void> {
         if (!config || Object.keys(config).length <= 0) {
             throw new Error("Configuration not specified");
         }
@@ -21,12 +19,11 @@ export abstract class HiveWorkerBase implements IHiveWorker {
     }
 
     public checkMetadata = <T extends object>(type: { new (): T }, model: any | null): T => {
-
         const metadata: T = ObjectHelper.createStrict<T>(type, model);
         const metaAny: any = metadata as any;
 
         Object.keys(metadata).forEach((key: string) => {
-            if(!metaAny[key]) {
+            if (!metaAny[key]) {
                 throw new Error(`Metadata key ${key} is null or undefined on hive worker ${this.config.name}`);
             }
 
@@ -36,11 +33,13 @@ export abstract class HiveWorkerBase implements IHiveWorker {
 
             if (metaAny[key] && Array.isArray(metaAny[key])) {
                 if ((metaAny[key] as Array<any>).length === 0) {
-                    throw new Error(`Metadata key ${key} is an array but it is empty on hive worker ${this.config.name}`);
+                    throw new Error(
+                        `Metadata key ${key} is an array but it is empty on hive worker ${this.config.name}`
+                    );
                 }
             }
         });
 
         return metadata;
-    }
+    };
 }

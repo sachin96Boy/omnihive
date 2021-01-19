@@ -8,31 +8,49 @@ import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import { QueryBuilder } from "knex";
 
 export class ParseUpdate {
-    public parse = async (workerName: string, tableName: string, updateObject: any, whereObject: any, _customDmlArgs: any): Promise<number> => {
-
+    public parse = async (
+        workerName: string,
+        tableName: string,
+        updateObject: any,
+        whereObject: any,
+        _customDmlArgs: any
+    ): Promise<number> => {
         if (!whereObject || Object.keys(whereObject).length === 0) {
-            throw new Error("Update cannot have no where objects/clause.  That is too destructive.")
+            throw new Error("Update cannot have no where objects/clause.  That is too destructive.");
         }
 
         if (!updateObject || Object.keys(updateObject).length === 0) {
             throw new Error("Update cannot have no columns to update.");
         }
 
-        const databaseWorker: IKnexDatabaseWorker | undefined = await AwaitHelper.execute<IKnexDatabaseWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(HiveWorkerType.Database, workerName));
+        const databaseWorker: IKnexDatabaseWorker | undefined = await AwaitHelper.execute<
+            IKnexDatabaseWorker | undefined
+        >(
+            CommonStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(
+                HiveWorkerType.Database,
+                workerName
+            )
+        );
 
         if (!databaseWorker) {
-            throw new Error("Database Worker Not Defined.  This graph converter will not work without a Database worker.");
+            throw new Error(
+                "Database Worker Not Defined.  This graph converter will not work without a Database worker."
+            );
         }
 
-        const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<IFileSystemWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
+        const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<
+            IFileSystemWorker | undefined
+        >(CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
 
         if (!fileSystemWorker) {
-            throw new Error("FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker.");
+            throw new Error(
+                "FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker."
+            );
         }
 
-        const schemaFilePath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${OmniHiveConstants.SERVER_OUTPUT_DIRECTORY}/connections/${workerName}.json`;
+        const schemaFilePath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${
+            OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
+        }/connections/${workerName}.json`;
         const jsonSchema: any = JSON.parse(fileSystemWorker.readFile(schemaFilePath));
 
         let tableSchema: TableSchema[] = jsonSchema["tables"];
@@ -62,7 +80,6 @@ export class ParseUpdate {
         });
 
         Object.keys(whereObject).forEach((key: string, index: number) => {
-
             let columnSchema: TableSchema | undefined = tableSchema.find((column: TableSchema) => {
                 return column.columnNameDatabase === key;
             });
@@ -93,7 +110,7 @@ export class ParseUpdate {
                         if (subIndex === 0) {
                             subWhere.whereRaw(`${columnSchema?.columnNameDatabase} ${split}`);
                         } else {
-                            subWhere.orWhereRaw(`${columnSchema?.columnNameDatabase} ${split}`)
+                            subWhere.orWhereRaw(`${columnSchema?.columnNameDatabase} ${split}`);
                         }
                     });
                 });
@@ -105,7 +122,7 @@ export class ParseUpdate {
                         if (subIndex === 0) {
                             subWhere.whereRaw(`${columnSchema?.columnNameDatabase} ${split}`);
                         } else {
-                            subWhere.orWhereRaw(`${columnSchema?.columnNameDatabase} ${split}`)
+                            subWhere.orWhereRaw(`${columnSchema?.columnNameDatabase} ${split}`);
                         }
                     });
                 });
@@ -113,6 +130,5 @@ export class ParseUpdate {
         });
 
         return await queryBuilder.update(updateDbObject);
-
-    }
+    };
 }

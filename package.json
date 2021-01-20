@@ -13,7 +13,7 @@
     "clean": "gulp clean-dev",
     "deploy": "gulp clean-prod",
     "reinstall": "lerna clean --yes && lerna bootstrap",
-    "test": "nyc mocha -r dotenv/config -r ts-node/register 'packages/**/tests/**/*.ts' --timeout 5000 --retries 5 --colors",
+    "test": "nyc mocha -r dotenv/config -r ts-node/register 'packages/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors",
     "server-debug": "cd packages/omnihive && yarn run server-debug"
   },
   "dependencies": {

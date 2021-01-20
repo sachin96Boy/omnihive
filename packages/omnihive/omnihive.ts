@@ -350,7 +350,7 @@ const init = async () => {
             const runnerService: TaskRunnerService = new TaskRunnerService();
 
             if (args.argv.settings) {
-                runnerService.start(
+                await runnerService.start(
                     undefined,
                     args.argv.settings as string,
                     args.argv.worker as string,
@@ -359,13 +359,15 @@ const init = async () => {
             }
 
             if (args.argv.name) {
-                runnerService.start(
+                await runnerService.start(
                     args.argv.name as string,
                     undefined,
                     args.argv.worker as string,
                     args.argv.args as string
                 );
             }
+
+            process.exit();
 
             break;
         default:

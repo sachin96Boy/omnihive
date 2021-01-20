@@ -104,7 +104,6 @@ export class ServerService {
         );
 
         adminPubSubClient?.joinChannel(CommonStore.getInstance().settings.config.serverGroupName);
-        logWorker.write(OmniHiveLogLevel.Info, "Admin Pusher Channel => Connected");
 
         adminPubSubClient?.addListener(
             CommonStore.getInstance().settings.config.serverGroupName,

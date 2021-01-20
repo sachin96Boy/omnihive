@@ -1,14 +1,14 @@
 {
     "compilerOptions": {
       "allowSyntheticDefaultImports": true,
-      "baseUrl": ".",
+      "baseUrl": "./src",
       "composite": true,
       "declaration": true,
       "declarationMap": true,
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
       "esModuleInterop": true,
-      "lib": ["ES6", "DOM"],
+      "lib": ["ES2020", "DOM"],
       "module": "CommonJS",
       "moduleResolution": "Node",
       "resolveJsonModule": true,
@@ -23,14 +23,15 @@
       "skipLibCheck": true,
       "sourceMap": true,
       "strict": true,
-      "target": "ES6",
+      "outDir": "./dist",
+      "target": "ES2020",
       "types": ["mocha", "node"]
     },
     "exclude": [
       "node_modules"
     ],
     "include": [
-      "packages/**/*.ts",
-      "packages/**/*.json"
+      "src/packages/**/*.ts",
+      "src/packages/**/*.json"
     ]
   }

@@ -1,14 +1,14 @@
 {
-  "name": "@withonevision/omnihive-worker-log-core",
-  "version": "4.0.0",
-  "description": "OmniHive Core Log Worker",
-  "license": "MIT",
-  "scripts": {
-    "build": "tsc"
-  },
-  "dependencies": {
-    "@withonevision/omnihive-common": "^4.0.0",
-    "chalk": "4.1.0",
-    "dayjs": "1.10.3"
-  }
+    "name": "@withonevision/omnihive-worker-log-core",
+    "version": "4.0.0",
+    "description": "OmniHive Core Log Worker",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@withonevision/omnihive-common": "^4.0.0",
+        "chalk": "4.1.0",
+        "dayjs": "1.10.3"
+    }
 }

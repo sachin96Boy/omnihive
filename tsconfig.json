@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
       "allowSyntheticDefaultImports": true,
-      "baseUrl": "./src",
+      "baseUrl": ".",
       "composite": true,
       "declaration": true,
       "declarationMap": true,
@@ -17,9 +17,10 @@
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "paths": {
-        "@withonevision/*": ["packages/*"]
+        "@withonevision/*": ["src/packages/*"]
       },
       "removeComments": false,
+      "rootDir": "./src",
       "skipLibCheck": true,
       "sourceMap": true,
       "strict": true,
@@ -28,7 +29,9 @@
       "types": ["mocha", "node"]
     },
     "exclude": [
-      "node_modules"
+      "node_modules",
+      "src/packages/**/tests/**/*.ts",
+      "src/packages/**/nodemon*.json"
     ],
     "include": [
       "src/packages/**/*.ts",

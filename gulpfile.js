@@ -1,25 +1,12 @@
 const gulp = require("gulp");
-const del = require("del");
 
-gulp.task("clean-dev", function (done) {
-    del.sync(
-        [
-            "tsconfig.tsbuildinfo",
-            "./packages/**/*.js",
-            "./packages/**/*.d.ts",
-            "./packages/**/*.d.ts.map",
-            "./packages/**/*.js.map",
-            "!gulpfile.js",
-            "!jest.config.js",
-        ],
-        { force: true }
-    );
+const nextJsFiles = [
+    "src/packages/omnihive/next-env.d.ts",
+    "src/packages/omnihive/next.config.js",
+    "src/packages/omnihive/postcss.config.js",
+    "src/packages/omnihive/tailwind.config.js",
+];
 
-    done();
-});
-
-gulp.task("clean-prod", function (done) {
-    del.sync(["./packages/**/*.ts", "!./packages/**/*.d.ts"], { force: true });
-
-    done();
+gulp.task("copy-next", function () {
+    return gulp.src(nextJsFiles).pipe(gulp.dest("./dist/packages/omnihive"));
 });

@@ -3,16 +3,14 @@
 # dependencies
 **/node_modules
 
+# production
+**/dist
+
 # tests
 **/tests
 
 # misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-npm-debug.log*
+**/*.env
 yarn-debug.log*
 yarn-error.log*

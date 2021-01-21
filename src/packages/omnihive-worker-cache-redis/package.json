@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "@withonevision/omnihive-common": "^4.0.0",
-    "ioredis": "4.19.4"
+    "ioredis": "4.19.4",
+    "serialize-error": "8.0.0"
   },
   "devDependencies": {
     "@types/ioredis": "4.17.11"

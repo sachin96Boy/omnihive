@@ -1,31 +1,39 @@
 {
-    "mocha.requires": [
-        "ts-node/register"
-    ],
-    "mocha.files.glob": "packages/**/tests/**/*.ts",
-    "mocha.runTestsOnSave": "true",
-    "mocha.showInExplorer": false,
-    "mocha.options": {
-        "timeout": 5000,
-        "retries": 5
-    },
-    "mocha.coverage": {
-        "enable": true,
-        "decoration": true,
-        "runWithInterval": false,
-        "autoUpdateInterval": 20000,
-        "activeOnStart": true,
-        "runAfterTest": true,
-        "reporters": [
-            "lcov"
-        ]
-    },
-    "mocha.logVerbose": false,
-    "mocha.parallelTests": 5,
-    "mocha.sideBarOptions": {
-        "lens": true, 
-        "decoration": true,
-        "autoUpdateTime": 2000,
-        "showDebugTestStatus": true 
-    }
+  "mocha.requires": [
+    "ts-node/register"
+  ],
+  "mocha.files.glob": "packages/**/tests/**/*.ts",
+  "mocha.runTestsOnSave": "true",
+  "mocha.showInExplorer": false,
+  "mocha.options": {
+    "timeout": 5000,
+    "retries": 5
+  },
+  "mocha.coverage": {
+    "enable": true,
+    "decoration": true,
+    "runWithInterval": false,
+    "autoUpdateInterval": 20000,
+    "activeOnStart": true,
+    "runAfterTest": true,
+    "reporters": [
+      "lcov"
+    ]
+  },
+  "mocha.logVerbose": false,
+  "mocha.parallelTests": 5,
+  "mocha.sideBarOptions": {
+    "lens": true,
+    "decoration": true,
+    "autoUpdateTime": 2000,
+    "showDebugTestStatus": true
+  },
+  "search.exclude": {
+    "**/.yarn": true,
+    "**/.pnp.*": true
+  },
+  "eslint.nodePath": ".yarn/sdks",
+  "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
+  "typescript.tsdk": ".yarn/sdks/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }

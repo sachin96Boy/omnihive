@@ -1,0 +1,15 @@
+{
+    "name": "@withonevision/omnihive-worker-log-console",
+    "version": "4.0.0-alpha.0",
+    "description": "OmniHive Console Log Worker",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@withonevision/omnihive-common": "workspace:*"
+    },
+    "devDependencies": {
+        "typescript": "4.1.3"
+    }
+}

@@ -8,7 +8,7 @@
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
       "esModuleInterop": true,
-      "lib": ["ES6", "DOM"],
+      "lib": ["ES2020", "DOM"],
       "module": "CommonJS",
       "moduleResolution": "Node",
       "resolveJsonModule": true,
@@ -17,20 +17,25 @@
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "paths": {
-        "@withonevision/*": ["packages/*"]
+        "@withonevision/*": ["src/packages/*"]
       },
       "removeComments": false,
+      "rootDir": "./src",
       "skipLibCheck": true,
       "sourceMap": true,
       "strict": true,
-      "target": "ES6",
+      "outDir": "./dist",
+      "target": "ES2020",
       "types": ["mocha", "node"]
     },
     "exclude": [
-      "node_modules"
+      ".yarn",
+      "**/node_modules/**",
+      "src/packages/**/tests/**/*.ts",
+      "src/packages/**/nodemon*.json"
     ],
     "include": [
-      "packages/**/*.ts",
-      "packages/**/*.json"
+      "src/packages/**/*.ts",
+      "src/packages/**/*.json"
     ]
   }

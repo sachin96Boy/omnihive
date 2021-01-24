@@ -1,17 +1,18 @@
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
-import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
-import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
-import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
-import { IHiveAccountWorker } from "@withonevision/omnihive-common/interfaces/IHiveAccountWorker";
-import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { RegisteredInstance } from "@withonevision/omnihive-common/models/RegisteredInstance";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
-import spawn from "cross-spawn";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
+import { IHiveAccountWorker } from "@withonevision/omnihive-core/interfaces/IHiveAccountWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
+import childProcess from "child_process";
 import fs from "fs";
+import { serializeError } from "serialize-error";
 import packageJson from "../package.json";
 import { InstanceService } from "./InstanceService";
 
@@ -199,10 +200,17 @@ export class AppService {
                     }
                 });
 
-                spawn.sync(removeCommand.outputString(), {
+                const removeSpawn = childProcess.spawnSync(removeCommand.outputString(), {
                     shell: true,
                     cwd: process.cwd(),
+                    stdio: ["inherit", "inherit", "pipe"],
                 });
+
+                if (removeSpawn.status !== 0) {
+                    const removeError: Error = new Error(serializeError(removeSpawn.stderr.toString()));
+                    console.log(removeError);
+                    throw removeError;
+                }
             }
 
             //Find out what to add
@@ -238,10 +246,17 @@ export class AppService {
                     }
                 });
 
-                spawn.sync(addCommand.outputString(), {
+                const addSpawn = childProcess.spawnSync(addCommand.outputString(), {
                     shell: true,
                     cwd: process.cwd(),
+                    stdio: ["inherit", "inherit", "pipe"],
                 });
+
+                if (addSpawn.status !== 0) {
+                    const addError: Error = new Error(serializeError(addSpawn.stderr.toString()));
+                    console.log(addError);
+                    throw addError;
+                }
             }
         }
 

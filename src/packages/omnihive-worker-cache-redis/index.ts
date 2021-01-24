@@ -1,7 +1,7 @@
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { ICacheWorker } from "@withonevision/omnihive-common/interfaces/ICacheWorker";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import Redis from "ioredis";
 import { serializeError } from "serialize-error";
 

@@ -1,7 +1,7 @@
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { IDateWorker } from "@withonevision/omnihive-common/interfaces/IDateWorker";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import dayjs from "dayjs";
 import tz from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";

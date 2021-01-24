@@ -7,7 +7,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-common": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "socket.io": "3.1.0"
     },
     "devDependencies": {

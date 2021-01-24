@@ -1,17 +1,17 @@
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
-import { ICacheWorker } from "@withonevision/omnihive-common/interfaces/ICacheWorker";
-import { IDateWorker } from "@withonevision/omnihive-common/interfaces/IDateWorker";
-import { IEncryptionWorker } from "@withonevision/omnihive-common/interfaces/IEncryptionWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IKnexDatabaseWorker";
-import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
-import { ConverterSqlInfo } from "@withonevision/omnihive-common/models/ConverterSqlInfo";
-import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
-import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { IKnexDatabaseWorker } from "@withonevision/omnihive-core-extended/interfaces/IKnexDatabaseWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ConverterSqlInfo } from "@withonevision/omnihive-core/models/ConverterSqlInfo";
+import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import {
     FieldNode,
     GraphQLArgument,

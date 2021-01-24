@@ -1,8 +1,8 @@
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { IPubSubClientWorker } from "@withonevision/omnihive-common/interfaces/IPubSubClientWorker";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
-import { PubSubListener } from "@withonevision/omnihive-common/models/PubSubListener";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IPubSubClientWorker } from "@withonevision/omnihive-core/interfaces/IPubSubClientWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
 import { serializeError } from "serialize-error";
 import * as socketio from "socket.io-client";
 

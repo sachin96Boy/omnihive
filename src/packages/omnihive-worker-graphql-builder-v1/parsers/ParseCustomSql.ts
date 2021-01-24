@@ -1,8 +1,8 @@
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { IDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IDatabaseWorker";
-import { IEncryptionWorker } from "@withonevision/omnihive-common/interfaces/IEncryptionWorker";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 
 export class ParseCustomSql {
     public parse = async (workerName: string, encryptedSql: string): Promise<any[][]> => {

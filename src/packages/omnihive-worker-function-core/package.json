@@ -7,7 +7,8 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-common": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-extended": "workspace:*",
         "express": "4.17.1",
         "swagger-ui-express": "4.1.6"
     },

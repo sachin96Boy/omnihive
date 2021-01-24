@@ -7,7 +7,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-common": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "node-cache": "5.1.2"
     },
     "devDependencies": {

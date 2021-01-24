@@ -1,7 +1,7 @@
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { assert } from "chai";
 import fs from "fs";
 import path from "path";

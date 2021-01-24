@@ -7,7 +7,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-common": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "node-forge": "0.10.0"
     },
     "devDependencies": {

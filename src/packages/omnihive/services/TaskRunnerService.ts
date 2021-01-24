@@ -1,11 +1,11 @@
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
-import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
-import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { serializeError } from "serialize-error";
 import { AppService } from "./AppService";
 

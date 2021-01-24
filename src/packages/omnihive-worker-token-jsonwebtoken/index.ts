@@ -1,7 +1,7 @@
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
 import { serializeError } from "serialize-error";

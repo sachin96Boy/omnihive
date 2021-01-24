@@ -1,6 +1,6 @@
-import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
-import { RegisteredInstance } from "@withonevision/omnihive-common/models/RegisteredInstance";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
 import Conf from "conf";
 import fs from "fs";

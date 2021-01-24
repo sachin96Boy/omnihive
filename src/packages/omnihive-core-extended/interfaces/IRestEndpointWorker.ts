@@ -1,6 +1,6 @@
+import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import { IHiveWorker } from "./IHiveWorker";
 
 export interface IRestEndpointWorker extends IHiveWorker {
     getSwaggerDefinition: () => swaggerUi.JsonObject | undefined;

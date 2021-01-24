@@ -1,12 +1,13 @@
 {
-    "name": "@withonevision/omnihive-common",
+    "name": "@withonevision/omnihive-core-extended",
     "version": "4.0.0-alpha.0",
-    "description": "OmniHive Common Library",
+    "description": "OmniHive Core Extended Library",
     "license": "MIT",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
+        "@withonevision/omnihive-core": "workspace:*",
         "express": "4.17.1",
         "graphql": "15.4.0",
         "knex": "0.21.16",

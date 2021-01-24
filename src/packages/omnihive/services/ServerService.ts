@@ -1,24 +1,24 @@
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-common/enums/OmniHiveLogLevel";
-import { ServerStatus } from "@withonevision/omnihive-common/enums/ServerStatus";
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
-import { StringHelper } from "@withonevision/omnihive-common/helpers/StringHelper";
-import { IDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IDatabaseWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
-import { IGraphBuildWorker } from "@withonevision/omnihive-common/interfaces/IGraphBuildWorker";
-import { ILogWorker } from "@withonevision/omnihive-common/interfaces/ILogWorker";
-import { IPubSubClientWorker } from "@withonevision/omnihive-common/interfaces/IPubSubClientWorker";
-import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
-import { IRestEndpointWorker } from "@withonevision/omnihive-common/interfaces/IRestEndpointWorker";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-common/models/HiveWorkerMetadataGraphBuilder";
-import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
-import { RegisteredInstance } from "@withonevision/omnihive-common/models/RegisteredInstance";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
-import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
-import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
+import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { IPubSubClientWorker } from "@withonevision/omnihive-core/interfaces/IPubSubClientWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-core-extended/interfaces/IRestEndpointWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
+import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
+import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import os from "os";
@@ -378,20 +378,18 @@ export class ServerService {
                     `var { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`
                 );
                 builder.appendLine(
-                    `var { GraphQLJSONObject } = require("@withonevision/omnihive-common/models/GraphQLJSON");`
+                    `var { GraphQLJSONObject } = require("@withonevision/omnihive-core-extended/models/GraphQLJSON");`
                 );
                 builder.appendLine(
-                    `var { AwaitHelper } = require("@withonevision/omnihive-common/helpers/AwaitHelper");`
+                    `var { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`
                 );
                 builder.appendLine(
-                    `var { ITokenWorker } = require("@withonevision/omnihive-common/interfaces/ITokenWorker");`
+                    `var { ITokenWorker } = require("@withonevision/omnihive-core/interfaces/ITokenWorker");`
                 );
                 builder.appendLine(
-                    `var { HiveWorkerType } = require("@withonevision/omnihive-common/enums/HiveWorkerType");`
+                    `var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`
                 );
-                builder.appendLine(
-                    `var { CommonStore } = require("@withonevision/omnihive-common/stores/CommonStore");`
-                );
+                builder.appendLine(`var { CommonStore } = require("@withonevision/omnihive-core/stores/CommonStore");`);
                 builder.appendLine();
 
                 customGraphWorkers.forEach((worker: [HiveWorker, any]) => {

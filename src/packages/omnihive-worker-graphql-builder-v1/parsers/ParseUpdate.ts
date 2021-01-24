@@ -1,10 +1,10 @@
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-common/interfaces/IFileSystemWorker";
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-common/interfaces/IKnexDatabaseWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-common/models/OmniHiveConstants";
-import { TableSchema } from "@withonevision/omnihive-common/models/TableSchema";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { IKnexDatabaseWorker } from "@withonevision/omnihive-core-extended/interfaces/IKnexDatabaseWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { QueryBuilder } from "knex";
 
 export class ParseUpdate {

@@ -1,10 +1,10 @@
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
-import { StoredProcSchema } from "@withonevision/omnihive-common/models/StoredProcSchema";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { assert } from "chai";
 import fs from "fs";
 import { serializeError } from "serialize-error";

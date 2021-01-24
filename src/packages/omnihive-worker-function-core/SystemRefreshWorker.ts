@@ -1,12 +1,12 @@
-import { HiveWorkerType } from "@withonevision/omnihive-common/enums/HiveWorkerType";
-import { AwaitHelper } from "@withonevision/omnihive-common/helpers/AwaitHelper";
-import { IHiveWorker } from "@withonevision/omnihive-common/interfaces/IHiveWorker";
-import { IPubSubServerWorker } from "@withonevision/omnihive-common/interfaces/IPubSubServerWorker";
-import { ITokenWorker } from "@withonevision/omnihive-common/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-common/models/HiveWorkerMetadataRestFunction";
-import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core-extended/models/HiveWorkerMetadataRestFunction";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
+import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 

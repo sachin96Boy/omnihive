@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-import { ObjectHelper } from "@withonevision/omnihive-common/helpers/ObjectHelper";
-import { StringBuilder } from "@withonevision/omnihive-common/helpers/StringBuilder";
-import { RegisteredInstance } from "@withonevision/omnihive-common/models/RegisteredInstance";
-import { ServerSettings } from "@withonevision/omnihive-common/models/ServerSettings";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
 import Table from "cli-table";
+import { clear } from "console";
 import crypto from "crypto";
 import figlet from "figlet";
 import fs from "fs";
@@ -17,6 +18,8 @@ import { TaskRunnerService } from "./services/TaskRunnerService";
 
 const init = async () => {
     const args = yargs(process.argv.slice(2));
+
+    clear();
 
     args
         .help(false)

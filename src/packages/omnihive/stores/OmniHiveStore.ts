@@ -9,7 +9,6 @@ import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
 import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
-import * as core from "express-serve-static-core";
 import helmet from "helmet";
 import http, { Server } from "http";
 import next from "next";
@@ -37,10 +36,10 @@ export class OmniHiveStore {
 
     public adminServer: NextServer | undefined = undefined;
     public adminServerPreparing: boolean = false;
-    public appServer!: core.Express;
+    public appServer!: express.Express;
     public webServer: Server | undefined = undefined;
 
-    public getCleanAppServer = (): core.Express => {
+    public getCleanAppServer = (): express.Express => {
         // Build app
 
         const app = express();
@@ -212,7 +211,7 @@ export class OmniHiveStore {
 
         CommonStore.getInstance().changeSystemStatus(status, error);
 
-        const app: core.Express = this.getCleanAppServer();
+        const app: express.Express = this.getCleanAppServer();
 
         app.get("/", (_req, res) => {
             res.setHeader("Content-Type", "application/json");

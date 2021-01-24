@@ -6,7 +6,6 @@ import { HiveAccount } from "../models/HiveAccount";
 import { HiveWorker } from "../models/HiveWorker";
 import { ServerSettings } from "../models/ServerSettings";
 import { SystemStatus } from "../models/SystemStatus";
-
 export class CommonStore {
     private static instance: CommonStore;
 

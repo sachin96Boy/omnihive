@@ -6,7 +6,7 @@ import { HiveWorker } from "@withonevision/omnihive-common/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-common/models/HiveWorkerBase";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-common/models/HiveWorkerMetadataRestFunction";
 import { CommonStore } from "@withonevision/omnihive-common/stores/CommonStore";
-import * as core from "express-serve-static-core";
+import express from "express";
 import swaggerUi from "swagger-ui-express";
 
 export default class SystemAccessTokenWorker extends HiveWorkerBase implements IRestEndpointWorker {
@@ -25,7 +25,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
         );
     }
 
-    public async register(app: core.Express, restRoot: string): Promise<void> {
+    public async register(app: express.Express, restRoot: string): Promise<void> {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
             CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
         );
@@ -36,7 +36,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
 
         this.tokenWorker = tokenWorker;
 
-        app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: core.Request, res: core.Response) => {
+        app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: express.Request, res: express.Response) => {
             try {
                 await AwaitHelper.execute<void>(this.checkRequest(req));
                 const token = await AwaitHelper.execute<string>(this.tokenWorker.get());
@@ -47,7 +47,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
         });
     }
 
-    private checkRequest = async (req: core.Request) => {
+    private checkRequest = async (req: express.Request) => {
         if (!req.body) {
             throw new Error(`Request body incorrectly formed`);
         }

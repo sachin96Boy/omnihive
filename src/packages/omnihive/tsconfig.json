@@ -5,7 +5,7 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "preserve"
   },
   "references": [
     {
@@ -14,5 +14,8 @@
   ],
   "include": [
     "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

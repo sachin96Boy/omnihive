@@ -1,7 +1,12 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 # dependencies
-**/node_modules
+.yarn/*
+**/node_modules/
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
 
 # production
 **/dist

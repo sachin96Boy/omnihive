@@ -1,14 +1,17 @@
 {
     "name": "@withonevision/omnihive-worker-log-core",
-    "version": "4.0.0",
+    "version": "4.0.0-alpha.0",
     "description": "OmniHive Core Log Worker",
     "license": "MIT",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-common": "^4.0.0",
+        "@withonevision/omnihive-common": "workspace:*",
         "chalk": "4.1.0",
-        "dayjs": "1.10.3"
+        "dayjs": "1.10.4"
+    },
+    "devDependencies": {
+        "typescript": "4.1.3"
     }
 }

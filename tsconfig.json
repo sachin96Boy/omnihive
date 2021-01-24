@@ -29,7 +29,8 @@
       "types": ["mocha", "node"]
     },
     "exclude": [
-      "node_modules",
+      ".yarn",
+      "**/node_modules/**",
       "src/packages/**/tests/**/*.ts",
       "src/packages/**/nodemon*.json"
     ],

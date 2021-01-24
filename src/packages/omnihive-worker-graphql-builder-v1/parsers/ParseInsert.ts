@@ -1,11 +1,11 @@
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-core-extended/interfaces/IKnexDatabaseWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
 import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
-import { QueryBuilder } from "knex";
+import knex, { QueryBuilder } from "knex";
 
 export class ParseInsert {
     public parse = async (
@@ -18,13 +18,8 @@ export class ParseInsert {
             throw new Error("Insert cannot have a zero column count.");
         }
 
-        const databaseWorker: IKnexDatabaseWorker | undefined = await AwaitHelper.execute<
-            IKnexDatabaseWorker | undefined
-        >(
-            CommonStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(
-                HiveWorkerType.Database,
-                workerName
-            )
+        const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
+            CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {
@@ -51,7 +46,7 @@ export class ParseInsert {
         let tableSchema: TableSchema[] = jsonSchema["tables"];
         tableSchema = tableSchema.filter((tableSchema: TableSchema) => tableSchema.tableName === tableName);
 
-        const queryBuilder: QueryBuilder = databaseWorker.connection.queryBuilder();
+        const queryBuilder: QueryBuilder = (databaseWorker.connection as knex).queryBuilder();
 
         const insertDbObjects: any[] = [];
         const insertDbColumnList: string[] = [];

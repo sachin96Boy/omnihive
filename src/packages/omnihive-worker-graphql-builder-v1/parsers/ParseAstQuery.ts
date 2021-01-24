@@ -1,9 +1,9 @@
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-core-extended/interfaces/IKnexDatabaseWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
@@ -30,7 +30,7 @@ import { ConverterOrderBy } from "../models/ConverterOrderBy";
 
 export class ParseAstQuery {
     private logWorker!: ILogWorker;
-    private databaseWorker!: IKnexDatabaseWorker;
+    private databaseWorker!: IDatabaseWorker;
     private encryptionWorker!: IEncryptionWorker;
     private fileSystemWorker!: IFileSystemWorker;
     private cacheWorker!: ICacheWorker | undefined;
@@ -68,13 +68,8 @@ export class ParseAstQuery {
             throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
         }
 
-        const databaseWorker: IKnexDatabaseWorker | undefined = await AwaitHelper.execute<
-            IKnexDatabaseWorker | undefined
-        >(
-            CommonStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(
-                HiveWorkerType.Database,
-                workerName
-            )
+        const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
+            CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {
@@ -197,7 +192,7 @@ export class ParseAstQuery {
         const graphReturnType: GraphQLObjectType = (resolveInfo.returnType as GraphQLList<GraphQLObjectType>).ofType;
         const graphParentType: GraphQLObjectType = (this.parentPath.type as GraphQLList<GraphQLObjectType>).ofType;
 
-        this.query = this.databaseWorker.connection.queryBuilder();
+        this.query = (this.databaseWorker.connection as knex).queryBuilder();
 
         // Build the root table
         const currentTable: ConverterDatabaseTable = {

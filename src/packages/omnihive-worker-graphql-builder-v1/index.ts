@@ -1,6 +1,6 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { LifecycleWorkerAction } from "@withonevision/omnihive-core-extended/enums/LifecycleWorkerAction";
-import { LifecycleWorkerStage } from "@withonevision/omnihive-core-extended/enums/LifecycleWorkerStage";
+import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
+import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
@@ -11,7 +11,7 @@ import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
-import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core-extended/models/HiveWorkerMetadataLifecycleFunction";
+import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataLifecycleFunction";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
@@ -78,9 +78,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(
             `var { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`
         );
-        builder.appendLine(
-            `var { GraphQLJSONObject } = require("@withonevision/omnihive-core-extended/models/GraphQLJSON");`
-        );
+        builder.appendLine(`var { GraphQLJSONObject } = require("@withonevision/omnihive-core/models/GraphQLJSON");`);
         builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`);
         builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-core/interfaces/ITokenWorker");`);
         builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`);

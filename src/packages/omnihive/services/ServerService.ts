@@ -10,7 +10,7 @@ import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGrap
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IPubSubClientWorker } from "@withonevision/omnihive-core/interfaces/IPubSubClientWorker";
 import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
-import { IRestEndpointWorker } from "@withonevision/omnihive-core-extended/interfaces/IRestEndpointWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
@@ -378,7 +378,7 @@ export class ServerService {
                     `var { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`
                 );
                 builder.appendLine(
-                    `var { GraphQLJSONObject } = require("@withonevision/omnihive-core-extended/models/GraphQLJSON");`
+                    `var { GraphQLJSONObject } = require("@withonevision/omnihive-core/models/GraphQLJSON");`
                 );
                 builder.appendLine(
                     `var { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`

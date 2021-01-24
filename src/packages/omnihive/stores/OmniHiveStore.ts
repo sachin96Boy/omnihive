@@ -2,7 +2,7 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { IRestEndpointWorker } from "@withonevision/omnihive-core-extended/interfaces/IRestEndpointWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";

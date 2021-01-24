@@ -1,9 +1,9 @@
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-core-extended/interfaces/IKnexDatabaseWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
@@ -19,7 +19,7 @@ export class MssqlDatabaseWorkerMetadata extends HiveWorkerMetadataDatabase {
     public schemaName: string = "";
 }
 
-export default class MssqlDatabaseWorker extends HiveWorkerBase implements IKnexDatabaseWorker {
+export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: knex;
     private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: sql.config;

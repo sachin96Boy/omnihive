@@ -1,11 +1,11 @@
-import { IKnexDatabaseWorker } from "@withonevision/omnihive-core-extended/interfaces/IKnexDatabaseWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
 import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
-import { QueryBuilder } from "knex";
+import knex, { QueryBuilder } from "knex";
 
 export class ParseUpdate {
     public parse = async (
@@ -23,13 +23,8 @@ export class ParseUpdate {
             throw new Error("Update cannot have no columns to update.");
         }
 
-        const databaseWorker: IKnexDatabaseWorker | undefined = await AwaitHelper.execute<
-            IKnexDatabaseWorker | undefined
-        >(
-            CommonStore.getInstance().getHiveWorker<IKnexDatabaseWorker | undefined>(
-                HiveWorkerType.Database,
-                workerName
-            )
+        const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
+            CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {
@@ -56,7 +51,7 @@ export class ParseUpdate {
         let tableSchema: TableSchema[] = jsonSchema["tables"];
         tableSchema = tableSchema.filter((tableSchema: TableSchema) => tableSchema.tableName === tableName);
 
-        const queryBuilder: QueryBuilder = databaseWorker.connection.queryBuilder();
+        const queryBuilder: QueryBuilder = (databaseWorker.connection as knex).queryBuilder();
         queryBuilder.from(tableName);
 
         const updateDbObject: any = {};

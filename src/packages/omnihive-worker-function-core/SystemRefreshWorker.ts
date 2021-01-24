@@ -1,16 +1,16 @@
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core-extended/models/HiveWorkerMetadataRestFunction";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
 import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 
-export default class SystemRefreshWorker extends HiveWorkerBase implements IHiveWorker {
+export default class SystemRefreshWorker extends HiveWorkerBase implements IRestEndpointWorker {
     private tokenWorker!: ITokenWorker;
     private metadata!: HiveWorkerMetadataRestFunction;
 

@@ -11,7 +11,6 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "@withonevision/omnihive-core-extended": "workspace:*",
         "@withonevision/omnihive-worker-date-dayjs": "workspace:*",
         "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*",
         "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
@@ -66,7 +65,6 @@
     "omniHive": {
         "coreDependencies": {
             "@withonevision/omnihive-core": "workspace:*",
-            "@withonevision/omnihive-core-extended": "workspace:*",
             "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
             "@withonevision/omnihive-worker-function-core": "workspace:*",
             "@withonevision/omnihive-worker-log-core": "workspace:*",

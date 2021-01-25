@@ -19,7 +19,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
         super();
     }
 
-    public async execute(_headers: any, params?: any): Promise<[{} | undefined, number]> {
+    public execute = async (_headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
             CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
         );
@@ -31,39 +31,11 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
         this.tokenWorker = tokenWorker;
 
         try {
-            await AwaitHelper.execute<void>(this.checkRequest(params));
+            this.checkRequest(body);
             const token = await AwaitHelper.execute<string>(this.tokenWorker.get());
             return [{ token: token }, 200];
         } catch (e) {
             return [{ error: serializeError(e) }, 400];
-        }
-    }
-
-    private checkRequest = async (params: any | undefined) => {
-        if (!params) {
-            throw new Error("Request must have parameters");
-        }
-
-        const paramsStructured: SystemAccessTokenRequest = this.checkObjectStructure<SystemAccessTokenRequest>(
-            SystemAccessTokenRequest,
-            params
-        );
-
-        if (!paramsStructured.clientId || paramsStructured.clientId === "") {
-            throw new Error(`A client ID must be provided`);
-        }
-
-        if (!paramsStructured.clientSecret || paramsStructured.clientSecret === "") {
-            throw new Error(`A client secret must be provided`);
-        }
-
-        if (
-            !this.tokenWorker ||
-            !this.tokenWorker.config.metadata ||
-            !this.tokenWorker.config.metadata.clientId ||
-            !this.tokenWorker.config.metadata.clientSecret
-        ) {
-            throw new Error("A token worker cannot be found");
         }
     };
 
@@ -117,5 +89,33 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
                 },
             },
         };
+    };
+
+    private checkRequest = (body: any | undefined) => {
+        if (!body) {
+            throw new Error("Request must have parameters");
+        }
+
+        const paramsStructured: SystemAccessTokenRequest = this.checkObjectStructure<SystemAccessTokenRequest>(
+            SystemAccessTokenRequest,
+            body
+        );
+
+        if (!paramsStructured.clientId || paramsStructured.clientId === "") {
+            throw new Error(`A client ID must be provided`);
+        }
+
+        if (!paramsStructured.clientSecret || paramsStructured.clientSecret === "") {
+            throw new Error(`A client secret must be provided`);
+        }
+
+        if (
+            !this.tokenWorker ||
+            !this.tokenWorker.config.metadata ||
+            !this.tokenWorker.config.metadata.clientId ||
+            !this.tokenWorker.config.metadata.clientSecret
+        ) {
+            throw new Error("A token worker cannot be found");
+        }
     };
 }

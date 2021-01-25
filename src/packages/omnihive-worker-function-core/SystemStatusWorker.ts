@@ -2,30 +2,23 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
-import express from "express";
+import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
+
+class SystemStatusRequest {
+    adminPassword!: string;
+}
 
 export default class SystemStatusWorker extends HiveWorkerBase implements IRestEndpointWorker {
     private tokenWorker!: ITokenWorker;
-    private metadata!: HiveWorkerMetadataRestFunction;
 
     constructor() {
         super();
     }
 
-    public async init(config: HiveWorker): Promise<void> {
-        await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkObjectStructure<HiveWorkerMetadataRestFunction>(
-            HiveWorkerMetadataRestFunction,
-            config.metadata
-        );
-    }
-
-    public async register(app: express.Express, restRoot: string): Promise<void> {
+    public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
             CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
         );
@@ -36,41 +29,17 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
 
         this.tokenWorker = tokenWorker;
 
-        app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: express.Request, res: express.Response) => {
-            try {
-                await AwaitHelper.execute<void>(this.checkRequest(req));
-                const accessToken: string | undefined = req.headers.ohAccess?.toString();
-                const verified: boolean = await AwaitHelper.execute<boolean>(
-                    this.tokenWorker.verify(accessToken ?? "")
-                );
+        try {
+            this.checkRequest(headers, body);
+            const accessToken: string | undefined = headers.ohAccess?.toString();
+            const verified: boolean = await AwaitHelper.execute<boolean>(this.tokenWorker.verify(accessToken ?? ""));
 
-                if (!verified) {
-                    throw new Error("Invalid Access Token");
-                }
-
-                res.setHeader("Content-Type", "application/json");
-                return res.status(200).json(CommonStore.getInstance().status);
-            } catch (e) {
-                return res.status(400).send(e.message);
+            if (!verified) {
+                throw new Error("Invalid Access Token");
             }
-        });
-    }
-
-    private checkRequest = async (req: express.Request) => {
-        if (!req.body) {
-            throw new Error(`Request Denied`);
-        }
-
-        if (!req.headers.ohaccess) {
-            throw new Error(`Request Denied`);
-        }
-
-        if (!req.body.adminPassword || req.body.adminPassword === "") {
-            throw new Error(`Request Denied`);
-        }
-
-        if (req.body.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
-            throw new Error(`Request Denied`);
+            return [CommonStore.getInstance().status, 200];
+        } catch (e) {
+            return [{ error: serializeError(e) }, 400];
         }
     };
 
@@ -141,5 +110,28 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
                 },
             },
         };
+    };
+
+    private checkRequest = (headers: any, body: any | undefined) => {
+        if (!headers || !body) {
+            throw new Error("Request Denied");
+        }
+
+        const paramsStructured: SystemStatusRequest = this.checkObjectStructure<SystemStatusRequest>(
+            SystemStatusRequest,
+            body
+        );
+
+        if (!headers.ohaccess) {
+            throw new Error(`Request Denied`);
+        }
+
+        if (!paramsStructured.adminPassword || paramsStructured.adminPassword === "") {
+            throw new Error(`Request Denied`);
+        }
+
+        if (paramsStructured.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
+            throw new Error(`Request Denied`);
+        }
     };
 }

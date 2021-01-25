@@ -1,9 +1,11 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import bodyParser from "body-parser";
@@ -13,6 +15,7 @@ import helmet from "helmet";
 import http, { Server } from "http";
 import next from "next";
 import NextServer from "next/dist/next-server/server/next-server";
+import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 import { parse } from "url";
 
@@ -39,7 +42,12 @@ export class OmniHiveStore {
     public appServer!: express.Express;
     public webServer: Server | undefined = undefined;
 
-    public getCleanAppServer = (): express.Express => {
+    public getCleanAppServer = async (): Promise<express.Express> => {
+        const logWorker: ILogWorker | undefined = await CommonStore.getInstance().getHiveWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
+
         // Build app
 
         const app = express();
@@ -93,7 +101,7 @@ export class OmniHiveStore {
             return handle(req, res, parsedUrl);
         });
 
-        // Register "built-in" REST endpoints
+        // Register system REST endpoints
 
         const swaggerDefinition: swaggerUi.JsonObject = {
             info: {
@@ -112,86 +120,64 @@ export class OmniHiveStore {
             definitions: {},
         };
 
-        const accessTokenWorker = CommonStore.getInstance().workers.find(
-            (worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemAccessToken"
-        );
+        CommonStore.getInstance()
+            .workers.filter(
+                (w: [HiveWorker, any]) => w[0].type === HiveWorkerType.RestEndpointFunction && w[0].enabled === true
+            )
+            .forEach((w: [HiveWorker, any]) => {
+                let workerMetaData: HiveWorkerMetadataRestFunction;
 
-        if (accessTokenWorker) {
-            const accessTokenInstance: IRestEndpointWorker = accessTokenWorker[1] as IRestEndpointWorker;
-            accessTokenInstance.register(app, OmniHiveConstants.SYSTEM_REST_ROOT);
+                try {
+                    workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
+                        HiveWorkerMetadataRestFunction,
+                        w[0].metadata
+                    );
+                } catch (e) {
+                    logWorker?.write(
+                        OmniHiveLogLevel.Error,
+                        `Cannot register system REST worker ${w[0].name}.  MetaData is incorrect.`
+                    );
 
-            const accessTokenSwagger: swaggerUi.JsonObject | undefined = accessTokenInstance.getSwaggerDefinition();
+                    return;
+                }
 
-            if (accessTokenSwagger) {
-                swaggerDefinition.paths = { ...swaggerDefinition.paths, ...accessTokenSwagger.paths };
-                swaggerDefinition.definitions = { ...swaggerDefinition.definitions, ...accessTokenSwagger.definitions };
-            }
-        }
+                if (!workerMetaData.isSystem) {
+                    return;
+                }
 
-        const checkSettingsWorker = CommonStore.getInstance().workers.find(
-            (worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemCheckSettings"
-        );
+                const workerInstance: IRestEndpointWorker = w[1] as IRestEndpointWorker;
 
-        if (checkSettingsWorker) {
-            const checkSettingInstance: IRestEndpointWorker = checkSettingsWorker[1] as IRestEndpointWorker;
-            checkSettingInstance.register(app, OmniHiveConstants.SYSTEM_REST_ROOT);
+                app[workerMetaData.restMethod](
+                    `${OmniHiveConstants.SYSTEM_REST_ROOT}${workerMetaData.methodUrl}`,
+                    async (req: express.Request, res: express.Response) => {
+                        res.setHeader("Content-Type", "application/json");
 
-            const checkSettingsSwagger: swaggerUi.JsonObject | undefined = checkSettingInstance.getSwaggerDefinition();
+                        try {
+                            const workerResponse: [{} | undefined, number] = await workerInstance.execute(
+                                req.headers,
+                                `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+                                req.body
+                            );
 
-            if (checkSettingsSwagger) {
-                swaggerDefinition.paths = { ...swaggerDefinition.paths, ...checkSettingsSwagger.paths };
-                swaggerDefinition.definitions = {
-                    ...swaggerDefinition.definitions,
-                    ...checkSettingsSwagger.definitions,
-                };
-            }
-        }
+                            res.status(workerResponse[1]).json(w[0]);
+                        } catch (e) {
+                            res.status(500).json(serializeError(e));
+                        }
+                    }
+                );
 
-        const refreshWorker = CommonStore.getInstance().workers.find(
-            (worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemRefresh"
-        );
+                const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
 
-        if (refreshWorker) {
-            const refreshInstance: IRestEndpointWorker = refreshWorker[1] as IRestEndpointWorker;
-            refreshInstance.register(app, OmniHiveConstants.SYSTEM_REST_ROOT);
+                if (workerSwagger) {
+                    swaggerDefinition.paths = { ...swaggerDefinition.paths, ...workerSwagger.paths };
+                    swaggerDefinition.definitions = {
+                        ...swaggerDefinition.definitions,
+                        ...workerSwagger.definitions,
+                    };
+                }
+            });
 
-            const refreshWorkerSwagger: swaggerUi.JsonObject | undefined = refreshInstance.getSwaggerDefinition();
-
-            if (refreshWorkerSwagger) {
-                swaggerDefinition.paths = { ...swaggerDefinition.paths, ...refreshWorkerSwagger.paths };
-                swaggerDefinition.definitions = {
-                    ...swaggerDefinition.definitions,
-                    ...refreshWorkerSwagger.definitions,
-                };
-            }
-        }
-
-        const statusWorker = CommonStore.getInstance().workers.find(
-            (worker: [HiveWorker, any]) => worker[0].name === "ohreqRestSystemStatus"
-        );
-
-        if (statusWorker) {
-            const statusInstance: IRestEndpointWorker = statusWorker[1] as IRestEndpointWorker;
-            statusInstance.register(app, OmniHiveConstants.SYSTEM_REST_ROOT);
-
-            const statusWorkerSwagger: swaggerUi.JsonObject | undefined = statusInstance.getSwaggerDefinition();
-
-            if (statusWorkerSwagger) {
-                swaggerDefinition.paths = { ...swaggerDefinition.paths, ...statusWorkerSwagger.paths };
-                swaggerDefinition.definitions = {
-                    ...swaggerDefinition.definitions,
-                    ...statusWorkerSwagger.definitions,
-                };
-            }
-        }
-
-        if (CommonStore.getInstance().settings.config.enableSwagger) {
-            app.use(
-                `${OmniHiveConstants.SYSTEM_REST_ROOT}/api-docs`,
-                swaggerUi.serve,
-                swaggerUi.setup(swaggerDefinition)
-            );
-        }
+        app.use(`${OmniHiveConstants.SYSTEM_REST_ROOT}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
 
         return app;
     };
@@ -211,7 +197,7 @@ export class OmniHiveStore {
 
         CommonStore.getInstance().changeSystemStatus(status, error);
 
-        const app: express.Express = this.getCleanAppServer();
+        const app: express.Express = await this.getCleanAppServer();
 
         app.get("/", (_req, res) => {
             res.setHeader("Content-Type", "application/json");

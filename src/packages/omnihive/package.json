@@ -124,7 +124,8 @@
                 "default": false,
                 "enabled": true,
                 "metadata": {
-                    "methodUrl": "/accessToken"
+                    "methodUrl": "/accessToken",
+                    "restMethod": "post"
                 }
             },
             {
@@ -136,7 +137,8 @@
                 "default": false,
                 "enabled": true,
                 "metadata": {
-                    "methodUrl": "/checkSettings"
+                    "methodUrl": "/checkSettings",
+                    "restMethod": "post"
                 }
             },
             {
@@ -148,7 +150,8 @@
                 "default": false,
                 "enabled": true,
                 "metadata": {
-                    "methodUrl": "/refresh"
+                    "methodUrl": "/refresh",
+                    "restMethod": "post"
                 }
             },
             {
@@ -160,7 +163,8 @@
                 "default": false,
                 "enabled": true,
                 "metadata": {
-                    "methodUrl": "/status"
+                    "methodUrl": "/status",
+                    "restMethod": "post"
                 }
             }
         ],

@@ -2,6 +2,7 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
@@ -13,6 +14,7 @@ import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPu
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
@@ -21,6 +23,7 @@ import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
+import express from "express";
 import os from "os";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
@@ -218,7 +221,7 @@ export class ServerService {
 
         try {
             // Start setting up server
-            const app = OmniHiveStore.getInstance().getCleanAppServer();
+            const app = await OmniHiveStore.getInstance().getCleanAppServer();
 
             // Clear schema directories
             fileSystemWorker.ensureFolderExists(
@@ -586,22 +589,63 @@ export class ServerService {
                     ],
                 };
 
-                for (const restWorker of CommonStore.getInstance().workers.filter(
-                    (worker: [HiveWorker, any]) =>
-                        worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true
-                )) {
-                    const workerInstance: IRestEndpointWorker = restWorker[1] as IRestEndpointWorker;
-                    workerInstance.register(app, OmniHiveConstants.CUSTOM_REST_ROOT);
-                    const newWorkerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
+                CommonStore.getInstance()
+                    .workers.filter(
+                        (w: [HiveWorker, any]) =>
+                            w[0].type === HiveWorkerType.RestEndpointFunction && w[0].enabled === true
+                    )
+                    .forEach((w: [HiveWorker, any]) => {
+                        let workerMetaData: HiveWorkerMetadataRestFunction;
 
-                    if (newWorkerSwagger) {
-                        swaggerDefinition.paths = { ...swaggerDefinition.paths, ...newWorkerSwagger.paths };
-                        swaggerDefinition.definitions = {
-                            ...swaggerDefinition.definitions,
-                            ...newWorkerSwagger.definitions,
-                        };
-                    }
-                }
+                        try {
+                            workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
+                                HiveWorkerMetadataRestFunction,
+                                w[0].metadata
+                            );
+                        } catch (e) {
+                            logWorker?.write(
+                                OmniHiveLogLevel.Error,
+                                `Cannot register custom REST worker ${w[0].name}.  MetaData is incorrect.`
+                            );
+
+                            return;
+                        }
+
+                        if (workerMetaData.isSystem) {
+                            return;
+                        }
+
+                        const workerInstance: IRestEndpointWorker = w[1] as IRestEndpointWorker;
+
+                        app[workerMetaData.restMethod](
+                            `${OmniHiveConstants.SYSTEM_REST_ROOT}${workerMetaData.methodUrl}`,
+                            async (req: express.Request, res: express.Response) => {
+                                res.setHeader("Content-Type", "application/json");
+
+                                try {
+                                    const workerResponse: [{} | undefined, number] = await workerInstance.execute(
+                                        req.headers,
+                                        `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+                                        req.body
+                                    );
+
+                                    res.status(workerResponse[1]).json(w[0]);
+                                } catch (e) {
+                                    res.status(500).json(serializeError(e));
+                                }
+                            }
+                        );
+
+                        const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
+
+                        if (workerSwagger) {
+                            swaggerDefinition.paths = { ...swaggerDefinition.paths, ...workerSwagger.paths };
+                            swaggerDefinition.definitions = {
+                                ...swaggerDefinition.definitions,
+                                ...workerSwagger.definitions,
+                            };
+                        }
+                    });
 
                 if (CommonStore.getInstance().settings.config.enableSwagger) {
                     app.use(

@@ -416,8 +416,9 @@ export class ServerService {
                     builder.appendLine(`\t\t\t\t\tcustomArgs: { type: GraphQLJSONObject },`);
                     builder.appendLine(`\t\t\t\t},`);
                     builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
+                    builder.appendLine(`\t\t\t\t\tvar customFunctionInstance = new ${worker[0].name}.default();`);
                     builder.appendLine(
-                        `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(${worker[0].name}(parent, args, context, resolveInfo));`
+                        `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(customFunctionInstance.execute(args.customArgs));`
                     );
                     builder.appendLine(`\t\t\t\t\treturn customFunctionReturn;`);
                     builder.appendLine(`\t\t\t\t},`);

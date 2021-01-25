@@ -629,7 +629,11 @@ export class ServerService {
                                         req.body
                                     );
 
-                                    res.status(workerResponse[1]).json(w[0]);
+                                    if (workerResponse[0]) {
+                                        res.status(workerResponse[1]).json(w[0]);
+                                    } else {
+                                        res.status(workerResponse[1]).send(true);
+                                    }
                                 } catch (e) {
                                     res.status(500).json(serializeError(e));
                                 }

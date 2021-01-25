@@ -93,7 +93,7 @@ const build = async (): Promise<void> => {
 
     console.log(chalk.blue("Done building server..."));
     console.log();
-    console.log(chalk.hex("#FFC022#")("Done building OmniHive monorepo.."));
+    console.log(chalk.hex("#FFC022#")("Done building OmniHive monorepo..."));
     console.log();
 };
 

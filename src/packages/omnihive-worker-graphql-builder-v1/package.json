@@ -11,7 +11,8 @@
         "graphql": "15.4.0",
         "knex": "0.21.16",
         "lodash": "4.17.20",
-        "pluralize": "8.0.0"
+        "pluralize": "8.0.0",
+        "serialize-error": "8.0.1"
     },
     "devDependencies": {
         "@types/lodash": "4.14.168",

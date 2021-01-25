@@ -8,12 +8,12 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "fs-extra": "9.1.0"
+        "fs-extra": "9.1.0",
+        "serialize-error": "8.0.1"
     },
     "devDependencies": {
         "@types/fs-extra": "9.0.6",
         "chai": "4.2.0",
-        "serialize-error": "8.0.1",
         "typescript": "4.1.3"
     }
 }

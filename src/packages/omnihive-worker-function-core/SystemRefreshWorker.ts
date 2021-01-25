@@ -20,7 +20,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(
+        this.metadata = this.checkObjectStructure<HiveWorkerMetadataRestFunction>(
             HiveWorkerMetadataRestFunction,
             config.metadata
         );

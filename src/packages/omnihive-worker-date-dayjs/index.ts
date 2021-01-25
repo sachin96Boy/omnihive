@@ -19,7 +19,7 @@ export default class DayJsDateWorker extends HiveWorkerBase implements IDateWork
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<DayJsDateWorkerMetadata>(DayJsDateWorkerMetadata, config.metadata);
+        this.metadata = this.checkObjectStructure<DayJsDateWorkerMetadata>(DayJsDateWorkerMetadata, config.metadata);
     }
 
     public convertDateBetweenTimezones = (date: Date, toTimezone: string, fromTimezone?: string): string => {

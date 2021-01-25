@@ -8,12 +8,12 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "node-forge": "0.10.0"
+        "node-forge": "0.10.0",
+        "serialize-error": "8.0.1"
     },
     "devDependencies": {
         "@types/node-forge": "0.9.7",
         "chai": "4.2.0",
-        "serialize-error": "8.0.1",
         "typescript": "4.1.3"
     }
 }

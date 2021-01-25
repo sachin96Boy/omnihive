@@ -2,30 +2,24 @@ import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRe
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
-import express from "express";
 import swaggerUi from "swagger-ui-express";
+import { serializeError } from "serialize-error";
+
+class SystemAccessTokenRequest {
+    clientId!: string;
+    clientSecret!: string;
+}
 
 export default class SystemAccessTokenWorker extends HiveWorkerBase implements IRestEndpointWorker {
     private tokenWorker!: ITokenWorker;
-    private metadata!: HiveWorkerMetadataRestFunction;
 
     constructor() {
         super();
     }
 
-    public async init(config: HiveWorker): Promise<void> {
-        await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<HiveWorkerMetadataRestFunction>(
-            HiveWorkerMetadataRestFunction,
-            config.metadata
-        );
-    }
-
-    public async register(app: express.Express, restRoot: string): Promise<void> {
+    public async execute(_headers: any, params?: any): Promise<[{} | undefined, number]> {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
             CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
         );
@@ -36,27 +30,30 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
 
         this.tokenWorker = tokenWorker;
 
-        app.post(`${restRoot}${this.metadata.methodUrl}`, async (req: express.Request, res: express.Response) => {
-            try {
-                await AwaitHelper.execute<void>(this.checkRequest(req));
-                const token = await AwaitHelper.execute<string>(this.tokenWorker.get());
-                return res.send(token);
-            } catch (e) {
-                return res.status(400).send(e.message);
-            }
-        });
+        try {
+            await AwaitHelper.execute<void>(this.checkRequest(params));
+            const token = await AwaitHelper.execute<string>(this.tokenWorker.get());
+            return [{ token: token }, 200];
+        } catch (e) {
+            return [{ error: serializeError(e) }, 400];
+        }
     }
 
-    private checkRequest = async (req: express.Request) => {
-        if (!req.body) {
-            throw new Error(`Request body incorrectly formed`);
+    private checkRequest = async (params: any | undefined) => {
+        if (!params) {
+            throw new Error("Request must have parameters");
         }
 
-        if (!req.body.clientId || req.body.clientId === "") {
+        const paramsStructured: SystemAccessTokenRequest = this.checkObjectStructure<SystemAccessTokenRequest>(
+            SystemAccessTokenRequest,
+            params
+        );
+
+        if (!paramsStructured.clientId || paramsStructured.clientId === "") {
             throw new Error(`A client ID must be provided`);
         }
 
-        if (!req.body.clientSecret || req.body.clientSecret === "") {
+        if (!paramsStructured.clientSecret || paramsStructured.clientSecret === "") {
             throw new Error(`A client secret must be provided`);
         }
 

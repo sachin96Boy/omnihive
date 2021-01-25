@@ -33,7 +33,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            this.metadata = this.checkMetadata<MssqlDatabaseWorkerMetadata>(
+            this.metadata = this.checkObjectStructure<MssqlDatabaseWorkerMetadata>(
                 MssqlDatabaseWorkerMetadata,
                 config.metadata
             );

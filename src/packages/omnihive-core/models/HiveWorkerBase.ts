@@ -18,28 +18,30 @@ export abstract class HiveWorkerBase implements IHiveWorker {
         this.config = config;
     }
 
-    public checkMetadata = <T extends object>(type: { new (): T }, model: any | null): T => {
-        const metadata: T = ObjectHelper.createStrict<T>(type, model);
-        const metaAny: any = metadata as any;
+    public checkObjectStructure = <T extends object>(type: { new (): T }, model: any | null): T => {
+        const objectData: T = ObjectHelper.createStrict<T>(type, model);
+        const objectAny: any = objectData as any;
 
-        Object.keys(metadata).forEach((key: string) => {
-            if (!metaAny[key]) {
-                throw new Error(`Metadata key ${key} is null or undefined on hive worker ${this.config.name}`);
+        Object.keys(objectData).forEach((key: string) => {
+            if (!objectAny[key]) {
+                throw new Error(`Object key ${key} is null or undefined on hive worker ${this.config.name}`);
             }
 
-            if (metaAny[key] && typeof metaAny[key] === "string" && StringHelper.isNullOrWhiteSpace(metaAny[key])) {
-                throw new Error(`Metadata key ${key} is a string but it is blank on hive worker ${this.config.name}`);
+            if (
+                objectAny[key] &&
+                typeof objectAny[key] === "string" &&
+                StringHelper.isNullOrWhiteSpace(objectAny[key])
+            ) {
+                throw new Error(`Object key ${key} is a string but it is blank on hive worker ${this.config.name}`);
             }
 
-            if (metaAny[key] && Array.isArray(metaAny[key])) {
-                if ((metaAny[key] as Array<any>).length === 0) {
-                    throw new Error(
-                        `Metadata key ${key} is an array but it is empty on hive worker ${this.config.name}`
-                    );
+            if (objectAny[key] && Array.isArray(objectAny[key])) {
+                if ((objectAny[key] as Array<any>).length === 0) {
+                    throw new Error(`Object key ${key} is an array but it is empty on hive worker ${this.config.name}`);
                 }
             }
         });
 
-        return metadata;
+        return objectData;
     };
 }

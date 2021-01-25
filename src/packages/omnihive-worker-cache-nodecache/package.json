@@ -8,11 +8,11 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "node-cache": "5.1.2"
+        "node-cache": "5.1.2",
+        "serialize-error": "8.0.1"
     },
     "devDependencies": {
         "chai": "4.2.0",
-        "serialize-error": "8.0.1",
         "typescript": "4.1.3"
     }
 }

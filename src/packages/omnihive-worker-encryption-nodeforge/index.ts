@@ -17,7 +17,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        this.metadata = this.checkMetadata<NodeForgeEncryptionWorkerMetadata>(
+        this.metadata = this.checkObjectStructure<NodeForgeEncryptionWorkerMetadata>(
             NodeForgeEncryptionWorkerMetadata,
             config.metadata
         );

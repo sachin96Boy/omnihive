@@ -44,13 +44,19 @@ export class ServerService {
         // Check for latest instance
 
         if (!name && !settings) {
-            const latestInstance: RegisteredInstance | undefined = instanceService.getLatest();
+            if (process.env.omnihive_settings) {
+                settings = process.env.omnihive_settings as string;
+            } else {
+                const latestInstance: RegisteredInstance | undefined = instanceService.getLatest();
 
-            if (!latestInstance) {
-                throw new Error("No name and no settings given...but also cannot find latest instance");
+                if (!latestInstance) {
+                    throw new Error(
+                        "No name and no settings given...no environment variables found...and also cannot find latest instance"
+                    );
+                }
+
+                name = latestInstance.name;
             }
-
-            name = latestInstance.name;
         }
 
         // Check instance name

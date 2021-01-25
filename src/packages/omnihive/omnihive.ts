@@ -46,7 +46,7 @@ const init = async () => {
                     if (!args.name && !args.settings) {
                         if (!process.env.omnihive_settings) {
                             throw new Error(
-                                "You must specify -n or -s to load a settings file.  Use -n for a saved instance or -s to load a settings file directly."
+                                "You must specify -n or -s to load a settings file or have an env variable of omnihive_settings.  Use -n for a saved instance or -s to load a settings file directly."
                             );
                         } else {
                             args.settings = process.env.omnihive_settings as string;

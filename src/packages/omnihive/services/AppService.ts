@@ -155,7 +155,14 @@ export class AppService {
             const workerPackages: any = {};
 
             CommonStore.getInstance().settings.workers.forEach((hiveWorker: HiveWorker) => {
-                workerPackages[hiveWorker.package] = hiveWorker.version;
+                if (
+                    hiveWorker.package &&
+                    hiveWorker.package !== "" &&
+                    hiveWorker.version &&
+                    hiveWorker.version !== ""
+                ) {
+                    workerPackages[hiveWorker.package] = hiveWorker.version;
+                }
             });
 
             //Find out what to remove

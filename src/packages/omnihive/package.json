@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive",
-    "version": "4.0.0-alpha.0",
+    "version": "0.0.1",
     "description": "OmniHive Node Host",
     "license": "MIT",
     "main": "./omnihive.js",
@@ -100,7 +100,7 @@
                 "type": "fileSystem",
                 "package": "@withonevision/omnihive-worker-filesystem-fsextra",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
+                "importPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
                 "default": false,
                 "enabled": true,
                 "metadata": {}
@@ -110,7 +110,7 @@
                 "type": "log",
                 "package": "@withonevision/omnihive-worker-log-core",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-log-core/index",
+                "importPath": "@withonevision/omnihive-worker-log-core/index",
                 "default": false,
                 "enabled": true,
                 "metadata": {}
@@ -120,7 +120,7 @@
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-function-core/SystemAccessTokenWorker",
+                "importPath": "@withonevision/omnihive-worker-function-core/SystemAccessTokenWorker",
                 "default": false,
                 "enabled": true,
                 "metadata": {
@@ -133,7 +133,7 @@
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-function-core/SystemCheckSettingsWorker",
+                "importPath": "@withonevision/omnihive-worker-function-core/SystemCheckSettingsWorker",
                 "default": false,
                 "enabled": true,
                 "metadata": {
@@ -146,7 +146,7 @@
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-function-core/SystemRefreshWorker",
+                "importPath": "@withonevision/omnihive-worker-function-core/SystemRefreshWorker",
                 "default": false,
                 "enabled": true,
                 "metadata": {
@@ -159,7 +159,7 @@
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-function-core/SystemStatusWorker",
+                "importPath": "@withonevision/omnihive-worker-function-core/SystemStatusWorker",
                 "default": false,
                 "enabled": true,
                 "metadata": {
@@ -174,7 +174,7 @@
                 "type": "graphBuilder",
                 "package": "@withonevision/omnihive-worker-graphql-builder-v1",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-graphql-builder-v1/index",
+                "importPath": "@withonevision/omnihive-worker-graphql-builder-v1/index",
                 "default": true,
                 "enabled": true,
                 "metadata": {
@@ -189,7 +189,7 @@
                 "type": "date",
                 "package": "@withonevision/omnihive-worker-date-dayjs",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-date-dayjs/index",
+                "importPath": "@withonevision/omnihive-worker-date-dayjs/index",
                 "default": true,
                 "enabled": true,
                 "metadata": {
@@ -201,7 +201,7 @@
                 "type": "encryption",
                 "package": "@withonevision/omnihive-worker-encryption-nodeforge",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-encryption-nodeforge/index",
+                "importPath": "@withonevision/omnihive-worker-encryption-nodeforge/index",
                 "default": true,
                 "enabled": true,
                 "metadata": {
@@ -213,7 +213,7 @@
                 "type": "token",
                 "package": "@withonevision/omnihive-worker-token-jsonwebtoken",
                 "version": "workspace:*",
-                "classPath": "@withonevision/omnihive-worker-token-jsonwebtoken/index",
+                "importPath": "@withonevision/omnihive-worker-token-jsonwebtoken/index",
                 "default": true,
                 "enabled": true,
                 "metadata": {

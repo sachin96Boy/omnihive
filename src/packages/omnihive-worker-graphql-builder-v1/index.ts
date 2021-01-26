@@ -89,7 +89,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine();
 
         enabledWorkers.forEach((worker: [HiveWorker, any]) => {
-            builder.appendLine(`var ${worker[0].name} = require("${worker[0].classPath}");`);
+            builder.appendLine(`var ${worker[0].name} = require("${worker[0].importPath}");`);
         });
 
         // Token checker

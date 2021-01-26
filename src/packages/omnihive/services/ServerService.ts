@@ -402,7 +402,7 @@ export class ServerService {
                 builder.appendLine();
 
                 customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
-                    builder.appendLine(`var ${worker[0].name} = require("${worker[0].classPath}");`);
+                    builder.appendLine(`var ${worker[0].name} = require("${worker[0].importPath}");`);
                 });
 
                 // Build main graph schema

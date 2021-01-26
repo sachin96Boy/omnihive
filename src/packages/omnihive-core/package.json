@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-core",
-    "version": "4.0.0-alpha.0",
+    "version": "0.0.1",
     "description": "OmniHive Core",
     "license": "MIT",
     "scripts": {

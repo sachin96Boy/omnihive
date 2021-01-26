@@ -54,13 +54,13 @@ export class CommonStore {
                     continue;
                 }
 
-                if (!hiveWorker.classPath || hiveWorker.classPath === "") {
+                if (!hiveWorker.importPath || hiveWorker.importPath === "") {
                     throw new Error(
-                        `Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no classPath`
+                        `Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`
                     );
                 }
 
-                const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.classPath));
+                const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.importPath));
                 const newWorkerInstance: any = new newWorker.default();
                 await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 
@@ -119,11 +119,11 @@ export class CommonStore {
     };
 
     public registerWorker = async (hiveWorker: HiveWorker): Promise<void> => {
-        if (!hiveWorker.classPath || hiveWorker.classPath === "") {
-            throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no classPath`);
+        if (!hiveWorker.importPath || hiveWorker.importPath === "") {
+            throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`);
         }
 
-        const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.classPath));
+        const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.importPath));
         const newWorkerInstance: any = new newWorker.default();
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).afterInit());

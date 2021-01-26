@@ -20,6 +20,8 @@ const init = async () => {
     const args = yargs(process.argv.slice(2));
 
     clear();
+    console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
+    console.log();
 
     args
         .help(false)
@@ -191,8 +193,6 @@ const init = async () => {
 
             break;
         case "init":
-            console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
-            console.log();
             console.log(chalk.yellow("Let's get an instance set up and running for you!"));
             console.log();
             inquirer
@@ -265,8 +265,6 @@ const init = async () => {
             break;
         case "instance":
             const instanceService: InstanceService = new InstanceService();
-
-            console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
 
             if (args.argv.list) {
                 const instances: RegisteredInstance[] = instanceService.getAll();
@@ -381,42 +379,26 @@ const init = async () => {
 const usage = {
     root: (): string => {
         const builder: StringBuilder = new StringBuilder();
-
-        builder.appendLine();
-        builder.appendLine(`${chalk.yellow(figlet.textSync("OMNIHIVE"))}`);
         builder.appendLine(`Usage:`);
         builder.append(`  omnihive <command> <options>`);
-
         return builder.outputString();
     },
     instance: (): string => {
         const builder: StringBuilder = new StringBuilder();
-
-        builder.appendLine();
-        builder.appendLine(`${chalk.yellow(figlet.textSync("OMNIHIVE"))}`);
         builder.appendLine(`Instance Usage:`);
         builder.append(`  omnihive instance <options>`);
-
         return builder.outputString();
     },
     server: (): string => {
         const builder: StringBuilder = new StringBuilder();
-
-        builder.appendLine();
-        builder.appendLine(`${chalk.yellow(figlet.textSync("OMNIHIVE"))}`);
         builder.appendLine(`Server Usage:`);
         builder.append(`  omnihive server <options>`);
-
         return builder.outputString();
     },
     taskRunner: (): string => {
         const builder: StringBuilder = new StringBuilder();
-
-        builder.appendLine();
-        builder.appendLine(`${chalk.yellow(figlet.textSync("OMNIHIVE"))}`);
         builder.appendLine(`Task Runner Usage:`);
         builder.append(`  omnihive taskRunner <options>`);
-
         return builder.outputString();
     },
 };

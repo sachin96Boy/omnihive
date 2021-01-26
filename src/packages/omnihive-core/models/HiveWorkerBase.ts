@@ -1,5 +1,4 @@
 import { ObjectHelper } from "../helpers/ObjectHelper";
-import { StringHelper } from "../helpers/StringHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "./HiveWorker";
 

@@ -1,3 +1,4 @@
+import path from "path";
 import { serializeError } from "serialize-error";
 import { ServerStatus } from "../enums/ServerStatus";
 import { AwaitHelper } from "../helpers/AwaitHelper";
@@ -58,6 +59,10 @@ export class CommonStore {
                     throw new Error(
                         `Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`
                     );
+                }
+
+                if (hiveWorker.package === "") {
+                    hiveWorker.importPath = path.join(process.cwd(), hiveWorker.importPath);
                 }
 
                 const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.importPath));

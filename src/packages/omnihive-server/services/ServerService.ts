@@ -29,11 +29,10 @@ import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 import { OmniHiveStore } from "../stores/OmniHiveStore";
 import { AppService } from "./AppService";
-import { InstanceService } from "./InstanceService";
 
 export class ServerService {
     public start = async (name: string | undefined, settings: string | undefined): Promise<void> => {
-        const instanceService: InstanceService = new InstanceService();
+        const appService: AppService = new AppService();
 
         if (name && settings) {
             throw new Error(
@@ -47,7 +46,7 @@ export class ServerService {
             if (process.env.omnihive_settings) {
                 settings = process.env.omnihive_settings as string;
             } else {
-                const latestInstance: RegisteredInstance | undefined = instanceService.getLatest();
+                const latestInstance: RegisteredInstance | undefined = appService.getLatestInstance();
 
                 if (!latestInstance) {
                     throw new Error(
@@ -61,17 +60,16 @@ export class ServerService {
 
         // Check instance name
         if (name) {
-            const instance: RegisteredInstance | undefined = instanceService.get(name);
+            const instance: RegisteredInstance | undefined = appService.getRegisteredInstance(name);
 
             if (instance) {
-                instanceService.setLatestInstance(name);
+                appService.setLatestInstance(name);
             } else {
                 throw new Error("Instance name provided has not been set or does not exist");
             }
         }
 
         // Run basic app service
-        const appService: AppService = new AppService();
         const appSettings: ServerSettings = appService.getServerSettings(name, settings);
         await appService.initApp(appSettings);
 

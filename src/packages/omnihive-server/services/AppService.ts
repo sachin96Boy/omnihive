@@ -7,16 +7,21 @@ import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFile
 import { IHiveAccountWorker } from "@withonevision/omnihive-core/interfaces/IHiveAccountWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import childProcess from "child_process";
+import Conf from "conf";
 import fs from "fs";
-import { serializeError } from "serialize-error";
 import packageJson from "../package.json";
-import { InstanceService } from "./InstanceService";
 
 export class AppService {
+    private config = new Conf({
+        projectName: OmniHiveConstants.CONF_NAME,
+        configName: OmniHiveConstants.CONF_NAME,
+    });
+
     public getServerSettings = (name: string | undefined, settings: string | undefined): ServerSettings => {
         if (name && settings) {
             throw new Error(
@@ -38,16 +43,15 @@ export class AppService {
             }
         }
 
-        const instanceService: InstanceService = new InstanceService();
-        const configInstance: RegisteredInstance | undefined = instanceService.get(name ?? "");
+        const configInstance: RegisteredInstance | undefined = this.getRegisteredInstance(name ?? "");
 
-        if (!configInstance || StringHelper.isNullOrWhiteSpace(configInstance.settings)) {
+        if (!configInstance || StringHelper.isNullOrWhiteSpace(configInstance.settingsLocation)) {
             throw new Error(
                 "The given instance name has not been registered.  Please use the command line to add a new instance"
             );
         }
 
-        const settingsJson = JSON.parse(fs.readFileSync(configInstance.settings, { encoding: "utf8" }));
+        const settingsJson = JSON.parse(fs.readFileSync(configInstance.settingsLocation, { encoding: "utf8" }));
 
         try {
             const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
@@ -289,5 +293,37 @@ export class AppService {
                 CommonStore.getInstance().account = await accountWorkerInstance.getHiveAccount();
             }
         }
+    };
+
+    public getLatestInstance = (): RegisteredInstance | undefined => {
+        return this.getRegisteredInstance("latest");
+    };
+
+    public getRegisteredInstance = (name: string): RegisteredInstance | undefined => {
+        const instances: unknown = this.config.get("instances");
+
+        if (!instances) {
+            return undefined;
+        }
+
+        const objectInstances: RegisteredInstance[] = ObjectHelper.createArrayStrict(
+            RegisteredInstance,
+            instances as RegisteredInstance[]
+        );
+
+        const instance: RegisteredInstance | undefined = objectInstances.find(
+            (value: RegisteredInstance) => value.name === name
+        );
+
+        if (!instance) {
+            return undefined;
+        }
+
+        return instance;
+    };
+
+    public setLatestInstance = (name: string): boolean => {
+        this.config.set("latest", this.getRegisteredInstance(name));
+        return true;
     };
 }

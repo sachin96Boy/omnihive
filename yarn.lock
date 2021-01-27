@@ -818,10 +818,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/auth0@npm:2.3.37":
-  version: 2.3.37
-  resolution: "@types/auth0@npm:2.3.37"
-  checksum: f8f3c990bfde3908bbefd412b4f3413385fb059f09ddea622934646cad7c5ac0869a5ebeedbce56f9dae823be772cde85cbb236ef5ac93cf60c6b7d9417820a1
+"@types/auth0@npm:2.32.0":
+  version: 2.32.0
+  resolution: "@types/auth0@npm:2.32.0"
+  checksum: 2ebb6ce4fa8acca2009378e6911e8259a73107399b1195d191b7bdb1976f07d0f42f154a3bc1d138ea08ef8eab4a916d99e9b191eb1ff8fd42a0b4a4b312c981
   languageName: node
   linkType: hard
 
@@ -839,13 +839,6 @@ __metadata:
   version: 4.2.14
   resolution: "@types/chai@npm:4.2.14"
   checksum: d226f4549a3144924b55ed5f6bdc60aed22d8c50fb87a28bc7619864d960caf46ba5e6372926cf23aea003778d339a7eb9a9e64e5c9241e22c1df537631d0264
-  languageName: node
-  linkType: hard
-
-"@types/clear@npm:0.1.1":
-  version: 0.1.1
-  resolution: "@types/clear@npm:0.1.1"
-  checksum: ded7ef18386cb110b1293e91640b11a03c1006a9c2c04336fad39b55a7bfff8f700468748432a3e6614cbeaaed8efc0d4608d003372784128129c230ac061cf3
   languageName: node
   linkType: hard
 
@@ -1694,6 +1687,60 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@withonevision/omnihive-server@workspace:src/packages/omnihive-server":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-server@workspace:src/packages/omnihive-server"
+  dependencies:
+    "@types/body-parser": 1.19.0
+    "@types/cli-table": 0.3.0
+    "@types/cors": 2.8.9
+    "@types/express": 4.17.11
+    "@types/figlet": 1.2.1
+    "@types/inquirer": 7.3.1
+    "@types/react": 17.0.0
+    "@types/react-dom": 17.0.0
+    "@types/swagger-ui-express": 4.1.2
+    "@types/yargs": 15.0.12
+    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-worker-date-dayjs": "workspace:*"
+    "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*"
+    "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*"
+    "@withonevision/omnihive-worker-function-core": "workspace:*"
+    "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*"
+    "@withonevision/omnihive-worker-knex-mssql": "workspace:*"
+    "@withonevision/omnihive-worker-log-core": "workspace:*"
+    "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*"
+    apollo-server: 2.19.2
+    apollo-server-express: 2.19.2
+    autoprefixer: 10.2.3
+    body-parser: 1.19.0
+    chalk: 4.1.0
+    change-case: 4.1.2
+    cli-table: 0.3.4
+    conf: 9.0.0
+    cors: 2.8.5
+    dotenv: 8.2.0
+    express: 4.17.1
+    figlet: 1.5.0
+    graphql: 15.4.0
+    helmet: 4.4.1
+    inquirer: 7.3.3
+    next: 10.0.5
+    nodemon: 2.0.7
+    postcss: 8.2.4
+    postcss-import: 14.0.0
+    postcss-preset-env: 6.7.0
+    react: 17.0.1
+    react-dom: 17.0.1
+    serialize-error: 8.0.1
+    swagger-ui-express: 4.1.6
+    tailwindcss: 2.0.2
+    ts-node: 9.1.1
+    typescript: 4.1.3
+    yargs: 16.2.0
+  languageName: unknown
+  linkType: soft
+
 "@withonevision/omnihive-worker-cache-nodecache@workspace:src/packages/omnihive-worker-cache-nodecache":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-cache-nodecache@workspace:src/packages/omnihive-worker-cache-nodecache"
@@ -1935,8 +1982,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-token-auth0@workspace:src/packages/omnihive-worker-token-auth0"
   dependencies:
+    "@types/auth0": 2.32.0
     "@types/node-jose": 1.1.5
     "@withonevision/omnihive-core": "workspace:*"
+    auth0: 2.32.0
     axios: 0.21.1
     chai: 4.2.0
     jwt-decode: 3.1.2
@@ -1966,7 +2015,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-user-auth0@workspace:src/packages/omnihive-worker-user-auth0"
   dependencies:
-    "@types/auth0": 2.3.37
+    "@types/auth0": 2.32.0
     "@withonevision/omnihive-core": "workspace:*"
     auth0: 2.32.0
     chai: 4.2.0
@@ -1979,57 +2028,19 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive@workspace:src/packages/omnihive"
   dependencies:
-    "@types/body-parser": 1.19.0
-    "@types/clear": 0.1.1
     "@types/cli-table": 0.3.0
-    "@types/cors": 2.8.9
-    "@types/express": 4.17.11
     "@types/figlet": 1.2.1
     "@types/inquirer": 7.3.1
-    "@types/react": 17.0.0
-    "@types/react-dom": 17.0.0
-    "@types/swagger-ui-express": 4.1.2
     "@types/yargs": 15.0.12
     "@withonevision/omnihive-core": "workspace:*"
-    "@withonevision/omnihive-worker-date-dayjs": "workspace:*"
-    "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*"
-    "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*"
-    "@withonevision/omnihive-worker-function-core": "workspace:*"
-    "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*"
-    "@withonevision/omnihive-worker-knex-mssql": "workspace:*"
-    "@withonevision/omnihive-worker-log-core": "workspace:*"
-    "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*"
-    apollo-server: 2.19.2
-    apollo-server-express: 2.19.2
-    autoprefixer: 10.2.3
-    body-parser: 1.19.0
     chalk: 4.1.0
-    change-case: 4.1.2
-    clear: 0.1.0
     cli-table: 0.3.4
     conf: 9.0.0
-    cors: 2.8.5
-    dotenv: 8.2.0
-    express: 4.17.1
     figlet: 1.5.0
-    graphql: 15.4.0
-    helmet: 4.4.1
     inquirer: 7.3.3
-    next: 10.0.5
-    nodemon: 2.0.7
-    postcss: 8.2.4
-    postcss-import: 14.0.0
-    postcss-preset-env: 6.7.0
-    react: 17.0.1
-    react-dom: 17.0.1
     serialize-error: 8.0.1
-    swagger-ui-express: 4.1.6
-    tailwindcss: 2.0.2
-    ts-node: 9.1.1
     typescript: 4.1.3
     yargs: 16.2.0
-  bin:
-    omnihive: ./omnihive.js
   languageName: unknown
   linkType: soft
 
@@ -3702,13 +3713,6 @@ __metadata:
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
   checksum: e291ce2b8c8c59e6449ac9a7a726090264bea6696e5343b21385e16d279c808ca09d73a1abea8fd23a9b7699e6ef5ce582df203511f71c8c27666bf3b2e300c5
-  languageName: node
-  linkType: hard
-
-"clear@npm:0.1.0":
-  version: 0.1.0
-  resolution: "clear@npm:0.1.0"
-  checksum: 5bb327928ac437961b25b51c8ab637b9c6dd74e53ff1d76928c71900f27ef8774da778da81b6cc7d9aba3467da508be9bbd4968a347ba6467761643111d34948
   languageName: node
   linkType: hard
 
@@ -11295,16 +11299,15 @@ fsevents@~2.3.1:
   dependencies:
     "@istanbuljs/nyc-config-typescript": 1.0.1
     "@types/chai": 4.2.14
-    "@types/clear": 0.1.1
     "@types/figlet": 1.2.1
     "@types/mocha": 8.2.0
     "@types/node": 14.14.22
     "@types/semver": 5.5.0
+    "@types/yargs": 15.0.12
     "@typescript-eslint/eslint-plugin": 4.14.0
     "@typescript-eslint/parser": 4.14.0
     chai: 4.2.0
     chalk: 4.1.0
-    clear: 0.1.0
     dotenv: 8.2.0
     eslint: 7.18.0
     eslint-config-prettier: 7.2.0
@@ -11320,6 +11323,7 @@ fsevents@~2.3.1:
     source-map-support: 0.5.19
     ts-node: 9.1.1
     typescript: 4.1.3
+    yargs: 16.2.0
   languageName: unknown
   linkType: soft
 

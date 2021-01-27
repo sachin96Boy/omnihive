@@ -1,6 +1,5 @@
 import chalk from "chalk";
 import childProcess from "child_process";
-import clear from "clear";
 import figlet from "figlet";
 import { copyFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
@@ -14,7 +13,7 @@ const build = async (): Promise<void> => {
     const args = yargs(process.argv.slice(2));
     const currentBranch: string = execSpawn("git branch --show-current", "./");
 
-    clear();
+    console.clear();
 
     args
         .help(false)
@@ -106,11 +105,11 @@ const build = async (): Promise<void> => {
     console.log(chalk.blue("Building server..."));
 
     directories
-        .filter((value: string) => value === "omnihive")
+        .filter((value: string) => value === "omnihive-server" || value === "omnihive")
         .forEach((value: string) => {
-            console.log(chalk.yellow("Building main server package..."));
+            console.log(chalk.yellow(`Building main server package ${value}...`));
             execSpawn("yarn run build", `./src/packages/${value}`);
-            console.log(chalk.greenBright(`Done building main server package...`));
+            console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 
     console.log(chalk.yellow("Copying NextJS OmniHive files..."));
@@ -118,7 +117,7 @@ const build = async (): Promise<void> => {
     const nextJsFiles = ["next-env.d.ts", "next.config.js", "postcss.config.js", "tailwind.config.js"];
 
     nextJsFiles.forEach((value: string) => {
-        copyFileSync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
+        copyFileSync(`./src/packages/omnihive-server/${value}`, `./dist/packages/omnihive-server/${value}`);
     });
 
     console.log(chalk.greenBright("Done copying NextJS OmniHive files..."));
@@ -261,6 +260,7 @@ const build = async (): Promise<void> => {
         console.log(chalk.blue("Done publishing workers..."));
     }
 
+    console.log();
     console.log(chalk.hex("#FFC022#")("Done building OmniHive monorepo..."));
     console.log();
     process.exit();

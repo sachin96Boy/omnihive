@@ -1,4 +1,5 @@
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
@@ -7,27 +8,27 @@ import fs from "fs";
 
 export class InstanceService {
     private config = new Conf({
-        projectName: "omnihive",
-        configName: "omnihive",
+        projectName: OmniHiveConstants.CONF_NAME,
+        configName: OmniHiveConstants.CONF_NAME,
     });
 
-    public add = (name: string, settings: string): boolean => {
-        if (!this.checkSettings(settings)) {
+    public add = (newInstance: RegisteredInstance): boolean => {
+        if (!this.checkInstance(newInstance)) {
             return false;
         }
 
         const instances: RegisteredInstance[] = this.getAll();
-        const instance: RegisteredInstance | undefined = this.get(name);
+        const instance: RegisteredInstance | undefined = this.get(newInstance.name);
 
         if (instance) {
             return false;
         }
 
-        instances.push({ name, settings });
+        instances.push(newInstance);
         this.writeInstances(instances);
 
         if (instances.length === 1) {
-            this.setLatestInstance(name);
+            this.setLatestInstance(newInstance.name);
         }
 
         return true;
@@ -59,8 +60,8 @@ export class InstanceService {
         return this.get("latest");
     };
 
-    public edit = (name: string, settings: string): boolean => {
-        if (!this.checkSettings(settings)) {
+    public edit = (name: string, editedInstance: RegisteredInstance): boolean => {
+        if (!this.checkInstance(editedInstance)) {
             return false;
         }
 
@@ -68,9 +69,9 @@ export class InstanceService {
 
         if (instance) {
             this.remove(name);
-            this.add(name, settings);
+            this.add(editedInstance);
         } else {
-            this.add(name, settings);
+            this.add(editedInstance);
         }
 
         return true;
@@ -86,7 +87,7 @@ export class InstanceService {
         }
 
         try {
-            fs.unlinkSync(instance.settings);
+            fs.unlinkSync(instance.settingsLocation);
         } catch {
             console.log(chalk.yellow("Instance settings file not found...continuing on"));
         }
@@ -111,11 +112,11 @@ export class InstanceService {
         this.config.set("instances", instances);
     };
 
-    private checkSettings = (settingsPath: string): boolean => {
+    private checkInstance = (instance: RegisteredInstance): boolean => {
         try {
             const config: ServerSettings = ObjectHelper.createStrict(
                 ServerSettings,
-                JSON.parse(fs.readFileSync(`${settingsPath}`, { encoding: "utf8" }))
+                JSON.parse(fs.readFileSync(`${instance.settingsLocation}`, { encoding: "utf8" }))
             );
 
             if (config) {

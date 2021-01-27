@@ -1,10 +1,8 @@
 {
-    "name": "@withonevision/omnihive",
+    "name": "@withonevision/omnihive-server",
     "version": "0.0.1",
     "description": "OmniHive Node Host",
     "license": "MIT",
-    "main": "./omnihive.js",
-    "bin": "./omnihive.js",
     "scripts": {
         "build": "tsc",
         "server-debug": "nodemon --no-stdin --config ./nodemon.server.json"

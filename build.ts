@@ -79,19 +79,7 @@ const build = async (): Promise<void> => {
         .filter((value: string) => value.startsWith("omnihive-core"))
         .forEach((value: string) => {
             console.log(chalk.yellow(`Building ${value}...`));
-
-            const coreSpawn = childProcess.spawnSync("yarn run build", {
-                shell: true,
-                cwd: `./src/packages/${value}`,
-                stdio: ["inherit", "inherit", "pipe"],
-            });
-
-            if (coreSpawn.status !== 0) {
-                const coreError: Error = new Error(serializeError(coreSpawn.stderr.toString()));
-                console.log(chalk.red(coreError));
-                process.exit();
-            }
-
+            execSpawn("yarn run build", `./src/packages/${value}`);
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -103,44 +91,22 @@ const build = async (): Promise<void> => {
         .filter((value: string) => value.startsWith("omnihive-worker"))
         .forEach((value: string) => {
             console.log(chalk.yellow(`Building ${value}...`));
-
-            const workerSpawn = childProcess.spawnSync("yarn run build", {
-                shell: true,
-                cwd: `./src/packages/${value}`,
-                stdio: ["inherit", "inherit", "pipe"],
-            });
-
-            if (workerSpawn.status !== 0) {
-                const workerError: Error = new Error(serializeError(workerSpawn.stderr.toString()));
-                console.log(chalk.red(workerError));
-                process.exit();
-            }
-
+            execSpawn("yarn run build", `./src/packages/${value}`);
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
     console.log(chalk.blue("Done building workers..."));
     console.log();
     console.log(chalk.blue("Building server..."));
-    console.log(chalk.yellow("Building main server package..."));
 
     directories
         .filter((value: string) => value === "omnihive")
         .forEach((value: string) => {
-            const serverSwawn = childProcess.spawnSync("yarn run build", {
-                shell: true,
-                cwd: `./src/packages/${value}`,
-                stdio: ["inherit", "inherit", "pipe"],
-            });
-
-            if (serverSwawn.status !== 0) {
-                const serverError: Error = new Error(serializeError(serverSwawn.stderr.toString()));
-                console.log(chalk.red(serverError));
-                process.exit();
-            }
+            console.log(chalk.yellow("Building main server package..."));
+            execSpawn("yarn run build", `./src/packages/${value}`);
+            console.log(chalk.greenBright(`Done building main server package...`));
         });
 
-    console.log(chalk.greenBright(`Done building main server package...`));
     console.log(chalk.yellow("Copying NextJS OmniHive files..."));
 
     const nextJsFiles = ["next-env.d.ts", "next.config.js", "postcss.config.js", "tailwind.config.js"];
@@ -253,29 +219,8 @@ const build = async (): Promise<void> => {
     console.log(chalk.greenBright("Done patching version file..."));
     console.log(chalk.yellow("Bumping GitHub version..."));
 
-    const gitAddSpawn = childProcess.spawnSync("git add version.json", {
-        shell: true,
-        cwd: `./`,
-        stdio: ["inherit", "inherit", "pipe"],
-    });
-
-    if (gitAddSpawn.status !== 0) {
-        const gitAddError: Error = new Error(serializeError(gitAddSpawn.stderr.toString()));
-        console.log(chalk.red(gitAddError));
-        process.exit();
-    }
-
-    const gitCommitSpawn = childProcess.spawnSync(`git commit -m "Bump ${args.argv.channel} to ${currentVersion}"`, {
-        shell: true,
-        cwd: `./`,
-        stdio: ["inherit", "inherit", "pipe"],
-    });
-
-    if (gitCommitSpawn.status !== 0) {
-        const gitCommitError: Error = new Error(serializeError(gitCommitSpawn.stderr.toString()));
-        console.log(chalk.red(gitCommitError));
-        process.exit();
-    }
+    execSpawn("git add version.json", "./");
+    execSpawn(`git commit -m "Bump ${args.argv.channel} to ${currentVersion}"`, "./");
 
     console.log(chalk.greenBright("Done bumping GitHub version..."));
     console.log(chalk.blue("Done with cleanup..."));
@@ -283,6 +228,20 @@ const build = async (): Promise<void> => {
     console.log(chalk.hex("#FFC022#")("Done building OmniHive monorepo..."));
     console.log();
     process.exit();
+};
+
+const execSpawn = (commandString: string, cwd: string): void => {
+    const execSpawn = childProcess.spawnSync(commandString, {
+        shell: true,
+        cwd,
+        stdio: ["inherit", "inherit", "pipe"],
+    });
+
+    if (execSpawn.status !== 0) {
+        const gitCommitError: Error = new Error(serializeError(execSpawn.stderr.toString()));
+        console.log(chalk.red(gitCommitError));
+        process.exit();
+    }
 };
 
 build();

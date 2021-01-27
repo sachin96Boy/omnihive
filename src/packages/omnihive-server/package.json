@@ -5,9 +5,10 @@
     "license": "MIT",
     "scripts": {
         "build": "tsc",
-        "server-debug": "nodemon --no-stdin --config ./nodemon.server.json"
+        "server:debug": "nodemon --no-stdin --config ./nodemon.server.json"
     },
     "dependencies": {
+        "@withonevision/omnihive": "workspace:*",
         "@withonevision/omnihive-core": "workspace:*",
         "@withonevision/omnihive-worker-date-dayjs": "workspace:*",
         "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*",
@@ -60,6 +61,7 @@
     },
     "omniHive": {
         "coreDependencies": {
+            "@withonevision/omnihive": "workspace:*",
             "@withonevision/omnihive-core": "workspace:*",
             "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
             "@withonevision/omnihive-worker-function-core": "workspace:*",

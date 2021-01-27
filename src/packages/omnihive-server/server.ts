@@ -6,7 +6,7 @@ import { ServerService } from "./services/ServerService";
 const init = async () => {
     const args = yargs(process.argv.slice(2));
 
-    console.clear();
+    clear();
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
@@ -60,6 +60,11 @@ const init = async () => {
     if (args.argv.name) {
         serverService.start(args.argv.name as string, undefined);
     }
+};
+
+const clear = () => {
+    process.stdout.write("\x1b[2J");
+    process.stdout.write("\x1b[0f");
 };
 
 init();

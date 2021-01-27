@@ -13,7 +13,7 @@ const build = async (): Promise<void> => {
     const args = yargs(process.argv.slice(2));
     const currentBranch: string = execSpawn("git branch --show-current", "./");
 
-    console.clear();
+    clear();
 
     args
         .help(false)
@@ -81,7 +81,7 @@ const build = async (): Promise<void> => {
     console.log(chalk.blue("Building core libraries..."));
 
     directories
-        .filter((value: string) => value.startsWith("omnihive-core"))
+        .filter((value: string) => value === "omnihive-core" || value === "omnihive")
         .forEach((value: string) => {
             console.log(chalk.yellow(`Building ${value}...`));
             execSpawn("yarn run build", `./src/packages/${value}`);
@@ -105,7 +105,7 @@ const build = async (): Promise<void> => {
     console.log(chalk.blue("Building server..."));
 
     directories
-        .filter((value: string) => value === "omnihive-server" || value === "omnihive")
+        .filter((value: string) => value === "omnihive-server")
         .forEach((value: string) => {
             console.log(chalk.yellow(`Building main server package ${value}...`));
             execSpawn("yarn run build", `./src/packages/${value}`);
@@ -238,7 +238,7 @@ const build = async (): Promise<void> => {
         console.log(chalk.blue("Publishing core libraries..."));
 
         directories
-            .filter((value: string) => value.startsWith("omnihive-core"))
+            .filter((value: string) => value === "omnihive-core" || value === "omnihive")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
                 execSpawn("npm publish --access public", `./src/packages/${value}`);
@@ -286,6 +286,11 @@ const execSpawn = (commandString: string, cwd: string): string => {
     } else {
         return "";
     }
+};
+
+const clear = () => {
+    process.stdout.write("\x1b[2J");
+    process.stdout.write("\x1b[0f");
 };
 
 build();

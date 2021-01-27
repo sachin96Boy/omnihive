@@ -1676,6 +1676,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@withonevision/omnihive-client@workspace:src/packages/omnihive-client":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-client@workspace:src/packages/omnihive-client"
+  dependencies:
+    "@withonevision/omnihive-core": "workspace:*"
+    axios: 0.21.1
+    graphql: 15.5.0
+    nodemon: 2.0.7
+    serialize-error: 8.0.1
+    ts-node: 9.1.1
+    typescript: 4.1.3
+  languageName: unknown
+  linkType: soft
+
 "@withonevision/omnihive-core@workspace:*, @withonevision/omnihive-core@workspace:src/packages/omnihive-core":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-core@workspace:src/packages/omnihive-core"
@@ -1701,6 +1715,7 @@ __metadata:
     "@types/react-dom": 17.0.0
     "@types/swagger-ui-express": 4.1.2
     "@types/yargs": 15.0.12
+    "@withonevision/omnihive": "workspace:*"
     "@withonevision/omnihive-core": "workspace:*"
     "@withonevision/omnihive-worker-date-dayjs": "workspace:*"
     "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*"
@@ -2024,7 +2039,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive@workspace:src/packages/omnihive":
+"@withonevision/omnihive@workspace:*, @withonevision/omnihive@workspace:src/packages/omnihive":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive@workspace:src/packages/omnihive"
   dependencies:
@@ -2038,7 +2053,9 @@ __metadata:
     conf: 9.0.0
     figlet: 1.5.0
     inquirer: 7.3.3
+    nodemon: 2.0.7
     serialize-error: 8.0.1
+    ts-node: 9.1.1
     typescript: 4.1.3
     yargs: 16.2.0
   languageName: unknown
@@ -6485,6 +6502,13 @@ fsevents@~2.3.1:
   version: 15.4.0
   resolution: "graphql@npm:15.4.0"
   checksum: 1a307dcfe2646e1e8323d03e8cd24554ba9f7369863bf0b020f2e4b39bff3504dc7d6dcad19cb96899f0825eda4c688819911f0c270e84f1bb0954fe3ac16a31
+  languageName: node
+  linkType: hard
+
+"graphql@npm:15.5.0":
+  version: 15.5.0
+  resolution: "graphql@npm:15.5.0"
+  checksum: 789cdcb069a3e00592e779002217a6bc5fd09efad63ee8c4190c4b3ea96c89010e74f085fb1cba876a0bb0e324e01df2eddb84d79dca90a28e582bc425fef9ef
   languageName: node
   linkType: hard
 

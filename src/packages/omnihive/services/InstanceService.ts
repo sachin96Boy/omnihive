@@ -28,7 +28,7 @@ export class InstanceService {
         this.writeInstances(instances);
 
         if (instances.length === 1) {
-            this.setLatestInstance(newInstance.name);
+            this.setLastRun(newInstance.name);
         }
 
         return true;
@@ -56,8 +56,8 @@ export class InstanceService {
         }
     };
 
-    public getLatest = (): RegisteredInstance | undefined => {
-        return this.get("latest");
+    public getLastRun = (): RegisteredInstance | undefined => {
+        return this.getAll().find((value: RegisteredInstance) => value.lastRun === true);
     };
 
     public edit = (name: string, editedInstance: RegisteredInstance): boolean => {
@@ -92,7 +92,7 @@ export class InstanceService {
             console.log(chalk.yellow("Instance settings file not found...continuing on"));
         }
 
-        const latest: RegisteredInstance | undefined = this.getLatest();
+        const latest: RegisteredInstance | undefined = this.getLastRun();
 
         if (latest && latest.name === name) {
             this.config.set("latest", undefined);
@@ -103,8 +103,16 @@ export class InstanceService {
         return true;
     };
 
-    public setLatestInstance = (name: string): boolean => {
-        this.config.set("latest", this.get(name));
+    public setLastRun = (name: string): boolean => {
+        const instance: RegisteredInstance | undefined = this.get(name);
+
+        if (!instance) {
+            return false;
+        }
+
+        instance.lastRun = true;
+        this.edit(name, instance);
+
         return true;
     };
 

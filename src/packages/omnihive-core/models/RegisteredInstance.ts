@@ -3,4 +3,5 @@ export class RegisteredInstance {
     public settingsLocation: string = "";
     public serverLocation: string = "";
     public version: string = "";
+    public lastRun: boolean = false;
 }

@@ -6,7 +6,7 @@ import { TaskRunnerService } from "./services/TaskRunnerService";
 const init = async () => {
     const args = yargs(process.argv.slice(2));
 
-    console.clear();
+    clear();
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
@@ -75,6 +75,11 @@ const init = async () => {
 
     console.log(chalk.greenBright("Done with task runner..."));
     process.exit();
+};
+
+const clear = () => {
+    process.stdout.write("\x1b[2J");
+    process.stdout.write("\x1b[0f");
 };
 
 init();

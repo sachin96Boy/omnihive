@@ -81,7 +81,15 @@ const build = async (): Promise<void> => {
     console.log(chalk.blue("Building core libraries..."));
 
     directories
-        .filter((value: string) => value === "omnihive-core" || value === "omnihive")
+        .filter((value: string) => value === "omnihive-core")
+        .forEach((value: string) => {
+            console.log(chalk.yellow(`Building ${value}...`));
+            execSpawn("yarn run build", `./src/packages/${value}`);
+            console.log(chalk.greenBright(`Done building ${value}...`));
+        });
+
+    directories
+        .filter((value: string) => value === "omnihive" || value === "omnihive-client")
         .forEach((value: string) => {
             console.log(chalk.yellow(`Building ${value}...`));
             execSpawn("yarn run build", `./src/packages/${value}`);
@@ -238,7 +246,15 @@ const build = async (): Promise<void> => {
         console.log(chalk.blue("Publishing core libraries..."));
 
         directories
-            .filter((value: string) => value === "omnihive-core" || value === "omnihive")
+            .filter((value: string) => value === "omnihive-core")
+            .forEach((value: string) => {
+                console.log(chalk.yellow(`Publishing ${value}...`));
+                execSpawn("npm publish --access public", `./src/packages/${value}`);
+                console.log(chalk.greenBright(`Done publishing ${value}...`));
+            });
+
+        directories
+            .filter((value: string) => value === "omnihive" || value === "omnihive-client")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
                 execSpawn("npm publish --access public", `./src/packages/${value}`);

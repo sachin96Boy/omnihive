@@ -28,43 +28,43 @@ export class OmniHiveClient {
 
     public init = async (settings: ServerSettings): Promise<void> => {
         await CommonStore.getInstance().initWorkers(settings.workers);
-    }
+    };
 
     public restClient = async (url: string, method: RestMethod, headers?: any, data?: any): Promise<any> => {
         return new Promise<AxiosResponse<any>>((resolve, reject) => {
-            const axiosConfig: AxiosRequestConfig = { url: url };
+            const config: AxiosRequestConfig = { url: url };
 
             if (headers == null) {
                 headers = {};
             }
 
             if (Object.keys(headers).length > 0) {
-                axiosConfig.headers = headers;
+                config.headers = headers;
             }
 
             if (data != null) {
-                axiosConfig.data = data;
+                config.data = data;
             }
 
             switch (method) {
                 case RestMethod.GET:
-                    axiosConfig.method = "GET";
+                    config.method = "GET";
                     break;
                 case RestMethod.POST:
-                    axiosConfig.method = "POST";
+                    config.method = "POST";
                     break;
                 case RestMethod.PATCH:
-                    axiosConfig.method = "PATCH";
+                    config.method = "PATCH";
                     break;
                 case RestMethod.PUT:
-                    axiosConfig.method = "PUT";
+                    config.method = "PUT";
                     break;
                 case RestMethod.DELETE:
-                    axiosConfig.method = "DELETE";
+                    config.method = "DELETE";
                     break;
             }
 
-            axios(axiosConfig)
+            axios(config)
                 .then((response: AxiosResponse) => {
                     if (response.data.errors != null && response.data.errors.length > 0) {
                         const errorString: StringBuilder = new StringBuilder();
@@ -84,12 +84,20 @@ export class OmniHiveClient {
         });
     };
 
-    public graphClient = async (graphUrl: string, query: string): Promise<any> => {
+    public graphClient = async (graphUrl: string, query: string, headers?: any): Promise<any> => {
         const graphCall: Promise<any> = new Promise<any>((resolve, reject) => {
             const config: any = {};
-            config.headers = {};
+
+            if (headers == null) {
+                config.headers = {};
+            }
+
+            if (Object.keys(headers).length > 0) {
+                config.headers = headers;
+            }
+
             config.headers["Content-Type"] = "application/json";
-            let dataObject: any = { query };
+            const dataObject: any = { query };
 
             axios
                 .post(graphUrl, JSON.stringify(dataObject), config as Object)
@@ -114,21 +122,32 @@ export class OmniHiveClient {
         return graphCall;
     };
 
-    public runCustomSql = async (url: string, sql: string, dbWorkerName: string, encryptionWorkerName?: string): Promise<any> => {
-
+    public runCustomSql = async (
+        url: string,
+        sql: string,
+        dbWorkerName: string,
+        encryptionWorkerName?: string
+    ): Promise<any> => {
         let encryptionWorker: IEncryptionWorker | undefined = undefined;
 
         if (encryptionWorkerName) {
-            encryptionWorker = await CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption, encryptionWorkerName);
+            encryptionWorker = await CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(
+                HiveWorkerType.Encryption,
+                encryptionWorkerName
+            );
         } else {
-            encryptionWorker = await CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
+            encryptionWorker = await CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(
+                HiveWorkerType.Encryption
+            );
         }
 
         if (!encryptionWorker) {
             throw new Error("No encryption worker found.  An encryption worker is required for custom SQL");
         }
 
-        const dbWorker: IDatabaseWorker | undefined = await CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, dbWorkerName);
+        const dbWorker: IDatabaseWorker | undefined = await CommonStore.getInstance().getHiveWorker<
+            IDatabaseWorker | undefined
+        >(HiveWorkerType.Database, dbWorkerName);
 
         if (!dbWorker) {
             throw new Error("No database worker with the given name found.");
@@ -136,10 +155,10 @@ export class OmniHiveClient {
 
         const dbMeta: HiveWorkerMetadataDatabase = dbWorker.config.metadata as HiveWorkerMetadataDatabase;
 
-        let target: string = `${dbMeta.generatorPrefix}customSql`;
-        let secureSql: string = encryptionWorker.symmetricEncrypt(sql);
+        const target: string = `${dbMeta.generatorPrefix}customSql`;
+        const secureSql: string = encryptionWorker.symmetricEncrypt(sql);
 
-        let query: string = `
+        const query: string = `
             query {
                 ${target}(
                     encryptedSql: "${secureSql}"
@@ -149,7 +168,7 @@ export class OmniHiveClient {
             }
         `;
 
-        let results: any = await this.graphClient(url, query);
+        const results: any = await this.graphClient(url, query);
         return results[target][0].recordset;
     };
 }

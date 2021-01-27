@@ -210,11 +210,11 @@ export class AppService {
                 const removeSpawn = childProcess.spawnSync(removeCommand.outputString(), {
                     shell: true,
                     cwd: process.cwd(),
-                    stdio: ["inherit", "inherit", "pipe"],
+                    stdio: ["inherit", "pipe", "pipe"],
                 });
 
                 if (removeSpawn.status !== 0) {
-                    const removeError: Error = new Error(serializeError(removeSpawn.stderr.toString()));
+                    const removeError: Error = new Error(removeSpawn.stderr.toString().trim());
                     console.log(removeError);
                     throw removeError;
                 }
@@ -256,11 +256,11 @@ export class AppService {
                 const addSpawn = childProcess.spawnSync(addCommand.outputString(), {
                     shell: true,
                     cwd: process.cwd(),
-                    stdio: ["inherit", "inherit", "pipe"],
+                    stdio: ["inherit", "pipe", "pipe"],
                 });
 
                 if (addSpawn.status !== 0) {
-                    const addError: Error = new Error(serializeError(addSpawn.stderr.toString()));
+                    const addError: Error = new Error(addSpawn.stderr.toString().trim());
                     console.log(addError);
                     throw addError;
                 }

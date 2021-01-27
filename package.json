@@ -9,8 +9,17 @@
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build": "yarn node -r ts-node/register --trace-warnings ./build.ts",
+        "build:beta": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t prerelease",
+        "build:beta:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t prerelease -p",
+        "build:dev": "yarn node -r ts-node/register --trace-warnings ./build.ts",
+        "build:dev:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c dev -t prerelease -p",
         "build:debug": "yarn node --inspect=127.0.0.1:9228 -r ts-node/register --trace-warnings ./build.ts",
+        "build:main:major": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t major",
+        "build:main:major:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t major -p",
+        "build:main:minor": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t minor",
+        "build:main:minor:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t minor -p",
+        "build:main:patch": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t patch",
+        "build:main:patch:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t patch -p",
         "doctor": "yarn dlx @yarnpkg/doctor",
         "server:debug": "cd src/packages/omnihive && yarn run server-debug",
         "test": "nyc mocha -r dotenv/config -r ts-node/register 'src/packages/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors"

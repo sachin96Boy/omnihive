@@ -5,7 +5,6 @@ import figlet from "figlet";
 import { copyFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
-import { serializeError } from "serialize-error";
 import yargs from "yargs";
 import version from "./version.json";
 import semver from "semver";
@@ -13,6 +12,7 @@ import fs from "fs";
 
 const build = async (): Promise<void> => {
     const args = yargs(process.argv.slice(2));
+    const currentBranch: string = execSpawn("git branch --show-current", "./");
 
     clear();
 
@@ -20,11 +20,11 @@ const build = async (): Promise<void> => {
         .help(false)
         .version(false)
         .strict()
-        .option("channel", {
-            alias: "c",
+        .option("branch", {
+            alias: "b",
             type: "string",
             demandOption: true,
-            description: "Name of the channel you wish to build",
+            description: "Name of the branch you wish to build",
             choices: ["dev", "beta", "main"],
             default: "dev",
         })
@@ -44,18 +44,24 @@ const build = async (): Promise<void> => {
             default: false,
         })
         .check((args) => {
-            if (args.channel === "main" && args.type === "prerelease") {
+            if (args.branch !== currentBranch) {
                 throw new Error(
-                    "You cannot specify a main release channel and specify prerelease.  Prerelease is for dev and beta channels only."
+                    "Your selected branch and your current git branch do not match.  Please choose a different branch or switch branches in git."
+                );
+            }
+
+            if (args.branch === "main" && args.type === "prerelease") {
+                throw new Error(
+                    "You cannot specify a main release branch and specify prerelease.  Prerelease is for dev and beta branches only."
                 );
             }
 
             if (
-                (args.channel === "dev" || args.channel === "beta") &&
+                (args.branch === "dev" || args.branch === "beta") &&
                 (args.type === "major" || args.type === "minor" || args.type === "patch")
             ) {
                 throw new Error(
-                    "You cannot specify a prerelease channel and specify a main release type.  Prerelease is the only option for dev or beta"
+                    "You cannot specify a prerelease branch and specify a main release type.  Prerelease is the only option for dev or beta"
                 );
             }
             return true;
@@ -68,12 +74,12 @@ const build = async (): Promise<void> => {
 
     fs.rmSync("./dist", { recursive: true, force: true });
 
-    console.log();
-    console.log(chalk.blue("Building core libraries..."));
-
     const directories: string[] = readdirSync("./src/packages").filter((f) =>
         statSync(join("./src/packages", f)).isDirectory()
     );
+
+    console.log();
+    console.log(chalk.blue("Building core libraries..."));
 
     directories
         .filter((value: string) => value.startsWith("omnihive-core"))
@@ -119,14 +125,14 @@ const build = async (): Promise<void> => {
 
     console.log(chalk.blue("Done building server..."));
     console.log();
-    console.log(chalk.blue("Cleanup..."));
+    console.log(chalk.blue("Version maintenance..."));
     console.log(chalk.yellow("Getting semver..."));
 
     let currentVersion: string | null = null;
 
     switch (args.argv.type) {
         case "prerelease":
-            switch (args.argv.channel) {
+            switch (args.argv.branch) {
                 case "dev":
                     currentVersion = semver.inc(version.dev, "prerelease", false, "dev") ?? "";
 
@@ -148,7 +154,7 @@ const build = async (): Promise<void> => {
                     version.beta = currentVersion;
                     break;
                 default:
-                    console.log(chalk.red("Must have dev or beta channel with prerelease"));
+                    console.log(chalk.red("Must have dev or beta branch with prerelease"));
                     process.exit();
             }
             break;
@@ -220,28 +226,65 @@ const build = async (): Promise<void> => {
     console.log(chalk.yellow("Bumping GitHub version..."));
 
     execSpawn("git add version.json", "./");
-    execSpawn(`git commit -m "Bump ${args.argv.channel} to ${currentVersion}"`, "./");
+    execSpawn(`git commit -m "Bump ${args.argv.branch} to ${currentVersion}"`, "./");
     execSpawn(`git tag ${currentVersion}`, "./");
 
     console.log(chalk.greenBright("Done bumping GitHub version..."));
-    console.log(chalk.blue("Done with cleanup..."));
+    console.log(chalk.blue("Done with version maintenance..."));
     console.log();
+
+    if (!args.argv.publish as boolean) {
+        console.log(chalk.redBright("Publish not specified...skipping"));
+    } else {
+        console.log(chalk.blue("Publishing core libraries..."));
+
+        directories
+            .filter((value: string) => value.startsWith("omnihive-core"))
+            .forEach((value: string) => {
+                console.log(chalk.yellow(`Publishing ${value}...`));
+                execSpawn("npm publish --access public", `./src/packages/${value}`);
+                console.log(chalk.greenBright(`Done publishing ${value}...`));
+            });
+
+        console.log(chalk.blue("Done publishing core libraries..."));
+        console.log();
+        console.log(chalk.blue("Publishing workers..."));
+
+        directories
+            .filter((value: string) => value.startsWith("omnihive-worker"))
+            .forEach((value: string) => {
+                console.log(chalk.yellow(`Publishing ${value}...`));
+                execSpawn("npm publish --access public", `./src/packages/${value}`);
+                console.log(chalk.greenBright(`Done publishing ${value}...`));
+            });
+
+        console.log(chalk.blue("Done publishing workers..."));
+    }
+
     console.log(chalk.hex("#FFC022#")("Done building OmniHive monorepo..."));
     console.log();
     process.exit();
 };
 
-const execSpawn = (commandString: string, cwd: string): void => {
+const execSpawn = (commandString: string, cwd: string): string => {
     const execSpawn = childProcess.spawnSync(commandString, {
         shell: true,
         cwd,
-        stdio: ["inherit", "inherit", "pipe"],
+        stdio: ["inherit", "pipe", "pipe"],
     });
 
     if (execSpawn.status !== 0) {
-        const gitCommitError: Error = new Error(serializeError(execSpawn.stderr.toString()));
-        console.log(chalk.red(gitCommitError));
+        const execError: Error = new Error(execSpawn.stderr.toString().trim());
+        console.log(chalk.red(execError));
         process.exit();
+    }
+
+    const execOut = execSpawn.stdout.toString().trim();
+
+    if (execOut && execOut !== "") {
+        return execOut;
+    } else {
+        return "";
     }
 };
 

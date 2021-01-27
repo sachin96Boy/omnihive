@@ -1,0 +1,18 @@
+{
+    "name": "@withonevision/omnihive-worker-error-sentry-node",
+    "version": "0.0.1",
+    "description": "OmniHive Sentry Node Error Worker",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@sentry/node": "6.0.2",
+        "@withonevision/omnihive-core": "workspace:*",
+        "serialize-error": "8.0.1"
+    },
+    "devDependencies": {
+        "chai": "4.2.0",
+        "typescript": "4.1.3"
+    }
+}

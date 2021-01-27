@@ -1,0 +1,19 @@
+{
+    "name": "@withonevision/omnihive-worker-filesystem-fsextra",
+    "version": "0.0.1",
+    "description": "OmniHive FSExtra FileSystem Worker",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@withonevision/omnihive-core": "workspace:*",
+        "fs-extra": "9.1.0",
+        "serialize-error": "8.0.1"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "9.0.6",
+        "chai": "4.2.0",
+        "typescript": "4.1.3"
+    }
+}

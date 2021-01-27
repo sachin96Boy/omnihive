@@ -221,6 +221,7 @@ const build = async (): Promise<void> => {
 
     execSpawn("git add version.json", "./");
     execSpawn(`git commit -m "Bump ${args.argv.channel} to ${currentVersion}"`, "./");
+    execSpawn(`git tag ${currentVersion}`, "./");
 
     console.log(chalk.greenBright("Done bumping GitHub version..."));
     console.log(chalk.blue("Done with cleanup..."));

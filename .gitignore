@@ -1,7 +1,12 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 # dependencies
-**/node_modules
+.yarn/*
+**/node_modules/
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
 
 # production
 **/dist
@@ -23,11 +28,6 @@ needs-transpile.js
 
 # misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env
 **/*.env
 
 npm-debug.log*
@@ -35,8 +35,5 @@ yarn-debug.log*
 yarn-error.log*
 
 #exclusions
-!gulpfile.js
-!jest.config.js
 !.eslintrc.js
-
-**/tests/test.settings.json
+!.prettierrc.js

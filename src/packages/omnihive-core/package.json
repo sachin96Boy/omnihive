@@ -1,0 +1,17 @@
+{
+    "name": "@withonevision/omnihive-core",
+    "version": "0.0.1",
+    "description": "OmniHive Core",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "graphql": "15.4.0",
+        "serialize-error": "8.0.1"
+    },
+    "devDependencies": {
+        "chai": "4.2.0",
+        "typescript": "4.1.3"
+    }
+}

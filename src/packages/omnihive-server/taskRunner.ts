@@ -6,10 +6,6 @@ import { TaskRunnerService } from "./services/TaskRunnerService";
 const init = async () => {
     const args = yargs(process.argv.slice(2));
 
-    clear();
-    console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
-    console.log();
-
     args
         .help(false)
         .version(false)
@@ -52,6 +48,10 @@ const init = async () => {
 
             return true;
         }).argv;
+
+    clear();
+    console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
+    console.log();
 
     const runnerService: TaskRunnerService = new TaskRunnerService();
 

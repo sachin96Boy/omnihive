@@ -13,8 +13,6 @@ const build = async (): Promise<void> => {
     const args = yargs(process.argv.slice(2));
     const currentBranch: string = execSpawn("git branch --show-current", "./");
 
-    clear();
-
     args
         .help(false)
         .version(false)
@@ -66,6 +64,7 @@ const build = async (): Promise<void> => {
             return true;
         }).argv;
 
+    clear();
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log(chalk.hex("#FFC022")("Building OmniHive monorepo..."));
     console.log();
@@ -249,7 +248,7 @@ const build = async (): Promise<void> => {
             .filter((value: string) => value === "omnihive-core")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", `./src/packages/${value}`);
+                execSpawn("npm publish --access public", `./dist/packages/${value}`);
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 
@@ -257,7 +256,7 @@ const build = async (): Promise<void> => {
             .filter((value: string) => value === "omnihive" || value === "omnihive-client")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", `./src/packages/${value}`);
+                execSpawn("npm publish --access public", `./dist/packages/${value}`);
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 
@@ -269,7 +268,7 @@ const build = async (): Promise<void> => {
             .filter((value: string) => value.startsWith("omnihive-worker"))
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", `./src/packages/${value}`);
+                execSpawn("npm publish --access public", `./dist/packages/${value}`);
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 

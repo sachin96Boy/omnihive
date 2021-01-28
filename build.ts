@@ -99,7 +99,7 @@ const build = async (): Promise<void> => {
             });
 
         directories
-            .filter((value: string) => value === "omnihive" || value === "omnihive-client")
+            .filter((value: string) => value === "omnihive-client") // || value === "omnihive")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Building ${value}...`));
                 execSpawn("yarn run build", `./src/packages/${value}`);
@@ -264,7 +264,7 @@ const build = async (): Promise<void> => {
                 });
 
             directories
-                .filter((value: string) => value === "omnihive" || value === "omnihive-client")
+                .filter((value: string) => value === "omnihive-client") // || value === "omnihive")
                 .forEach((value: string) => {
                     console.log(chalk.yellow(`Publishing ${value}...`));
                     execSpawn("npm publish --access public", `./dist/packages/${value}`);
@@ -316,12 +316,19 @@ const build = async (): Promise<void> => {
 
         for (const value of directories) {
             const packageJson: readPkg.NormalizedPackageJson = readPkg.sync({ cwd: `./dist/custom/${value}` });
+
+            if (!packageJson || !packageJson.dependencies) {
+                console.log(chalk.red(`Package.json for ${value} has errors or does not exist`));
+                process.exit();
+            }
+
             for (const key of Object.keys(packageJson.dependencies)) {
-                if (packageJson.dependencies[key] === "workspace:*") {
+                if (packageJson.dependencies[key] && packageJson.dependencies[key] === "workspace:*") {
                     const registryInfo: pkgJson.AbbreviatedMetadata = await pkgJson(packageJson.dependencies[key]);
                     packageJson.dependencies[key] = registryInfo["dist-tags"].latest;
                 }
             }
+
             writePkg.sync(`./dist/custom/${value}`, packageJson);
         }
 

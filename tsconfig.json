@@ -32,10 +32,14 @@
       ".yarn",
       "**/node_modules/**",
       "src/packages/**/tests/**/*.ts",
-      "src/packages/**/nodemon*.json"
+      "src/packages/**/nodemon*.json",
+      "src/custom/**/tests/**/*.ts",
+      "src/custom/**/nodemon*.json"
     ],
     "include": [
       "src/packages/**/*.ts",
-      "src/packages/**/*.json"
+      "src/packages/**/*.json",
+      "src/custom/**/*.ts",
+      "src/custom/**/*.json"
     ]
   }

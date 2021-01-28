@@ -21,6 +21,7 @@ import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettin
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
+import { InstanceService } from "@withonevision/omnihive/services/InstanceService";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import express from "express";
@@ -29,10 +30,10 @@ import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 import { OmniHiveStore } from "../stores/OmniHiveStore";
 import { AppService } from "./AppService";
-import { InstanceService } from "./InstanceService";
 
 export class ServerService {
     public start = async (name: string | undefined, settings: string | undefined): Promise<void> => {
+        const appService: AppService = new AppService();
         const instanceService: InstanceService = new InstanceService();
 
         if (name && settings) {
@@ -41,13 +42,13 @@ export class ServerService {
             );
         }
 
-        // Check for latest instance
+        // Check for last run instance
 
         if (!name && !settings) {
             if (process.env.omnihive_settings) {
                 settings = process.env.omnihive_settings as string;
             } else {
-                const latestInstance: RegisteredInstance | undefined = instanceService.getLatest();
+                const latestInstance: RegisteredInstance | undefined = instanceService.getLastRun();
 
                 if (!latestInstance) {
                     throw new Error(
@@ -59,19 +60,18 @@ export class ServerService {
             }
         }
 
-        // Check instance name
+        // Check last run name
         if (name) {
             const instance: RegisteredInstance | undefined = instanceService.get(name);
 
             if (instance) {
-                instanceService.setLatestInstance(name);
+                instanceService.setLastRun(name);
             } else {
                 throw new Error("Instance name provided has not been set or does not exist");
             }
         }
 
         // Run basic app service
-        const appService: AppService = new AppService();
         const appSettings: ServerSettings = appService.getServerSettings(name, settings);
         await appService.initApp(appSettings);
 

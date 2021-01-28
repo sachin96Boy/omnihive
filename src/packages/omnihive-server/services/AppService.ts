@@ -10,14 +10,15 @@ import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
+import { InstanceService } from "@withonevision/omnihive/services/InstanceService";
 import childProcess from "child_process";
 import fs from "fs";
-import { serializeError } from "serialize-error";
 import packageJson from "../package.json";
-import { InstanceService } from "./InstanceService";
 
 export class AppService {
     public getServerSettings = (name: string | undefined, settings: string | undefined): ServerSettings => {
+        const instanceService: InstanceService = new InstanceService();
+
         if (name && settings) {
             throw new Error(
                 "You cannot provide both an instance name and a settings file to the configuration handler"
@@ -38,16 +39,15 @@ export class AppService {
             }
         }
 
-        const instanceService: InstanceService = new InstanceService();
         const configInstance: RegisteredInstance | undefined = instanceService.get(name ?? "");
 
-        if (!configInstance || StringHelper.isNullOrWhiteSpace(configInstance.settings)) {
+        if (!configInstance || StringHelper.isNullOrWhiteSpace(configInstance.settingsLocation)) {
             throw new Error(
                 "The given instance name has not been registered.  Please use the command line to add a new instance"
             );
         }
 
-        const settingsJson = JSON.parse(fs.readFileSync(configInstance.settings, { encoding: "utf8" }));
+        const settingsJson = JSON.parse(fs.readFileSync(configInstance.settingsLocation, { encoding: "utf8" }));
 
         try {
             const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
@@ -210,11 +210,11 @@ export class AppService {
                 const removeSpawn = childProcess.spawnSync(removeCommand.outputString(), {
                     shell: true,
                     cwd: process.cwd(),
-                    stdio: ["inherit", "inherit", "pipe"],
+                    stdio: ["inherit", "pipe", "pipe"],
                 });
 
                 if (removeSpawn.status !== 0) {
-                    const removeError: Error = new Error(serializeError(removeSpawn.stderr.toString()));
+                    const removeError: Error = new Error(removeSpawn.stderr.toString().trim());
                     console.log(removeError);
                     throw removeError;
                 }
@@ -256,11 +256,11 @@ export class AppService {
                 const addSpawn = childProcess.spawnSync(addCommand.outputString(), {
                     shell: true,
                     cwd: process.cwd(),
-                    stdio: ["inherit", "inherit", "pipe"],
+                    stdio: ["inherit", "pipe", "pipe"],
                 });
 
                 if (addSpawn.status !== 0) {
-                    const addError: Error = new Error(serializeError(addSpawn.stderr.toString()));
+                    const addError: Error = new Error(addSpawn.stderr.toString().trim());
                     console.log(addError);
                     throw addError;
                 }

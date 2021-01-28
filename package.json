@@ -2,32 +2,43 @@
     "name": "root",
     "private": true,
     "workspaces": [
-        "src/packages/*"
+        "src/packages/*",
+        "custom/packages/*"
     ],
     "repository": {
         "type": "git",
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build": "yarn node -r ts-node/register --trace-warnings ./build.ts",
+        "build:beta": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t prerelease",
+        "build:beta:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t prerelease -p",
+        "build:custom": "yarn node -r ts-node/register --trace-warnings ./build.ts -c custom -t custom",
+        "build:dev": "yarn node -r ts-node/register --trace-warnings ./build.ts",
+        "build:dev:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c dev -t prerelease -p",
         "build:debug": "yarn node --inspect=127.0.0.1:9228 -r ts-node/register --trace-warnings ./build.ts",
+        "build:main:major": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t major",
+        "build:main:major:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t major -p",
+        "build:main:minor": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t minor",
+        "build:main:minor:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t minor -p",
+        "build:main:patch": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t patch",
+        "build:main:patch:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t patch -p",
+        "cli:debug": "cd src/packages/omnihive && yarn run cli:debug",
         "doctor": "yarn dlx @yarnpkg/doctor",
-        "server:debug": "cd src/packages/omnihive && yarn run server-debug",
+        "server:debug": "cd src/packages/omnihive-server && yarn run server:debug",
         "test": "nyc mocha -r dotenv/config -r ts-node/register 'src/packages/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors"
     },
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "1.0.1",
         "@types/chai": "4.2.14",
-        "@types/clear": "0.1.1",
         "@types/figlet": "1.2.1",
         "@types/mocha": "8.2.0",
         "@types/node": "14.14.22",
         "@types/semver": "5.5.0",
+        "@types/yargs": "15.0.12",
         "@typescript-eslint/eslint-plugin": "4.14.0",
         "@typescript-eslint/parser": "4.14.0",
         "chai": "4.2.0",
         "chalk": "4.1.0",
-        "clear": "0.1.0",
         "dotenv": "8.2.0",
         "eslint": "7.18.0",
         "eslint-config-prettier": "7.2.0",
@@ -36,12 +47,16 @@
         "mocha": "8.2.1",
         "nodemon": "2.0.7",
         "nyc": "15.1.0",
+        "package-json": "6.5.0",
         "prettier": "2.2.1",
+        "read-pkg": "5.2.0",
         "replace-in-file": "6.1.0",
         "semver": "7.3.4",
         "serialize-error": "8.0.1",
         "source-map-support": "0.5.19",
         "ts-node": "9.1.1",
-        "typescript": "4.1.3"
+        "typescript": "4.1.3",
+        "write-pkg": "4.0.0",
+        "yargs": "16.2.0"
     }
 }

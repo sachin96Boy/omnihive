@@ -1,0 +1,6 @@
+{
+    "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git", "/.omnihive/**", "/.next/**", "/src/pages/**"],
+    "watch": ["./**/*.ts", "../**/*.ts"],
+    "exec": "yarn node --inspect=127.0.0.1:9228 -r dotenv/config -r ts-node/register --trace-warnings --stack-size=2048 --max-old-space-size=16384 ./server.ts -s \"/Library/Application Support/OmniHive/omnihive_main_config.json\"",
+    "ext": "ts"
+}

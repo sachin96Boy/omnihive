@@ -21,7 +21,7 @@
         "build:main:minor": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t minor",
         "build:main:minor:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t minor -p",
         "build:main:patch": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t patch",
-        "build:main:patch:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t patch -p",
+        "build:main:patch:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t patch -p",
         "cli:debug": "cd src/packages/omnihive && yarn run cli:debug",
         "doctor": "yarn dlx @yarnpkg/doctor",
         "server:debug": "cd src/packages/omnihive-server && yarn run server:debug",

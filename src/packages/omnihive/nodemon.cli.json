@@ -1,6 +1,6 @@
 {
     "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git"],
     "watch": ["./**/*.ts", "../**/*.ts"],
-    "exec": "yarn node --inspect=127.0.0.1:9228 -r ts-node/register --trace-warnings ./cli.ts",
+    "exec": "DOTENV_CONFIG_PATH=\"/Library/Application Support/OmniHive/.env\" yarn node --inspect=127.0.0.1:9228 -r dotenv/config -r ts-node/register --trace-warnings ./cli.ts",
     "ext": "ts"
 }

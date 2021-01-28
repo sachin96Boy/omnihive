@@ -11415,6 +11415,7 @@ fsevents@~2.3.1:
   version: 0.0.0-use.local
   resolution: "root@workspace:."
   dependencies:
+    "@elastic/elasticsearch": 7.10.0
     "@istanbuljs/nyc-config-typescript": 1.0.1
     "@types/chai": 4.2.14
     "@types/figlet": 1.2.1

@@ -2,24 +2,26 @@
     "name": "root",
     "private": true,
     "workspaces": [
-        "src/packages/*"
+        "src/packages/*",
+        "custom/packages/*"
     ],
     "repository": {
         "type": "git",
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build:beta": "yarn node -r ts-node/register --trace-warnings ./build.ts -b beta -t prerelease",
-        "build:beta:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -b beta -t prerelease -p",
+        "build:beta": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t prerelease",
+        "build:beta:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t prerelease -p",
+        "build:custom": "yarn node -r ts-node/register --trace-warnings ./build.ts -c custom -t custom",
         "build:dev": "yarn node -r ts-node/register --trace-warnings ./build.ts",
-        "build:dev:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -b dev -t prerelease -p",
+        "build:dev:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c dev -t prerelease -p",
         "build:debug": "yarn node --inspect=127.0.0.1:9228 -r ts-node/register --trace-warnings ./build.ts",
-        "build:main:major": "yarn node -r ts-node/register --trace-warnings ./build.ts -b main -t major",
-        "build:main:major:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -b beta -t major -p",
-        "build:main:minor": "yarn node -r ts-node/register --trace-warnings ./build.ts -b main -t minor",
-        "build:main:minor:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -b beta -t minor -p",
-        "build:main:patch": "yarn node -r ts-node/register --trace-warnings ./build.ts -b main -t patch",
-        "build:main:patch:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -b beta -t patch -p",
+        "build:main:major": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t major",
+        "build:main:major:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t major -p",
+        "build:main:minor": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t minor",
+        "build:main:minor:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t minor -p",
+        "build:main:patch": "yarn node -r ts-node/register --trace-warnings ./build.ts -c main -t patch",
+        "build:main:patch:publish": "yarn node -r ts-node/register --trace-warnings ./build.ts -c beta -t patch -p",
         "cli:debug": "cd src/packages/omnihive && yarn run cli:debug",
         "doctor": "yarn dlx @yarnpkg/doctor",
         "server:debug": "cd src/packages/omnihive-server && yarn run server:debug",
@@ -45,13 +47,16 @@
         "mocha": "8.2.1",
         "nodemon": "2.0.7",
         "nyc": "15.1.0",
+        "package-json": "6.5.0",
         "prettier": "2.2.1",
+        "read-pkg": "5.2.0",
         "replace-in-file": "6.1.0",
         "semver": "7.3.4",
         "serialize-error": "8.0.1",
         "source-map-support": "0.5.19",
         "ts-node": "9.1.1",
         "typescript": "4.1.3",
+        "write-pkg": "4.0.0",
         "yargs": "16.2.0"
     }
 }

@@ -1,4 +1,5 @@
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
@@ -7,27 +8,27 @@ import fs from "fs";
 
 export class InstanceService {
     private config = new Conf({
-        projectName: "omnihive",
-        configName: "omnihive",
+        projectName: OmniHiveConstants.CONF_NAME,
+        configName: OmniHiveConstants.CONF_NAME,
     });
 
-    public add = (name: string, settings: string): boolean => {
-        if (!this.checkSettings(settings)) {
+    public add = (newInstance: RegisteredInstance): boolean => {
+        if (!this.checkInstance(newInstance)) {
             return false;
         }
 
         const instances: RegisteredInstance[] = this.getAll();
-        const instance: RegisteredInstance | undefined = this.get(name);
+        const instance: RegisteredInstance | undefined = this.get(newInstance.name);
 
         if (instance) {
             return false;
         }
 
-        instances.push({ name, settings });
+        instances.push(newInstance);
         this.writeInstances(instances);
 
         if (instances.length === 1) {
-            this.setLatestInstance(name);
+            this.setLastRun(newInstance.name);
         }
 
         return true;
@@ -55,12 +56,12 @@ export class InstanceService {
         }
     };
 
-    public getLatest = (): RegisteredInstance | undefined => {
-        return this.get("latest");
+    public getLastRun = (): RegisteredInstance | undefined => {
+        return this.getAll().find((value: RegisteredInstance) => value.lastRun === true);
     };
 
-    public edit = (name: string, settings: string): boolean => {
-        if (!this.checkSettings(settings)) {
+    public edit = (name: string, editedInstance: RegisteredInstance): boolean => {
+        if (!this.checkInstance(editedInstance)) {
             return false;
         }
 
@@ -68,9 +69,9 @@ export class InstanceService {
 
         if (instance) {
             this.remove(name);
-            this.add(name, settings);
+            this.add(editedInstance);
         } else {
-            this.add(name, settings);
+            this.add(editedInstance);
         }
 
         return true;
@@ -86,12 +87,12 @@ export class InstanceService {
         }
 
         try {
-            fs.unlinkSync(instance.settings);
+            fs.unlinkSync(instance.settingsLocation);
         } catch {
             console.log(chalk.yellow("Instance settings file not found...continuing on"));
         }
 
-        const latest: RegisteredInstance | undefined = this.getLatest();
+        const latest: RegisteredInstance | undefined = this.getLastRun();
 
         if (latest && latest.name === name) {
             this.config.set("latest", undefined);
@@ -102,8 +103,16 @@ export class InstanceService {
         return true;
     };
 
-    public setLatestInstance = (name: string): boolean => {
-        this.config.set("latest", this.get(name));
+    public setLastRun = (name: string): boolean => {
+        const instance: RegisteredInstance | undefined = this.get(name);
+
+        if (!instance) {
+            return false;
+        }
+
+        instance.lastRun = true;
+        this.edit(name, instance);
+
         return true;
     };
 
@@ -111,11 +120,11 @@ export class InstanceService {
         this.config.set("instances", instances);
     };
 
-    private checkSettings = (settingsPath: string): boolean => {
+    private checkInstance = (instance: RegisteredInstance): boolean => {
         try {
             const config: ServerSettings = ObjectHelper.createStrict(
                 ServerSettings,
-                JSON.parse(fs.readFileSync(`${settingsPath}`, { encoding: "utf8" }))
+                JSON.parse(fs.readFileSync(`${instance.settingsLocation}`, { encoding: "utf8" }))
             );
 
             if (config) {

@@ -1,6 +1,6 @@
 FROM node:lts-alpine
 RUN npm install -g yarn
-COPY ../dist/packages/omnihive /home/node/app/
+COPY ../dist/packages/omnihive-server /home/node/app/
 RUN chown -R node:node /home/node/app
 WORKDIR /home/node/app
 USER node

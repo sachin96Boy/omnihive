@@ -333,10 +333,9 @@ const build = async (): Promise<void> => {
         }
 
         console.log(chalk.blue("Done with version maintenance..."));
+        console.log();
+        console.log(chalk.hex("#FFC022")("Done building custom repos..."));
     }
-
-    console.log();
-    console.log(chalk.hex("#FFC022")("Done building custom repos..."));
 
     console.log();
     process.exit();

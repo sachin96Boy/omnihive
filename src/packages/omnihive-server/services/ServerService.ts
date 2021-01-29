@@ -30,9 +30,15 @@ import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 import { OmniHiveStore } from "../stores/OmniHiveStore";
 import { AppService } from "./AppService";
+import { minify } from "terser";
+import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 
 export class ServerService {
-    public start = async (name: string | undefined, settings: string | undefined): Promise<void> => {
+    public start = async (
+        name: string | undefined,
+        settings: string | undefined,
+        forceSchemaRebuild: boolean | undefined
+    ): Promise<void> => {
         const appService: AppService = new AppService();
         const instanceService: InstanceService = new InstanceService();
 
@@ -74,6 +80,11 @@ export class ServerService {
         // Run basic app service
         const appSettings: ServerSettings = appService.getServerSettings(name, settings);
         await appService.initApp(appSettings);
+
+        // Set rebuild schema
+        if (forceSchemaRebuild) {
+            CommonStore.getInstance().settings.config.features["rebuildSchema"] = forceSchemaRebuild;
+        }
 
         // Intialize "backbone" hive workers
 
@@ -239,22 +250,26 @@ export class ServerService {
                     OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
                 }/connections`
             );
-            fileSystemWorker.removeFilesFromDirectory(
-                `${fileSystemWorker.getCurrentExecutionDirectory()}/${
-                    OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
-                }/connections`
-            );
 
             fileSystemWorker.ensureFolderExists(
                 `${fileSystemWorker.getCurrentExecutionDirectory()}/${
                     OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
                 }/graphql`
             );
-            fileSystemWorker.removeFilesFromDirectory(
-                `${fileSystemWorker.getCurrentExecutionDirectory()}/${
-                    OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
-                }/graphql`
-            );
+
+            if (CommonStore.getInstance().checkServerFeature("rebuildSchema")) {
+                fileSystemWorker.removeFilesFromDirectory(
+                    `${fileSystemWorker.getCurrentExecutionDirectory()}/${
+                        OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
+                    }/connections`
+                );
+
+                fileSystemWorker.removeFilesFromDirectory(
+                    `${fileSystemWorker.getCurrentExecutionDirectory()}/${
+                        OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
+                    }/graphql`
+                );
+            }
 
             logWorker.write(OmniHiveLogLevel.Info, `Graph Schema Folder Reset`);
             logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Written`);
@@ -297,52 +312,61 @@ export class ServerService {
             });
 
             // Write database schemas
-            for (const worker of dbWorkers) {
-                logWorker.write(OmniHiveLogLevel.Info, `Writing ${worker[0].name} Schema`);
+            if (CommonStore.getInstance().checkServerFeature("rebuildSchema")) {
+                for (const worker of dbWorkers) {
+                    logWorker.write(OmniHiveLogLevel.Info, `Writing ${worker[0].name} Schema`);
 
-                const path: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${
-                    OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
-                }/connections/${worker[0].name}.json`;
-                console.log("Config service waiting on schema");
+                    const path: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${
+                        OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
+                    }/connections/${worker[0].name}.json`;
 
-                const result: { tables: TableSchema[]; storedProcs: StoredProcSchema[] } = await AwaitHelper.execute<{
-                    tables: TableSchema[];
-                    storedProcs: StoredProcSchema[];
-                }>((worker[1] as IDatabaseWorker).getSchema());
+                    const result: {
+                        tables: TableSchema[];
+                        storedProcs: StoredProcSchema[];
+                    } = await AwaitHelper.execute<{
+                        tables: TableSchema[];
+                        storedProcs: StoredProcSchema[];
+                    }>((worker[1] as IDatabaseWorker).getSchema());
 
-                result.tables.forEach((schema: TableSchema) => {
-                    schema.tableNameCamelCase = camelCase(schema.tableName);
-                    schema.tableNamePascalCase = StringHelper.capitalizeFirstLetter(camelCase(schema.tableName));
+                    result.tables.forEach((schema: TableSchema) => {
+                        schema.tableNameCamelCase = camelCase(schema.tableName);
+                        schema.tableNamePascalCase = StringHelper.capitalizeFirstLetter(camelCase(schema.tableName));
 
-                    if (schema.columnIsForeignKey) {
-                        schema.columnForeignKeyTableNameCamelCase = camelCase(schema.columnForeignKeyTableName);
-                        schema.columnForeignKeyTableNamePascalCase = StringHelper.capitalizeFirstLetter(
-                            camelCase(schema.columnForeignKeyTableName)
-                        );
-                    }
+                        if (schema.columnIsForeignKey) {
+                            schema.columnForeignKeyTableNameCamelCase = camelCase(schema.columnForeignKeyTableName);
+                            schema.columnForeignKeyTableNamePascalCase = StringHelper.capitalizeFirstLetter(
+                                camelCase(schema.columnForeignKeyTableName)
+                            );
+                        }
 
-                    let columnWorkingName = camelCase(schema.columnNameDatabase);
+                        let columnWorkingName = camelCase(schema.columnNameDatabase);
 
-                    columnWorkingName = columnWorkingName.replace(/[^a-zA-Z0-9 ]+/g, "");
-                    columnWorkingName = columnWorkingName.replace(/ /g, "_");
-                    columnWorkingName = columnWorkingName.charAt(0).toLowerCase() + columnWorkingName.slice(1);
+                        columnWorkingName = columnWorkingName.replace(/[^a-zA-Z0-9 ]+/g, "");
+                        columnWorkingName = columnWorkingName.replace(/ /g, "_");
+                        columnWorkingName = columnWorkingName.charAt(0).toLowerCase() + columnWorkingName.slice(1);
 
-                    if (!isNaN(parseInt(schema.columnNameDatabase.substring(0, 1), 10))) {
-                        columnWorkingName = "_N_" + columnWorkingName;
-                    }
+                        if (!isNaN(parseInt(schema.columnNameDatabase.substring(0, 1), 10))) {
+                            columnWorkingName = "_N_" + columnWorkingName;
+                        }
 
-                    if (schema.columnNameDatabase.substring(0, 3) === "___") {
-                        columnWorkingName = "_3_" + columnWorkingName;
-                    } else if (schema.columnNameDatabase.substring(0, 2) === "__") {
-                        columnWorkingName = "_2_" + columnWorkingName;
-                    } else if (schema.columnNameDatabase.substring(0, 1) === "_") {
-                        columnWorkingName = "_1_" + columnWorkingName;
-                    }
+                        if (schema.columnNameDatabase.substring(0, 3) === "___") {
+                            columnWorkingName = "_3_" + columnWorkingName;
+                        } else if (schema.columnNameDatabase.substring(0, 2) === "__") {
+                            columnWorkingName = "_2_" + columnWorkingName;
+                        } else if (schema.columnNameDatabase.substring(0, 1) === "_") {
+                            columnWorkingName = "_1_" + columnWorkingName;
+                        }
 
-                    schema.columnNameEntity = columnWorkingName.toString();
-                });
+                        schema.columnNameEntity = columnWorkingName.toString();
+                    });
 
-                fileSystemWorker.writeJsonToFile(path, result);
+                    fileSystemWorker.writeJsonToFile(path, result);
+                }
+            } else {
+                logWorker.write(
+                    OmniHiveLogLevel.Warn,
+                    `Skipping schema generation due to server settings.  Retaining existing schema.`
+                );
             }
 
             logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Completed`);
@@ -350,12 +374,13 @@ export class ServerService {
 
             // Get all build workers and write out their graph schema
 
-            for (const builder of buildWorkers) {
-                const buildWorker: IGraphBuildWorker = builder[1] as IGraphBuildWorker;
+            if (CommonStore.getInstance().checkServerFeature("rebuildSchema")) {
+                for (const builder of buildWorkers) {
+                    const buildWorker: IGraphBuildWorker = builder[1] as IGraphBuildWorker;
 
-                dbWorkers
-                    .filter((worker: [HiveWorker, any, string]) => worker[2] === buildWorker.config.name)
-                    .forEach((dbWorker: [HiveWorker, any, string]) => {
+                    for (const dbWorker of dbWorkers.filter(
+                        (worker: [HiveWorker, any, string]) => worker[2] === buildWorker.config.name
+                    )) {
                         const databaseWorker: IDatabaseWorker = dbWorker[1] as IDatabaseWorker;
 
                         const schemaFilePath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${
@@ -370,8 +395,20 @@ export class ServerService {
                         const masterPath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${
                             OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
                         }/graphql/${buildWorker.config.name}_${dbWorker[0].name}_FederatedGraphSchema.js`;
-                        fileSystemWorker.writeDataToFile(masterPath, fileString);
-                    });
+
+                        if (CommonStore.getInstance().checkServerFeature("compressGraphOutput")) {
+                            const ugly = await minify(fileString);
+                            fileSystemWorker.writeDataToFile(masterPath, ugly.code);
+                        } else {
+                            fileSystemWorker.writeDataToFile(masterPath, fileString);
+                        }
+                    }
+                }
+            } else {
+                logWorker.write(
+                    OmniHiveLogLevel.Warn,
+                    `Skipping graph generation due to server settings.  Retaining existing schema.`
+                );
             }
 
             // Build custom graph workers
@@ -456,22 +493,18 @@ export class ServerService {
                 );
 
                 if (builderDbWorkers.length > 0) {
-                    let graphDatabaseSchema: any;
-
-                    let databaseWorkerIndex: number = 0;
-
                     for (const databaseWorker of builderDbWorkers) {
+                        const dbWorkerMeta = databaseWorker[0].metadata as HiveWorkerMetadataDatabase;
+                        let graphDatabaseSchema: any;
+
                         const databaseFileName: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${
                             OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
                         }/graphql/${builder[0].name}_${databaseWorker[0].name}_FederatedGraphSchema.js`;
                         const databaseDynamicModule: any = await import(databaseFileName);
                         const databaseQuerySchema: any = databaseDynamicModule.FederatedGraphQuerySchema;
 
-                        if (databaseWorkerIndex === 0) {
-                            graphDatabaseSchema = databaseQuerySchema;
-                        } else {
-                            graphDatabaseSchema = mergeSchemas({ schemas: [graphDatabaseSchema, databaseQuerySchema] });
-                        }
+                        // eslint-disable-next-line prefer-const
+                        graphDatabaseSchema = databaseQuerySchema;
 
                         logWorker.write(
                             OmniHiveLogLevel.Info,
@@ -489,37 +522,37 @@ export class ServerService {
                             `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Stored Proc Schema Merged`
                         );
 
-                        databaseWorkerIndex++;
-                    }
-
-                    const graphDatabaseConfig: ApolloServerExpressConfig = {
-                        schema: graphDatabaseSchema,
-                        tracing: CommonStore.getInstance().settings.config.developerMode,
-                        context: async ({ req }) => {
-                            const tokens = {
-                                access: req.headers.ohaccess || ``,
-                                auth: req.headers.authorization || ``,
-                                cache: req.headers.ohcache || ``,
-                                cacheSeconds: req.headers.ohcacheseconds,
-                            };
-                            return { tokens };
-                        },
-                    };
-
-                    if (CommonStore.getInstance().settings.config.enableGraphPlayground) {
-                        graphDatabaseConfig.introspection = true;
-                        graphDatabaseConfig.playground = {
-                            endpoint: `${CommonStore.getInstance().settings.config.rootUrl}/graphql/database${
-                                builderMeta.graphUrl
-                            }`,
+                        const graphDatabaseConfig: ApolloServerExpressConfig = {
+                            schema: graphDatabaseSchema,
+                            tracing: CommonStore.getInstance().checkServerFeature("graphTracing"),
+                            introspection: CommonStore.getInstance().checkServerFeature("graphIntrospection"),
+                            context: async ({ req }) => {
+                                const tokens = {
+                                    access: req.headers.ohaccess || ``,
+                                    auth: req.headers.authorization || ``,
+                                    cache: req.headers.ohcache || ``,
+                                    cacheSeconds: req.headers.ohcacheseconds,
+                                };
+                                return { tokens };
+                            },
                         };
-                    } else {
-                        graphDatabaseConfig.introspection = false;
-                        graphDatabaseConfig.playground = false;
-                    }
 
-                    const graphDatabaseServer: ApolloServer = new ApolloServer(graphDatabaseConfig);
-                    graphDatabaseServer.applyMiddleware({ app, path: `/graphql/database${builderMeta.graphUrl}` });
+                        if (CommonStore.getInstance().checkServerFeature("graphPlayground")) {
+                            graphDatabaseConfig.playground = {
+                                endpoint: `${CommonStore.getInstance().settings.config.rootUrl}/graphql/database${
+                                    builderMeta.graphUrl
+                                }/${dbWorkerMeta.graphEndpoint}`,
+                            };
+                        } else {
+                            graphDatabaseConfig.playground = false;
+                        }
+
+                        const graphDatabaseServer: ApolloServer = new ApolloServer(graphDatabaseConfig);
+                        graphDatabaseServer.applyMiddleware({
+                            app,
+                            path: `/graphql/database${builderMeta.graphUrl}/${dbWorkerMeta.graphEndpoint}`,
+                        });
+                    }
                 }
             }
 
@@ -542,7 +575,7 @@ export class ServerService {
 
                 const graphFunctionConfig: ApolloServerExpressConfig = {
                     schema: graphFunctionSchema,
-                    tracing: CommonStore.getInstance().settings.config.developerMode,
+                    tracing: CommonStore.getInstance().checkServerFeature("graphTracing"),
                     context: async ({ req }) => {
                         const tokens = {
                             access: req.headers.ohaccess || ``,
@@ -554,7 +587,7 @@ export class ServerService {
                     },
                 };
 
-                if (CommonStore.getInstance().settings.config.enableGraphPlayground) {
+                if (CommonStore.getInstance().checkServerFeature("graphPlayground")) {
                     graphFunctionConfig.introspection = true;
                     graphFunctionConfig.playground = {
                         endpoint: `${CommonStore.getInstance().settings.config.rootUrl}/graphql/custom`,
@@ -658,7 +691,7 @@ export class ServerService {
                         }
                     });
 
-                if (CommonStore.getInstance().settings.config.enableSwagger) {
+                if (CommonStore.getInstance().checkServerFeature("swagger")) {
                     app.use(
                         `${OmniHiveConstants.CUSTOM_REST_ROOT}/api-docs`,
                         swaggerUi.serve,

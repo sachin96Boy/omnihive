@@ -69,37 +69,39 @@ export class OmniHiveStore {
 
         // Register admin
 
-        if (!this.adminServer && this.adminServerPreparing === false) {
-            this.adminServerPreparing = true;
+        if (CommonStore.getInstance().checkServerFeature("admin")) {
+            if (!this.adminServer && this.adminServerPreparing === false) {
+                this.adminServerPreparing = true;
 
-            const nextApp = next({ dev: CommonStore.getInstance().settings.config.developerMode });
-            nextApp.prepare().then(() => {
-                this.adminServer = nextApp;
-                this.adminServerPreparing = false;
+                const nextApp = next({ dev: CommonStore.getInstance().checkServerFeature("nextJsDevMode") });
+                nextApp.prepare().then(() => {
+                    this.adminServer = nextApp;
+                    this.adminServerPreparing = false;
+                });
+            }
+
+            app.get("/admin", (req, res) => {
+                if (!this.adminServer) {
+                    res.setHeader("Content-Type", "application/json");
+                    return res.status(200).json({ adminStatus: "loading" });
+                }
+
+                const handle = this.adminServer.getRequestHandler();
+                const parsedUrl = parse(req.url, true);
+                return handle(req, res, parsedUrl);
+            });
+
+            app.get("/admin/*", (req, res) => {
+                if (!this.adminServer) {
+                    res.setHeader("Content-Type", "application/json");
+                    return res.status(200).json({ adminStatus: "loading" });
+                }
+
+                const handle = this.adminServer.getRequestHandler();
+                const parsedUrl = parse(req.url, true);
+                return handle(req, res, parsedUrl);
             });
         }
-
-        app.get("/admin", (req, res) => {
-            if (!this.adminServer) {
-                res.setHeader("Content-Type", "application/json");
-                return res.status(200).json({ adminStatus: "loading" });
-            }
-
-            const handle = this.adminServer.getRequestHandler();
-            const parsedUrl = parse(req.url, true);
-            return handle(req, res, parsedUrl);
-        });
-
-        app.get("/admin/*", (req, res) => {
-            if (!this.adminServer) {
-                res.setHeader("Content-Type", "application/json");
-                return res.status(200).json({ adminStatus: "loading" });
-            }
-
-            const handle = this.adminServer.getRequestHandler();
-            const parsedUrl = parse(req.url, true);
-            return handle(req, res, parsedUrl);
-        });
 
         // Register system REST endpoints
 

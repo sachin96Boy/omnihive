@@ -22,6 +22,12 @@ const init = async () => {
             demandOption: false,
             description: "Full path to settings file",
         })
+        .option("rebuildSchema", {
+            alias: "rs",
+            type: "boolean",
+            demandOption: false,
+            description: "Force schema rebuild irrespective of server settings",
+        })
         .epilogue("Specifying -n loads the given instance name.  Specifying -s loads the given settings file.")
         .check((args) => {
             if (!args.name && !args.settings) {
@@ -48,17 +54,22 @@ const init = async () => {
     console.log();
 
     const serverService: ServerService = new ServerService();
+    let rebuildSchema: boolean | undefined = undefined;
+
+    if (args.argv.rebuildSchema) {
+        rebuildSchema = args.argv.rebuildSchema as boolean;
+    }
 
     if (!args.argv.settings && !args.argv.name) {
-        serverService.start(undefined, undefined);
+        serverService.start(undefined, undefined, rebuildSchema);
     }
 
     if (args.argv.settings) {
-        serverService.start(undefined, args.argv.settings as string);
+        serverService.start(undefined, args.argv.settings as string, rebuildSchema);
     }
 
     if (args.argv.name) {
-        serverService.start(args.argv.name as string, undefined);
+        serverService.start(args.argv.name as string, undefined, rebuildSchema);
     }
 };
 

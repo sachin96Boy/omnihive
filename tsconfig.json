@@ -1,45 +1,44 @@
 {
+    "ts-node": {
+        "transpileOnly": true
+    },
     "compilerOptions": {
-      "allowSyntheticDefaultImports": true,
-      "baseUrl": ".",
-      "composite": true,
-      "declaration": true,
-      "declarationMap": true,
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "esModuleInterop": true,
-      "lib": ["ES2020", "DOM"],
-      "module": "CommonJS",
-      "moduleResolution": "Node",
-      "resolveJsonModule": true,
-      "noFallthroughCasesInSwitch": true,
-      "noImplicitReturns": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "paths": {
-        "@withonevision/*": ["src/packages/*"]
-      },
-      "removeComments": false,
-      "rootDir": "./src",
-      "skipLibCheck": true,
-      "sourceMap": true,
-      "strict": true,
-      "outDir": "./dist",
-      "target": "ES2020",
-      "types": ["mocha", "node"]
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
+        "composite": true,
+        "declaration": true,
+        "declarationMap": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "esModuleInterop": true,
+        "lib": ["ES2020", "DOM"],
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "paths": {
+            "@withonevision/*": ["src/packages/*"]
+        },
+        "removeComments": false,
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "strict": true,
+        "outDir": "./dist",
+        "target": "ES2020",
+        "types": ["mocha", "node"]
     },
     "exclude": [
-      ".yarn",
-      "**/node_modules/**",
-      "src/packages/**/tests/**/*.ts",
-      "src/packages/**/nodemon*.json",
-      "src/custom/**/tests/**/*.ts",
-      "src/custom/**/nodemon*.json"
+        ".yarn",
+        "node_modules/**/*",
+        "**/node_modules/**/*",
+        "src/packages/**/tests/**/*.ts",
+        "src/packages/**/nodemon*.json",
+        "src/custom/**/tests/**/*.ts",
+        "src/custom/**/nodemon*.json"
     ],
-    "include": [
-      "src/packages/**/*.ts",
-      "src/packages/**/*.json",
-      "src/custom/**/*.ts",
-      "src/custom/**/*.json"
-    ]
-  }
+    "include": ["src/packages/**/*.ts", "src/packages/**/*.json", "src/custom/**/*.ts", "src/custom/**/*.json"]
+}

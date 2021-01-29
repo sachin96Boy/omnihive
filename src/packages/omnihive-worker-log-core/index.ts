@@ -17,7 +17,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             "YYYY-MM-DD HH:mm:ss"
         )}) OmniHive Server ${os.hostname()} => ${logString}`;
 
-        if (CommonStore.getInstance().settings.config.developerMode) {
+        if (CommonStore.getInstance().checkServerFeature("consoleOnlyLogging")) {
             this.chalkConsole(logLevel, formattedLogString);
             return;
         }

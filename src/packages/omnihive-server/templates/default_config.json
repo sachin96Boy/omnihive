@@ -2,11 +2,19 @@
     "config": {
         "adminPassword": "XXX",
         "serverGroupName": "XXX",
-        "developerMode": true,
-        "enableGraphPlayground": true,
-        "enableSwagger": true,
         "portNumber": 3001,
-        "rootUrl": "http://localhost:3001"
+        "rootUrl": "http://localhost:3001",
+        "features": {
+            "admin": true,
+            "compressGraphOutput": true,
+            "consoleOnlyLogging": true,
+            "graphIntrospection": false,
+            "graphPlayground": true,
+            "graphTracing": false,
+            "nextJsDevMode": true,
+            "rebuildSchema": false,
+            "swagger": true
+        }
     },
     "constants": {
         "ohEncryptionKey": "XXX",

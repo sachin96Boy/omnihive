@@ -12,6 +12,7 @@
         "@withonevision/omnihive-core": "workspace:*",
         "@withonevision/omnihive-worker-date-dayjs": "workspace:*",
         "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*",
+        "@withonevision/omnihive-worker-feature-core": "workspace:*",
         "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
         "@withonevision/omnihive-worker-function-core": "workspace:*",
         "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*",
@@ -65,6 +66,7 @@
         "coreDependencies": {
             "@withonevision/omnihive": "workspace:*",
             "@withonevision/omnihive-core": "workspace:*",
+            "@withonevision/omnihive-worker-feature-core": "workspace:*",
             "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
             "@withonevision/omnihive-worker-function-core": "workspace:*",
             "@withonevision/omnihive-worker-log-core": "workspace:*",
@@ -207,6 +209,16 @@
                 "metadata": {
                     "encryptionKey": "${ohEncryptionKey}"
                 }
+            },
+            {
+                "name": "defaultFeatureWorker",
+                "type": "feature",
+                "package": "@withonevision/omnihive-worker-feature-local",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-feature-local/index",
+                "default": false,
+                "enabled": true,
+                "metadata": {}
             },
             {
                 "name": "defaultTokenWorker",

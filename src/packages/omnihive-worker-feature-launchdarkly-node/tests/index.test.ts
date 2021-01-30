@@ -5,19 +5,19 @@ import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { assert } from "chai";
 import fs from "fs";
 import { serializeError } from "serialize-error";
-import LaunchDarklyNodeFeatureFlagWorker from "..";
+import LaunchDarklyNodeFeatureWorker from "..";
 import packageJson from "../package.json";
 
 const getConfig = function (): ServerSettings | undefined {
     try {
-        if (!process.env.omnihive_test_worker_featureflag_launchdarkly_node) {
+        if (!process.env.omnihive_test_worker_feature_launchdarkly_node) {
             return undefined;
         }
 
         const config: ServerSettings = ObjectHelper.create(
             ServerSettings,
             JSON.parse(
-                fs.readFileSync(`${process.env.omnihive_test_worker_featureflag_launchdarkly_node}`, {
+                fs.readFileSync(`${process.env.omnihive_test_worker_feature_launchdarkly_node}`, {
                     encoding: "utf8",
                 })
             )
@@ -34,9 +34,9 @@ const getConfig = function (): ServerSettings | undefined {
 };
 
 let settings: ServerSettings;
-let worker: LaunchDarklyNodeFeatureFlagWorker = new LaunchDarklyNodeFeatureFlagWorker();
+let worker: LaunchDarklyNodeFeatureWorker = new LaunchDarklyNodeFeatureWorker();
 
-describe("feature flag worker tests", function () {
+describe("feature worker tests", function () {
     before(function () {
         const config: ServerSettings | undefined = getConfig();
 
@@ -73,13 +73,13 @@ describe("feature flag worker tests", function () {
             await init();
         });
 
-        it("get flag - blank - with default", async function () {
+        it("get feature - blank - with default", async function () {
             try {
                 await AwaitHelper.execute<unknown>(worker.get("", false));
 
                 assert.fail("Expected to fail");
             } catch (err) {
-                assert.equal(err.message, "No flag name given.");
+                assert.equal(err.message, "No feature name given.");
             }
         });
     });

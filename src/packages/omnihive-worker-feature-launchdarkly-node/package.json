@@ -1,7 +1,7 @@
 {
-    "name": "@withonevision/omnihive-worker-featureflag-launchdarkly-node",
+    "name": "@withonevision/omnihive-worker-feature-launchdarkly-node",
     "version": "0.0.1",
-    "description": "OmniHive Launch Darkly Node Feature Flag Worker",
+    "description": "OmniHive Launch Darkly Node Feature Worker",
     "license": "MIT",
     "scripts": {
         "build": "tsc"

@@ -32,13 +32,10 @@ import { OmniHiveStore } from "../stores/OmniHiveStore";
 import { AppService } from "./AppService";
 import { minify } from "terser";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
+import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 
 export class ServerService {
-    public start = async (
-        name: string | undefined,
-        settings: string | undefined,
-        forceSchemaRebuild: boolean | undefined
-    ): Promise<void> => {
+    public start = async (name: string | undefined, settings: string | undefined): Promise<void> => {
         const appService: AppService = new AppService();
         const instanceService: InstanceService = new InstanceService();
 
@@ -80,11 +77,6 @@ export class ServerService {
         // Run basic app service
         const appSettings: ServerSettings = appService.getServerSettings(name, settings);
         await appService.initApp(appSettings);
-
-        // Set rebuild schema
-        if (forceSchemaRebuild) {
-            CommonStore.getInstance().settings.config.features["rebuildSchema"] = forceSchemaRebuild;
-        }
 
         // Intialize "backbone" hive workers
 
@@ -236,6 +228,10 @@ export class ServerService {
             throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
         }
 
+        const featureWorker: IFeatureWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFeatureWorker>(
+            HiveWorkerType.Feature
+        );
+
         try {
             // Start setting up server
             const app = await OmniHiveStore.getInstance().getCleanAppServer();
@@ -257,7 +253,7 @@ export class ServerService {
                 }/graphql`
             );
 
-            if (CommonStore.getInstance().checkServerFeature("rebuildSchema")) {
+            if ((await featureWorker?.get<boolean>("rebuildSchema")) ?? true) {
                 fileSystemWorker.removeFilesFromDirectory(
                     `${fileSystemWorker.getCurrentExecutionDirectory()}/${
                         OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
@@ -312,7 +308,7 @@ export class ServerService {
             });
 
             // Write database schemas
-            if (CommonStore.getInstance().checkServerFeature("rebuildSchema")) {
+            if ((await featureWorker?.get<boolean>("rebuildSchema")) ?? true) {
                 for (const worker of dbWorkers) {
                     logWorker.write(OmniHiveLogLevel.Info, `Writing ${worker[0].name} Schema`);
 
@@ -374,7 +370,7 @@ export class ServerService {
 
             // Get all build workers and write out their graph schema
 
-            if (CommonStore.getInstance().checkServerFeature("rebuildSchema")) {
+            if ((await featureWorker?.get<boolean>("rebuildSchema")) ?? true) {
                 for (const builder of buildWorkers) {
                     const buildWorker: IGraphBuildWorker = builder[1] as IGraphBuildWorker;
 
@@ -396,7 +392,7 @@ export class ServerService {
                             OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
                         }/graphql/${buildWorker.config.name}_${dbWorker[0].name}_FederatedGraphSchema.js`;
 
-                        if (CommonStore.getInstance().checkServerFeature("compressGraphOutput")) {
+                        if (featureWorker?.get<boolean>("compressGraphOutput") ?? true) {
                             const ugly = await minify(fileString);
                             fileSystemWorker.writeDataToFile(masterPath, ugly.code);
                         } else {
@@ -524,8 +520,8 @@ export class ServerService {
 
                         const graphDatabaseConfig: ApolloServerExpressConfig = {
                             schema: graphDatabaseSchema,
-                            tracing: CommonStore.getInstance().checkServerFeature("graphTracing"),
-                            introspection: CommonStore.getInstance().checkServerFeature("graphIntrospection"),
+                            tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? true,
+                            introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? true,
                             context: async ({ req }) => {
                                 const tokens = {
                                     access: req.headers.ohaccess || ``,
@@ -537,7 +533,7 @@ export class ServerService {
                             },
                         };
 
-                        if (CommonStore.getInstance().checkServerFeature("graphPlayground")) {
+                        if ((await featureWorker?.get<boolean>("graphPlayground")) ?? true) {
                             graphDatabaseConfig.playground = {
                                 endpoint: `${CommonStore.getInstance().settings.config.rootUrl}/graphql/database${
                                     builderMeta.graphUrl
@@ -575,7 +571,8 @@ export class ServerService {
 
                 const graphFunctionConfig: ApolloServerExpressConfig = {
                     schema: graphFunctionSchema,
-                    tracing: CommonStore.getInstance().checkServerFeature("graphTracing"),
+                    tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? true,
+                    introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? true,
                     context: async ({ req }) => {
                         const tokens = {
                             access: req.headers.ohaccess || ``,
@@ -587,13 +584,11 @@ export class ServerService {
                     },
                 };
 
-                if (CommonStore.getInstance().checkServerFeature("graphPlayground")) {
-                    graphFunctionConfig.introspection = true;
+                if ((await featureWorker?.get<boolean>("graphPlayground")) ?? true) {
                     graphFunctionConfig.playground = {
                         endpoint: `${CommonStore.getInstance().settings.config.rootUrl}/graphql/custom`,
                     };
                 } else {
-                    graphFunctionConfig.introspection = false;
                     graphFunctionConfig.playground = false;
                 }
 
@@ -691,7 +686,7 @@ export class ServerService {
                         }
                     });
 
-                if (CommonStore.getInstance().checkServerFeature("swagger")) {
+                if ((await featureWorker?.get<boolean>("swagger")) ?? true) {
                     app.use(
                         `${OmniHiveConstants.CUSTOM_REST_ROOT}/api-docs`,
                         swaggerUi.serve,

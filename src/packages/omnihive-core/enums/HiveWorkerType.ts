@@ -5,7 +5,7 @@ export enum HiveWorkerType {
     DataLifecycleFunction = "dataLifecycleFunction",
     Encryption = "encryption",
     Error = "error",
-    FeatureFlag = "featureFlag",
+    Feature = "feature",
     FileSystem = "fileSystem",
     GraphBuilder = "graphBuilder",
     GraphEndpointFunction = "graphEndpointFunction",

@@ -48,16 +48,6 @@ export class CommonStore {
         this._status = systemStatus;
     };
 
-    public checkServerFeature = (featureName: string): boolean => {
-        return (
-            this.settings &&
-            this.settings.config &&
-            this.settings.config.features &&
-            this.settings.config.features[featureName] &&
-            this.settings.config.features[featureName] === true
-        );
-    };
-
     public initWorkers = async (configs: HiveWorker[]): Promise<void> => {
         try {
             for (const hiveWorker of configs) {

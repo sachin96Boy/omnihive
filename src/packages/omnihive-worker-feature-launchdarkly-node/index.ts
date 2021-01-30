@@ -1,7 +1,7 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IFeatureFlagWorker } from "@withonevision/omnihive-core/interfaces/IFeatureFlagWorker";
+import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
@@ -9,7 +9,7 @@ import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import LaunchDarkly, { LDUser } from "launchdarkly-node-server-sdk";
 import { serializeError } from "serialize-error";
 
-type FeatureFlagClient = {
+type LaunchDarklyFeatureClient = {
     clientSideId: string;
     instance: LaunchDarkly.LDClient;
     mobileKey: string;
@@ -18,12 +18,12 @@ type FeatureFlagClient = {
     sdkKey: string;
 };
 
-type FeatureFlag = {
+type LaunchDarklyFeature = {
     name: string;
     value: any;
 };
 
-export class LaunchDarklyNodeFeatureFlagWorkerMetadata {
+export class LaunchDarklyNodeFeatureWorkerMetadata {
     public clientSideId: string = "";
     public mobileKey: string = "";
     public project: string = "";
@@ -31,9 +31,9 @@ export class LaunchDarklyNodeFeatureFlagWorkerMetadata {
     public user: string = "";
 }
 
-export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase implements IFeatureFlagWorker {
-    private client!: FeatureFlagClient;
-    private flags: FeatureFlag[] = [];
+export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implements IFeatureWorker {
+    private client!: LaunchDarklyFeatureClient;
+    private features: LaunchDarklyFeature[] = [];
     private user!: LDUser;
     private project!: string;
     private logWorker: ILogWorker | undefined = undefined;
@@ -45,14 +45,14 @@ export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase im
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute<void>(super.init(config));
-            const metadata: LaunchDarklyNodeFeatureFlagWorkerMetadata = this.checkObjectStructure<LaunchDarklyNodeFeatureFlagWorkerMetadata>(
-                LaunchDarklyNodeFeatureFlagWorkerMetadata,
+            const metadata: LaunchDarklyNodeFeatureWorkerMetadata = this.checkObjectStructure<LaunchDarklyNodeFeatureWorkerMetadata>(
+                LaunchDarklyNodeFeatureWorkerMetadata,
                 config.metadata
             );
 
             const ldInstance: LaunchDarkly.LDClient = LaunchDarkly.init(metadata.sdkKey);
 
-            const flagClient: FeatureFlagClient = {
+            const featureClient: LaunchDarklyFeatureClient = {
                 clientSideId: metadata.clientSideId,
                 mobileKey: metadata.mobileKey,
                 project: metadata.project,
@@ -63,9 +63,9 @@ export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase im
             this.user = { key: metadata.user };
             this.project = metadata.project;
 
-            flagClient.instance.on("ready", () => {
-                flagClient.ready = true;
-                this.client = flagClient;
+            featureClient.instance.on("ready", () => {
+                featureClient.ready = true;
+                this.client = featureClient;
             });
         } catch (err) {
             throw new Error("Launch Darkly Init Error => " + JSON.stringify(serializeError(err)));
@@ -78,30 +78,23 @@ export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase im
         );
 
         if (!this.logWorker) {
-            throw new Error("Log Worker Not Defined.  Cross-Storage Will Not Function Without Log Worker.");
+            throw new Error("Log Worker Not Defined.  Feature worker Will Not Function Without Log Worker.");
         }
     }
 
-    public get = async <T extends unknown>(
-        name: string,
-        defaultValue?: boolean | undefined
-    ): Promise<T | undefined> => {
+    public get = async <T extends unknown>(name: string, defaultValue?: unknown): Promise<T | undefined> => {
         if (!name || name.length <= 0) {
-            throw new Error("No flag name given.");
+            throw new Error("No feature name given.");
         }
 
-        if (!defaultValue) {
-            defaultValue = false;
-        }
+        const feature: LaunchDarklyFeature[] = this.features.filter((ff: LaunchDarklyFeature) => ff.name === name);
 
-        const flag: FeatureFlag[] = this.flags.filter((ff: FeatureFlag) => ff.name === name);
-
-        if (flag.length > 0) {
+        if (feature.length > 0) {
             this.logWorker?.write(
                 OmniHiveLogLevel.Info,
-                `Flag Evaluated => Project: ${this.project} => Flag: ${name} => Value: ${flag[0].value as string}`
+                `Feature Evaluated => Project: ${this.project} => Flag: ${name} => Value: ${feature[0].value as string}`
             );
-            return flag[0].value as T;
+            return feature[0].value as T;
         }
 
         let value: any;
@@ -109,31 +102,33 @@ export default class LaunchDarklyNodeFeatureFlagWorker extends HiveWorkerBase im
         try {
             value = await AwaitHelper.execute<any>(this.client.instance.variation(name, this.user, defaultValue));
         } catch (err) {
-            throw new Error("Failed to retrieve Feature Flag.");
+            throw new Error("Failed to retrieve feature.");
         }
 
-        this.flags.push({ name, value });
+        this.features.push({ name, value });
 
         this.client?.instance?.on(`update:${name}`, () => {
             this.client?.instance?.variation(name, this.user, defaultValue).then((newValue) => {
                 this.logWorker?.write(
                     OmniHiveLogLevel.Info,
-                    `Flag Changed => Project: ${this.project} => Flag: ${name} => New Value: ${newValue as string}`
+                    `Feature Changed => Project: ${this.project} => Flag: ${name} => New Value: ${newValue as string}`
                 );
 
-                const changeFlag: FeatureFlag[] = this.flags.filter((ff: FeatureFlag) => ff.name === name);
+                const changeFeature: LaunchDarklyFeature[] = this.features.filter(
+                    (ff: LaunchDarklyFeature) => ff.name === name
+                );
 
-                if (changeFlag.length === 0) {
-                    this.flags.push({ name, value: newValue });
+                if (changeFeature.length === 0) {
+                    this.features.push({ name, value: newValue });
                 } else {
-                    this.flags.filter((ff: FeatureFlag) => ff.name === name)[0].value = newValue;
+                    this.features.filter((ff: LaunchDarklyFeature) => ff.name === name)[0].value = newValue;
                 }
             });
         });
 
         this.logWorker?.write(
             OmniHiveLogLevel.Info,
-            `Flag Evaluated and Listening => Project: ${this.project} => Flag: ${name} => Value: ${value as string}`
+            `Feature Evaluated and Listening => Project: ${this.project} => Flag: ${name} => Value: ${value as string}`
         );
 
         return value as T;

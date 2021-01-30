@@ -2,6 +2,7 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
@@ -48,6 +49,13 @@ export class OmniHiveStore {
             "ohreqLogWorker"
         );
 
+        const featureWorker: IFeatureWorker | undefined = await CommonStore.getInstance().getHiveWorker<IFeatureWorker>(
+            HiveWorkerType.Feature
+        );
+
+        const webAdmin: boolean | undefined = await featureWorker?.get<boolean>("webAdmin", true);
+        const nextJsDevMode: boolean | undefined = await featureWorker?.get<boolean>("nextJsDevMode", false);
+
         // Build app
 
         const app = express();
@@ -69,11 +77,11 @@ export class OmniHiveStore {
 
         // Register admin
 
-        if (CommonStore.getInstance().checkServerFeature("admin")) {
+        if (webAdmin ?? true) {
             if (!this.adminServer && this.adminServerPreparing === false) {
                 this.adminServerPreparing = true;
 
-                const nextApp = next({ dev: CommonStore.getInstance().checkServerFeature("nextJsDevMode") });
+                const nextApp = next({ dev: nextJsDevMode ?? false });
                 nextApp.prepare().then(() => {
                     this.adminServer = nextApp;
                     this.adminServerPreparing = false;

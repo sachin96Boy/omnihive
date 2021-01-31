@@ -19,5 +19,4 @@ export enum HiveWorkerType {
     Token = "token",
     User = "user",
     Unknown = "unknown",
-    WorkflowFunction = "workflowFunction",
 }

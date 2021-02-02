@@ -14,6 +14,7 @@ export enum HiveWorkerType {
     PubSubServer = "pubSubServer",
     PubSubClient = "pubSubClient",
     RestEndpointFunction = "restEndpointFunction",
+    Server = "server",
     Storage = "storage",
     TaskFunction = "taskFunction",
     Token = "token",

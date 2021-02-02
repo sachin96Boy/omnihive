@@ -5,7 +5,6 @@ import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreS
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
 import { IHiveAccountWorker } from "@withonevision/omnihive-core/interfaces/IHiveAccountWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
@@ -57,7 +56,7 @@ export class ServerService {
         }
     };
 
-    public initServer = async (
+    public initCore = async (
         packageJson: readPkgUp.NormalizedReadResult | undefined,
         serverSettings: ServerSettings
     ) => {
@@ -83,19 +82,6 @@ export class ServerService {
 
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  App worker needs the core log worker ohreqLogWorker");
-        }
-
-        const fileSystemWorker:
-            | IFileSystemWorker
-            | undefined = await CoreServiceFactory.workerService.getWorker<IFileSystemWorker>(
-            HiveWorkerType.FileSystem,
-            "ohreqFileSystemWorker"
-        );
-
-        if (!fileSystemWorker) {
-            throw new Error(
-                "Core FileSystem Worker Not Found.  App worker needs the core log worker ohreqFileSystemWorker"
-            );
         }
 
         // Get Server Settings
@@ -316,7 +302,6 @@ export class ServerService {
             | IFeatureWorker
             | undefined = await CoreServiceFactory.workerService.getWorker<IFeatureWorker>(HiveWorkerType.Feature);
 
-        const webAdmin: boolean | undefined = await featureWorker?.get<boolean>("webAdmin", true);
         const nextJsDevMode: boolean | undefined = await featureWorker?.get<boolean>("nextJsDevMode", false);
 
         // Build app
@@ -340,47 +325,45 @@ export class ServerService {
 
         // Register admin
 
-        if (webAdmin ?? true) {
-            if (!this.adminServer && this.adminServerPreparing === false) {
-                this.adminServerPreparing = true;
+        if (!this.adminServer && this.adminServerPreparing === false) {
+            this.adminServerPreparing = true;
 
-                const nextApp = next({ dev: nextJsDevMode ?? false });
-                nextApp.prepare().then(() => {
-                    this.adminServer = nextApp;
-                    this.adminServerPreparing = false;
-                });
-            }
-
-            const nextHandler = this.adminServer?.getRequestHandler();
-
-            app.get("/admin", (req, res) => {
-                if (nextHandler) {
-                    if (!this.adminServer) {
-                        res.setHeader("Content-Type", "application/json");
-                        return res.status(200).json({ adminStatus: "loading" });
-                    }
-
-                    const parsedUrl = parse(req.url, true);
-                    return nextHandler(req, res, parsedUrl);
-                }
-
-                return res.status(404);
-            });
-
-            app.get("/admin/*", (req, res) => {
-                if (nextHandler) {
-                    if (!this.adminServer) {
-                        res.setHeader("Content-Type", "application/json");
-                        return res.status(200).json({ adminStatus: "loading" });
-                    }
-
-                    const parsedUrl = parse(req.url, true);
-                    return nextHandler(req, res, parsedUrl);
-                }
-
-                return res.status(404);
+            const nextApp = next({ dev: nextJsDevMode ?? false });
+            nextApp.prepare().then(() => {
+                this.adminServer = nextApp;
+                this.adminServerPreparing = false;
             });
         }
+
+        const nextHandler = this.adminServer?.getRequestHandler();
+
+        app.get("/admin", (req, res) => {
+            if (nextHandler) {
+                if (!this.adminServer) {
+                    res.setHeader("Content-Type", "application/json");
+                    return res.status(200).json({ adminStatus: "loading" });
+                }
+
+                const parsedUrl = parse(req.url, true);
+                return nextHandler(req, res, parsedUrl);
+            }
+
+            return res.status(404);
+        });
+
+        app.get("/admin/*", (req, res) => {
+            if (nextHandler) {
+                if (!this.adminServer) {
+                    res.setHeader("Content-Type", "application/json");
+                    return res.status(200).json({ adminStatus: "loading" });
+                }
+
+                const parsedUrl = parse(req.url, true);
+                return nextHandler(req, res, parsedUrl);
+            }
+
+            return res.status(404);
+        });
 
         // Register system REST endpoints
 

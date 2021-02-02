@@ -11,14 +11,11 @@
         "ohTokenSecret": "XXX"
     },
     "features": {
-        "admin": true,
-        "compressGraphOutput": true,
         "consoleOnlyLogging": true,
         "graphIntrospection": false,
         "graphPlayground": true,
         "graphTracing": false,
         "nextJsDevMode": true,
-        "rebuildSchema": false,
         "swagger": true
     },
     "workers": []

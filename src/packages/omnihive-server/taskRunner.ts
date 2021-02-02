@@ -107,7 +107,7 @@ const run = async (
 
     const appSettings: ServerSettings = NodeServiceFactory.instanceService.getInstanceSettings(name, settings);
     const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
-    await NodeServiceFactory.serverService.initServer(pkgJson, appSettings);
+    await NodeServiceFactory.serverService.initCore(pkgJson, appSettings);
 
     const fileSystemWorker:
         | IFileSystemWorker

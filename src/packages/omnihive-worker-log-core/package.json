@@ -14,6 +14,7 @@
         "serialize-error": "8.0.1"
     },
     "devDependencies": {
+        "chai": "4.2.0",
         "typescript": "4.1.3"
     }
 }

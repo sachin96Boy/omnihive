@@ -3,7 +3,7 @@
         "adminPassword": "XXX",
         "serverGroupName": "XXX",
         "portNumber": 3001,
-        "rootUrl": "http://localhost:3001",
+        "rootUrl": "http://localhost:3001"
     },
     "constants": {
         "ohEncryptionKey": "XXX",

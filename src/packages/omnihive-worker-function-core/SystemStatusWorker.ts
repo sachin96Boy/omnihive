@@ -20,7 +20,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
 
     public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            NodeServiceFactory.workerService.getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+            NodeServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {

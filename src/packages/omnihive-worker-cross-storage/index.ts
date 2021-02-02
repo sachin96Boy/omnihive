@@ -34,7 +34,7 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
 
     public async afterInit(): Promise<void> {
         this.encryptionWorker = await AwaitHelper.execute<IEncryptionWorker | undefined>(
-            NodeServiceFactory.workerService.getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption)
+            NodeServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption)
         );
 
         if (!this.encryptionWorker) {

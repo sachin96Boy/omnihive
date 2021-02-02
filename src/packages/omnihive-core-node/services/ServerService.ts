@@ -27,17 +27,17 @@ import { parse } from "url";
 import NextServer from "next/dist/next-server/server/next-server";
 
 export class ServerService {
-    private static instance: ServerService;
+    private static singleton: ServerService;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
 
-    public static getInstance = (): ServerService => {
-        if (!ServerService.instance) {
-            ServerService.instance = new ServerService();
+    public static getSingleton = (): ServerService => {
+        if (!ServerService.singleton) {
+            ServerService.singleton = new ServerService();
         }
 
-        return ServerService.instance;
+        return ServerService.singleton;
     };
 
     public adminServer: NextServer | undefined = undefined;
@@ -57,7 +57,7 @@ export class ServerService {
         }
     };
 
-    public initApp = async (
+    public initServer = async (
         packageJson: readPkgUp.NormalizedReadResult | undefined,
         serverSettings: ServerSettings
     ) => {
@@ -71,12 +71,12 @@ export class ServerService {
             const coreWorkers: HiveWorker[] = packageJson.packageJson.omniHive.coreWorkers as HiveWorker[];
 
             for (const coreWorker of coreWorkers) {
-                await CoreServiceFactory.workerService.registerWorker(coreWorker);
+                await CoreServiceFactory.workerService.pushWorker(coreWorker);
                 CoreServiceFactory.configurationService.settings.workers.push(coreWorker);
             }
         }
 
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getHiveWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );
@@ -87,7 +87,7 @@ export class ServerService {
 
         const fileSystemWorker:
             | IFileSystemWorker
-            | undefined = await CoreServiceFactory.workerService.getHiveWorker<IFileSystemWorker>(
+            | undefined = await CoreServiceFactory.workerService.getWorker<IFileSystemWorker>(
             HiveWorkerType.FileSystem,
             "ohreqFileSystemWorker"
         );
@@ -307,14 +307,14 @@ export class ServerService {
     };
 
     public getCleanAppServer = async (): Promise<express.Express> => {
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getHiveWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );
 
         const featureWorker:
             | IFeatureWorker
-            | undefined = await CoreServiceFactory.workerService.getHiveWorker<IFeatureWorker>(HiveWorkerType.Feature);
+            | undefined = await CoreServiceFactory.workerService.getWorker<IFeatureWorker>(HiveWorkerType.Feature);
 
         const webAdmin: boolean | undefined = await featureWorker?.get<boolean>("webAdmin", true);
         const nextJsDevMode: boolean | undefined = await featureWorker?.get<boolean>("nextJsDevMode", false);
@@ -491,7 +491,7 @@ export class ServerService {
     };
 
     public serverChangeHandler = async (): Promise<void> => {
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getHiveWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );

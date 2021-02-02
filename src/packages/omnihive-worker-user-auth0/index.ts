@@ -67,7 +67,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
 
     public async afterInit(): Promise<void> {
         this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-            NodeServiceFactory.workerService.getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (!this.logWorker) {

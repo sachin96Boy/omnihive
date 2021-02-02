@@ -80,7 +80,7 @@ const clear = () => {
 };
 
 const logError = async (workerName: string, err: Error) => {
-    const logWorker: ILogWorker | undefined = await NodeServiceFactory.workerService.getHiveWorker<ILogWorker>(
+    const logWorker: ILogWorker | undefined = await NodeServiceFactory.workerService.getWorker<ILogWorker>(
         HiveWorkerType.Log,
         "ohreqLogWorker"
     );
@@ -107,19 +107,17 @@ const run = async (
 
     const appSettings: ServerSettings = NodeServiceFactory.instanceService.getInstanceSettings(name, settings);
     const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
-    await NodeServiceFactory.serverService.initApp(pkgJson, appSettings);
+    await NodeServiceFactory.serverService.initServer(pkgJson, appSettings);
 
     const fileSystemWorker:
         | IFileSystemWorker
-        | undefined = await NodeServiceFactory.workerService.getHiveWorker<IFileSystemWorker>(
-        HiveWorkerType.FileSystem
-    );
+        | undefined = await NodeServiceFactory.workerService.getWorker<IFileSystemWorker>(HiveWorkerType.FileSystem);
 
     if (!fileSystemWorker && args && !StringHelper.isNullOrWhiteSpace(args)) {
         throw new Error("FileSystem Worker Not Found...Cannot Read Args");
     }
 
-    const logWorker: ILogWorker | undefined = await NodeServiceFactory.workerService.getHiveWorker<ILogWorker>(
+    const logWorker: ILogWorker | undefined = await NodeServiceFactory.workerService.getWorker<ILogWorker>(
         HiveWorkerType.Log,
         "ohreqLogWorker"
     );

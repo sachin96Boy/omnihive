@@ -65,7 +65,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     public async afterInit(): Promise<void> {
         try {
             this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-                NodeServiceFactory.workerService.getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+                NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
             );
 
             if (!this.logWorker) {

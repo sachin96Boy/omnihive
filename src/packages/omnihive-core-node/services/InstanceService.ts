@@ -8,17 +8,17 @@ import Conf from "conf";
 import fs from "fs";
 
 export class InstanceService {
-    private static instance: InstanceService;
+    private static singleton: InstanceService;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
 
-    public static getInstance = (): InstanceService => {
-        if (!InstanceService.instance) {
-            InstanceService.instance = new InstanceService();
+    public static getSingleton = (): InstanceService => {
+        if (!InstanceService.singleton) {
+            InstanceService.singleton = new InstanceService();
         }
 
-        return InstanceService.instance;
+        return InstanceService.singleton;
     };
 
     private config = new Conf({

@@ -21,7 +21,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
 
     public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            NodeServiceFactory.workerService.getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+            NodeServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {
@@ -45,7 +45,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
             const adminPubSubServer: IPubSubServerWorker | undefined = await AwaitHelper.execute<
                 IPubSubServerWorker | undefined
             >(
-                NodeServiceFactory.workerService.getHiveWorker<IPubSubServerWorker>(
+                NodeServiceFactory.workerService.getWorker<IPubSubServerWorker>(
                     HiveWorkerType.PubSubServer,
                     adminPubSubServerWorkerName
                 )

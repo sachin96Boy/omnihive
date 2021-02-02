@@ -9,17 +9,17 @@ import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettin
 import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
 
 export class OmniHiveClient {
-    private static instance: OmniHiveClient;
+    private static singleton: OmniHiveClient;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
 
-    public static getInstance = (): OmniHiveClient => {
-        if (!OmniHiveClient.instance) {
-            OmniHiveClient.instance = new OmniHiveClient();
+    public static getSingleton = (): OmniHiveClient => {
+        if (!OmniHiveClient.singleton) {
+            OmniHiveClient.singleton = new OmniHiveClient();
         }
 
-        return OmniHiveClient.instance;
+        return OmniHiveClient.singleton;
     };
 
     public static getNew = (): OmniHiveClient => {
@@ -131,12 +131,12 @@ export class OmniHiveClient {
         let encryptionWorker: IEncryptionWorker | undefined = undefined;
 
         if (encryptionWorkerName) {
-            encryptionWorker = await CoreServiceFactory.workerService.getHiveWorker<IEncryptionWorker | undefined>(
+            encryptionWorker = await CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(
                 HiveWorkerType.Encryption,
                 encryptionWorkerName
             );
         } else {
-            encryptionWorker = await CoreServiceFactory.workerService.getHiveWorker<IEncryptionWorker | undefined>(
+            encryptionWorker = await CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(
                 HiveWorkerType.Encryption
             );
         }
@@ -145,7 +145,7 @@ export class OmniHiveClient {
             throw new Error("No encryption worker found.  An encryption worker is required for custom SQL");
         }
 
-        const dbWorker: IDatabaseWorker | undefined = await CoreServiceFactory.workerService.getHiveWorker<
+        const dbWorker: IDatabaseWorker | undefined = await CoreServiceFactory.workerService.getWorker<
             IDatabaseWorker | undefined
         >(HiveWorkerType.Database, dbWorkerName);
 

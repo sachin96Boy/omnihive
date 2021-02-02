@@ -5,17 +5,17 @@ import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "../models/HiveWorker";
 
 export class WorkerService {
-    private static instance: WorkerService;
+    private static singleton: WorkerService;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
 
-    public static getInstance = (): WorkerService => {
-        if (!WorkerService.instance) {
-            WorkerService.instance = new WorkerService();
+    public static getSingleton = (): WorkerService => {
+        if (!WorkerService.singleton) {
+            WorkerService.singleton = new WorkerService();
         }
 
-        return WorkerService.instance;
+        return WorkerService.singleton;
     };
 
     public registeredWorkers: [HiveWorker, any][] = [];
@@ -56,7 +56,7 @@ export class WorkerService {
         this.registeredWorkers = [];
     };
 
-    public getHiveWorker = async <T extends IHiveWorker | undefined>(
+    public getWorker = async <T extends IHiveWorker | undefined>(
         type: string,
         name?: string
     ): Promise<T | undefined> => {
@@ -95,7 +95,7 @@ export class WorkerService {
         return hiveWorker[1] as T;
     };
 
-    public registerWorker = async (hiveWorker: HiveWorker): Promise<void> => {
+    public pushWorker = async (hiveWorker: HiveWorker): Promise<void> => {
         if (!hiveWorker.importPath || hiveWorker.importPath === "") {
             throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`);
         }

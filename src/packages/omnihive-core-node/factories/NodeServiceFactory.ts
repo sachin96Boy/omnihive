@@ -4,10 +4,10 @@ import { ServerService } from "../services/ServerService";
 
 export class NodeServiceFactory extends CoreServiceFactory {
     public static get instanceService(): InstanceService {
-        return InstanceService.getInstance();
+        return InstanceService.getSingleton();
     }
 
     public static get serverService(): ServerService {
-        return ServerService.getInstance();
+        return ServerService.getSingleton();
     }
 }

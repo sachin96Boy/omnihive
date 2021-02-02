@@ -16,7 +16,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
     public async afterInit(): Promise<void> {
         this.featureWorker = await AwaitHelper.execute<IFeatureWorker | undefined>(
-            NodeServiceFactory.workerService.getHiveWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature)
+            NodeServiceFactory.workerService.getWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature)
         );
 
         if (!this.featureWorker) {
@@ -40,7 +40,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             NodeServiceFactory.configurationService.settings.constants["adminPubSubServerWorkerInstance"];
 
         const adminPubSubServer = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-            NodeServiceFactory.workerService.getHiveWorker<IPubSubServerWorker>(
+            NodeServiceFactory.workerService.getWorker<IPubSubServerWorker>(
                 HiveWorkerType.PubSubServer,
                 adminPubSubServerWorkerName
             )
@@ -62,7 +62,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         }
 
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            NodeServiceFactory.workerService.getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (logWorker) {

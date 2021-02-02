@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
 import chalk from "chalk";
 import Table from "cli-table";
 import figlet from "figlet";
 import inquirer from "inquirer";
-import { InstanceService } from "./services/InstanceService";
-
-const instanceService: InstanceService = new InstanceService();
 
 const init = async () => {
     clearAndPrintBanner();
@@ -52,7 +50,7 @@ const clear = () => {
 };
 
 const list = () => {
-    const list: RegisteredInstance[] = instanceService.getAll();
+    const list: RegisteredInstance[] = NodeServiceFactory.instanceService.getAll();
 
     const table = new Table({
         head: ["Name", "Settings", "Server", "Version", "Last Run"],

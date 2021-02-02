@@ -1,3 +1,4 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
@@ -7,7 +8,6 @@ import { IUserWorker } from "@withonevision/omnihive-core/interfaces/IUserWorker
 import { AuthUser } from "@withonevision/omnihive-core/models/AuthUser";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import {
     AppMetadata,
     AuthenticationClient,
@@ -67,7 +67,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
 
     public async afterInit(): Promise<void> {
         this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            NodeServiceFactory.workerService.getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (!this.logWorker) {

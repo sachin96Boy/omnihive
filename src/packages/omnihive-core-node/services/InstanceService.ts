@@ -1,4 +1,5 @@
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { RegisteredInstance } from "@withonevision/omnihive-core/models/RegisteredInstance";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
@@ -7,6 +8,19 @@ import Conf from "conf";
 import fs from "fs";
 
 export class InstanceService {
+    private static instance: InstanceService;
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    private constructor() {}
+
+    public static getInstance = (): InstanceService => {
+        if (!InstanceService.instance) {
+            InstanceService.instance = new InstanceService();
+        }
+
+        return InstanceService.instance;
+    };
+
     private config = new Conf({
         projectName: OmniHiveConstants.CONF_NAME,
         configName: OmniHiveConstants.CONF_NAME,
@@ -58,6 +72,48 @@ export class InstanceService {
 
     public getLastRun = (): RegisteredInstance | undefined => {
         return this.getAll().find((value: RegisteredInstance) => value.lastRun === true);
+    };
+
+    public getInstanceSettings = (name: string | undefined, settings: string | undefined): ServerSettings => {
+        if (name && settings) {
+            throw new Error(
+                "You cannot provide both an instance name and a settings file to the configuration handler"
+            );
+        }
+
+        if (!name && settings) {
+            const settingsJson = JSON.parse(fs.readFileSync(settings, { encoding: "utf8" }));
+
+            try {
+                const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
+                    ServerSettings,
+                    settingsJson
+                );
+                return serverSettings;
+            } catch {
+                throw new Error("Given settings file cannot be successfully parsed into a ServerSettings object");
+            }
+        }
+
+        const configInstance: RegisteredInstance | undefined = this.get(name ?? "");
+
+        if (!configInstance || StringHelper.isNullOrWhiteSpace(configInstance.settingsLocation)) {
+            throw new Error(
+                "The given instance name has not been registered.  Please use the command line to add a new instance"
+            );
+        }
+
+        const settingsJson = JSON.parse(fs.readFileSync(configInstance.settingsLocation, { encoding: "utf8" }));
+
+        try {
+            const serverSettings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
+                ServerSettings,
+                settingsJson
+            );
+            return serverSettings;
+        } catch {
+            throw new Error("Given settings file cannot be successfully parsed into a ServerSettings object");
+        }
     };
 
     public edit = (name: string, editedInstance: RegisteredInstance): boolean => {

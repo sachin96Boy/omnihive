@@ -9,6 +9,7 @@
     "dependencies": {
         "@sentry/node": "6.0.2",
         "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-node": "workspace:*",
         "serialize-error": "8.0.1"
     },
     "devDependencies": {

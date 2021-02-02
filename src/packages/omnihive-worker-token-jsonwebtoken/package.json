@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-node": "workspace:*",
         "jsonwebtoken": "8.5.1",
         "nanoid": "3.1.20",
         "serialize-error": "8.0.1",

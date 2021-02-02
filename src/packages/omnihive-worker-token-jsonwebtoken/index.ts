@@ -27,7 +27,10 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
         let metadata: JsonWebTokenWorkerMetadata;
 
         try {
-            metadata = this.checkObjectStructure<JsonWebTokenWorkerMetadata>(JsonWebTokenWorkerMetadata, config.metadata);
+            metadata = this.checkObjectStructure<JsonWebTokenWorkerMetadata>(
+                JsonWebTokenWorkerMetadata,
+                config.metadata
+            );
         } catch {
             metadata = {
                 audience: uuidv4(),

@@ -1,6 +1,6 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 
 export default class LocalFeatureWorker extends HiveWorkerBase implements IFeatureWorker {
     constructor() {
@@ -12,8 +12,8 @@ export default class LocalFeatureWorker extends HiveWorkerBase implements IFeatu
             throw new Error("No feature name given.");
         }
 
-        if (CommonStore.getInstance().settings.features[name]) {
-            return CommonStore.getInstance().settings.features[name] as T;
+        if (NodeServiceFactory.configurationService.settings.features[name]) {
+            return NodeServiceFactory.configurationService.settings.features[name] as T;
         }
 
         if (defaultValue) {

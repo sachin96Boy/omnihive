@@ -1,3 +1,4 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
@@ -5,7 +6,6 @@ import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeature
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
@@ -16,7 +16,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
     public async afterInit(): Promise<void> {
         this.featureWorker = await AwaitHelper.execute<IFeatureWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature)
+            NodeServiceFactory.workerService.getHiveWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature)
         );
 
         if (!this.featureWorker) {
@@ -36,12 +36,11 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             return;
         }
 
-        const adminPubSubServerWorkerName: string | undefined = CommonStore.getInstance().settings.constants[
-            "adminPubSubServerWorkerInstance"
-        ];
+        const adminPubSubServerWorkerName: string | undefined =
+            NodeServiceFactory.configurationService.settings.constants["adminPubSubServerWorkerInstance"];
 
         const adminPubSubServer = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IPubSubServerWorker>(
+            NodeServiceFactory.workerService.getHiveWorker<IPubSubServerWorker>(
                 HiveWorkerType.PubSubServer,
                 adminPubSubServerWorkerName
             )
@@ -49,17 +48,21 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
         if (adminPubSubServer) {
             try {
-                adminPubSubServer.emit(CommonStore.getInstance().settings.config.serverGroupName, "server-log-entry", {
-                    entryNumber: this.logEntryNumber,
-                    log: formattedLogString,
-                });
+                adminPubSubServer.emit(
+                    NodeServiceFactory.configurationService.settings.config.serverGroupName,
+                    "server-log-entry",
+                    {
+                        entryNumber: this.logEntryNumber,
+                        log: formattedLogString,
+                    }
+                );
             } catch {
                 this.chalkConsole(OmniHiveLogLevel.Warn, "Pub sub server log could not be synchronized");
             }
         }
 
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            NodeServiceFactory.workerService.getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (logWorker) {

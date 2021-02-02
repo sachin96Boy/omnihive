@@ -1,9 +1,9 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 
@@ -20,7 +20,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
 
     public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+            NodeServiceFactory.workerService.getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {
@@ -37,7 +37,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             if (!verified) {
                 throw new Error("Invalid Access Token");
             }
-            return [CommonStore.getInstance().status, 200];
+            return [NodeServiceFactory.serverService.serverStatus, 200];
         } catch (e) {
             return [{ error: serializeError(e) }, 400];
         }
@@ -130,7 +130,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== NodeServiceFactory.configurationService.settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     };

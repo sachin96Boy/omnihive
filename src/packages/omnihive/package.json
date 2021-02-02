@@ -9,9 +9,9 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-node": "workspace:*",
         "chalk": "4.1.0",
         "cli-table": "0.3.4",
-        "conf": "9.0.0",
         "figlet": "1.5.0",
         "inquirer": "7.3.3",
         "serialize-error": "8.0.1",

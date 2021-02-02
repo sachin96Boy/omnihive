@@ -21,18 +21,19 @@ import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettin
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
-import { InstanceService } from "@withonevision/omnihive/services/InstanceService";
+import { InstanceService } from "@withonevision/omnihive-core-node/services/InstanceService";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import express from "express";
 import os from "os";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
-import { OmniHiveStore } from "../stores/OmniHiveStore";
-import { AppService } from "./AppService";
+import { NodeStore } from "@withonevision/omnihive-core-node/stores/NodeStore";
 import { minify } from "terser";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
+import { AppService } from "@withonevision/omnihive-core-node/services/ServerService";
+import readPkgUp from "read-pkg-up";
 
 export class ServerService {
     public start = async (name: string | undefined, settings: string | undefined): Promise<void> => {
@@ -76,7 +77,8 @@ export class ServerService {
 
         // Run basic app service
         const appSettings: ServerSettings = appService.getServerSettings(name, settings);
-        await appService.initApp(appSettings);
+        const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
+        await appService.initApp(pkgJson, appSettings);
 
         // Intialize "backbone" hive workers
 
@@ -125,87 +127,85 @@ export class ServerService {
                     return;
                 }
 
-                OmniHiveStore.getInstance()
-                    .loadSpecialStatusApp(ServerStatus.Rebuilding)
-                    .then(() => {
-                        OmniHiveStore.getInstance().serverChangeHandler();
+                appService.loadSpecialStatusApp(ServerStatus.Rebuilding).then(() => {
+                    appService.serverChangeHandler();
 
-                        try {
-                            this.buildServer()
-                                .then(() => {
-                                    OmniHiveStore.getInstance().serverChangeHandler();
+                    try {
+                        this.buildServer()
+                            .then(() => {
+                                appService.serverChangeHandler();
 
-                                    logWorker.write(OmniHiveLogLevel.Info, `Server Spin-Up Complete => Online `);
-                                    adminPubSubServer?.emit(
-                                        CommonStore.getInstance().settings.config.serverGroupName,
-                                        "server-reset-result",
-                                        {
-                                            serverName: os.hostname(),
-                                            success: true,
-                                            error: "",
-                                        }
-                                    );
-                                })
-                                .catch((err: Error) => {
-                                    OmniHiveStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
+                                logWorker.write(OmniHiveLogLevel.Info, `Server Spin-Up Complete => Online `);
+                                adminPubSubServer?.emit(
+                                    CommonStore.getInstance().settings.config.serverGroupName,
+                                    "server-reset-result",
+                                    {
+                                        serverName: os.hostname(),
+                                        success: true,
+                                        error: "",
+                                    }
+                                );
+                            })
+                            .catch((err: Error) => {
+                                appService.loadSpecialStatusApp(ServerStatus.Admin, err);
+                                appService.serverChangeHandler();
 
-                                    OmniHiveStore.getInstance().serverChangeHandler();
+                                logWorker.write(
+                                    OmniHiveLogLevel.Error,
+                                    `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`
+                                );
+                                adminPubSubServer?.emit(
+                                    CommonStore.getInstance().settings.config.serverGroupName,
+                                    "server-reset-result",
+                                    {
+                                        serverName: os.hostname(),
+                                        success: false,
+                                        error: JSON.stringify(serializeError(err)),
+                                    }
+                                );
+                            });
+                    } catch (err) {
+                        appService.loadSpecialStatusApp(ServerStatus.Admin, err);
+                        appService.serverChangeHandler();
 
-                                    logWorker.write(
-                                        OmniHiveLogLevel.Error,
-                                        `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`
-                                    );
-                                    adminPubSubServer?.emit(
-                                        CommonStore.getInstance().settings.config.serverGroupName,
-                                        "server-reset-result",
-                                        {
-                                            serverName: os.hostname(),
-                                            success: false,
-                                            error: JSON.stringify(serializeError(err)),
-                                        }
-                                    );
-                                });
-                        } catch (err) {
-                            OmniHiveStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
-
-                            OmniHiveStore.getInstance().serverChangeHandler();
-
-                            logWorker.write(
-                                OmniHiveLogLevel.Error,
-                                `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`
-                            );
-                            adminPubSubServer?.emit(
-                                CommonStore.getInstance().settings.config.serverGroupName,
-                                "server-reset-result",
-                                {
-                                    serverName: os.hostname(),
-                                    success: false,
-                                    error: JSON.stringify(serializeError(err)),
-                                }
-                            );
-                        }
-                    });
+                        logWorker.write(
+                            OmniHiveLogLevel.Error,
+                            `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`
+                        );
+                        adminPubSubServer?.emit(
+                            CommonStore.getInstance().settings.config.serverGroupName,
+                            "server-reset-result",
+                            {
+                                serverName: os.hostname(),
+                                success: false,
+                                error: JSON.stringify(serializeError(err)),
+                            }
+                        );
+                    }
+                });
             }
         );
 
         // Set server to rebuilding first
-        await AwaitHelper.execute<void>(OmniHiveStore.getInstance().loadSpecialStatusApp(ServerStatus.Rebuilding));
-        OmniHiveStore.getInstance().serverChangeHandler();
+        await AwaitHelper.execute<void>(appService.loadSpecialStatusApp(ServerStatus.Rebuilding));
+        appService.serverChangeHandler();
 
         // Try to spin up full server
         try {
             await AwaitHelper.execute<void>(this.buildServer());
             CommonStore.getInstance().changeSystemStatus(ServerStatus.Online);
-            OmniHiveStore.getInstance().serverChangeHandler();
+            appService.serverChangeHandler();
         } catch (err) {
             // Problem...spin up admin server
-            OmniHiveStore.getInstance().loadSpecialStatusApp(ServerStatus.Admin, err);
-            OmniHiveStore.getInstance().serverChangeHandler();
+            appService.loadSpecialStatusApp(ServerStatus.Admin, err);
+            appService.serverChangeHandler();
             logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
         }
     };
 
     private buildServer = async (): Promise<void> => {
+        const appService: AppService = new AppService();
+
         const fileSystemWorker:
             | IFileSystemWorker
             | undefined = await CommonStore.getInstance().getHiveWorker<IFileSystemWorker>(
@@ -234,7 +234,7 @@ export class ServerService {
 
         try {
             // Start setting up server
-            const app = await OmniHiveStore.getInstance().getCleanAppServer();
+            const app = await appService.getCleanAppServer();
 
             // Clear schema directories
             fileSystemWorker.ensureFolderExists(
@@ -706,7 +706,7 @@ export class ServerService {
             logWorker.write(OmniHiveLogLevel.Info, `New Server Built`);
 
             // Rebuild server
-            OmniHiveStore.getInstance().appServer = app;
+            NodeStore.getInstance().appServer = app;
         } catch (err) {
             logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
             throw new Error(err);

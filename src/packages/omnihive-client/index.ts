@@ -1,11 +1,11 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
 
 export class OmniHiveClient {
@@ -27,7 +27,7 @@ export class OmniHiveClient {
     };
 
     public init = async (settings: ServerSettings): Promise<void> => {
-        await CommonStore.getInstance().initWorkers(settings.workers);
+        await CoreServiceFactory.workerService.initWorkers(settings.workers);
     };
 
     public restClient = async (url: string, method: RestMethod, headers?: any, data?: any): Promise<any> => {
@@ -131,12 +131,12 @@ export class OmniHiveClient {
         let encryptionWorker: IEncryptionWorker | undefined = undefined;
 
         if (encryptionWorkerName) {
-            encryptionWorker = await CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(
+            encryptionWorker = await CoreServiceFactory.workerService.getHiveWorker<IEncryptionWorker | undefined>(
                 HiveWorkerType.Encryption,
                 encryptionWorkerName
             );
         } else {
-            encryptionWorker = await CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(
+            encryptionWorker = await CoreServiceFactory.workerService.getHiveWorker<IEncryptionWorker | undefined>(
                 HiveWorkerType.Encryption
             );
         }
@@ -145,7 +145,7 @@ export class OmniHiveClient {
             throw new Error("No encryption worker found.  An encryption worker is required for custom SQL");
         }
 
-        const dbWorker: IDatabaseWorker | undefined = await CommonStore.getInstance().getHiveWorker<
+        const dbWorker: IDatabaseWorker | undefined = await CoreServiceFactory.workerService.getHiveWorker<
             IDatabaseWorker | undefined
         >(HiveWorkerType.Database, dbWorkerName);
 

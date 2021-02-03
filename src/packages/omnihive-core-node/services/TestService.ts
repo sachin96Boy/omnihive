@@ -45,7 +45,9 @@ export class TestService {
                 JSON.parse(fs.readFileSync(`${process.env.omnihive_test_settings}`, { encoding: "utf8" }))
             );
 
-            return config.tests.find((test: TestConfigSettings) => test.package === packageName && test.enabled);
+            return config.tests.find(
+                (test: TestConfigSettings) => test.package === packageName && test.enabled === true
+            );
         } catch {
             return undefined;
         }

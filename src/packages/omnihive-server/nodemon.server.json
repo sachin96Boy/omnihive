@@ -1,6 +1,6 @@
 {
     "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git", ".omnihive/**/*", ".next/**/*", "src/pages/**/*"],
-    "watch": ["./**/*.ts"],
-    "exec": "DOTENV_CONFIG_PATH=\"/Library/Application Support/OmniHive/.env\" yarn node --inspect=127.0.0.1:9228 -r dotenv/config -r ts-node/register --stack-size=4096 --max-old-space-size=16384 ./server.ts",
+    "watch": ["../**/*.ts"],
+    "exec": "DOTENV_CONFIG_PATH=\"/Library/Application Support/OmniHive/.env\" yarn node --inspect=127.0.0.1:9228 -r dotenv/config -r ts-node/register ./server.ts",
     "ext": "ts"
 }

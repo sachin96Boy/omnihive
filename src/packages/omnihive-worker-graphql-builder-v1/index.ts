@@ -76,7 +76,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`);
         builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-core/interfaces/ITokenWorker");`);
         builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`);
-        builder.appendLine(`var { CommonStore } = require("@withonevision/omnihive-core/stores/CommonStore");`);
+        builder.appendLine(
+            `var { NodeServiceFactory } = require("@withonevision/omnihive-core-node/factories/NodeServiceFactory");`
+        );
         builder.appendLine(
             `var { ParseMaster } = require("@withonevision/omnihive-worker-graphql-builder-v1/parsers/ParseMaster");`
         );
@@ -89,7 +91,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Token checker
         builder.appendLine(`const accessTokenChecker = async (accessToken) => {`);
         builder.appendLine(
-            `\tconst tokenWorker = await AwaitHelper.execute(CommonStore.getInstance().getHiveWorker(HiveWorkerType.Token));`
+            `\tconst tokenWorker = await AwaitHelper.execute(NodeServiceFactory.workerService.getWorker(HiveWorkerType.Token));`
         );
         builder.appendLine();
         builder.appendLine(`\tif (accessToken) {`);
@@ -132,15 +134,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Base Object Type => Definitions
             builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}ObjectType = new GraphQLObjectType({`
+                `var ${pluralize.singular(tableSchema[0].tableNamePascalCase)}ObjectType = new GraphQLObjectType({`
             );
-            builder.appendLine(
-                `\tname: "${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNameCamelCase
-                )}",`
-            );
+            builder.appendLine(`\tname: "${pluralize.singular(tableSchema[0].tableNameCamelCase)}",`);
             builder.appendLine(`\textensions: {`);
             builder.appendLine(`\t\tdbWorkerInstance: "${databaseWorker.config.name}",`);
             builder.appendLine(`\t\tdbTableName: "${tableSchema[0].tableName}",`);
@@ -169,9 +165,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 builder.appendLine(`\t\t${fieldName}: {`);
                 builder.appendLine(
-                    `\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                        schema.tableNamePascalCase
-                    )}ObjectType),`
+                    `\t\t\ttype: new GraphQLList(${pluralize.singular(schema.tableNamePascalCase)}ObjectType),`
                 );
                 builder.appendLine(`\t\t\targs: {`);
 
@@ -212,9 +206,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 builder.appendLine(`\t\t${fieldName}: {`);
                 builder.appendLine(
-                    `\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                        schema.columnForeignKeyTableNamePascalCase
-                    )}ObjectType,`
+                    `\t\t\ttype: ${pluralize.singular(schema.columnForeignKeyTableNamePascalCase)}ObjectType,`
                 );
                 builder.appendLine(`\t\t\targs: {`);
 
@@ -253,15 +245,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Build Aggregate Object
             builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}AggObjectType = new GraphQLObjectType({`
+                `var ${pluralize.singular(tableSchema[0].tableNamePascalCase)}AggObjectType = new GraphQLObjectType({`
             );
-            builder.appendLine(
-                `\tname: "${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNameCamelCase
-                )}_agg",`
-            );
+            builder.appendLine(`\tname: "${pluralize.singular(tableSchema[0].tableNameCamelCase)}_agg",`);
             builder.appendLine(`\textensions: {`);
             builder.appendLine(`\t\tdbWorkerInstance: "${databaseWorker.config.name}",`);
             builder.appendLine(`\t\tdbTableName: "${tableSchema[0].tableName}",`);
@@ -455,9 +441,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 builder.appendLine(`\t\t${fieldName}: {`);
                 builder.appendLine(
-                    `\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                        schema.tableNamePascalCase
-                    )}AggObjectType),`
+                    `\t\t\ttype: new GraphQLList(${pluralize.singular(schema.tableNamePascalCase)}AggObjectType),`
                 );
                 builder.appendLine(`\t\t\targs: {`);
 
@@ -497,9 +481,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 builder.appendLine(`\t\t${fieldName}: {`);
                 builder.appendLine(
-                    `\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                        schema.columnForeignKeyTableNamePascalCase
-                    )}AggObjectType,`
+                    `\t\t\ttype: ${pluralize.singular(schema.columnForeignKeyTableNamePascalCase)}AggObjectType,`
                 );
                 builder.appendLine(`\t\t\targs: {`);
 
@@ -538,15 +520,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Mutation Base Object
             builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
+                `var ${pluralize.singular(
                     tableSchema[0].tableNamePascalCase
                 )}MutationType = new GraphQLInputObjectType({`
             );
-            builder.appendLine(
-                `\tname: "${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNameCamelCase
-                )}MutationType",`
-            );
+            builder.appendLine(`\tname: "${pluralize.singular(tableSchema[0].tableNameCamelCase)}MutationType",`);
             builder.appendLine(`\tfields: () => ({`);
 
             tableSchema.forEach((column: TableSchema) => {
@@ -566,15 +544,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Mutation Where Object
             builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
+                `var ${pluralize.singular(
                     tableSchema[0].tableNamePascalCase
                 )}MutationWhereType = new GraphQLInputObjectType({`
             );
-            builder.appendLine(
-                `\tname: "${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNameCamelCase
-                )}MutationWhereType",`
-            );
+            builder.appendLine(`\tname: "${pluralize.singular(tableSchema[0].tableNameCamelCase)}MutationWhereType",`);
             builder.appendLine(`\tfields: () => ({`);
 
             tableSchema.forEach((column: TableSchema) => {
@@ -590,10 +564,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         }); // End of first table loop where base objects are built
 
         // Custom SQL Type
-        builder.appendLine(
-            `var ${databaseWorker.config.metadata.generatorPrefix}CustomSqlObjectType = new GraphQLObjectType({`
-        );
-        builder.appendLine(`\tname: "${databaseWorker.config.metadata.generatorPrefix}customSql",`);
+        builder.appendLine(`var CustomSqlObjectType = new GraphQLObjectType({`);
+        builder.appendLine(`\tname: "customSql",`);
         builder.appendLine(`\tfields: () => ({`);
         builder.appendLine(`\t\trecordset: { type : GraphQLJSONObject },`);
         builder.appendLine(`\t}),`);
@@ -609,10 +581,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`\t\tfields: () => ({`);
 
         // Custom SQL
-        builder.appendLine(`\t\t\t${databaseWorker.config.metadata.generatorPrefix}customSql: {`);
-        builder.appendLine(
-            `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}CustomSqlObjectType),`
-        );
+        builder.appendLine(`\t\t\tcustomSql: {`);
+        builder.appendLine(`\t\t\t\ttype: new GraphQLList(CustomSqlObjectType),`);
         builder.appendLine(`\t\t\t\targs: {`);
         builder.appendLine(`\t\t\t\t\tencryptedSql: { type : GraphQLNonNull(GraphQLString) },`);
         builder.appendLine(`\t\t\t\t},`);
@@ -636,15 +606,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             });
 
             // Build base query
+            builder.appendLine(`\t\t\t${pluralize.plural(tableSchema[0].tableNameCamelCase)}: {`);
             builder.appendLine(
-                `\t\t\t${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                    tableSchema[0].tableNameCamelCase
-                )}: {`
-            );
-            builder.appendLine(
-                `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}ObjectType),`
+                `\t\t\t\ttype: new GraphQLList(${pluralize.singular(tableSchema[0].tableNamePascalCase)}ObjectType),`
             );
             builder.appendLine(`\t\t\t\targs: {`);
 
@@ -667,15 +631,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t},`);
 
             // Build Aggregate Query
+            builder.appendLine(`\t\t\t${pluralize.plural(tableSchema[0].tableNameCamelCase)}_agg: {`);
             builder.appendLine(
-                `\t\t\t${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                    tableSchema[0].tableNameCamelCase
-                )}_agg: {`
-            );
-            builder.appendLine(
-                `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}AggObjectType),`
+                `\t\t\t\ttype: new GraphQLList(${pluralize.singular(tableSchema[0].tableNamePascalCase)}AggObjectType),`
             );
             builder.appendLine(`\t\t\t\targs: {`);
 
@@ -713,26 +671,16 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             });
 
             // Insert
+            builder.appendLine(`\t\t\tinsert_${pluralize.plural(tableSchema[0].tableNamePascalCase)}: {`);
             builder.appendLine(
-                `\t\t\tinsert_${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                    tableSchema[0].tableNamePascalCase
-                )}: {`
-            );
-            builder.appendLine(
-                `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}ObjectType),`
+                `\t\t\t\ttype: new GraphQLList(${pluralize.singular(tableSchema[0].tableNamePascalCase)}ObjectType),`
             );
             builder.appendLine(`\t\t\t\targs: {`);
+            builder.appendLine(`\t\t\t\t\t${pluralize.plural(tableSchema[0].tableNameCamelCase)}: {`);
             builder.appendLine(
-                `\t\t\t\t\t${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                    tableSchema[0].tableNameCamelCase
-                )}: {`
-            );
-            builder.appendLine(
-                `\t\t\t\t\t\ttype: new GraphQLList(${
-                    databaseWorker.config.metadata.generatorPrefix
-                }${pluralize.singular(tableSchema[0].tableNamePascalCase)}MutationType),`
+                `\t\t\t\t\t\ttype: new GraphQLList(${pluralize.singular(
+                    tableSchema[0].tableNamePascalCase
+                )}MutationType),`
             );
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t\tcustomDmlArgs: {`);
@@ -740,7 +688,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t},`);
             builder.appendLine(
-                `\t\t\t\tresolve: async (parent, { ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
+                `\t\t\t\tresolve: async (parent, { ${pluralize.plural(
                     tableSchema[0].tableNameCamelCase
                 )}, customDmlArgs }, context, resolveInfo) => {`
             );
@@ -779,11 +727,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             if (beforeInsertArray.length > 0) {
                 _.orderBy(beforeInsertArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
                     builder.appendLine(
-                        `\t\t\t\t\t\t{${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                            tableSchema[0].tableNameCamelCase
-                        )}, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${
-                            tableSchema[0].tableName
-                        }", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
+                        `\t\t\t\t\t\t{${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs} = ${
+                            lifecycleWorker.worker.name
+                        }("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${pluralize.plural(
                             tableSchema[0].tableNameCamelCase
                         )}, customDmlArgs);`
                     );
@@ -822,17 +768,15 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                         builder.appendLine(
                             `\t\t\t\t\t\tvar insertResponse = ${lifecycleWorker.worker.name}("${
                                 databaseWorker.config.name
-                            }", "${tableSchema[0].tableName}", ${
-                                databaseWorker.config.metadata.generatorPrefix
-                            }${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs);`
+                            }", "${tableSchema[0].tableName}", ${pluralize.plural(
+                                tableSchema[0].tableNameCamelCase
+                            )}, customDmlArgs);`
                         );
                     } else {
                         builder.appendLine(
-                            `\t\t\t\t\t\t{${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                                tableSchema[0].tableNameCamelCase
-                            )}, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${
-                                tableSchema[0].tableName
-                            }", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
+                            `\t\t\t\t\t\t{${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs} = ${
+                                lifecycleWorker.worker.name
+                            }("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${pluralize.plural(
                                 tableSchema[0].tableNameCamelCase
                             )}, customDmlArgs);`
                         );
@@ -842,9 +786,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 builder.appendLine(
                     `\t\t\t\t\t\tvar insertResponse = await AwaitHelper.execute(graphParser.parseInsert("${
                         databaseWorker.config.name
-                    }", "${tableSchema[0].tableName}", ${
-                        databaseWorker.config.metadata.generatorPrefix
-                    }${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs));`
+                    }", "${tableSchema[0].tableName}", ${pluralize.plural(
+                        tableSchema[0].tableNameCamelCase
+                    )}, customDmlArgs));`
                 );
             }
 
@@ -891,11 +835,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t},`);
 
             // Update
-            builder.appendLine(
-                `\t\t\tupdate_${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}: {`
-            );
+            builder.appendLine(`\t\t\tupdate_${pluralize.singular(tableSchema[0].tableNamePascalCase)}: {`);
             builder.appendLine(`\t\t\t\ttype: GraphQLInt,`);
             builder.appendLine(`\t\t\t\targs: {`);
             builder.appendLine(`\t\t\t\t\tcustomDmlArgs: {`);
@@ -903,16 +843,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t\tupdateObject: {`);
             builder.appendLine(
-                `\t\t\t\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}MutationType,`
+                `\t\t\t\t\t\ttype: ${pluralize.singular(tableSchema[0].tableNamePascalCase)}MutationType,`
             );
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t\twhereObject: {`);
             builder.appendLine(
-                `\t\t\t\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}MutationWhereType,`
+                `\t\t\t\t\t\ttype: ${pluralize.singular(tableSchema[0].tableNamePascalCase)}MutationWhereType,`
             );
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t},`);
@@ -1043,11 +979,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t},`);
 
             // Delete
-            builder.appendLine(
-                `\t\t\tdelete_${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}: {`
-            );
+            builder.appendLine(`\t\t\tdelete_${pluralize.singular(tableSchema[0].tableNamePascalCase)}: {`);
             builder.appendLine(`\t\t\t\ttype: GraphQLInt,`);
             builder.appendLine(`\t\t\t\targs: {`);
             builder.appendLine(`\t\t\t\t\tcustomDmlArgs: {`);
@@ -1055,9 +987,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t\twhereObject: {`);
             builder.appendLine(
-                `\t\t\t\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}MutationWhereType,`
+                `\t\t\t\t\t\ttype: ${pluralize.singular(tableSchema[0].tableNamePascalCase)}MutationWhereType,`
             );
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t},`);
@@ -1197,10 +1127,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Build stored proc object if they exist
         if (connectionSchema.storedProcs.length > 0) {
             // Stored proc object type
-            builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}StoredProcObjectType = new GraphQLObjectType({`
-            );
-            builder.appendLine(`\tname: '${databaseWorker.config.metadata.generatorPrefix}storedProcedures',`);
+            builder.appendLine(`var StoredProcObjectType = new GraphQLObjectType({`);
+            builder.appendLine(`\tname: 'storedProcedures',`);
             builder.appendLine(`\tfields: () => ({`);
 
             // Build all stored procedures as graph fields
@@ -1255,10 +1183,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\tquery: new GraphQLObjectType({`);
             builder.appendLine(`\t\tname: 'Query',`);
             builder.appendLine(`\t\tfields: () => ({`);
-            builder.appendLine(`\t\t\t${databaseWorker.config.metadata.generatorPrefix}storedProcedures: {`);
-            builder.appendLine(
-                `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}StoredProcObjectType),`
-            );
+            builder.appendLine(`\t\t\tstoredProcedures: {`);
+            builder.appendLine(`\t\t\t\ttype: new GraphQLList(StoredProcObjectType),`);
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
             builder.appendLine(

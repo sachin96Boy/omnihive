@@ -4,7 +4,6 @@ import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { FieldNode, GraphQLResolveInfo, SelectionNode } from "graphql";
 
 export class ParseStoredProcedure {
@@ -23,11 +22,9 @@ export class ParseStoredProcedure {
         }
 
         const schema: ConnectionSchema | undefined = NodeServiceFactory.connectionService.getSchema(workerName);
-        let tableSchema: TableSchema[] = [];
         let fullSchema: StoredProcSchema[] = [];
 
         if (schema) {
-            tableSchema = schema.tables;
             fullSchema = schema.storedProcs;
         }
 

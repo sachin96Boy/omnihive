@@ -153,9 +153,7 @@ export class OmniHiveClient {
             throw new Error("No database worker with the given name found.");
         }
 
-        const dbMeta: HiveWorkerMetadataDatabase = dbWorker.config.metadata as HiveWorkerMetadataDatabase;
-
-        const target: string = `${dbMeta.generatorPrefix}customSql`;
+        const target: string = `customSql`;
         const secureSql: string = encryptionWorker.symmetricEncrypt(sql);
 
         const query: string = `

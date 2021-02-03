@@ -5,6 +5,5 @@ export class HiveWorkerMetadataDatabase {
     public graphEndpoint: string = "";
     public userName: string = "";
     public password: string = "";
-    public generatorPrefix: string = "";
     public rowLimit: number = 0;
 }

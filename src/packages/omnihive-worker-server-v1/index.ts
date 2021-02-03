@@ -25,11 +25,11 @@ import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import express from "express";
+import requireFromString from "require-from-string";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
-import { NodeVM } from "vm2";
 
-export class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
+export default class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
     private metadata!: HiveWorkerMetadataServer;
 
     constructor() {
@@ -63,8 +63,6 @@ export class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
             | undefined = await NodeServiceFactory.workerService.getWorker<IFeatureWorker>(HiveWorkerType.Feature);
 
         try {
-            const dbWorkerModules: { workerName: string; dbModule: any }[] = [];
-
             // Start setting up server
             const app = await NodeServiceFactory.serverService.getCleanAppServer();
 
@@ -173,6 +171,7 @@ export class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
             logWorker.write(OmniHiveLogLevel.Info, `Writing Graph Generation Files`);
 
             // Get all build workers and write out their graph schema
+            const dbWorkerModules: { workerName: string; dbModule: any }[] = [];
 
             for (const builder of buildWorkers) {
                 const buildWorker: IGraphBuildWorker = builder[1] as IGraphBuildWorker;
@@ -186,13 +185,8 @@ export class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
                     );
 
                     const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
-                    const dbWorkerVM = new NodeVM({
-                        require: {
-                            external: true,
-                        },
-                    });
-                    const dbWorkerModule = dbWorkerVM.run(fileString);
-                    dbWorkerModules.push({ workerName: buildWorker.config.name, dbModule: dbWorkerModule });
+                    const dbWorkerModule = requireFromString(fileString);
+                    dbWorkerModules.push({ workerName: dbWorker[0].name, dbModule: dbWorkerModule });
                 }
             }
 
@@ -222,7 +216,9 @@ export class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
                 builder.appendLine(
                     `var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`
                 );
-                builder.appendLine(`var { CommonStore } = require("@withonevision/omnihive-core/stores/CommonStore");`);
+                builder.appendLine(
+                    `var { NodeServiceFactory } = require("@withonevision/omnihive-core-node/factories/NodeServiceFactory");`
+                );
                 builder.appendLine();
 
                 customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
@@ -259,14 +255,7 @@ export class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
                 builder.appendLine(`\t}),`);
                 builder.appendLine(`});`);
 
-                const graphEndpointVM = new NodeVM({
-                    require: {
-                        external: true,
-                    },
-                });
-
-                graphEndpointModule = graphEndpointVM.run(builder.outputString());
-                console.log(graphEndpointModule);
+                graphEndpointModule = requireFromString(builder.outputString());
             }
 
             logWorker.write(OmniHiveLogLevel.Info, `Graph Generation Files Completed`);

@@ -67,9 +67,17 @@ export class WorkerService {
         let hiveWorker: [HiveWorker, any] | undefined = undefined;
 
         if (!name) {
-            hiveWorker = this.registeredWorkers.find(
+            const defaultWorkers: [HiveWorker, any][] = this.registeredWorkers.filter(
                 (d: [HiveWorker, any]) => d[0].type === type && d[0].default === true && d[0].enabled === true
             );
+
+            if (defaultWorkers.length > 1) {
+                throw new Error("You cannot have multiple default workers of the same type");
+            }
+
+            if (defaultWorkers.length === 1) {
+                hiveWorker = defaultWorkers[0];
+            }
 
             if (!hiveWorker) {
                 const anyWorkers: [HiveWorker, any][] = this.registeredWorkers.filter(

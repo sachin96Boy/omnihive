@@ -14,6 +14,7 @@ import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import yargs from "yargs";
 import os from "os";
+import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
 
 const init = async () => {
     const args = yargs(process.argv.slice(2));
@@ -118,6 +119,15 @@ const run = async (name: string | undefined, settings: string | undefined): Prom
     const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
     await NodeServiceFactory.serverService.initCore(pkgJson, instanceSettings);
 
+    // Check server worker
+    const serverWorker: IServerWorker | undefined = await NodeServiceFactory.workerService.getWorker<IServerWorker>(
+        HiveWorkerType.Server
+    );
+
+    if (!serverWorker) {
+        throw new Error("No server worker has been registered");
+    }
+
     // Intialize "backbone" hive workers
 
     const logWorker: ILogWorker | undefined = await NodeServiceFactory.workerService.getWorker<ILogWorker>(
@@ -167,7 +177,8 @@ const run = async (name: string | undefined, settings: string | undefined): Prom
                 NodeServiceFactory.serverService.serverChangeHandler();
 
                 try {
-                    this.buildServer()
+                    serverWorker
+                        .buildServer()
                         .then(() => {
                             NodeServiceFactory.serverService.serverChangeHandler();
 
@@ -224,17 +235,17 @@ const run = async (name: string | undefined, settings: string | undefined): Prom
 
     // Set server to rebuilding first
     await AwaitHelper.execute<void>(NodeServiceFactory.serverService.loadSpecialStatusApp(ServerStatus.Rebuilding));
-    NodeServiceFactory.serverService.serverChangeHandler();
+    await NodeServiceFactory.serverService.serverChangeHandler();
 
     // Try to spin up full server
     try {
-        await AwaitHelper.execute<void>(this.buildServer());
+        await AwaitHelper.execute<void>(serverWorker.buildServer());
         NodeServiceFactory.serverService.serverStatus = ServerStatus.Online;
-        NodeServiceFactory.serverService.serverChangeHandler();
+        await NodeServiceFactory.serverService.serverChangeHandler();
     } catch (err) {
         // Problem...spin up admin server
         NodeServiceFactory.serverService.loadSpecialStatusApp(ServerStatus.Admin, err);
-        NodeServiceFactory.serverService.serverChangeHandler();
+        await NodeServiceFactory.serverService.serverChangeHandler();
         logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
     }
 };

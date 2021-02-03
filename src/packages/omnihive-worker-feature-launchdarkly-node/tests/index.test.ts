@@ -1,44 +1,17 @@
 import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import { TestConfigSettings } from "@withonevision/omnihive-core/models/TestConfigSettings";
 import { assert } from "chai";
-import fs from "fs";
 import { serializeError } from "serialize-error";
 import LaunchDarklyNodeFeatureWorker from "..";
 import packageJson from "../package.json";
 
-const getConfig = function (): ServerSettings | undefined {
-    try {
-        if (!process.env.omnihive_test_worker_feature_launchdarkly_node) {
-            return undefined;
-        }
-
-        const config: ServerSettings = ObjectHelper.create(
-            ServerSettings,
-            JSON.parse(
-                fs.readFileSync(`${process.env.omnihive_test_worker_feature_launchdarkly_node}`, {
-                    encoding: "utf8",
-                })
-            )
-        );
-
-        if (!config.workers.some((worker) => worker.package === packageJson.name)) {
-            return undefined;
-        }
-
-        return config;
-    } catch {
-        return undefined;
-    }
-};
-
-let settings: ServerSettings;
+let settings: TestConfigSettings;
 let worker: LaunchDarklyNodeFeatureWorker = new LaunchDarklyNodeFeatureWorker();
 
 describe("feature worker tests", function () {
     before(function () {
-        const config: ServerSettings | undefined = getConfig();
+        const config: TestConfigSettings | undefined = NodeServiceFactory.testService.getTestConfig(packageJson.name);
 
         if (!config) {
             this.skip();

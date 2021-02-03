@@ -2,6 +2,7 @@ import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreS
 import { InstanceService } from "../services/InstanceService";
 import { ServerService } from "../services/ServerService";
 import { ConnectionService } from "../services/ConnectionService";
+import { TestService } from "../services/TestService";
 
 export class NodeServiceFactory extends CoreServiceFactory {
     public static get connectionService(): ConnectionService {
@@ -14,5 +15,9 @@ export class NodeServiceFactory extends CoreServiceFactory {
 
     public static get serverService(): ServerService {
         return ServerService.getSingleton();
+    }
+
+    public static get testService(): TestService {
+        return TestService.getSingleton();
     }
 }

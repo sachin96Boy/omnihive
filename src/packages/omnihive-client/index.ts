@@ -4,7 +4,6 @@ import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreS
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
-import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
 

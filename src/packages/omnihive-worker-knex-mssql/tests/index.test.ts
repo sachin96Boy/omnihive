@@ -4,12 +4,12 @@ import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper"
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { assert } from "chai";
 import fs from "fs";
 import { serializeError } from "serialize-error";
 import MssqlDatabaseWorker from "..";
 import packageJson from "../package.json";
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 
 const getConfig = function (): ServerSettings | undefined {
     try {
@@ -42,7 +42,7 @@ describe("mssql database worker tests", function () {
             this.skip();
         }
 
-        CommonStore.getInstance().clearWorkers();
+        NodeServiceFactory.workerService.clearWorkers();
         settings = config;
     });
 
@@ -50,8 +50,10 @@ describe("mssql database worker tests", function () {
 
     const init = async function (testingConfigs: any): Promise<void> {
         try {
-            await AwaitHelper.execute(CommonStore.getInstance().initWorkers(testingConfigs));
-            const newWorker = CommonStore.getInstance().workers.find((x) => x[0].package === packageJson.name);
+            await AwaitHelper.execute(NodeServiceFactory.workerService.initWorkers(testingConfigs));
+            const newWorker = NodeServiceFactory.workerService.registeredWorkers.find(
+                (x) => x[0].package === packageJson.name
+            );
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];
@@ -67,7 +69,7 @@ describe("mssql database worker tests", function () {
 
     describe("Init Functions", function () {
         beforeEach(async function () {
-            CommonStore.getInstance().clearWorkers();
+            NodeServiceFactory.workerService.clearWorkers();
         });
 
         it("test valid init", async function () {

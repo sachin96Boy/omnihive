@@ -1,9 +1,9 @@
-const OmniHiveStore = require("./stores/OmniHiveStore");
+const NodeServiceFactory = require("@withonevision/omnihive-core-node/factories/NodeServiceFactory");
 
 module.exports = {
     basePath: `${
-        OmniHiveStore.OmniHiveStore.getInstance().getRootUrlPathName() === "/"
+        NodeServiceFactory.NodeServiceFactory.serverService.getRootUrlPathName() === "/"
             ? "/admin"
-            : OmniHiveStore.OmniHiveStore.getInstance().getRootUrlPathName() + "/admin"
+            : NodeServiceFactory.NodeServiceFactory.serverService.getRootUrlPathName() + "/admin"
     }`,
 };

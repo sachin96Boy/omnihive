@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-node": "workspace:*",
         "node-forge": "0.10.0",
         "serialize-error": "8.0.1"
     },

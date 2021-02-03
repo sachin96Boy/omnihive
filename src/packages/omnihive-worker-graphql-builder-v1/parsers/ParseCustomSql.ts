@@ -1,14 +1,14 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 
 export class ParseCustomSql {
     public parse = async (workerName: string, encryptedSql: string): Promise<any[][]> => {
         const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<
             IEncryptionWorker | undefined
-        >(CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+        >(NodeServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if (!encryptionWorker) {
             throw new Error(
@@ -17,7 +17,7 @@ export class ParseCustomSql {
         }
 
         const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+            NodeServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {

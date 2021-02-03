@@ -1,52 +1,24 @@
 import path from "path";
 import { serializeError } from "serialize-error";
-import { ServerStatus } from "../enums/ServerStatus";
 import { AwaitHelper } from "../helpers/AwaitHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
-import { HiveAccount } from "../models/HiveAccount";
 import { HiveWorker } from "../models/HiveWorker";
-import { ServerSettings } from "../models/ServerSettings";
-import { SystemStatus } from "../models/SystemStatus";
-export class CommonStore {
-    private static instance: CommonStore;
+
+export class WorkerService {
+    private static singleton: WorkerService;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
 
-    public static getInstance = (): CommonStore => {
-        if (!CommonStore.instance) {
-            CommonStore.instance = new CommonStore();
+    public static getSingleton = (): WorkerService => {
+        if (!WorkerService.singleton) {
+            WorkerService.singleton = new WorkerService();
         }
 
-        return CommonStore.instance;
+        return WorkerService.singleton;
     };
 
-    public static getNew = (): CommonStore => {
-        return new CommonStore();
-    };
-
-    public account: HiveAccount = new HiveAccount();
-    public settings: ServerSettings = new ServerSettings();
-    public workers: [HiveWorker, any][] = [];
-
-    private _status: SystemStatus = new SystemStatus();
-
-    public get status(): SystemStatus {
-        return this._status;
-    }
-
-    public changeSystemStatus = (serverStatus: ServerStatus, error?: Error): void => {
-        const systemStatus: SystemStatus = new SystemStatus();
-        systemStatus.serverStatus = serverStatus;
-
-        if (error) {
-            systemStatus.serverError = serializeError(error);
-        } else {
-            systemStatus.serverError = {};
-        }
-
-        this._status = systemStatus;
-    };
+    public registeredWorkers: [HiveWorker, any][] = [];
 
     public initWorkers = async (configs: HiveWorker[]): Promise<void> => {
         try {
@@ -69,10 +41,10 @@ export class CommonStore {
                 const newWorkerInstance: any = new newWorker.default();
                 await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 
-                this.workers.push([hiveWorker, newWorkerInstance]);
+                this.registeredWorkers.push([hiveWorker, newWorkerInstance]);
             }
 
-            for (const worker of this.workers) {
+            for (const worker of this.registeredWorkers) {
                 await AwaitHelper.execute<void>((worker[1] as IHiveWorker).afterInit());
             }
         } catch (err) {
@@ -81,26 +53,34 @@ export class CommonStore {
     };
 
     public clearWorkers = (): void => {
-        this.workers = [];
+        this.registeredWorkers = [];
     };
 
-    public getHiveWorker = async <T extends IHiveWorker | undefined>(
+    public getWorker = async <T extends IHiveWorker | undefined>(
         type: string,
         name?: string
     ): Promise<T | undefined> => {
-        if (this.workers.length === 0) {
+        if (this.registeredWorkers.length === 0) {
             return undefined;
         }
 
         let hiveWorker: [HiveWorker, any] | undefined = undefined;
 
         if (!name) {
-            hiveWorker = this.workers.find(
+            const defaultWorkers: [HiveWorker, any][] = this.registeredWorkers.filter(
                 (d: [HiveWorker, any]) => d[0].type === type && d[0].default === true && d[0].enabled === true
             );
 
+            if (defaultWorkers.length > 1) {
+                throw new Error("You cannot have multiple default workers of the same type");
+            }
+
+            if (defaultWorkers.length === 1) {
+                hiveWorker = defaultWorkers[0];
+            }
+
             if (!hiveWorker) {
-                const anyWorkers: [HiveWorker, any][] = this.workers.filter(
+                const anyWorkers: [HiveWorker, any][] = this.registeredWorkers.filter(
                     (d: [HiveWorker, any]) => d[0].type === type && d[0].enabled === true
                 );
 
@@ -111,7 +91,7 @@ export class CommonStore {
                 }
             }
         } else {
-            hiveWorker = this.workers.find(
+            hiveWorker = this.registeredWorkers.find(
                 (d: [HiveWorker, any]) => d[0].type === type && d[0].name === name && d[0].enabled === true
             );
 
@@ -123,7 +103,7 @@ export class CommonStore {
         return hiveWorker[1] as T;
     };
 
-    public registerWorker = async (hiveWorker: HiveWorker): Promise<void> => {
+    public pushWorker = async (hiveWorker: HiveWorker): Promise<void> => {
         if (!hiveWorker.importPath || hiveWorker.importPath === "") {
             throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`);
         }
@@ -133,6 +113,6 @@ export class CommonStore {
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).afterInit());
 
-        this.workers.push([hiveWorker, newWorkerInstance]);
+        this.registeredWorkers.push([hiveWorker, newWorkerInstance]);
     };
 }

@@ -2,12 +2,12 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLog
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { assert } from "chai";
 import fs from "fs";
 import { serializeError } from "serialize-error";
 import ElasticLogWorker from "..";
 import packageJson from "../package.json";
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 
 const getConfig = function (): ServerSettings | undefined {
     try {
@@ -41,14 +41,16 @@ describe("log worker tests", function () {
             this.skip();
         }
 
-        CommonStore.getInstance().clearWorkers();
+        NodeServiceFactory.workerService.clearWorkers();
         settings = config;
     });
 
     const init = async function (): Promise<void> {
         try {
-            await AwaitHelper.execute(CommonStore.getInstance().initWorkers(settings.workers));
-            const newWorker = CommonStore.getInstance().workers.find((x) => x[0].package === packageJson.name);
+            await AwaitHelper.execute(NodeServiceFactory.workerService.initWorkers(settings.workers));
+            const newWorker = NodeServiceFactory.workerService.registeredWorkers.find(
+                (x) => x[0].package === packageJson.name
+            );
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];

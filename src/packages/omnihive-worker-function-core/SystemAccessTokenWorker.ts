@@ -1,12 +1,11 @@
-import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
-import swaggerUi from "swagger-ui-express";
 import { serializeError } from "serialize-error";
-
+import swaggerUi from "swagger-ui-express";
 class SystemAccessTokenRequest {
     clientId!: string;
     clientSecret!: string;
@@ -21,7 +20,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
 
     public execute = async (_headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+            NodeServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {

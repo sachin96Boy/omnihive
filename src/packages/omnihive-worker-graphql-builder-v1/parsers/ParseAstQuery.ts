@@ -1,3 +1,4 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
@@ -6,12 +7,10 @@ import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWork
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { ConverterSqlInfo } from "@withonevision/omnihive-core/models/ConverterSqlInfo";
-import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import {
     FieldNode,
     GraphQLArgument,
@@ -32,7 +31,6 @@ export class ParseAstQuery {
     private logWorker!: ILogWorker;
     private databaseWorker!: IDatabaseWorker;
     private encryptionWorker!: IEncryptionWorker;
-    private fileSystemWorker!: IFileSystemWorker;
     private cacheWorker!: ICacheWorker | undefined;
     private dateWorker!: IDateWorker | undefined;
     private parentPath!: GraphQLField<any, any>;
@@ -50,18 +48,8 @@ export class ParseAstQuery {
         cacheSetting: string,
         cacheTime: string
     ): Promise<any> => {
-        const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<
-            IFileSystemWorker | undefined
-        >(CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
-
-        if (!fileSystemWorker) {
-            throw new Error(
-                "FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker."
-            );
-        }
-
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (!logWorker) {
@@ -69,18 +57,18 @@ export class ParseAstQuery {
         }
 
         const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+            NodeServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {
             throw new Error(
-                "FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker."
+                "Database Worker Not Defined.  This graph converter will not work without a database worker."
             );
         }
 
         const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<
             IEncryptionWorker | undefined
-        >(CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+        >(NodeServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if (!encryptionWorker) {
             throw new Error(
@@ -89,17 +77,16 @@ export class ParseAstQuery {
         }
 
         this.cacheWorker = await AwaitHelper.execute<ICacheWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ICacheWorker | undefined>(HiveWorkerType.Cache)
+            NodeServiceFactory.workerService.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache)
         );
 
         this.dateWorker = await AwaitHelper.execute<IDateWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IDateWorker | undefined>(HiveWorkerType.Date)
+            NodeServiceFactory.workerService.getWorker<IDateWorker | undefined>(HiveWorkerType.Date)
         );
 
         this.logWorker = logWorker;
         this.databaseWorker = databaseWorker;
         this.encryptionWorker = encryptionWorker;
-        this.fileSystemWorker = fileSystemWorker;
 
         const converterInfo: ConverterSqlInfo = await this.getSqlFromGraph(resolveInfo);
 
@@ -596,12 +583,16 @@ export class ParseAstQuery {
             return;
         }
 
-        const schemaFilePath: string = `${this.fileSystemWorker.getCurrentExecutionDirectory()}/${
-            OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
-        }/connections/${this.databaseWorker.config.name}.json`;
-        const jsonSchema: any = JSON.parse(this.fileSystemWorker.readFile(schemaFilePath));
+        const schema: ConnectionSchema | undefined = NodeServiceFactory.connectionService.getSchema(
+            this.databaseWorker.config.name
+        );
 
-        let tableSchema: TableSchema[] = jsonSchema["tables"];
+        let tableSchema: TableSchema[] = [];
+
+        if (schema) {
+            tableSchema = schema.tables;
+        }
+
         tableSchema = tableSchema.filter((tableSchema: TableSchema) => tableSchema.tableName === tableName);
 
         const validArgs: any = {};

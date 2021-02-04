@@ -1576,7 +1576,6 @@ __metadata:
     "@types/figlet": 1.2.1
     "@types/react": 17.0.0
     "@types/react-dom": 17.0.0
-    "@withonevision/omnihive": "workspace:*"
     "@withonevision/omnihive-core": "workspace:*"
     "@withonevision/omnihive-core-node": "workspace:*"
     "@withonevision/omnihive-worker-date-dayjs": "workspace:*"
@@ -1956,7 +1955,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive@workspace:*, @withonevision/omnihive@workspace:src/packages/omnihive":
+"@withonevision/omnihive@workspace:src/packages/omnihive":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive@workspace:src/packages/omnihive"
   dependencies:

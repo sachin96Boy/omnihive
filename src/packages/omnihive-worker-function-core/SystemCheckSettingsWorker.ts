@@ -1,11 +1,11 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 
 class SystemCheckSettingsRequest {
     adminPassword!: string;
@@ -21,7 +21,7 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
 
     public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
+            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {
@@ -120,7 +120,7 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== NodeServiceFactory.configurationService.settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== CoreServiceFactory.configurationService.settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
 
@@ -129,7 +129,7 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
         }
 
         if (
-            paramsStructured.serverGroupName !== NodeServiceFactory.configurationService.settings.config.serverGroupName
+            paramsStructured.serverGroupName !== CoreServiceFactory.configurationService.settings.config.serverGroupName
         ) {
             throw new Error(`Request Denied`);
         }

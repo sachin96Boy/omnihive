@@ -1,12 +1,14 @@
 import chalk from "chalk";
 import childProcess from "child_process";
 import figlet from "figlet";
-import fs, { copyFileSync, readdirSync, statSync } from "fs";
+import fse from "fs-extra";
 import { join } from "path";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import semver from "semver";
 import yargs from "yargs";
 import { Client } from "@elastic/elasticsearch";
+import readPkg from "read-pkg";
+import writePkg from "write-pkg";
 
 type Version = {
     main: string;
@@ -97,11 +99,11 @@ const build = async (): Promise<void> => {
     console.log();
     console.log(chalk.yellow("Clearing existing dist directory..."));
 
-    fs.rmSync("./dist", { recursive: true, force: true });
+    fse.rmSync("./dist", { recursive: true, force: true });
 
-    const directories: string[] = readdirSync("./src/packages").filter((f) =>
-        statSync(join("./src/packages", f)).isDirectory()
-    );
+    const directories: string[] = fse
+        .readdirSync("./src/packages")
+        .filter((f) => fse.statSync(join("./src/packages", f)).isDirectory());
 
     console.log();
     console.log(chalk.blue("Building core libraries..."));
@@ -147,22 +149,35 @@ const build = async (): Promise<void> => {
     console.log(chalk.blue("Building server..."));
 
     directories
-        .filter((value: string) => value === "omnihive-server")
+        .filter((value: string) => value === "omnihive")
         .forEach((value: string) => {
             console.log(chalk.yellow(`Building main server package ${value}...`));
             execSpawn("yarn run build", `./src/packages/${value}`);
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 
-    console.log(chalk.yellow("Copying NextJS OmniHive files..."));
+    console.log(chalk.yellow("Copying miscellaneous OmniHive files..."));
 
-    const nextJsFiles = ["next-env.d.ts", "next.config.js", "postcss.config.js", "tailwind.config.js"];
+    const miscFiles = ["next-env.d.ts", "next.config.js", "postcss.config.js", "tailwind.config.js", ".npmignore"];
 
-    nextJsFiles.forEach((value: string) => {
-        copyFileSync(`./src/packages/omnihive-server/${value}`, `./dist/packages/omnihive-server/${value}`);
+    miscFiles.forEach((value: string) => {
+        fse.copyFileSync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
     });
 
-    console.log(chalk.greenBright("Done copying NextJS OmniHive files..."));
+    const miscFolders = ["styles", "pages"];
+
+    miscFolders.forEach((value: string) => {
+        fse.copySync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
+    });
+
+    console.log(chalk.greenBright("Done copying miscellaneous OmniHive files..."));
+    console.log(chalk.yellow("Adding OmniHive postinstall to package.json..."));
+
+    const distPackageJson: readPkg.NormalizedPackageJson = await readPkg({ cwd: "./dist/packages/omnihive" });
+    distPackageJson.scripts.postinstall = "next build";
+    await writePkg("./dist/packages/omnihive", distPackageJson);
+
+    console.log(chalk.greenBright("Done adding OmniHive postinstall to package.json..."));
 
     console.log(chalk.blue("Done building server..."));
     console.log();
@@ -314,11 +329,22 @@ const build = async (): Promise<void> => {
             });
 
         console.log(chalk.blue("Done publishing workers..."));
+        console.log();
+        console.log(chalk.blue("Publishing server..."));
+
+        directories
+            .filter((value: string) => value.startsWith("omnihive"))
+            .forEach((value: string) => {
+                console.log(chalk.yellow(`Publishing ${value}...`));
+                execSpawn("npm publish --access public", `./dist/packages/${value}`);
+                console.log(chalk.greenBright(`Done publishing ${value}...`));
+            });
+
+        console.log(chalk.blue("Done publishing server..."));
     }
 
     console.log();
     console.log(chalk.hex("#FFC022#")("Done building OmniHive monorepo..."));
-
     console.log();
     process.exit();
 };

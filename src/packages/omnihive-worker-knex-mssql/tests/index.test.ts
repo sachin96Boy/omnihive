@@ -1,5 +1,6 @@
 import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
@@ -19,7 +20,7 @@ describe("mssql database worker tests", function () {
             this.skip();
         }
 
-        NodeServiceFactory.workerService.clearWorkers();
+        CoreServiceFactory.workerService.clearWorkers();
         settings = config;
     });
 
@@ -27,8 +28,8 @@ describe("mssql database worker tests", function () {
 
     const init = async function (testingConfigs: any): Promise<void> {
         try {
-            await AwaitHelper.execute(NodeServiceFactory.workerService.initWorkers(testingConfigs));
-            const newWorker = NodeServiceFactory.workerService.registeredWorkers.find(
+            await AwaitHelper.execute(CoreServiceFactory.workerService.initWorkers(testingConfigs));
+            const newWorker = CoreServiceFactory.workerService.registeredWorkers.find(
                 (x) => x[0].package === packageJson.name
             );
 
@@ -46,7 +47,7 @@ describe("mssql database worker tests", function () {
 
     describe("Init Functions", function () {
         beforeEach(async function () {
-            NodeServiceFactory.workerService.clearWorkers();
+            CoreServiceFactory.workerService.clearWorkers();
         });
 
         it("test valid init", async function () {

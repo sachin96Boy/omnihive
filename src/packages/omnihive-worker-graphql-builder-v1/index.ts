@@ -1,7 +1,7 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
 import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
@@ -31,7 +31,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
     public async afterInit(): Promise<void> {
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (!logWorker) {
@@ -40,7 +40,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<
             IEncryptionWorker | undefined
-        >(NodeServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+        >(CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if (!encryptionWorker) {
             throw new Error(
@@ -57,7 +57,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             throw new Error("Connection Schema is Undefined.");
         }
 
-        const enabledWorkers: [HiveWorker, any][] = NodeServiceFactory.workerService.registeredWorkers.filter(
+        const enabledWorkers: [HiveWorker, any][] = CoreServiceFactory.workerService.registeredWorkers.filter(
             (worker: [HiveWorker, any]) => worker[0].enabled === true
         );
 
@@ -77,6 +77,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-core/interfaces/ITokenWorker");`);
         builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`);
         builder.appendLine(
+            `var { CoreServiceFactory } = require("@withonevision/omnihive-core/factories/CoreServiceFactory");`
+        );
+        builder.appendLine(
             `var { NodeServiceFactory } = require("@withonevision/omnihive-core-node/factories/NodeServiceFactory");`
         );
         builder.appendLine(
@@ -91,7 +94,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Token checker
         builder.appendLine(`const accessTokenChecker = async (accessToken) => {`);
         builder.appendLine(
-            `\tconst tokenWorker = await AwaitHelper.execute(NodeServiceFactory.workerService.getWorker(HiveWorkerType.Token));`
+            `\tconst tokenWorker = await AwaitHelper.execute(CoreServiceFactory.workerService.getWorker(HiveWorkerType.Token));`
         );
         builder.appendLine();
         builder.appendLine(`\tif (accessToken) {`);

@@ -8,11 +8,11 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "@withonevision/omnihive-core-node": "workspace:*",
         "launchdarkly-node-server-sdk": "5.14.0",
         "serialize-error": "8.0.1"
     },
     "devDependencies": {
+        "@withonevision/omnihive-core-node": "workspace:*",
         "chai": "4.2.0",
         "typescript": "4.1.3"
     }

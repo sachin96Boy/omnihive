@@ -5,7 +5,6 @@
 .next/
 
 # Override root .gitignore
-!index.js
 !next-env.d.ts
 !next.config.js
 !postcss.config.js

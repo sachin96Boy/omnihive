@@ -1,4 +1,4 @@
-import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
+import { ConnectionSchema } from "../models/ConnectionSchema";
 
 export class ConnectionService {
     private static singleton: ConnectionService;

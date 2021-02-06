@@ -1,5 +1,5 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
@@ -21,7 +21,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
 
     public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
+            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {
@@ -40,12 +40,12 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
             }
 
             const adminPubSubServerWorkerName: string | undefined =
-                NodeServiceFactory.configurationService.settings.constants["adminPubSubServerWorkerInstance"];
+                CoreServiceFactory.configurationService.settings.constants["adminPubSubServerWorkerInstance"];
 
             const adminPubSubServer: IPubSubServerWorker | undefined = await AwaitHelper.execute<
                 IPubSubServerWorker | undefined
             >(
-                NodeServiceFactory.workerService.getWorker<IPubSubServerWorker>(
+                CoreServiceFactory.workerService.getWorker<IPubSubServerWorker>(
                     HiveWorkerType.PubSubServer,
                     adminPubSubServerWorkerName
                 )
@@ -56,7 +56,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
             }
 
             adminPubSubServer.emit(
-                NodeServiceFactory.configurationService.settings.config.serverGroupName,
+                CoreServiceFactory.configurationService.settings.config.serverGroupName,
                 "server-reset-request",
                 {
                     reset: true,
@@ -146,7 +146,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== NodeServiceFactory.configurationService.settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== CoreServiceFactory.configurationService.settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     };

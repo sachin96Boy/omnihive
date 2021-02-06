@@ -1,6 +1,6 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
@@ -65,7 +65,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     public async afterInit(): Promise<void> {
         try {
             this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-                NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+                CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
             );
 
             if (!this.logWorker) {

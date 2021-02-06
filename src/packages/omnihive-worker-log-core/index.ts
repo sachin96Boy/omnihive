@@ -1,6 +1,6 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
@@ -16,7 +16,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
     public async afterInit(): Promise<void> {
         this.featureWorker = await AwaitHelper.execute<IFeatureWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature)
+            CoreServiceFactory.workerService.getWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature)
         );
 
         if (!this.featureWorker) {
@@ -37,10 +37,10 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         }
 
         const adminPubSubServerWorkerName: string | undefined =
-            NodeServiceFactory.configurationService.settings.constants["adminPubSubServerWorkerInstance"];
+            CoreServiceFactory.configurationService.settings.constants["adminPubSubServerWorkerInstance"];
 
         const adminPubSubServer = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<IPubSubServerWorker>(
+            CoreServiceFactory.workerService.getWorker<IPubSubServerWorker>(
                 HiveWorkerType.PubSubServer,
                 adminPubSubServerWorkerName
             )
@@ -49,7 +49,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         if (adminPubSubServer) {
             try {
                 adminPubSubServer.emit(
-                    NodeServiceFactory.configurationService.settings.config.serverGroupName,
+                    CoreServiceFactory.configurationService.settings.config.serverGroupName,
                     "server-log-entry",
                     {
                         entryNumber: this.logEntryNumber,
@@ -62,7 +62,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         }
 
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (logWorker) {

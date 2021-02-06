@@ -1,7 +1,7 @@
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { TestConfigSettings } from "@withonevision/omnihive-core/models/TestConfigSettings";
 import { TestSettings } from "@withonevision/omnihive-core/models/TestSettings";
-import fs from "fs";
+import fse from "fs-extra";
 
 export class TestService {
     private static singleton: TestService;
@@ -25,7 +25,7 @@ export class TestService {
 
             const config: TestSettings = ObjectHelper.create(
                 TestSettings,
-                JSON.parse(fs.readFileSync(`${process.env.omnihive_test_settings}`, { encoding: "utf8" }))
+                JSON.parse(fse.readFileSync(`${process.env.omnihive_test_settings}`, { encoding: "utf8" }))
             );
 
             return config.constants;
@@ -42,7 +42,7 @@ export class TestService {
 
             const config: TestSettings = ObjectHelper.create(
                 TestSettings,
-                JSON.parse(fs.readFileSync(`${process.env.omnihive_test_settings}`, { encoding: "utf8" }))
+                JSON.parse(fse.readFileSync(`${process.env.omnihive_test_settings}`, { encoding: "utf8" }))
             );
 
             return config.tests.find(

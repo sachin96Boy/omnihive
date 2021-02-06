@@ -1,6 +1,6 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
@@ -49,7 +49,7 @@ export class ParseAstQuery {
         cacheTime: string
     ): Promise<any> => {
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (!logWorker) {
@@ -57,7 +57,7 @@ export class ParseAstQuery {
         }
 
         const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+            CoreServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {
@@ -68,7 +68,7 @@ export class ParseAstQuery {
 
         const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<
             IEncryptionWorker | undefined
-        >(NodeServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+        >(CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if (!encryptionWorker) {
             throw new Error(
@@ -77,11 +77,11 @@ export class ParseAstQuery {
         }
 
         this.cacheWorker = await AwaitHelper.execute<ICacheWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache)
+            CoreServiceFactory.workerService.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache)
         );
 
         this.dateWorker = await AwaitHelper.execute<IDateWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<IDateWorker | undefined>(HiveWorkerType.Date)
+            CoreServiceFactory.workerService.getWorker<IDateWorker | undefined>(HiveWorkerType.Date)
         );
 
         this.logWorker = logWorker;
@@ -583,7 +583,7 @@ export class ParseAstQuery {
             return;
         }
 
-        const schema: ConnectionSchema | undefined = NodeServiceFactory.connectionService.getSchema(
+        const schema: ConnectionSchema | undefined = CoreServiceFactory.connectionService.getSchema(
             this.databaseWorker.config.name
         );
 

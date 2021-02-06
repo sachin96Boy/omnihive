@@ -1,6 +1,6 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
@@ -74,7 +74,7 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
 
     public async afterInit(): Promise<void> {
         this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (!this.logWorker) {

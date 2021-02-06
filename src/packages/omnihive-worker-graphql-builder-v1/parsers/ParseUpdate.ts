@@ -1,5 +1,5 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
@@ -23,7 +23,7 @@ export class ParseUpdate {
         }
 
         const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+            CoreServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {
@@ -32,7 +32,7 @@ export class ParseUpdate {
             );
         }
 
-        const schema: ConnectionSchema | undefined = NodeServiceFactory.connectionService.getSchema(workerName);
+        const schema: ConnectionSchema | undefined = CoreServiceFactory.connectionService.getSchema(workerName);
         let tableSchema: TableSchema[] = [];
 
         if (schema) {

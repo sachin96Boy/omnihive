@@ -1,4 +1,5 @@
 import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { TestConfigSettings } from "@withonevision/omnihive-core/models/TestConfigSettings";
 import { assert } from "chai";
@@ -18,14 +19,14 @@ describe("file system worker tests", function () {
             this.skip();
         }
 
-        NodeServiceFactory.workerService.clearWorkers();
+        CoreServiceFactory.workerService.clearWorkers();
         settings = config;
     });
 
     const init = async function (): Promise<void> {
         try {
-            await AwaitHelper.execute(NodeServiceFactory.workerService.initWorkers(settings.workers));
-            const newWorker = NodeServiceFactory.workerService.registeredWorkers.find(
+            await AwaitHelper.execute(CoreServiceFactory.workerService.initWorkers(settings.workers));
+            const newWorker = CoreServiceFactory.workerService.registeredWorkers.find(
                 (x) => x[0].package === packageJson.name
             );
 

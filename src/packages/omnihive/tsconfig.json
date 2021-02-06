@@ -1,3 +1,17 @@
 {
-    "extends": "../../../tsconfig.json"
+    "extends": "../../../tsconfig.json",
+    "compilerOptions": {
+        "allowJs": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": true,
+        "isolatedModules": true,
+        "jsx": "preserve"
+    },
+    "references": [
+        {
+            "path": "../../../"
+        }
+    ],
+    "include": ["**/*.tsx", "**/*.css", "**/*.js", "**/*.d.ts", "pages/**/*", "styles/**/*"],
+    "exclude": ["node_modules", ".next", ".omnihive"]
 }

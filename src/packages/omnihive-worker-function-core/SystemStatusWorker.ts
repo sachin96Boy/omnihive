@@ -1,5 +1,6 @@
 import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
@@ -20,7 +21,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
 
     public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            NodeServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
+            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {
@@ -130,7 +131,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== NodeServiceFactory.configurationService.settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== CoreServiceFactory.configurationService.settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     };

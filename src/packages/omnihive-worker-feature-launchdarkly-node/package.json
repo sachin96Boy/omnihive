@@ -1,0 +1,19 @@
+{
+    "name": "@withonevision/omnihive-worker-feature-launchdarkly-node",
+    "version": "0.0.1",
+    "description": "OmniHive Launch Darkly Node Feature Worker",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@withonevision/omnihive-core": "workspace:*",
+        "launchdarkly-node-server-sdk": "5.14.0",
+        "serialize-error": "8.0.1"
+    },
+    "devDependencies": {
+        "@withonevision/omnihive-core-node": "workspace:*",
+        "chai": "4.2.0",
+        "typescript": "4.1.3"
+    }
+}

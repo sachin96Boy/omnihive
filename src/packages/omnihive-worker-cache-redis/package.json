@@ -12,7 +12,8 @@
         "serialize-error": "8.0.1"
     },
     "devDependencies": {
-        "@types/ioredis": "4.19.2",
+        "@types/ioredis": "4.19.3",
+        "@withonevision/omnihive-core-node": "workspace:*",
         "chai": "4.2.0",
         "typescript": "4.1.3"
     }

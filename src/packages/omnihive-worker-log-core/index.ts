@@ -1,33 +1,46 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
     public logEntryNumber: number = 0;
+    public featureWorker!: IFeatureWorker | undefined;
+
+    public async afterInit(): Promise<void> {
+        this.featureWorker = await AwaitHelper.execute<IFeatureWorker | undefined>(
+            CoreServiceFactory.workerService.getWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature)
+        );
+
+        if (!this.featureWorker) {
+            throw new Error("Feature Worker Not Defined.  Log worker Will Not Function Without Feature Worker.");
+        }
+    }
 
     public write = async (logLevel: OmniHiveLogLevel, logString: string): Promise<void> => {
         const formattedLogString = `(${dayjs().format(
             "YYYY-MM-DD HH:mm:ss"
         )}) OmniHive Server ${os.hostname()} => ${logString}`;
 
-        if (CommonStore.getInstance().settings.config.developerMode) {
+        const consoleOnlyLogging: boolean = (await this.featureWorker?.get<boolean>("consoleOnlyLogging")) ?? false;
+
+        if (consoleOnlyLogging) {
             this.chalkConsole(logLevel, formattedLogString);
             return;
         }
 
-        const adminPubSubServerWorkerName: string | undefined = CommonStore.getInstance().settings.constants[
-            "adminPubSubServerWorkerInstance"
-        ];
+        const adminPubSubServerWorkerName: string | undefined =
+            CoreServiceFactory.configurationService.settings.constants["adminPubSubServerWorkerInstance"];
 
         const adminPubSubServer = await AwaitHelper.execute<IPubSubServerWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IPubSubServerWorker>(
+            CoreServiceFactory.workerService.getWorker<IPubSubServerWorker>(
                 HiveWorkerType.PubSubServer,
                 adminPubSubServerWorkerName
             )
@@ -35,17 +48,21 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
         if (adminPubSubServer) {
             try {
-                adminPubSubServer.emit(CommonStore.getInstance().settings.config.serverGroupName, "server-log-entry", {
-                    entryNumber: this.logEntryNumber,
-                    log: formattedLogString,
-                });
+                adminPubSubServer.emit(
+                    CoreServiceFactory.configurationService.settings.config.serverGroupName,
+                    "server-log-entry",
+                    {
+                        entryNumber: this.logEntryNumber,
+                        log: formattedLogString,
+                    }
+                );
             } catch {
                 this.chalkConsole(OmniHiveLogLevel.Warn, "Pub sub server log could not be synchronized");
             }
         }
 
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (logWorker) {

@@ -8,13 +8,14 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "knex": "0.21.16",
+        "knex": "0.21.17",
         "mssql": "6.3.1",
         "serialize-error": "8.0.1",
-        "tedious": "11.0.1"
+        "tedious": "11.0.3"
     },
     "devDependencies": {
         "@types/mssql": "6.0.7",
+        "@withonevision/omnihive-core-node": "workspace:*",
         "chai": "4.2.0",
         "typescript": "4.1.3"
     }

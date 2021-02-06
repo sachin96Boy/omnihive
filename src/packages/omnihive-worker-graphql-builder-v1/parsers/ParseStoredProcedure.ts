@@ -1,10 +1,9 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { FieldNode, GraphQLResolveInfo, SelectionNode } from "graphql";
 
 export class ParseStoredProcedure {
@@ -12,31 +11,23 @@ export class ParseStoredProcedure {
         workerName: string,
         resolveInfo: GraphQLResolveInfo
     ): Promise<{ procName: string; results: any[][] }[]> => {
-        const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<
-            IFileSystemWorker | undefined
-        >(CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
-
-        if (!fileSystemWorker) {
-            throw new Error(
-                "FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker."
-            );
-        }
-
         const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+            CoreServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {
             throw new Error(
-                "FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker."
+                "Database Worker Not Defined.  This graph converter will not work without a database worker."
             );
         }
 
-        const schemaFilePath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${
-            OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
-        }/connections/${workerName}.json`;
-        const jsonSchema: any = JSON.parse(fileSystemWorker.readFile(schemaFilePath));
-        const fullSchema: StoredProcSchema[] = jsonSchema["storedProcs"];
+        const schema: ConnectionSchema | undefined = CoreServiceFactory.connectionService.getSchema(workerName);
+        let fullSchema: StoredProcSchema[] = [];
+
+        if (schema) {
+            fullSchema = schema.storedProcs;
+        }
+
         const response: { procName: string; results: any[][] }[] = [];
 
         const storedProcCall: readonly SelectionNode[] = resolveInfo.operation.selectionSet.selections;

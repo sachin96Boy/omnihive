@@ -16,4 +16,10 @@ nodemon.*.json
 !styles/
 
 # Make sure templates are included
-!templates/ 
+!templates/
+
+# TS
+!*.d.ts
+!*.d.ts.map
+!*.js.map
+!*.map

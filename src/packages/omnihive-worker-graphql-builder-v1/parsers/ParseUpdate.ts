@@ -1,10 +1,9 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
-import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import knex, { QueryBuilder } from "knex";
 
 export class ParseUpdate {
@@ -24,7 +23,7 @@ export class ParseUpdate {
         }
 
         const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+            CoreServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
         );
 
         if (!databaseWorker) {
@@ -33,22 +32,13 @@ export class ParseUpdate {
             );
         }
 
-        const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<
-            IFileSystemWorker | undefined
-        >(CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
+        const schema: ConnectionSchema | undefined = CoreServiceFactory.connectionService.getSchema(workerName);
+        let tableSchema: TableSchema[] = [];
 
-        if (!fileSystemWorker) {
-            throw new Error(
-                "FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker."
-            );
+        if (schema) {
+            tableSchema = schema.tables;
         }
 
-        const schemaFilePath: string = `${fileSystemWorker.getCurrentExecutionDirectory()}/${
-            OmniHiveConstants.SERVER_OUTPUT_DIRECTORY
-        }/connections/${workerName}.json`;
-        const jsonSchema: any = JSON.parse(fileSystemWorker.readFile(schemaFilePath));
-
-        let tableSchema: TableSchema[] = jsonSchema["tables"];
         tableSchema = tableSchema.filter((tableSchema: TableSchema) => tableSchema.tableName === tableName);
 
         const queryBuilder: QueryBuilder = (databaseWorker.connection as knex).queryBuilder();

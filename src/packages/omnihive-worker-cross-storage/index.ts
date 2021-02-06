@@ -4,9 +4,8 @@ import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncr
 import { IStorageWorker } from "@withonevision/omnihive-core/interfaces/IStorageWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import { CrossStorageClient, CrossStorageClientOptions } from "cross-storage";
-
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 export class CrossStorageStorageWorkerMetadata {
     public hubLocation: string = "";
     public keyPrefix: string = "";
@@ -35,7 +34,7 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
 
     public async afterInit(): Promise<void> {
         this.encryptionWorker = await AwaitHelper.execute<IEncryptionWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption)
+            CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption)
         );
 
         if (!this.encryptionWorker) {

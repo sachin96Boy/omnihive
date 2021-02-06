@@ -8,6 +8,6 @@
     "**/test/**",
     "**/packages/**/.next",
     "**/packages/**/.omnihive",
-    "**/dist/**
+    "**/dist/**"
   ]
 }

@@ -65,7 +65,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
         try {
             // Start setting up server
-            const app = await NodeServiceFactory.serverService.getCleanAppServer();
+            const app = await NodeServiceFactory.appService.getCleanAppServer();
 
             logWorker.write(OmniHiveLogLevel.Info, `Graph Schema Folder Reset`);
             logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Written`);
@@ -477,20 +477,20 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             }
 
             logWorker.write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
-            NodeServiceFactory.serverService.serverStatus = ServerStatus.Online;
+            NodeServiceFactory.appService.serverStatus = ServerStatus.Online;
 
             app.get("/", (_req, res) => {
                 res.setHeader("Content-Type", "application/json");
                 return res.status(200).json({
-                    status: NodeServiceFactory.serverService.serverStatus,
-                    error: NodeServiceFactory.serverService.serverError,
+                    status: NodeServiceFactory.appService.serverStatus,
+                    error: NodeServiceFactory.appService.serverError,
                 });
             });
 
             logWorker.write(OmniHiveLogLevel.Info, `New Server Built`);
 
             // Rebuild server
-            NodeServiceFactory.serverService.appServer = app;
+            NodeServiceFactory.appService.appServer = app;
         } catch (err) {
             logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
             throw new Error(err);

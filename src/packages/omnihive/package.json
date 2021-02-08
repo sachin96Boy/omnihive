@@ -8,10 +8,9 @@
         "url": "https://www.withone.vision",
         "email": "developers@withone.vision"
     },
-    "main": "./omnihive.js",
-    "bin": {
-        "@withonevision/omnihive": "./omnihive.js",
-        "omnihive": "./omnihive.js"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "publishConfig": {
         "access": "public"
@@ -20,16 +19,8 @@
         "OmniHive",
         "With One Vision"
     ],
-    "files": [
-        "bin/",
-        "pages/",
-        "styles/",
-        "templates/",
-        "next-env.d.ts",
-        "next.config.js",
-        "postcss.config.js",
-        "tailwind.config.js"
-    ],
+    "main": "./omnihive.js",
+    "bin": "./omnihive.js",
     "scripts": {
         "build": "tsc",
         "server:debug": "nodemon --no-stdin --config ./nodemon.server.json"
@@ -47,28 +38,18 @@
         "@withonevision/omnihive-worker-log-core": "workspace:*",
         "@withonevision/omnihive-worker-server-v1": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",
-        "autoprefixer": "10.2.4",
         "chalk": "4.1.0",
         "dotenv": "8.2.0",
         "figlet": "1.5.0",
         "fs-extra": "9.1.0",
         "graphql": "15.5.0",
-        "next": "10.0.6",
-        "postcss": "8.2.4",
-        "postcss-import": "14.0.0",
-        "postcss-preset-env": "6.7.0",
-        "react": "17.0.1",
-        "react-dom": "17.0.1",
         "read-pkg-up": "7.0.1",
         "serialize-error": "8.0.1",
-        "tailwindcss": "2.0.2",
         "yargs": "16.2.0"
     },
     "devDependencies": {
         "@types/figlet": "1.2.1",
         "@types/fs-extra": "9.0.6",
-        "@types/react": "17.0.0",
-        "@types/react-dom": "17.0.0",
         "chai": "4.2.0",
         "nodemon": "2.0.7",
         "ts-node": "9.1.1",
@@ -82,21 +63,13 @@
             "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
             "@withonevision/omnihive-worker-function-core": "workspace:*",
             "@withonevision/omnihive-worker-log-core": "workspace:*",
-            "autoprefixer": "10.2.4",
             "chalk": "4.1.0",
             "dotenv": "8.2.0",
             "figlet": "1.5.0",
             "fs-extra": "9.1.0",
             "graphql": "15.5.0",
-            "next": "10.0.6",
-            "postcss": "8.2.4",
-            "postcss-import": "14.0.0",
-            "postcss-preset-env": "6.7.0",
-            "react": "17.0.1",
-            "react-dom": "17.0.1",
             "read-pkg-up": "7.0.1",
             "serialize-error": "8.0.1",
-            "tailwindcss": "2.0.2",
             "yargs": "16.2.0"
         },
         "coreWorkers": [

@@ -38,7 +38,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             if (!verified) {
                 throw new Error("Invalid Access Token");
             }
-            return [NodeServiceFactory.serverService.serverStatus, 200];
+            return [NodeServiceFactory.appService.serverStatus, 200];
         } catch (e) {
             return [{ error: serializeError(e) }, 400];
         }

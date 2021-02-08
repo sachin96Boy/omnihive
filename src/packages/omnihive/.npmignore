@@ -1,19 +1,5 @@
-# Ignore OmniHive specific
-.omnihive/
-
-# Ignore NextJS compile
-.next/
-
 # Ignore Miscellaneous
 nodemon.*.json
-
-# Make sure Next is included
-!next-env.d.ts
-!next.config.js
-!postcss.config.js
-!tailwind.config.js
-!pages/
-!styles/
 
 # Make sure templates are included
 !templates/

@@ -6,9 +6,11 @@ import chalk from "chalk";
 import dotenv from "dotenv";
 import figlet from "figlet";
 import fse from "fs-extra";
+import inquirer from "inquirer";
 import yargs from "yargs";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
+import crypto from "crypto";
 
 const init = async () => {
     if (!process.env.omnihive_settings) {
@@ -21,7 +23,7 @@ const init = async () => {
         .help(false)
         .version(false)
         .strict()
-        .command("server", "Server Runner", (args) => {
+        .command(["*", "server"], "Server Runner", (args) => {
             return args
                 .option("settings", {
                     alias: "s",
@@ -94,23 +96,110 @@ const init = async () => {
 
                     return true;
                 });
-        }).argv;
+        })
+        .command("init", "Init a new instance of OmniHive").argv;
 
     clear();
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
-    if (!args.argv.settings && !process.env.omnihive_settings) {
+    let finalSettings: string | undefined = undefined;
+
+    if (args.argv._[0] === "init") {
+        console.log(chalk.yellow("Let's get an instance set up and running for you!"));
+        console.log();
+        const answers = await inquirer.prompt([
+            {
+                type: "input",
+                name: "path",
+                message: "Where do you want to save the setting file?",
+                default: `${process.cwd()}/omnihive_settings.json`,
+                validate: (value) => {
+                    try {
+                        const path: string = `${value as string}`;
+                        const exists: boolean = fse.existsSync(path);
+
+                        if (!exists) {
+                            return true;
+                        }
+
+                        return "This file path already exists.  Please choose a different file path.";
+                    } catch {
+                        return "This answer generated an unknown error.  Please try again.";
+                    }
+                },
+            },
+            {
+                type: "number",
+                name: "webPort",
+                message: "What port number do you want for the web server (default 3001)?",
+                default: 3001,
+            },
+            {
+                type: "number",
+                name: "adminPort",
+                message: "What port number do you want for the admin server (default 7205)?",
+                default: 7205,
+            },
+            {
+                type: "input",
+                name: "rootUrl",
+                message: "What is your root URL with the port (default http://localhost:3001)?",
+                default: "http://localhost:3001",
+                validate: (value) => {
+                    try {
+                        const url = new URL(value);
+
+                        if (url) {
+                            return true;
+                        } else {
+                            return "This URL is not valid.  Try a different URL.";
+                        }
+                    } catch {
+                        return "This URL is not valid.  Try a different URL.";
+                    }
+                },
+            },
+        ]);
+
+        const settings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
+            ServerSettings,
+            JSON.parse(fse.readFileSync(`${process.cwd()}/templates/default_config.json`, { encoding: "utf8" }))
+        );
+
+        settings.config.adminPassword = crypto.randomBytes(32).toString("hex");
+        settings.config.serverGroupName = crypto.randomBytes(32).toString("hex");
+
+        settings.constants.ohEncryptionKey = crypto.randomBytes(16).toString("hex");
+        settings.constants.ohTokenAudience = crypto.randomBytes(32).toString("hex");
+        settings.constants.ohTokenSecret = crypto.randomBytes(32).toString("hex");
+
+        settings.config.adminPortNumber = answers.adminPort as number;
+        settings.config.webPortNumber = answers.webPort as number;
+
+        fse.writeFileSync(answers.path as string, JSON.stringify(settings));
+
+        console.log(chalk.green("OmniHive Server init complete!  Booting the server now..."));
+        console.log();
+
+        finalSettings = answers.path;
+    } else {
+        if (!args.argv.settings) {
+            finalSettings = args.argv.settings as string;
+        }
+    }
+
+    if (!finalSettings && !process.env.omnihive_settings) {
         console.log(chalk.red("Cannot find any valid settings.  Please provide env file or -s"));
         process.exit();
     }
 
     let serverSettings: ServerSettings;
 
-    if (args.argv.settings) {
+    if (finalSettings) {
         serverSettings = ObjectHelper.createStrict<ServerSettings>(
             ServerSettings,
-            JSON.parse(fse.readFileSync(args.argv.settings as string, { encoding: "utf8" }))
+            JSON.parse(fse.readFileSync(finalSettings as string, { encoding: "utf8" }))
         );
     } else {
         serverSettings = ObjectHelper.createStrict<ServerSettings>(
@@ -128,7 +217,14 @@ const init = async () => {
     }
 
     switch (args.argv._[0]) {
+        case "init":
         case "server":
+            if (args.argv._[0] === "init") {
+                console.log(
+                    chalk.yellow(`New Server Starting => Admin Password: ${serverSettings.config.adminPassword}`)
+                );
+                console.log();
+            }
             const serverService: ServerService = new ServerService();
             await serverService.run(serverSettings);
             break;

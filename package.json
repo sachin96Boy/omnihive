@@ -12,9 +12,9 @@
     "scripts": {
         "build:beta": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node -r dotenv/config -r ts-node/register ./build.ts -c beta -t prerelease",
         "build:beta:publish": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node -r dotenv/config -r ts-node/register ./build.ts -c beta -t prerelease -p",
-        "build:dev": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node -r dotenv/config -r ts-node/register ./build.ts",
+        "build:dev": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node -r dotenv/config -r ts-node/register ./build.ts -c dev -t prerelease",
         "build:dev:publish": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node -r dotenv/config -r ts-node/register ./build.ts -c dev -t prerelease -p",
-        "build:debug": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node --inspect=127.0.0.1:9228 -r dotenv/config --trace-warnings -r ts-node/register ./build.ts",
+        "build:debug": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node --inspect=127.0.0.1:9228 -r dotenv/config --trace-warnings -r ts-node/register ./build.ts -c dev -t prerelease",
         "build:main:major": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node -r dotenv/config -r ts-node/register ./build.ts -c main -t major",
         "build:main:major:publish": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node -r dotenv/config -r ts-node/register ./build.ts -c beta -t major -p",
         "build:main:minor": "DOTENV_CONFIG_PATH=\"./settings/.env\" yarn node -r dotenv/config -r ts-node/register ./build.ts -c main -t minor",

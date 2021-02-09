@@ -1,9 +1,9 @@
-import { ServerService } from "../services/ServerService";
+import { AppService } from "../services/AppService";
 import { TestService } from "../services/TestService";
 
 export class NodeServiceFactory {
-    public static get serverService(): ServerService {
-        return ServerService.getSingleton();
+    public static get appService(): AppService {
+        return AppService.getSingleton();
     }
 
     public static get testService(): TestService {

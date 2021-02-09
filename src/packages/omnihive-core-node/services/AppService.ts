@@ -4,7 +4,6 @@ import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { IHiveAccountWorker } from "@withonevision/omnihive-core/interfaces/IHiveAccountWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
@@ -18,29 +17,24 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import http, { Server } from "http";
-import next from "next";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
-import { parse } from "url";
-import NextServer from "next/dist/next-server/server/next-server";
 
-export class ServerService {
-    private static singleton: ServerService;
+export class AppService {
+    private static singleton: AppService;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
 
-    public static getSingleton = (): ServerService => {
-        if (!ServerService.singleton) {
-            ServerService.singleton = new ServerService();
+    public static getSingleton = (): AppService => {
+        if (!AppService.singleton) {
+            AppService.singleton = new AppService();
         }
 
-        return ServerService.singleton;
+        return AppService.singleton;
     };
 
-    public adminServer: NextServer | undefined = undefined;
-    public adminServerPreparing: boolean = false;
     public appServer!: express.Express;
     public serverStatus: ServerStatus = ServerStatus.Unknown;
     public serverError: any = {};
@@ -298,12 +292,6 @@ export class ServerService {
             "ohreqLogWorker"
         );
 
-        const featureWorker:
-            | IFeatureWorker
-            | undefined = await CoreServiceFactory.workerService.getWorker<IFeatureWorker>(HiveWorkerType.Feature);
-
-        const nextJsDevMode: boolean | undefined = await featureWorker?.get<boolean>("nextJsDevMode", false);
-
         // Build app
 
         const app = express();
@@ -323,47 +311,10 @@ export class ServerService {
         app.use(bodyParser.json());
         app.use(cors());
 
-        // Register admin
-
-        if (!this.adminServer && this.adminServerPreparing === false) {
-            this.adminServerPreparing = true;
-
-            const nextApp = next({ dev: nextJsDevMode ?? false });
-            nextApp.prepare().then(() => {
-                this.adminServer = nextApp;
-                this.adminServerPreparing = false;
-            });
-        }
-
-        const nextHandler = this.adminServer?.getRequestHandler();
-
-        app.get("/admin", (req, res) => {
-            if (nextHandler) {
-                if (!this.adminServer) {
-                    res.setHeader("Content-Type", "application/json");
-                    return res.status(200).json({ adminStatus: "loading" });
-                }
-
-                const parsedUrl = parse(req.url, true);
-                return nextHandler(req, res, parsedUrl);
-            }
-
-            return res.status(404);
-        });
-
-        app.get("/admin/*", (req, res) => {
-            if (nextHandler) {
-                if (!this.adminServer) {
-                    res.setHeader("Content-Type", "application/json");
-                    return res.status(200).json({ adminStatus: "loading" });
-                }
-
-                const parsedUrl = parse(req.url, true);
-                return nextHandler(req, res, parsedUrl);
-            }
-
-            return res.status(404);
-        });
+        // Setup Pug
+        app.set("view engine", "pug");
+        app.set("views", `${process.cwd()}/views`);
+        app.use("/public", express.static(`${process.cwd()}/public`));
 
         // Register system REST endpoints
 
@@ -429,7 +380,10 @@ export class ServerService {
                                 res.status(workerResponse[1]).send(true);
                             }
                         } catch (e) {
-                            res.status(500).json(serializeError(e));
+                            return res.status(500).render("500", {
+                                rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                                error: serializeError(e),
+                            });
                         }
                     }
                 );
@@ -467,7 +421,11 @@ export class ServerService {
 
         app.get("/", (_req, res) => {
             res.setHeader("Content-Type", "application/json");
-            return res.status(200).json({ status: this.serverStatus, error: this.serverError });
+            return res.status(200).render("index", {
+                rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                status: this.serverStatus,
+                error: this.serverError,
+            });
         });
 
         this.appServer = app;
@@ -489,10 +447,10 @@ export class ServerService {
         this.webServer?.removeAllListeners().close();
         this.webServer = server;
 
-        this.webServer?.listen(CoreServiceFactory.configurationService.settings.config.portNumber, () => {
+        this.webServer?.listen(CoreServiceFactory.configurationService.settings.config.webPortNumber, () => {
             logWorker.write(
                 OmniHiveLogLevel.Info,
-                `New Server Listening on process ${process.pid} using port ${CoreServiceFactory.configurationService.settings.config.portNumber}`
+                `New Server Listening on process ${process.pid} using port ${CoreServiceFactory.configurationService.settings.config.webPortNumber}`
             );
         });
 

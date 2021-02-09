@@ -6,7 +6,6 @@ RUN powershell -Command New-Item -ItemType directory -Path C:\\OmniHive
 COPY ../dist/packages/omnihive C:/OmniHive
 WORKDIR C:/OmniHive
 RUN yarn install --silent
-RUN next build
 EXPOSE 3001
 
 CMD [ "node", "app/server/omnihive.js server" ]

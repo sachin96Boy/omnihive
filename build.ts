@@ -7,8 +7,6 @@ import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import semver from "semver";
 import yargs from "yargs";
 import { Client } from "@elastic/elasticsearch";
-import readPkg from "read-pkg";
-import writePkg from "write-pkg";
 
 type Version = {
     main: string;
@@ -155,29 +153,6 @@ const build = async (): Promise<void> => {
             execSpawn("yarn run build", `./src/packages/${value}`);
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
-
-    console.log(chalk.yellow("Copying miscellaneous OmniHive files..."));
-
-    const miscFiles = ["next-env.d.ts", "next.config.js", "postcss.config.js", "tailwind.config.js", ".npmignore"];
-
-    miscFiles.forEach((value: string) => {
-        fse.copyFileSync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
-    });
-
-    const miscFolders = ["styles", "pages"];
-
-    miscFolders.forEach((value: string) => {
-        fse.copySync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
-    });
-
-    console.log(chalk.greenBright("Done copying miscellaneous OmniHive files..."));
-    console.log(chalk.yellow("Adding OmniHive postinstall to package.json..."));
-
-    const distPackageJson: readPkg.NormalizedPackageJson = await readPkg({ cwd: "./dist/packages/omnihive" });
-    distPackageJson.scripts.postinstall = "next build";
-    await writePkg("./dist/packages/omnihive", distPackageJson);
-
-    console.log(chalk.greenBright("Done adding OmniHive postinstall to package.json..."));
 
     console.log(chalk.blue("Done building server..."));
     console.log();
@@ -333,7 +308,7 @@ const build = async (): Promise<void> => {
         console.log(chalk.blue("Publishing server..."));
 
         directories
-            .filter((value: string) => value.startsWith("omnihive"))
+            .filter((value: string) => value === "omnihive")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
                 execSpawn("npm publish --access public", `./dist/packages/${value}`);

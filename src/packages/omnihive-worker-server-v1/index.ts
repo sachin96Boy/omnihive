@@ -65,7 +65,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
         try {
             // Start setting up server
-            const app = await NodeServiceFactory.serverService.getCleanAppServer();
+            const app = await NodeServiceFactory.appService.getCleanAppServer();
 
             logWorker.write(OmniHiveLogLevel.Info, `Graph Schema Folder Reset`);
             logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Written`);
@@ -451,7 +451,10 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                                         res.status(workerResponse[1]).send(true);
                                     }
                                 } catch (e) {
-                                    res.status(500).json(serializeError(e));
+                                    return res.status(500).render("500", {
+                                        rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                                        error: serializeError(e),
+                                    });
                                 }
                             }
                         );
@@ -477,20 +480,33 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             }
 
             logWorker.write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
-            NodeServiceFactory.serverService.serverStatus = ServerStatus.Online;
+            NodeServiceFactory.appService.serverStatus = ServerStatus.Online;
 
             app.get("/", (_req, res) => {
-                res.setHeader("Content-Type", "application/json");
-                return res.status(200).json({
-                    status: NodeServiceFactory.serverService.serverStatus,
-                    error: NodeServiceFactory.serverService.serverError,
+                res.status(200).render("index", {
+                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                    status: NodeServiceFactory.appService.serverStatus,
+                    error: NodeServiceFactory.appService.serverError,
+                });
+            });
+
+            app.use((_req, res) => {
+                return res
+                    .status(404)
+                    .render("404", { rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl });
+            });
+
+            app.use((err: any, _req: any, res: any, _next: any) => {
+                return res.status(500).render("500", {
+                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                    error: serializeError(err),
                 });
             });
 
             logWorker.write(OmniHiveLogLevel.Info, `New Server Built`);
 
             // Rebuild server
-            NodeServiceFactory.serverService.appServer = app;
+            NodeServiceFactory.appService.appServer = app;
         } catch (err) {
             logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
             throw new Error(err);

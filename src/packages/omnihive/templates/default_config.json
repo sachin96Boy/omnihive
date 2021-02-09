@@ -1,9 +1,10 @@
 {
     "config": {
         "adminPassword": "XXX",
+        "adminPortNumber": 7205,
         "serverGroupName": "XXX",
-        "portNumber": 3001,
-        "rootUrl": "http://localhost:3001"
+        "rootUrl": "http://localhost:3001",
+        "webPortNumber": 3001
     },
     "constants": {
         "ohEncryptionKey": "XXX",
@@ -15,7 +16,6 @@
         "graphIntrospection": false,
         "graphPlayground": true,
         "graphTracing": false,
-        "nextJsDevMode": true,
         "swagger": true
     },
     "workers": []

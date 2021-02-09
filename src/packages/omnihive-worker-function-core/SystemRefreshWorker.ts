@@ -1,7 +1,6 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
@@ -38,30 +37,6 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
             if (!verified) {
                 throw new Error("Invalid Access Token");
             }
-
-            const adminPubSubServerWorkerName: string | undefined =
-                CoreServiceFactory.configurationService.settings.constants["adminPubSubServerWorkerInstance"];
-
-            const adminPubSubServer: IPubSubServerWorker | undefined = await AwaitHelper.execute<
-                IPubSubServerWorker | undefined
-            >(
-                CoreServiceFactory.workerService.getWorker<IPubSubServerWorker>(
-                    HiveWorkerType.PubSubServer,
-                    adminPubSubServerWorkerName
-                )
-            );
-
-            if (!adminPubSubServer) {
-                throw new Error("No admin pub-sub server hive worker found");
-            }
-
-            adminPubSubServer.emit(
-                CoreServiceFactory.configurationService.settings.config.serverGroupName,
-                "server-reset-request",
-                {
-                    reset: true,
-                }
-            );
 
             return [{ message: "Server Refresh/Reset Initiated" }, 200];
         } catch (e) {

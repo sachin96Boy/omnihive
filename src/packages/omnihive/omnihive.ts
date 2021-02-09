@@ -42,21 +42,19 @@ const init = async () => {
                     alias: "ap",
                     type: "number",
                     demandOption: false,
-                    default: 7205,
                     description: "Admin port number",
                 })
                 .option("webPort", {
                     alias: "wp",
                     type: "number",
                     demandOption: false,
-                    default: 3001,
                     description: "Web port number",
                 })
                 .option("setDefault", {
                     alias: "d",
                     type: "boolean",
                     demandOption: false,
-                    default: true,
+                    default: false,
                     description: "Set given settings as the default on the next run",
                 })
                 .check((args) => {

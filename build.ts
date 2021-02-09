@@ -154,6 +154,22 @@ const build = async (): Promise<void> => {
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 
+    console.log(chalk.yellow("Copying miscellaneous OmniHive files..."));
+
+    const miscFiles = [".npmignore"];
+
+    miscFiles.forEach((value: string) => {
+        fse.copyFileSync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
+    });
+
+    const miscFolders = ["public", "views"];
+
+    miscFolders.forEach((value: string) => {
+        fse.copySync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
+    });
+
+    console.log(chalk.greenBright("Done copying miscellaneous OmniHive files..."));
+
     console.log(chalk.blue("Done building server..."));
     console.log();
     console.log(chalk.blue("Version maintenance..."));

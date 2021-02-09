@@ -451,7 +451,10 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                                         res.status(workerResponse[1]).send(true);
                                     }
                                 } catch (e) {
-                                    res.status(500).json(serializeError(e));
+                                    return res.status(500).render("500", {
+                                        rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                                        error: serializeError(e),
+                                    });
                                 }
                             }
                         );
@@ -480,10 +483,23 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             NodeServiceFactory.appService.serverStatus = ServerStatus.Online;
 
             app.get("/", (_req, res) => {
-                res.setHeader("Content-Type", "application/json");
-                return res.status(200).json({
+                res.status(200).render("index", {
+                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
                     status: NodeServiceFactory.appService.serverStatus,
                     error: NodeServiceFactory.appService.serverError,
+                });
+            });
+
+            app.use((_req, res) => {
+                return res
+                    .status(404)
+                    .render("404", { rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl });
+            });
+
+            app.use((err: any, _req: any, res: any, _next: any) => {
+                return res.status(500).render("500", {
+                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                    error: serializeError(err),
                 });
             });
 

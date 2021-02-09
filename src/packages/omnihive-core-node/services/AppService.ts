@@ -311,6 +311,11 @@ export class AppService {
         app.use(bodyParser.json());
         app.use(cors());
 
+        // Setup Pug
+        app.set("view engine", "pug");
+        app.set("views", `${process.cwd()}/views`);
+        app.use("/public", express.static(`${process.cwd()}/public`));
+
         // Register system REST endpoints
 
         const swaggerDefinition: swaggerUi.JsonObject = {
@@ -375,7 +380,10 @@ export class AppService {
                                 res.status(workerResponse[1]).send(true);
                             }
                         } catch (e) {
-                            res.status(500).json(serializeError(e));
+                            return res.status(500).render("500", {
+                                rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                                error: serializeError(e),
+                            });
                         }
                     }
                 );
@@ -413,7 +421,11 @@ export class AppService {
 
         app.get("/", (_req, res) => {
             res.setHeader("Content-Type", "application/json");
-            return res.status(200).json({ status: this.serverStatus, error: this.serverError });
+            return res.status(200).render("index", {
+                rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                status: this.serverStatus,
+                error: this.serverError,
+            });
         });
 
         this.appServer = app;

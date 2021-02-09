@@ -11,8 +11,15 @@ import yargs from "yargs";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
 import crypto from "crypto";
+import Conf from "conf";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 
 const init = async () => {
+    const config = new Conf();
+    const latestConf: string | undefined = config.get<string>("latest-settings") as string;
+    const newAdminPassword = crypto.randomBytes(32).toString("hex");
+    const newServerGroupName = crypto.randomBytes(8).toString("hex");
+
     if (!process.env.omnihive_settings) {
         dotenv.config();
     }
@@ -36,14 +43,21 @@ const init = async () => {
                     type: "number",
                     demandOption: false,
                     default: 7205,
-                    description: "Admin port number (default is 7205)",
+                    description: "Admin port number",
                 })
                 .option("webPort", {
                     alias: "wp",
                     type: "number",
                     demandOption: false,
                     default: 3001,
-                    description: "Web port number (default is 3001)",
+                    description: "Web port number",
+                })
+                .option("setDefault", {
+                    alias: "d",
+                    type: "boolean",
+                    demandOption: false,
+                    default: true,
+                    description: "Set given settings as the default on the next run",
                 })
                 .check((args) => {
                     if (args.settings) {
@@ -56,6 +70,16 @@ const init = async () => {
                         } catch {
                             return false;
                         }
+                    }
+
+                    if (
+                        !args.settings &&
+                        !process.env.omnihive_settings &&
+                        !latestConf &&
+                        args.setDefault &&
+                        args.setDefault === true
+                    ) {
+                        throw new Error("In order to use set defaults (-d) you must provide a settings file (-s)");
                     }
 
                     return true;
@@ -112,7 +136,7 @@ const init = async () => {
             {
                 type: "input",
                 name: "path",
-                message: "Where do you want to save the setting file?",
+                message: `Where do you want to save the setting file?`,
                 default: `${process.cwd()}/omnihive_settings.json`,
                 validate: (value) => {
                     try {
@@ -130,21 +154,33 @@ const init = async () => {
                 },
             },
             {
+                type: "input",
+                name: "adminPassword",
+                message: "What is your preferred admin password?",
+                default: newAdminPassword,
+            },
+            {
+                type: "input",
+                name: "serverGroup",
+                message: "What is your preferred server group name?",
+                default: newServerGroupName,
+            },
+            {
                 type: "number",
                 name: "webPort",
-                message: "What port number do you want for the web server (default 3001)?",
+                message: "What port number do you want for the web server?",
                 default: 3001,
             },
             {
                 type: "number",
                 name: "adminPort",
-                message: "What port number do you want for the admin server (default 7205)?",
+                message: "What port number do you want for the admin server?",
                 default: 7205,
             },
             {
                 type: "input",
                 name: "rootUrl",
-                message: "What is your root URL with the port (default http://localhost:3001)?",
+                message: "What is your root URL with the port?",
                 default: "http://localhost:3001",
                 validate: (value) => {
                     try {
@@ -160,6 +196,13 @@ const init = async () => {
                     }
                 },
             },
+            {
+                type: "input",
+                name: "setDefault",
+                message: "Would you like to set these settings as your default configuration (Y/N)?",
+                default: "Y",
+                choices: ["Y", "N"],
+            },
         ]);
 
         const settings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
@@ -167,31 +210,55 @@ const init = async () => {
             JSON.parse(fse.readFileSync(`${process.cwd()}/templates/default_config.json`, { encoding: "utf8" }))
         );
 
-        settings.config.adminPassword = crypto.randomBytes(32).toString("hex");
-        settings.config.serverGroupName = crypto.randomBytes(32).toString("hex");
+        settings.config.adminPassword = answers.adminPassword as string;
+        settings.config.serverGroupName = answers.serverGroup as string;
+        settings.config.adminPortNumber = answers.adminPort as number;
+        settings.config.webPortNumber = answers.webPort as number;
 
         settings.constants.ohEncryptionKey = crypto.randomBytes(16).toString("hex");
         settings.constants.ohTokenAudience = crypto.randomBytes(32).toString("hex");
         settings.constants.ohTokenSecret = crypto.randomBytes(32).toString("hex");
 
-        settings.config.adminPortNumber = answers.adminPort as number;
-        settings.config.webPortNumber = answers.webPort as number;
-
         fse.writeFileSync(answers.path as string, JSON.stringify(settings));
+
+        if ((answers.setDefault as string) === "Y") {
+            config.set("latest-settings", answers.path as string);
+        }
 
         console.log(chalk.green("OmniHive Server init complete!  Booting the server now..."));
         console.log();
 
         finalSettings = answers.path;
     } else {
-        if (!args.argv.settings) {
-            finalSettings = args.argv.settings as string;
-        }
-    }
+        let continueSettingsSearch: boolean = true;
 
-    if (!finalSettings && !process.env.omnihive_settings) {
-        console.log(chalk.red("Cannot find any valid settings.  Please provide env file or -s"));
-        process.exit();
+        if (args.argv.settings && !StringHelper.isNullOrWhiteSpace(args.argv.settings as string)) {
+            if (args.argv.setDefault && args.argv.setDefault === true) {
+                config.set("latest-settings", args.argv.settings as string);
+            }
+
+            finalSettings = args.argv.settings as string;
+            continueSettingsSearch = false;
+        }
+
+        if (
+            continueSettingsSearch &&
+            process.env.omnihive_settings &&
+            !StringHelper.isNullOrWhiteSpace(process.env.omnihive_settings)
+        ) {
+            finalSettings = process.env.omnihive_settings as string;
+            continueSettingsSearch = false;
+        }
+
+        if (continueSettingsSearch && latestConf && !StringHelper.isNullOrWhiteSpace(latestConf)) {
+            finalSettings = latestConf;
+            continueSettingsSearch = false;
+        }
+
+        if (continueSettingsSearch) {
+            console.log(chalk.red("Cannot find any valid settings.  Please provide env file or -s"));
+            process.exit();
+        }
     }
 
     let serverSettings: ServerSettings;

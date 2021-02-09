@@ -90,7 +90,6 @@ const build = async (): Promise<void> => {
             return true;
         }).argv;
 
-    clear();
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
 
     console.log(chalk.hex("#FFC022")("Building OmniHive monorepo..."));
@@ -360,11 +359,6 @@ const execSpawn = (commandString: string, cwd: string): string => {
     } else {
         return "";
     }
-};
-
-const clear = () => {
-    process.stdout.write("\x1b[2J");
-    process.stdout.write("\x1b[0f");
 };
 
 build();

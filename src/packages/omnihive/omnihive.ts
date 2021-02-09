@@ -123,7 +123,6 @@ const init = async () => {
         })
         .command("init", "Init a new instance of OmniHive").argv;
 
-    clear();
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
@@ -284,8 +283,13 @@ const init = async () => {
     }
 
     switch (args.argv._[0]) {
+        case "taskRunner":
+            const taskRunnerService: TaskRunnerService = new TaskRunnerService();
+            await taskRunnerService.run(serverSettings, args.argv.worker as string, args.argv.args as string);
+            break;
         case "init":
         case "server":
+        default:
             if (args.argv._[0] === "init") {
                 console.log(
                     chalk.yellow(`New Server Starting => Admin Password: ${serverSettings.config.adminPassword}`)
@@ -295,17 +299,7 @@ const init = async () => {
             const serverService: ServerService = new ServerService();
             await serverService.run(serverSettings);
             break;
-        case "taskRunner":
-            const taskRunnerService: TaskRunnerService = new TaskRunnerService();
-            await taskRunnerService.run(serverSettings, args.argv.worker as string, args.argv.args as string);
-            console.log(chalk.greenBright("Done with task runner..."));
-            process.exit();
     }
-};
-
-const clear = () => {
-    process.stdout.write("\x1b[2J");
-    process.stdout.write("\x1b[0f");
 };
 
 init();

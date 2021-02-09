@@ -7,6 +7,7 @@ import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFile
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import chalk from "chalk";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 
@@ -75,6 +76,9 @@ export class TaskRunnerService {
         } catch (err) {
             this.logError(worker, err);
         }
+
+        console.log(chalk.greenBright("Done with task runner..."));
+        process.exit();
     };
 
     private logError = async (workerName: string, err: Error) => {

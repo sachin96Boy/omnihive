@@ -103,6 +103,10 @@ export class WorkerService {
         return hiveWorker[1] as T;
     };
 
+    public getWorkersByType = (type: string): [HiveWorker, any][] => {
+        return this.registeredWorkers.filter((d: [HiveWorker, any]) => d[0].type === type && d[0].enabled === true);
+    };
+
     public pushWorker = async (hiveWorker: HiveWorker): Promise<void> => {
         if (!hiveWorker.importPath || hiveWorker.importPath === "") {
             throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`);

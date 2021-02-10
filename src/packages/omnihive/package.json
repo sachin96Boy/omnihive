@@ -42,6 +42,7 @@
         "chalk": "4.1.0",
         "conf": "9.0.1",
         "dotenv": "8.2.0",
+        "express-list-endpoints": "5.0.0",
         "figlet": "1.5.0",
         "fs-extra": "9.1.0",
         "graphql": "15.5.0",
@@ -52,6 +53,7 @@
         "yargs": "16.2.0"
     },
     "devDependencies": {
+        "@types/express-list-endpoints": "4.0.1",
         "@types/figlet": "1.2.1",
         "@types/fs-extra": "9.0.6",
         "@types/inquirer": "7.3.1",
@@ -71,6 +73,7 @@
             "chalk": "4.1.0",
             "conf": "9.0.1",
             "dotenv": "8.2.0",
+            "express-list-endpoints": "5.0.0",
             "figlet": "1.5.0",
             "fs-extra": "9.1.0",
             "graphql": "15.5.0",
@@ -87,6 +90,7 @@
                 "package": "@withonevision/omnihive-worker-feature-local",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-feature-local/index",
+                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {}
@@ -97,6 +101,7 @@
                 "package": "@withonevision/omnihive-worker-filesystem-fsextra",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
+                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {}
@@ -107,6 +112,7 @@
                 "package": "@withonevision/omnihive-worker-log-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-log-core/index",
+                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {}
@@ -117,11 +123,12 @@
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-function-core/SystemAccessTokenWorker",
+                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {
-                    "methodUrl": "/accessToken",
-                    "restMethod": "post"
+                    "restMethod": "post",
+                    "urlRoute": "accessToken"
                 }
             },
             {
@@ -130,11 +137,12 @@
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-function-core/SystemCheckSettingsWorker",
+                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {
-                    "methodUrl": "/checkSettings",
-                    "restMethod": "post"
+                    "restMethod": "post",
+                    "urlRoute": "checkSettings"
                 }
             },
             {
@@ -143,11 +151,12 @@
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-function-core/SystemRefreshWorker",
+                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {
-                    "methodUrl": "/refresh",
-                    "restMethod": "post"
+                    "restMethod": "post",
+                    "urlRoute": "refresh"
                 }
             },
             {
@@ -156,11 +165,12 @@
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-function-core/SystemStatusWorker",
+                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {
-                    "methodUrl": "/status",
-                    "restMethod": "post"
+                    "restMethod": "post",
+                    "urlRoute": "status"
                 }
             }
         ],
@@ -177,7 +187,7 @@
                     "dbWorkers": [
                         "*"
                     ],
-                    "graphUrl": "/v1"
+                    "urlRoute": "builder1"
                 }
             },
             {
@@ -215,7 +225,8 @@
                 "metadata": {
                     "buildWorkers": [
                         "*"
-                    ]
+                    ],
+                    "urlRoute": "server1"
                 }
             },
             {

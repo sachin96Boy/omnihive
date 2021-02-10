@@ -1,6 +1,7 @@
 import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
@@ -20,7 +21,6 @@ import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { HiveWorkerMetadataServer } from "@withonevision/omnihive-core/models/HiveWorkerMetadataServer";
-import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
@@ -49,7 +49,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
         }
     }
 
-    public buildServer = async (): Promise<void> => {
+    public buildServer = async (app: express.Express): Promise<express.Express> => {
         const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
@@ -64,11 +64,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             | undefined = await CoreServiceFactory.workerService.getWorker<IFeatureWorker>(HiveWorkerType.Feature);
 
         try {
-            // Start setting up server
-            const app = await NodeServiceFactory.appService.getCleanAppServer();
-
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Schema Folder Reset`);
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Written`);
+            logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Loaded`);
 
             // Get build workers
             const buildWorkers: [HiveWorker, any][] = [];
@@ -322,7 +318,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                         if ((await featureWorker?.get<boolean>("graphPlayground")) ?? true) {
                             graphDatabaseConfig.playground = {
-                                endpoint: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/graphql/database${builderMeta.graphUrl}/${dbWorkerMeta.graphEndpoint}`,
+                                endpoint: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
                             };
                         } else {
                             graphDatabaseConfig.playground = false;
@@ -331,7 +327,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         const graphDatabaseServer: ApolloServer = new ApolloServer(graphDatabaseConfig);
                         graphDatabaseServer.applyMiddleware({
                             app,
-                            path: `/graphql/database${builderMeta.graphUrl}/${dbWorkerMeta.graphEndpoint}`,
+                            path: `/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
+                        });
+
+                        NodeServiceFactory.appService.registeredUrls.push({
+                            path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
+                            type: RegisteredUrlType.GraphDatabase,
                         });
                     }
                 }
@@ -369,14 +370,22 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 if ((await featureWorker?.get<boolean>("graphPlayground")) ?? true) {
                     graphFunctionConfig.playground = {
-                        endpoint: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/graphql/custom`,
+                        endpoint: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/custom/graphql`,
                     };
                 } else {
                     graphFunctionConfig.playground = false;
                 }
 
                 const graphFunctionServer: ApolloServer = new ApolloServer(graphFunctionConfig);
-                graphFunctionServer.applyMiddleware({ app, path: `/graphql/custom` });
+                graphFunctionServer.applyMiddleware({
+                    app,
+                    path: `/${this.metadata.urlRoute}/custom/graphql`,
+                });
+
+                NodeServiceFactory.appService.registeredUrls.push({
+                    path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/custom/graphql`,
+                    type: RegisteredUrlType.GraphFunction,
+                });
             }
 
             logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Endpoint Registered`);
@@ -400,113 +409,99 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     openapi: "3.0.0",
                     servers: [
                         {
-                            url: `${CoreServiceFactory.configurationService.settings.config.rootUrl}${OmniHiveConstants.CUSTOM_REST_ROOT}`,
+                            url: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/custom/rest`,
                         },
                     ],
                 };
 
-                CoreServiceFactory.workerService.registeredWorkers
-                    .filter(
-                        (w: [HiveWorker, any]) =>
-                            w[0].type === HiveWorkerType.RestEndpointFunction && w[0].enabled === true
-                    )
-                    .forEach((w: [HiveWorker, any]) => {
-                        let workerMetaData: HiveWorkerMetadataRestFunction;
+                const restWorkers = CoreServiceFactory.workerService.registeredWorkers.filter(
+                    (w: [HiveWorker, any]) =>
+                        w[0].type === HiveWorkerType.RestEndpointFunction &&
+                        w[0].enabled === true &&
+                        w[0].core === false
+                );
 
-                        try {
-                            workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
-                                HiveWorkerMetadataRestFunction,
-                                w[0].metadata
-                            );
-                        } catch (e) {
-                            logWorker?.write(
-                                OmniHiveLogLevel.Error,
-                                `Cannot register custom REST worker ${w[0].name}.  MetaData is incorrect.`
-                            );
+                restWorkers.forEach((w: [HiveWorker, any]) => {
+                    let workerMetaData: HiveWorkerMetadataRestFunction;
 
-                            return;
-                        }
-
-                        if (workerMetaData.isSystem) {
-                            return;
-                        }
-
-                        const workerInstance: IRestEndpointWorker = w[1] as IRestEndpointWorker;
-
-                        app[workerMetaData.restMethod](
-                            `${OmniHiveConstants.SYSTEM_REST_ROOT}${workerMetaData.methodUrl}`,
-                            async (req: express.Request, res: express.Response) => {
-                                res.setHeader("Content-Type", "application/json");
-
-                                try {
-                                    const workerResponse: [{} | undefined, number] = await workerInstance.execute(
-                                        req.headers,
-                                        `${req.protocol}://${req.get("host")}${req.originalUrl}`,
-                                        req.body
-                                    );
-
-                                    if (workerResponse[0]) {
-                                        res.status(workerResponse[1]).json(w[0]);
-                                    } else {
-                                        res.status(workerResponse[1]).send(true);
-                                    }
-                                } catch (e) {
-                                    return res.status(500).render("500", {
-                                        rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                                        error: serializeError(e),
-                                    });
-                                }
-                            }
+                    try {
+                        workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
+                            HiveWorkerMetadataRestFunction,
+                            w[0].metadata
+                        );
+                    } catch (e) {
+                        logWorker?.write(
+                            OmniHiveLogLevel.Error,
+                            `Cannot register custom REST worker ${w[0].name}.  MetaData is incorrect.`
                         );
 
-                        const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
+                        return;
+                    }
 
-                        if (workerSwagger) {
-                            swaggerDefinition.paths = { ...swaggerDefinition.paths, ...workerSwagger.paths };
-                            swaggerDefinition.definitions = {
-                                ...swaggerDefinition.definitions,
-                                ...workerSwagger.definitions,
-                            };
+                    const workerInstance: IRestEndpointWorker = w[1] as IRestEndpointWorker;
+
+                    app[workerMetaData.restMethod](
+                        `/${this.metadata.urlRoute}/custom/rest/${workerMetaData.urlRoute}`,
+                        async (req: express.Request, res: express.Response) => {
+                            res.setHeader("Content-Type", "application/json");
+
+                            try {
+                                const workerResponse: [{} | undefined, number] = await workerInstance.execute(
+                                    req.headers,
+                                    `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+                                    req.body
+                                );
+
+                                if (workerResponse[0]) {
+                                    res.status(workerResponse[1]).json(w[0]);
+                                } else {
+                                    res.status(workerResponse[1]).send(true);
+                                }
+                            } catch (e) {
+                                return res.status(500).render("500", {
+                                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                                    error: serializeError(e),
+                                });
+                            }
                         }
+                    );
+
+                    NodeServiceFactory.appService.registeredUrls.push({
+                        path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/custom/rest/${workerMetaData.urlRoute}`,
+                        type: RegisteredUrlType.RestFunction,
                     });
 
-                if ((await featureWorker?.get<boolean>("swagger")) ?? true) {
+                    const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
+
+                    if (workerSwagger) {
+                        swaggerDefinition.paths = { ...swaggerDefinition.paths, ...workerSwagger.paths };
+                        swaggerDefinition.definitions = {
+                            ...swaggerDefinition.definitions,
+                            ...workerSwagger.definitions,
+                        };
+                    }
+                });
+
+                if (((await featureWorker?.get<boolean>("swagger")) ?? true) && restWorkers.length > 0) {
                     app.use(
-                        `${OmniHiveConstants.CUSTOM_REST_ROOT}/api-docs`,
+                        `/${this.metadata.urlRoute}/custom/rest/api-docs`,
                         swaggerUi.serve,
                         swaggerUi.setup(swaggerDefinition)
                     );
+
+                    NodeServiceFactory.appService.registeredUrls.push({
+                        path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/custom/rest/api-docs`,
+                        type: RegisteredUrlType.Swagger,
+                    });
                 }
             }
 
             logWorker.write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
             NodeServiceFactory.appService.serverStatus = ServerStatus.Online;
-
-            app.get("/", (_req, res) => {
-                res.status(200).render("index", {
-                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                    status: NodeServiceFactory.appService.serverStatus,
-                    error: NodeServiceFactory.appService.serverError,
-                });
-            });
-
-            app.use((_req, res) => {
-                return res
-                    .status(404)
-                    .render("404", { rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl });
-            });
-
-            app.use((err: any, _req: any, res: any, _next: any) => {
-                return res.status(500).render("500", {
-                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                    error: serializeError(err),
-                });
-            });
-
             logWorker.write(OmniHiveLogLevel.Info, `New Server Built`);
 
-            // Rebuild server
-            NodeServiceFactory.appService.appServer = app;
+            // Return app
+            return app;
         } catch (err) {
             logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
             throw new Error(err);

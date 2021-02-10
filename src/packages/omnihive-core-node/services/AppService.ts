@@ -1,5 +1,6 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
@@ -9,7 +10,7 @@ import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
-import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
+import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import bodyParser from "body-parser";
 import childProcess from "child_process";
@@ -39,6 +40,7 @@ export class AppService {
     public serverStatus: ServerStatus = ServerStatus.Unknown;
     public serverError: any = {};
     public webServer: Server | undefined = undefined;
+    public registeredUrls: RegisteredUrl[] = [];
 
     public changeServerStatus = (serverStatus: ServerStatus, error?: Error): void => {
         this.serverStatus = serverStatus;
@@ -292,7 +294,10 @@ export class AppService {
             "ohreqLogWorker"
         );
 
+        const restRoot: string = `/ohAdmin`;
+
         // Build app
+        this.registeredUrls = [];
 
         const app = express();
 
@@ -328,7 +333,7 @@ export class AppService {
             openapi: "3.0.0",
             servers: [
                 {
-                    url: `${CoreServiceFactory.configurationService.settings.config.rootUrl}${OmniHiveConstants.SYSTEM_REST_ROOT}`,
+                    url: `${CoreServiceFactory.configurationService.settings.config.rootUrl}${restRoot}`,
                 },
             ],
             paths: {},
@@ -337,7 +342,8 @@ export class AppService {
 
         CoreServiceFactory.workerService.registeredWorkers
             .filter(
-                (w: [HiveWorker, any]) => w[0].type === HiveWorkerType.RestEndpointFunction && w[0].enabled === true
+                (w: [HiveWorker, any]) =>
+                    w[0].type === HiveWorkerType.RestEndpointFunction && w[0].enabled === true && w[0].core === true
             )
             .forEach((w: [HiveWorker, any]) => {
                 let workerMetaData: HiveWorkerMetadataRestFunction;
@@ -356,14 +362,10 @@ export class AppService {
                     return;
                 }
 
-                if (!workerMetaData.isSystem) {
-                    return;
-                }
-
                 const workerInstance: IRestEndpointWorker = w[1] as IRestEndpointWorker;
 
                 app[workerMetaData.restMethod](
-                    `${OmniHiveConstants.SYSTEM_REST_ROOT}${workerMetaData.methodUrl}`,
+                    `${restRoot}/rest/${workerMetaData.urlRoute}`,
                     async (req: express.Request, res: express.Response) => {
                         res.setHeader("Content-Type", "application/json");
 
@@ -388,6 +390,11 @@ export class AppService {
                     }
                 );
 
+                this.registeredUrls.push({
+                    path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}${restRoot}/rest/${workerMetaData.urlRoute}`,
+                    type: RegisteredUrlType.RestFunction,
+                });
+
                 const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
 
                 if (workerSwagger) {
@@ -399,7 +406,12 @@ export class AppService {
                 }
             });
 
-        app.use(`${OmniHiveConstants.SYSTEM_REST_ROOT}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
+        app.use(`${restRoot}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
+
+        this.registeredUrls.push({
+            path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}${restRoot}/api-docs`,
+            type: RegisteredUrlType.Swagger,
+        });
 
         return app;
     };

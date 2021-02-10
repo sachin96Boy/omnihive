@@ -4,10 +4,12 @@ import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreS
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
+import { serializeError } from "serialize-error";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
     public logEntryNumber: number = 0;
@@ -35,17 +37,18 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             return;
         }
 
-        const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-        );
+        const logWorkers: [HiveWorker, any][] = CoreServiceFactory.workerService.getWorkersByType(HiveWorkerType.Log);
 
-        if (logWorker) {
-            logWorker.write(logLevel, logString);
-        }
-
-        if (!logWorker || (logWorker && logWorker.config.package !== "@withonevision/omnihive-worker-log-console")) {
-            this.chalkConsole(logLevel, formattedLogString);
-        }
+        logWorkers.forEach((value: [HiveWorker, any]) => {
+            try {
+                (value[1] as ILogWorker).write(logLevel, formattedLogString);
+            } catch (e) {
+                this.chalkConsole(
+                    OmniHiveLogLevel.Error,
+                    `Skipping logging for ${value[0].name} due to error: ${serializeError(e)}`
+                );
+            }
+        });
 
         if (this.logEntryNumber > 100000) {
             this.logEntryNumber = 0;

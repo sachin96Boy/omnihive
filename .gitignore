@@ -40,3 +40,6 @@ yarn-error.log*
 
 #settings
 /settings
+
+#pull request protect
+/src/custom/*

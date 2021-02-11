@@ -208,7 +208,7 @@ export class AppService {
 
                 const removeSpawn = childProcess.spawnSync(removeCommand.outputString(), {
                     shell: true,
-                    cwd: process.cwd(),
+                    cwd: CoreServiceFactory.configurationService.ohDirName,
                     stdio: ["inherit", "pipe", "pipe"],
                 });
 
@@ -254,7 +254,7 @@ export class AppService {
 
                 const addSpawn = childProcess.spawnSync(addCommand.outputString(), {
                     shell: true,
-                    cwd: process.cwd(),
+                    cwd: CoreServiceFactory.configurationService.ohDirName,
                     stdio: ["inherit", "pipe", "pipe"],
                 });
 
@@ -322,8 +322,8 @@ export class AppService {
 
         // Setup Pug
         app.set("view engine", "pug");
-        app.set("views", `${process.cwd()}/views`);
-        app.use("/public", express.static(`${process.cwd()}/public`));
+        app.set("views", `${CoreServiceFactory.configurationService.ohDirName}/views`);
+        app.use("/public", express.static(`${CoreServiceFactory.configurationService.ohDirName}/public`));
 
         // Register system REST endpoints
 

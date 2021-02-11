@@ -1,6 +1,8 @@
 import path from "path";
 import { serializeError } from "serialize-error";
+import { CoreServiceFactory } from "../factories/CoreServiceFactory";
 import { AwaitHelper } from "../helpers/AwaitHelper";
+import { StringHelper } from "../helpers/StringHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "../models/HiveWorker";
 import { RegisteredHiveWorker } from "../models/RegisteredHiveWorker";
@@ -35,7 +37,14 @@ export class WorkerService {
                 }
 
                 if (hiveWorker.package === "") {
-                    hiveWorker.importPath = path.join(process.cwd(), hiveWorker.importPath);
+                    if (!StringHelper.isNullOrWhiteSpace(CoreServiceFactory.configurationService.ohDirName)) {
+                        hiveWorker.importPath = path.join(
+                            CoreServiceFactory.configurationService.ohDirName,
+                            hiveWorker.importPath
+                        );
+                    } else {
+                        hiveWorker.importPath = path.join(process.cwd(), hiveWorker.importPath);
+                    }
                 }
 
                 const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.importPath));

@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
+import Conf from "conf";
+import crypto from "crypto";
 import dotenv from "dotenv";
 import figlet from "figlet";
 import fse from "fs-extra";
@@ -10,15 +14,14 @@ import inquirer from "inquirer";
 import yargs from "yargs";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
-import crypto from "crypto";
-import Conf from "conf";
-import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 
 const init = async () => {
     const config = new Conf();
     const latestConf: string | undefined = config.get<string>("latest-settings") as string;
     const newAdminPassword = crypto.randomBytes(32).toString("hex");
     const newServerGroupName = crypto.randomBytes(8).toString("hex");
+
+    CoreServiceFactory.configurationService.ohDirName = __dirname;
 
     if (!process.env.omnihive_settings) {
         dotenv.config();
@@ -204,7 +207,11 @@ const init = async () => {
 
         const settings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
             ServerSettings,
-            JSON.parse(fse.readFileSync(`${process.cwd()}/templates/default_config.json`, { encoding: "utf8" }))
+            JSON.parse(
+                fse.readFileSync(`${CoreServiceFactory.configurationService.ohDirName}/templates/default_config.json`, {
+                    encoding: "utf8",
+                })
+            )
         );
 
         settings.config.adminPassword = answers.adminPassword as string;

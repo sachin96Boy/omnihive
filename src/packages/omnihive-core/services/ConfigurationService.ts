@@ -17,4 +17,5 @@ export class ConfigurationService {
 
     public account: HiveAccount = new HiveAccount();
     public settings: ServerSettings = new ServerSettings();
+    public ohDirName: string = "";
 }

@@ -1,0 +1,36 @@
+{
+    "compilerOptions": {
+      "allowSyntheticDefaultImports": true,
+      "baseUrl": ".",
+      "composite": true,
+      "declaration": true,
+      "declarationMap": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "esModuleInterop": true,
+      "lib": ["ES2020", "DOM"],
+      "module": "CommonJS",
+      "moduleResolution": "Node",
+      "resolveJsonModule": true,
+      "noFallthroughCasesInSwitch": true,
+      "noImplicitReturns": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "removeComments": false,
+      "rootDir": "./src",
+      "skipLibCheck": true,
+      "sourceMap": true,
+      "strict": true,
+      "outDir": "./dist",
+      "target": "ES2020",
+      "types": ["mocha", "node"]
+    },
+    "exclude": [
+      ".yarn",
+      "**/node_modules/**",
+    ],
+    "include": [
+      "src/**/*.ts",
+      "src/**/*.json"
+    ]
+  }

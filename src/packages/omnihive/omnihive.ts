@@ -11,6 +11,7 @@ import dotenv from "dotenv";
 import figlet from "figlet";
 import fse from "fs-extra";
 import inquirer from "inquirer";
+import path from "path";
 import yargs from "yargs";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
@@ -208,9 +209,12 @@ const init = async () => {
         const settings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
             ServerSettings,
             JSON.parse(
-                fse.readFileSync(`${CoreServiceFactory.configurationService.ohDirName}/templates/default_config.json`, {
-                    encoding: "utf8",
-                })
+                fse.readFileSync(
+                    path.join(CoreServiceFactory.configurationService.ohDirName, `templates`, `default_config.json`),
+                    {
+                        encoding: "utf8",
+                    }
+                )
             )
         );
 

@@ -20,6 +20,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import http, { Server } from "http";
+import path from "path";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
@@ -322,8 +323,8 @@ export class AppService {
 
         // Setup Pug
         app.set("view engine", "pug");
-        app.set("views", `${CoreServiceFactory.configurationService.ohDirName}/views`);
-        app.use("/public", express.static(`${CoreServiceFactory.configurationService.ohDirName}/public`));
+        app.set("views", path.join(CoreServiceFactory.configurationService.ohDirName, `views`));
+        app.use("/public", express.static(path.join(CoreServiceFactory.configurationService.ohDirName, `public`)));
 
         // Register system REST endpoints
 

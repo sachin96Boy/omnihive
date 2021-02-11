@@ -6,7 +6,7 @@ import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreS
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import express from "express";
 import readPkgUp from "read-pkg-up";
@@ -39,17 +39,19 @@ export class ServerService {
                 NodeServiceFactory.appService.getCleanAppServer()
             );
 
-            const servers: [HiveWorker, any][] = CoreServiceFactory.workerService.getWorkersByType(
+            const servers: RegisteredHiveWorker[] = CoreServiceFactory.workerService.getWorkersByType(
                 HiveWorkerType.Server
             );
 
             for (const server of servers) {
                 try {
-                    app = await AwaitHelper.execute<express.Express>((server[1] as IServerWorker).buildServer(app));
+                    app = await AwaitHelper.execute<express.Express>(
+                        (server.instance as IServerWorker).buildServer(app)
+                    );
                 } catch (e) {
                     logWorker.write(
                         OmniHiveLogLevel.Error,
-                        `Skipping server worker ${server[0].name} due to error: ${serializeError(e)}`
+                        `Skipping server worker ${server.name} due to error: ${serializeError(e)}`
                     );
                 }
             }

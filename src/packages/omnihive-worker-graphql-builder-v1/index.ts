@@ -13,6 +13,7 @@ import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataLifecycleFunction";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import _ from "lodash";
@@ -57,13 +58,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             throw new Error("Connection Schema is Undefined.");
         }
 
-        const enabledWorkers: [HiveWorker, any][] = CoreServiceFactory.workerService.registeredWorkers.filter(
-            (worker: [HiveWorker, any]) => worker[0].enabled === true
+        const enabledWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService.registeredWorkers.filter(
+            (rw: RegisteredHiveWorker) => rw.enabled === true
         );
 
         const tables = _.uniqBy(connectionSchema.tables, "tableName");
-        const lifecycleWorkers: [HiveWorker, any][] = enabledWorkers.filter(
-            (worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.DataLifecycleFunction
+        const lifecycleWorkers: RegisteredHiveWorker[] = enabledWorkers.filter(
+            (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.DataLifecycleFunction
         );
         const builder: StringBuilder = new StringBuilder();
         const graphHelper: GraphHelper = new GraphHelper();
@@ -87,8 +88,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         );
         builder.appendLine();
 
-        enabledWorkers.forEach((worker: [HiveWorker, any]) => {
-            builder.appendLine(`var ${worker[0].name} = require("${worker[0].importPath}");`);
+        enabledWorkers.forEach((rw: RegisteredHiveWorker) => {
+            builder.appendLine(`var ${rw.name} = require("${rw.importPath}");`);
         });
 
         // Token checker
@@ -705,13 +706,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Before insert custom function
 
-            const beforeInsertArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const beforeInsertArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.Before &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -720,8 +720,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     beforeInsertArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -743,13 +742,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Instead of insert custom function
 
-            const insteadOfInsertArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const insteadOfInsertArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -758,8 +756,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     insteadOfInsertArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -799,13 +796,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // After insert custom function
 
-            const afterInsertArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const afterInsertArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.After &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -814,8 +810,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     afterInsertArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -867,13 +862,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             );
 
             // Before update custom function
-            const beforeUpdateArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const beforeUpdateArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.Before &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Update &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -882,8 +876,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     beforeUpdateArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -900,13 +893,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // Instead of update custom function
-            const insteadOfUpdateArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const insteadOfUpdateArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Update &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -915,8 +907,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     insteadOfUpdateArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -943,13 +934,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // After update custom function
-            const afterUpdateArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const afterUpdateArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.After &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Update &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -958,8 +948,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     afterUpdateArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -1006,13 +995,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             );
 
             // Before delete custom function
-            const beforeDeleteArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const beforeDeleteArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.Before &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -1021,8 +1009,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     beforeDeleteArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -1039,13 +1026,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // Instead of delete custom function
-            const insteadOfDeleteArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const insteadOfDeleteArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -1054,8 +1040,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     insteadOfDeleteArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -1082,13 +1067,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // After delete custom function
-            const afterDeleteArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const afterDeleteArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.After &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -1097,8 +1081,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     afterDeleteArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }

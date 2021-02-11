@@ -10,7 +10,9 @@ import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import bodyParser from "body-parser";
 import childProcess from "child_process";
@@ -274,15 +276,17 @@ export class AppService {
         // Get account if hive worker exists
         if (
             CoreServiceFactory.workerService.registeredWorkers.some(
-                (hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount
+                (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.HiveAccount
             )
         ) {
-            const accoutWorker: [HiveWorker, any] | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
-                (hiveWorker: [HiveWorker, any]) => hiveWorker[0].type === HiveWorkerType.HiveAccount
+            const accountWorker:
+                | RegisteredHiveWorker
+                | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
+                (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.HiveAccount
             );
 
-            if (accoutWorker) {
-                const accountWorkerInstance: IHiveAccountWorker = accoutWorker[1] as IHiveAccountWorker;
+            if (accountWorker) {
+                const accountWorkerInstance: IHiveAccountWorker = accountWorker.instance as IHiveAccountWorker;
                 CoreServiceFactory.configurationService.account = await accountWorkerInstance.getHiveAccount();
             }
         }
@@ -342,27 +346,27 @@ export class AppService {
 
         CoreServiceFactory.workerService.registeredWorkers
             .filter(
-                (w: [HiveWorker, any]) =>
-                    w[0].type === HiveWorkerType.RestEndpointFunction && w[0].enabled === true && w[0].core === true
+                (rw: RegisteredHiveWorker) =>
+                    rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === true
             )
-            .forEach((w: [HiveWorker, any]) => {
+            .forEach((rw: RegisteredHiveWorker) => {
                 let workerMetaData: HiveWorkerMetadataRestFunction;
 
                 try {
                     workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
                         HiveWorkerMetadataRestFunction,
-                        w[0].metadata
+                        rw.metadata
                     );
                 } catch (e) {
                     logWorker?.write(
                         OmniHiveLogLevel.Error,
-                        `Cannot register system REST worker ${w[0].name}.  MetaData is incorrect.`
+                        `Cannot register system REST worker ${rw.name}.  MetaData is incorrect.`
                     );
 
                     return;
                 }
 
-                const workerInstance: IRestEndpointWorker = w[1] as IRestEndpointWorker;
+                const workerInstance: IRestEndpointWorker = rw.instance as IRestEndpointWorker;
 
                 app[workerMetaData.restMethod](
                     `${restRoot}/rest/${workerMetaData.urlRoute}`,
@@ -370,16 +374,16 @@ export class AppService {
                         res.setHeader("Content-Type", "application/json");
 
                         try {
-                            const workerResponse: [{} | undefined, number] = await workerInstance.execute(
+                            const workerResponse: RestEndpointExecuteResponse = await workerInstance.execute(
                                 req.headers,
                                 `${req.protocol}://${req.get("host")}${req.originalUrl}`,
                                 req.body
                             );
 
-                            if (workerResponse[0]) {
-                                res.status(workerResponse[1]).json(w[0]);
+                            if (workerResponse.response) {
+                                res.status(workerResponse.status).json(workerResponse.response);
                             } else {
-                                res.status(workerResponse[1]).send(true);
+                                res.status(workerResponse.status).send(true);
                             }
                         } catch (e) {
                             return res.status(500).render("500", {

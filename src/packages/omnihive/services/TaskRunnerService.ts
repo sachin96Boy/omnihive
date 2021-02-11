@@ -5,7 +5,7 @@ import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreS
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
 import readPkgUp from "read-pkg-up";
@@ -38,9 +38,9 @@ export class TaskRunnerService {
 
         // Get TaskWorker
 
-        const taskWorker: [HiveWorker, any] | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
-            (w: [HiveWorker, any]) =>
-                w[0].name === worker && w[0].enabled === true && w[0].type === HiveWorkerType.TaskFunction
+        const taskWorker: RegisteredHiveWorker | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
+            (rw: RegisteredHiveWorker) =>
+                rw.name === worker && rw.enabled === true && rw.type === HiveWorkerType.TaskFunction
         );
 
         if (!taskWorker) {
@@ -69,9 +69,9 @@ export class TaskRunnerService {
         // Try running the worker
         try {
             if (!(workerArgs === null || workerArgs === undefined)) {
-                await taskWorker[1](workerArgs);
+                await taskWorker.instance(workerArgs);
             } else {
-                await taskWorker[1]();
+                await taskWorker.instance();
             }
         } catch (err) {
             this.logError(worker, err);

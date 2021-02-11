@@ -4,8 +4,8 @@ import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreS
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
@@ -37,15 +37,17 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             return;
         }
 
-        const logWorkers: [HiveWorker, any][] = CoreServiceFactory.workerService.getWorkersByType(HiveWorkerType.Log);
+        const logWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService.getWorkersByType(
+            HiveWorkerType.Log
+        );
 
-        logWorkers.forEach((value: [HiveWorker, any]) => {
+        logWorkers.forEach((value: RegisteredHiveWorker) => {
             try {
-                (value[1] as ILogWorker).write(logLevel, formattedLogString);
+                (value.instance as ILogWorker).write(logLevel, formattedLogString);
             } catch (e) {
                 this.chalkConsole(
                     OmniHiveLogLevel.Error,
-                    `Skipping logging for ${value[0].name} due to error: ${serializeError(e)}`
+                    `Skipping logging for ${value.name} due to error: ${serializeError(e)}`
                 );
             }
         });

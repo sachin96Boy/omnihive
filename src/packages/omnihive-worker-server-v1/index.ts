@@ -21,7 +21,8 @@ import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { HiveWorkerMetadataServer } from "@withonevision/omnihive-core/models/HiveWorkerMetadataServer";
-import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
@@ -29,6 +30,11 @@ import express from "express";
 import requireFromString from "require-from-string";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
+
+type BuilderDatabaseWorker = {
+    registeredWorker: RegisteredHiveWorker;
+    builderName: string;
+};
 
 export default class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
     private metadata!: HiveWorkerMetadataServer;
@@ -67,46 +73,45 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Loaded`);
 
             // Get build workers
-            const buildWorkers: [HiveWorker, any][] = [];
+            const buildWorkers: RegisteredHiveWorker[] = [];
 
-            CoreServiceFactory.workerService.registeredWorkers.forEach((worker: [HiveWorker, any]) => {
+            CoreServiceFactory.workerService.registeredWorkers.forEach((worker: RegisteredHiveWorker) => {
                 if (
-                    worker[0].type === HiveWorkerType.GraphBuilder &&
-                    worker[0].enabled &&
-                    (this.metadata.buildWorkers.includes("*") || this.metadata.buildWorkers.includes(worker[0].name))
+                    worker.type === HiveWorkerType.GraphBuilder &&
+                    worker.enabled &&
+                    (this.metadata.buildWorkers.includes("*") || this.metadata.buildWorkers.includes(worker.name))
                 ) {
                     buildWorkers.push(worker);
                 }
             });
 
             // Get db workers
-            const dbWorkers: [HiveWorker, any, string][] = [];
+            const dbWorkers: BuilderDatabaseWorker[] = [];
 
-            buildWorkers.forEach((worker: [HiveWorker, any]) => {
-                const buildWorkerMetadata: HiveWorkerMetadataGraphBuilder = worker[0]
-                    .metadata as HiveWorkerMetadataGraphBuilder;
+            buildWorkers.forEach((worker: RegisteredHiveWorker) => {
+                const buildWorkerMetadata: HiveWorkerMetadataGraphBuilder = worker.metadata as HiveWorkerMetadataGraphBuilder;
 
                 if (buildWorkerMetadata.dbWorkers.includes("*")) {
                     CoreServiceFactory.workerService.registeredWorkers
                         .filter(
-                            (worker: [HiveWorker, any]) =>
-                                worker[0].type === HiveWorkerType.Database && worker[0].enabled === true
+                            (worker: RegisteredHiveWorker) =>
+                                worker.type === HiveWorkerType.Database && worker.enabled === true
                         )
-                        .forEach((dbWorker: [HiveWorker, any]) => {
-                            dbWorkers.push([dbWorker[0], dbWorker[1], worker[0].name]);
+                        .forEach((dbWorker: RegisteredHiveWorker) => {
+                            dbWorkers.push({ registeredWorker: dbWorker, builderName: worker.name });
                         });
                 } else {
                     buildWorkerMetadata.dbWorkers.forEach((value: string) => {
                         const dbWorker:
-                            | [HiveWorker, any]
+                            | RegisteredHiveWorker
                             | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
-                            (worker: [HiveWorker, any]) =>
-                                worker[0].name === value &&
-                                worker[0].type === HiveWorkerType.Database &&
-                                worker[0].enabled === true
+                            (worker: RegisteredHiveWorker) =>
+                                worker.name === value &&
+                                worker.type === HiveWorkerType.Database &&
+                                worker.enabled === true
                         );
                         if (dbWorker) {
-                            dbWorkers.push([dbWorker[0], dbWorker[1], worker[0].name]);
+                            dbWorkers.push({ registeredWorker: dbWorker, builderName: worker.name });
                         }
                     });
                 }
@@ -115,15 +120,11 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             // Write database schemas
 
             for (const worker of dbWorkers) {
-                logWorker.write(OmniHiveLogLevel.Info, `Retrieving ${worker[0].name} Schema`);
+                logWorker.write(OmniHiveLogLevel.Info, `Retrieving ${worker.registeredWorker.name} Schema`);
 
-                const result: {
-                    tables: TableSchema[];
-                    storedProcs: StoredProcSchema[];
-                } = await AwaitHelper.execute<{
-                    tables: TableSchema[];
-                    storedProcs: StoredProcSchema[];
-                }>((worker[1] as IDatabaseWorker).getSchema());
+                const result: ConnectionSchema = await AwaitHelper.execute<ConnectionSchema>(
+                    (worker.registeredWorker.instance as IDatabaseWorker).getSchema()
+                );
 
                 result.tables.forEach((schema: TableSchema) => {
                     schema.tableNameCamelCase = camelCase(schema.tableName);
@@ -158,7 +159,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 });
 
                 CoreServiceFactory.connectionService.registeredSchemas.push({
-                    workerName: worker[0].name,
+                    workerName: worker.registeredWorker.name,
                     tables: result.tables,
                     storedProcs: result.storedProcs,
                 });
@@ -171,28 +172,28 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             const dbWorkerModules: { workerName: string; dbModule: any }[] = [];
 
             for (const builder of buildWorkers) {
-                const buildWorker: IGraphBuildWorker = builder[1] as IGraphBuildWorker;
+                const buildWorker: IGraphBuildWorker = builder.instance as IGraphBuildWorker;
 
                 for (const dbWorker of dbWorkers.filter(
-                    (worker: [HiveWorker, any, string]) => worker[2] === buildWorker.config.name
+                    (worker: BuilderDatabaseWorker) => worker.builderName === buildWorker.config.name
                 )) {
-                    const databaseWorker: IDatabaseWorker = dbWorker[1] as IDatabaseWorker;
+                    const databaseWorker: IDatabaseWorker = dbWorker.registeredWorker.instance as IDatabaseWorker;
                     const schema: ConnectionSchema | undefined = CoreServiceFactory.connectionService.getSchema(
-                        dbWorker[0].name
+                        dbWorker.registeredWorker.name
                     );
 
                     const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
                     const dbWorkerModule = requireFromString(fileString);
-                    dbWorkerModules.push({ workerName: dbWorker[0].name, dbModule: dbWorkerModule });
+                    dbWorkerModules.push({ workerName: dbWorker.registeredWorker.name, dbModule: dbWorkerModule });
                 }
             }
 
             // Build custom graph workers
             let graphEndpointModule: any | undefined = undefined;
 
-            const customGraphWorkers: [HiveWorker, any][] = CoreServiceFactory.workerService.registeredWorkers.filter(
-                (worker: [HiveWorker, any]) =>
-                    worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true
+            const customGraphWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService.registeredWorkers.filter(
+                (worker: RegisteredHiveWorker) =>
+                    worker.type === HiveWorkerType.GraphEndpointFunction && worker.enabled === true
             );
             if (customGraphWorkers.length > 0) {
                 const builder: StringBuilder = new StringBuilder();
@@ -221,8 +222,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 );
                 builder.appendLine();
 
-                customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
-                    builder.appendLine(`var ${worker[0].name} = require("${worker[0].importPath}");`);
+                customGraphWorkers.forEach((worker: RegisteredHiveWorker) => {
+                    builder.appendLine(`var ${worker.name} = require("${worker.importPath}");`);
                 });
 
                 // Build main graph schema
@@ -235,14 +236,14 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 // Loop through graph endpoints
 
-                customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
-                    builder.appendLine(`\t\t\t${worker[0].name}: {`);
+                customGraphWorkers.forEach((worker: RegisteredHiveWorker) => {
+                    builder.appendLine(`\t\t\t${worker.name}: {`);
                     builder.appendLine(`\t\t\t\ttype: GraphQLJSONObject,`);
                     builder.appendLine(`\t\t\t\targs: {`);
                     builder.appendLine(`\t\t\t\t\tcustomArgs: { type: GraphQLJSONObject },`);
                     builder.appendLine(`\t\t\t\t},`);
                     builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
-                    builder.appendLine(`\t\t\t\t\tvar customFunctionInstance = new ${worker[0].name}.default();`);
+                    builder.appendLine(`\t\t\t\t\tvar customFunctionInstance = new ${worker.name}.default();`);
                     builder.appendLine(
                         `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(customFunctionInstance.execute(args.customArgs));`
                     );
@@ -266,19 +267,19 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registering`);
 
             for (const builder of buildWorkers) {
-                const builderMeta = builder[0].metadata as HiveWorkerMetadataGraphBuilder;
+                const builderMeta = builder.metadata as HiveWorkerMetadataGraphBuilder;
 
                 const builderDbWorkers = dbWorkers.filter(
-                    (worker: [HiveWorker, any, string]) => builder[0].name === worker[2]
+                    (worker: BuilderDatabaseWorker) => builder.name === worker.builderName
                 );
 
                 if (builderDbWorkers.length > 0) {
                     for (const databaseWorker of builderDbWorkers) {
-                        const dbWorkerMeta = databaseWorker[0].metadata as HiveWorkerMetadataDatabase;
+                        const dbWorkerMeta = databaseWorker.registeredWorker.metadata as HiveWorkerMetadataDatabase;
                         let graphDatabaseSchema: any;
 
                         const databaseDynamicModule: any = dbWorkerModules.filter(
-                            (value) => value.workerName === databaseWorker[0].name
+                            (value) => value.workerName === databaseWorker.registeredWorker.name
                         )[0].dbModule;
                         const databaseQuerySchema: any = databaseDynamicModule.FederatedGraphQuerySchema;
 
@@ -287,7 +288,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                         logWorker.write(
                             OmniHiveLogLevel.Info,
-                            `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Query Schema Merged`
+                            `Graph Progress => ${builder.name} => ${databaseWorker.registeredWorker.name} Query Schema Merged`
                         );
 
                         const procSchema: any = databaseDynamicModule.FederatedGraphStoredProcSchema;
@@ -298,7 +299,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                         logWorker.write(
                             OmniHiveLogLevel.Info,
-                            `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Stored Proc Schema Merged`
+                            `Graph Progress => ${builder.name} => ${databaseWorker.registeredWorker.name} Stored Proc Schema Merged`
                         );
 
                         const graphDatabaseConfig: ApolloServerExpressConfig = {
@@ -345,8 +346,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
             if (
                 CoreServiceFactory.workerService.registeredWorkers.some(
-                    (worker: [HiveWorker, any]) =>
-                        worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true
+                    (worker: RegisteredHiveWorker) =>
+                        worker.type === HiveWorkerType.GraphEndpointFunction && worker.enabled === true
                 ) &&
                 graphEndpointModule
             ) {
@@ -394,8 +395,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             // Register "custom" REST endpoints
             if (
                 CoreServiceFactory.workerService.registeredWorkers.some(
-                    (worker: [HiveWorker, any]) =>
-                        worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true
+                    (worker: RegisteredHiveWorker) =>
+                        worker.type === HiveWorkerType.RestEndpointFunction && worker.enabled === true
                 )
             ) {
                 const swaggerDefinition: swaggerUi.JsonObject = {
@@ -415,30 +416,28 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 };
 
                 const restWorkers = CoreServiceFactory.workerService.registeredWorkers.filter(
-                    (w: [HiveWorker, any]) =>
-                        w[0].type === HiveWorkerType.RestEndpointFunction &&
-                        w[0].enabled === true &&
-                        w[0].core === false
+                    (rw: RegisteredHiveWorker) =>
+                        rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === false
                 );
 
-                restWorkers.forEach((w: [HiveWorker, any]) => {
+                restWorkers.forEach((rw: RegisteredHiveWorker) => {
                     let workerMetaData: HiveWorkerMetadataRestFunction;
 
                     try {
                         workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
                             HiveWorkerMetadataRestFunction,
-                            w[0].metadata
+                            rw.metadata
                         );
                     } catch (e) {
                         logWorker?.write(
                             OmniHiveLogLevel.Error,
-                            `Cannot register custom REST worker ${w[0].name}.  MetaData is incorrect.`
+                            `Cannot register custom REST worker ${rw.name}.  MetaData is incorrect.`
                         );
 
                         return;
                     }
 
-                    const workerInstance: IRestEndpointWorker = w[1] as IRestEndpointWorker;
+                    const workerInstance: IRestEndpointWorker = rw.instance as IRestEndpointWorker;
 
                     app[workerMetaData.restMethod](
                         `/${this.metadata.urlRoute}/custom/rest/${workerMetaData.urlRoute}`,
@@ -446,16 +445,16 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             res.setHeader("Content-Type", "application/json");
 
                             try {
-                                const workerResponse: [{} | undefined, number] = await workerInstance.execute(
+                                const workerResponse: RestEndpointExecuteResponse = await workerInstance.execute(
                                     req.headers,
                                     `${req.protocol}://${req.get("host")}${req.originalUrl}`,
                                     req.body
                                 );
 
-                                if (workerResponse[0]) {
-                                    res.status(workerResponse[1]).json(w[0]);
+                                if (workerResponse.response) {
+                                    res.status(workerResponse.status).json(workerResponse.response);
                                 } else {
-                                    res.status(workerResponse[1]).send(true);
+                                    res.status(workerResponse.status).send(true);
                                 }
                             } catch (e) {
                                 return res.status(500).render("500", {

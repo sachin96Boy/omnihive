@@ -3,6 +3,7 @@ import { serializeError } from "serialize-error";
 import { AwaitHelper } from "../helpers/AwaitHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "../models/HiveWorker";
+import { RegisteredHiveWorker } from "../models/RegisteredHiveWorker";
 
 export class WorkerService {
     private static singleton: WorkerService;
@@ -18,7 +19,7 @@ export class WorkerService {
         return WorkerService.singleton;
     };
 
-    public registeredWorkers: [HiveWorker, any][] = [];
+    public registeredWorkers: RegisteredHiveWorker[] = [];
 
     public initWorkers = async (configs: HiveWorker[]): Promise<void> => {
         try {
@@ -41,11 +42,12 @@ export class WorkerService {
                 const newWorkerInstance: any = new newWorker.default();
                 await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 
-                this.registeredWorkers.push([hiveWorker, newWorkerInstance]);
+                const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };
+                this.registeredWorkers.push(registeredWorker);
             }
 
             for (const worker of this.registeredWorkers) {
-                await AwaitHelper.execute<void>((worker[1] as IHiveWorker).afterInit());
+                await AwaitHelper.execute<void>((worker.instance as IHiveWorker).afterInit());
             }
         } catch (err) {
             throw new Error("Worker Factory Init Error => " + JSON.stringify(serializeError(err)));
@@ -64,11 +66,11 @@ export class WorkerService {
             return undefined;
         }
 
-        let hiveWorker: [HiveWorker, any] | undefined = undefined;
+        let hiveWorker: RegisteredHiveWorker | undefined = undefined;
 
         if (!name) {
-            const defaultWorkers: [HiveWorker, any][] = this.registeredWorkers.filter(
-                (d: [HiveWorker, any]) => d[0].type === type && d[0].default === true && d[0].enabled === true
+            const defaultWorkers: RegisteredHiveWorker[] = this.registeredWorkers.filter(
+                (rw: RegisteredHiveWorker) => rw.type === type && rw.default === true && rw.enabled === true
             );
 
             if (defaultWorkers.length > 1) {
@@ -80,8 +82,8 @@ export class WorkerService {
             }
 
             if (!hiveWorker) {
-                const anyWorkers: [HiveWorker, any][] = this.registeredWorkers.filter(
-                    (d: [HiveWorker, any]) => d[0].type === type && d[0].enabled === true
+                const anyWorkers: RegisteredHiveWorker[] = this.registeredWorkers.filter(
+                    (rw: RegisteredHiveWorker) => rw.type === type && rw.enabled === true
                 );
 
                 if (anyWorkers && anyWorkers.length > 0) {
@@ -92,7 +94,7 @@ export class WorkerService {
             }
         } else {
             hiveWorker = this.registeredWorkers.find(
-                (d: [HiveWorker, any]) => d[0].type === type && d[0].name === name && d[0].enabled === true
+                (rw: RegisteredHiveWorker) => rw.type === type && rw.name === name && rw.enabled === true
             );
 
             if (!hiveWorker) {
@@ -100,11 +102,11 @@ export class WorkerService {
             }
         }
 
-        return hiveWorker[1] as T;
+        return hiveWorker.instance as T;
     };
 
-    public getWorkersByType = (type: string): [HiveWorker, any][] => {
-        return this.registeredWorkers.filter((d: [HiveWorker, any]) => d[0].type === type && d[0].enabled === true);
+    public getWorkersByType = (type: string): RegisteredHiveWorker[] => {
+        return this.registeredWorkers.filter((rw: RegisteredHiveWorker) => rw.type === type && rw.enabled === true);
     };
 
     public pushWorker = async (hiveWorker: HiveWorker): Promise<void> => {
@@ -117,6 +119,7 @@ export class WorkerService {
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).afterInit());
 
-        this.registeredWorkers.push([hiveWorker, newWorkerInstance]);
+        const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };
+        this.registeredWorkers.push(registeredWorker);
     };
 }

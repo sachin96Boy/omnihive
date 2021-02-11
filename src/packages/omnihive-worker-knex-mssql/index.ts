@@ -6,6 +6,7 @@ import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper"
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
@@ -109,8 +110,9 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         return this.executeQuery(builder.outputString());
     };
 
-    public getSchema = async (): Promise<{ tables: TableSchema[]; storedProcs: StoredProcSchema[] }> => {
-        const result: { tables: TableSchema[]; storedProcs: StoredProcSchema[] } = {
+    public getSchema = async (): Promise<ConnectionSchema> => {
+        const result: ConnectionSchema = {
+            workerName: this.config.name,
             tables: [],
             storedProcs: [],
         };

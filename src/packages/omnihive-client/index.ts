@@ -87,11 +87,9 @@ export class OmniHiveClient {
         const graphCall: Promise<any> = new Promise<any>((resolve, reject) => {
             const config: any = {};
 
-            if (headers == null) {
+            if (!headers) {
                 config.headers = {};
-            }
-
-            if (Object.keys(headers).length > 0) {
+            } else if (Object.keys(headers).length > 0) {
                 config.headers = headers;
             }
 

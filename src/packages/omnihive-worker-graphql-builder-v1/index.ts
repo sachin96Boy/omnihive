@@ -1180,9 +1180,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 `\t\t\t\t\tvar dbResponses = await AwaitHelper.execute(graphParser.parseStoredProcedure("${databaseWorker.config.name}", resolveInfo));`
             );
             builder.appendLine(`\t\t\t\t\tfor (const item of dbResponses) {`);
-            builder.appendLine(`\t\t\t\t\t\t\tresults[item.procName] = item.results;`);
+            builder.appendLine(`\t\t\t\t\t\t\tdbResponses[item.procName] = item.results;`);
             builder.appendLine(`\t\t\t\t\t}`);
-            builder.appendLine(`\t\t\t\t\treturn [results];`);
+            builder.appendLine(`\t\t\t\t\treturn [dbResponses];`);
             builder.appendLine(`\t\t\t\t},`);
             builder.appendLine(`\t\t\t},`);
             builder.appendLine(`\t\t})`);

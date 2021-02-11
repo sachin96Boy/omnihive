@@ -1,55 +1,34 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
+import { TestConfigSettings } from "@withonevision/omnihive-core/models/TestConfigSettings";
 import { assert } from "chai";
-import fs from "fs";
 import { serializeError } from "serialize-error";
 import NodeForgeEncryptionWorker from "..";
 import packageJson from "../package.json";
 
-const getConfig = function (): ServerSettings | undefined {
-    try {
-        if (!process.env.omnihive_test_worker_encryption_nodeforge) {
-            return undefined;
-        }
-
-        const config: ServerSettings = ObjectHelper.create(
-            ServerSettings,
-            JSON.parse(
-                fs.readFileSync(`${process.env.omnihive_test_worker_encryption_nodeforge}`, { encoding: "utf8" })
-            )
-        );
-
-        if (!config.workers.some((worker) => worker.package === packageJson.name)) {
-            return undefined;
-        }
-
-        return config;
-    } catch {
-        return undefined;
-    }
-};
-
-let settings: ServerSettings;
+let settings: TestConfigSettings;
 let worker: NodeForgeEncryptionWorker = new NodeForgeEncryptionWorker();
+const constants: { [key: string]: string }[] = NodeServiceFactory.testService.getConstants();
 
 describe("encryption worker tests", function () {
     before(function () {
-        const config: ServerSettings | undefined = getConfig();
+        const config: TestConfigSettings | undefined = NodeServiceFactory.testService.getTestConfig(packageJson.name);
 
         if (!config) {
             this.skip();
         }
 
-        CommonStore.getInstance().clearWorkers();
+        CoreServiceFactory.workerService.clearWorkers();
         settings = config;
     });
 
     const init = async function (): Promise<void> {
         try {
-            await AwaitHelper.execute(CommonStore.getInstance().initWorkers(settings.workers));
-            const newWorker = CommonStore.getInstance().workers.find((x) => x[0].package === packageJson.name);
+            await AwaitHelper.execute(CoreServiceFactory.workerService.initWorkers(settings.workers));
+            const newWorker = CoreServiceFactory.workerService.registeredWorkers.find(
+                (x) => x[0].package === packageJson.name
+            );
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];
@@ -72,33 +51,28 @@ describe("encryption worker tests", function () {
         });
 
         it("base64 - encrypt", function () {
-            const result = worker.base64Encode("This will be an awesome test!!!");
-
-            assert.equal(result, "VGhpcyB3aWxsIGJlIGFuIGF3ZXNvbWUgdGVzdCEhIQ==");
+            const result = worker.base64Encode(constants["encryptionDecrypted"]);
+            assert.equal(result, constants["encryptionEncrypted"]);
         });
 
         it("base64 - decrypt", function () {
-            const result = worker.base64Decode("VGhpcyB3aWxsIGJlIGFuIGF3ZXNvbWUgdGVzdCEhIQ==");
-
-            assert.equal(result, "This will be an awesome test!!!");
+            const result = worker.base64Decode(constants["encryptionEncrypted"]);
+            assert.equal(result, constants["encryptionDecrypted"]);
         });
 
         it("symmetric - encrypt", function () {
-            const encryptString = "This will be an awesome test!!!";
+            const encryptString = constants["encryptionDecrypted"];
             const encrypted = worker.symmetricEncrypt(encryptString);
             const result = worker.symmetricDecrypt(encrypted);
 
             assert.notEqual(encrypted, encryptString);
-            assert.notEqual(encrypted, "VGhpcyB3aWxsIGJlIGFuIGF3ZXNvbWUgdGVzdCEhIQ==");
+            assert.notEqual(encrypted, constants["encryptionEncrypted"]);
             assert.equal(result, encryptString);
         });
 
         it("symmetric - decrypt", function () {
-            const result = worker.symmetricDecrypt(
-                "D1gMYhmWRpZe8+hHrKHfeA==:1FGCTgzDE8XQLmBqFURcdpedrkCrk/5Mehg6oKq2CXc="
-            );
-
-            assert.equal(result, "This will be an awesome test!!!");
+            const result = worker.symmetricDecrypt(constants["encryptionEncrypted"]);
+            assert.equal(result, constants["encryptionDecrypted"]);
         });
 
         it("symmetric - decrypt - invalid - format", function () {
@@ -112,7 +86,7 @@ describe("encryption worker tests", function () {
 
         it("symmetric - decrypt - invalid - iv", function () {
             try {
-                worker.symmetricDecrypt(":1FGCTgzDE8XQLmBqFURcdpedrkCrk/5Mehg6oKq2CXc=");
+                worker.symmetricDecrypt(constants["encryptionInvalidIv"]);
                 assert.fail("Expected a failure");
             } catch (err) {
                 assert.equal(err.message, "Invalid IV length; got 0 bytes and expected 16 bytes.");
@@ -120,10 +94,8 @@ describe("encryption worker tests", function () {
         });
 
         it("symmetric - decrypt - invalid - data packet", function () {
-            this.skip();
-
             try {
-                worker.symmetricDecrypt("D1gMYhmWRpZe8+hHrKHfeA==:");
+                worker.symmetricDecrypt(constants["encryptionInvalidDataPacket"]);
                 assert.fail("Expected a failure");
             } catch (err) {
                 assert.equal(err.message, "Secure message data packet not in the correct format");
@@ -131,13 +103,11 @@ describe("encryption worker tests", function () {
         });
 
         it("symmetric - decrypt - invalid - key", function () {
-            this.skip();
-
             try {
                 worker.config.metadata.encryptionKey = "Invalid Data Key Format";
                 worker.init(worker.config);
 
-                worker.symmetricDecrypt("D1gMYhmWRpZe8+hHrKHfeA==:1FGCTgzDE8XQLmBqFURcdpedrkCrk/5Mehg6oKq2CXc=");
+                worker.symmetricDecrypt(constants["encryptionInvalidKey"]);
                 assert.fail("Expected a failure");
             } catch (err) {
                 assert.equal(err.message, "Secure message symmetric key not in the correct format");

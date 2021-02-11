@@ -1,16 +1,17 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import knex from "knex";
 import sql from "mssql";
 import { serializeError } from "serialize-error";
@@ -65,7 +66,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     public async afterInit(): Promise<void> {
         try {
             this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-                CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+                CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
             );
 
             if (!this.logWorker) {
@@ -109,8 +110,9 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         return this.executeQuery(builder.outputString());
     };
 
-    public getSchema = async (): Promise<{ tables: TableSchema[]; storedProcs: StoredProcSchema[] }> => {
-        const result: { tables: TableSchema[]; storedProcs: StoredProcSchema[] } = {
+    public getSchema = async (): Promise<ConnectionSchema> => {
+        const result: ConnectionSchema = {
+            workerName: this.config.name,
             tables: [],
             storedProcs: [],
         };

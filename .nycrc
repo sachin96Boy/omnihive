@@ -6,8 +6,6 @@
     "**/.yarn/**",
     "**/node_modules/**",
     "**/test/**",
-    "**/packages/**/.next",
-    "**/packages/**/.omnihive",
-    "**/dist/**
+    "**/dist/**"
   ]
 }

@@ -1,20 +1,21 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
 import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
-import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
 import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataLifecycleFunction";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
 import _ from "lodash";
 import pluralize from "pluralize";
 import { GraphHelper } from "./helpers/GraphHelper";
@@ -30,18 +31,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     }
 
     public async afterInit(): Promise<void> {
-        const fileSystemWorker: IFileSystemWorker | undefined = await AwaitHelper.execute<
-            IFileSystemWorker | undefined
-        >(CommonStore.getInstance().getHiveWorker<IFileSystemWorker | undefined>(HiveWorkerType.FileSystem));
-
-        if (!fileSystemWorker) {
-            throw new Error(
-                "FileSystem Worker Not Defined.  This graph converter will not work without a FileSystem worker."
-            );
-        }
-
         const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
         );
 
         if (!logWorker) {
@@ -50,7 +41,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<
             IEncryptionWorker | undefined
-        >(CommonStore.getInstance().getHiveWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+        >(CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
 
         if (!encryptionWorker) {
             throw new Error(
@@ -61,15 +52,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
     public buildDatabaseWorkerSchema = (
         databaseWorker: IDatabaseWorker,
-        databaseSchema: { tables: TableSchema[]; storedProcs: StoredProcSchema[] }
+        connectionSchema: ConnectionSchema | undefined
     ): string => {
-        const enabledWorkers: [HiveWorker, any][] = CommonStore.getInstance().workers.filter(
-            (worker: [HiveWorker, any]) => worker[0].enabled === true
+        if (!connectionSchema) {
+            throw new Error("Connection Schema is Undefined.");
+        }
+
+        const enabledWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService.registeredWorkers.filter(
+            (rw: RegisteredHiveWorker) => rw.enabled === true
         );
 
-        const tables = _.uniqBy(databaseSchema.tables, "tableName");
-        const lifecycleWorkers: [HiveWorker, any][] = enabledWorkers.filter(
-            (worker: [HiveWorker, any]) => worker[0].type === HiveWorkerType.DataLifecycleFunction
+        const tables = _.uniqBy(connectionSchema.tables, "tableName");
+        const lifecycleWorkers: RegisteredHiveWorker[] = enabledWorkers.filter(
+            (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.DataLifecycleFunction
         );
         const builder: StringBuilder = new StringBuilder();
         const graphHelper: GraphHelper = new GraphHelper();
@@ -82,20 +77,25 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`);
         builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-core/interfaces/ITokenWorker");`);
         builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`);
-        builder.appendLine(`var { CommonStore } = require("@withonevision/omnihive-core/stores/CommonStore");`);
+        builder.appendLine(
+            `var { CoreServiceFactory } = require("@withonevision/omnihive-core/factories/CoreServiceFactory");`
+        );
+        builder.appendLine(
+            `var { NodeServiceFactory } = require("@withonevision/omnihive-core-node/factories/NodeServiceFactory");`
+        );
         builder.appendLine(
             `var { ParseMaster } = require("@withonevision/omnihive-worker-graphql-builder-v1/parsers/ParseMaster");`
         );
         builder.appendLine();
 
-        enabledWorkers.forEach((worker: [HiveWorker, any]) => {
-            builder.appendLine(`var ${worker[0].name} = require("${worker[0].importPath}");`);
+        enabledWorkers.forEach((rw: RegisteredHiveWorker) => {
+            builder.appendLine(`var ${rw.name} = require("${rw.importPath}");`);
         });
 
         // Token checker
         builder.appendLine(`const accessTokenChecker = async (accessToken) => {`);
         builder.appendLine(
-            `\tconst tokenWorker = await AwaitHelper.execute(CommonStore.getInstance().getHiveWorker(HiveWorkerType.Token));`
+            `\tconst tokenWorker = await AwaitHelper.execute(CoreServiceFactory.workerService.getWorker(HiveWorkerType.Token));`
         );
         builder.appendLine();
         builder.appendLine(`\tif (accessToken) {`);
@@ -115,11 +115,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // ObjectType, MutationType, MutationWhereType
         tables.forEach((table: TableSchema) => {
             // Get meta things
-            const tableSchema: TableSchema[] = databaseSchema.tables.filter((schema: TableSchema) => {
+            const tableSchema: TableSchema[] = connectionSchema.tables.filter((schema: TableSchema) => {
                 return schema.tableName === table.tableName;
             });
 
-            const fullSchema: TableSchema[] = databaseSchema.tables;
+            const fullSchema: TableSchema[] = connectionSchema.tables;
             const primaryKey: TableSchema = tableSchema.filter((ts: TableSchema) => ts.columnIsPrimaryKey === true)[0];
             const primarySchema: TableSchema[] = fullSchema.filter((schema: TableSchema) => {
                 return schema.columnForeignKeyTableName === tableSchema[0].tableName;
@@ -138,15 +138,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Base Object Type => Definitions
             builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}ObjectType = new GraphQLObjectType({`
+                `var ${pluralize.singular(tableSchema[0].tableNamePascalCase)}ObjectType = new GraphQLObjectType({`
             );
-            builder.appendLine(
-                `\tname: "${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNameCamelCase
-                )}",`
-            );
+            builder.appendLine(`\tname: "${pluralize.singular(tableSchema[0].tableNameCamelCase)}",`);
             builder.appendLine(`\textensions: {`);
             builder.appendLine(`\t\tdbWorkerInstance: "${databaseWorker.config.name}",`);
             builder.appendLine(`\t\tdbTableName: "${tableSchema[0].tableName}",`);
@@ -175,13 +169,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 builder.appendLine(`\t\t${fieldName}: {`);
                 builder.appendLine(
-                    `\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                        schema.tableNamePascalCase
-                    )}ObjectType),`
+                    `\t\t\ttype: new GraphQLList(${pluralize.singular(schema.tableNamePascalCase)}ObjectType),`
                 );
                 builder.appendLine(`\t\t\targs: {`);
 
-                const primarySchemaColumns = databaseSchema.tables.filter(
+                const primarySchemaColumns = connectionSchema.tables.filter(
                     (value: TableSchema) => value.tableName === schema.tableName
                 );
                 let joinPrimaryKeyColumnName: string = "";
@@ -218,13 +210,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 builder.appendLine(`\t\t${fieldName}: {`);
                 builder.appendLine(
-                    `\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                        schema.columnForeignKeyTableNamePascalCase
-                    )}ObjectType,`
+                    `\t\t\ttype: ${pluralize.singular(schema.columnForeignKeyTableNamePascalCase)}ObjectType,`
                 );
                 builder.appendLine(`\t\t\targs: {`);
 
-                const foreignSchemaColumns = databaseSchema.tables.filter(
+                const foreignSchemaColumns = connectionSchema.tables.filter(
                     (value: TableSchema) => value.tableName === schema.columnForeignKeyTableName
                 );
                 let joinPrimaryKeyColumnName: string = "";
@@ -259,15 +249,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Build Aggregate Object
             builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}AggObjectType = new GraphQLObjectType({`
+                `var ${pluralize.singular(tableSchema[0].tableNamePascalCase)}AggObjectType = new GraphQLObjectType({`
             );
-            builder.appendLine(
-                `\tname: "${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNameCamelCase
-                )}_agg",`
-            );
+            builder.appendLine(`\tname: "${pluralize.singular(tableSchema[0].tableNameCamelCase)}_agg",`);
             builder.appendLine(`\textensions: {`);
             builder.appendLine(`\t\tdbWorkerInstance: "${databaseWorker.config.name}",`);
             builder.appendLine(`\t\tdbTableName: "${tableSchema[0].tableName}",`);
@@ -461,13 +445,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 builder.appendLine(`\t\t${fieldName}: {`);
                 builder.appendLine(
-                    `\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                        schema.tableNamePascalCase
-                    )}AggObjectType),`
+                    `\t\t\ttype: new GraphQLList(${pluralize.singular(schema.tableNamePascalCase)}AggObjectType),`
                 );
                 builder.appendLine(`\t\t\targs: {`);
 
-                const primarySchemaColumns = databaseSchema.tables.filter(
+                const primarySchemaColumns = connectionSchema.tables.filter(
                     (value: TableSchema) => value.tableName === schema.tableName
                 );
                 let joinPrimaryKeyColumnName: string = "";
@@ -503,13 +485,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 builder.appendLine(`\t\t${fieldName}: {`);
                 builder.appendLine(
-                    `\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                        schema.columnForeignKeyTableNamePascalCase
-                    )}AggObjectType,`
+                    `\t\t\ttype: ${pluralize.singular(schema.columnForeignKeyTableNamePascalCase)}AggObjectType,`
                 );
                 builder.appendLine(`\t\t\targs: {`);
 
-                const foreignSchemaColumns = databaseSchema.tables.filter(
+                const foreignSchemaColumns = connectionSchema.tables.filter(
                     (value: TableSchema) => value.tableName === schema.columnForeignKeyTableName
                 );
                 let joinPrimaryKeyColumnName: string = "";
@@ -544,15 +524,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Mutation Base Object
             builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
+                `var ${pluralize.singular(
                     tableSchema[0].tableNamePascalCase
                 )}MutationType = new GraphQLInputObjectType({`
             );
-            builder.appendLine(
-                `\tname: "${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNameCamelCase
-                )}MutationType",`
-            );
+            builder.appendLine(`\tname: "${pluralize.singular(tableSchema[0].tableNameCamelCase)}MutationType",`);
             builder.appendLine(`\tfields: () => ({`);
 
             tableSchema.forEach((column: TableSchema) => {
@@ -572,15 +548,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Mutation Where Object
             builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
+                `var ${pluralize.singular(
                     tableSchema[0].tableNamePascalCase
                 )}MutationWhereType = new GraphQLInputObjectType({`
             );
-            builder.appendLine(
-                `\tname: "${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNameCamelCase
-                )}MutationWhereType",`
-            );
+            builder.appendLine(`\tname: "${pluralize.singular(tableSchema[0].tableNameCamelCase)}MutationWhereType",`);
             builder.appendLine(`\tfields: () => ({`);
 
             tableSchema.forEach((column: TableSchema) => {
@@ -596,10 +568,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         }); // End of first table loop where base objects are built
 
         // Custom SQL Type
-        builder.appendLine(
-            `var ${databaseWorker.config.metadata.generatorPrefix}CustomSqlObjectType = new GraphQLObjectType({`
-        );
-        builder.appendLine(`\tname: "${databaseWorker.config.metadata.generatorPrefix}customSql",`);
+        builder.appendLine(`var CustomSqlObjectType = new GraphQLObjectType({`);
+        builder.appendLine(`\tname: "customSql",`);
         builder.appendLine(`\tfields: () => ({`);
         builder.appendLine(`\t\trecordset: { type : GraphQLJSONObject },`);
         builder.appendLine(`\t}),`);
@@ -615,10 +585,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`\t\tfields: () => ({`);
 
         // Custom SQL
-        builder.appendLine(`\t\t\t${databaseWorker.config.metadata.generatorPrefix}customSql: {`);
-        builder.appendLine(
-            `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}CustomSqlObjectType),`
-        );
+        builder.appendLine(`\t\t\tcustomSql: {`);
+        builder.appendLine(`\t\t\t\ttype: new GraphQLList(CustomSqlObjectType),`);
         builder.appendLine(`\t\t\t\targs: {`);
         builder.appendLine(`\t\t\t\t\tencryptedSql: { type : GraphQLNonNull(GraphQLString) },`);
         builder.appendLine(`\t\t\t\t},`);
@@ -637,20 +605,14 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Loop through tables and create query fields
         tables.forEach((table: TableSchema) => {
             // Get meta things
-            const tableSchema: TableSchema[] = databaseSchema.tables.filter((schema: TableSchema) => {
+            const tableSchema: TableSchema[] = connectionSchema.tables.filter((schema: TableSchema) => {
                 return schema.tableName === table.tableName;
             });
 
             // Build base query
+            builder.appendLine(`\t\t\t${pluralize.plural(tableSchema[0].tableNameCamelCase)}: {`);
             builder.appendLine(
-                `\t\t\t${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                    tableSchema[0].tableNameCamelCase
-                )}: {`
-            );
-            builder.appendLine(
-                `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}ObjectType),`
+                `\t\t\t\ttype: new GraphQLList(${pluralize.singular(tableSchema[0].tableNamePascalCase)}ObjectType),`
             );
             builder.appendLine(`\t\t\t\targs: {`);
 
@@ -667,21 +629,15 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 `\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
             );
             builder.appendLine(
-                `\t\t\t\t\treturn await AwaitHelper.execute(executorService.executeAstQuery(resolveInfo, context.tokens.cache, context.tokens.cacheSeconds));`
+                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.tokens.cache, context.tokens.cacheSeconds));`
             );
             builder.appendLine(`\t\t\t\t}`);
             builder.appendLine(`\t\t\t},`);
 
             // Build Aggregate Query
+            builder.appendLine(`\t\t\t${pluralize.plural(tableSchema[0].tableNameCamelCase)}_agg: {`);
             builder.appendLine(
-                `\t\t\t${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                    tableSchema[0].tableNameCamelCase
-                )}_agg: {`
-            );
-            builder.appendLine(
-                `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}AggObjectType),`
+                `\t\t\t\ttype: new GraphQLList(${pluralize.singular(tableSchema[0].tableNamePascalCase)}AggObjectType),`
             );
             builder.appendLine(`\t\t\t\targs: {`);
 
@@ -698,7 +654,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 `\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
             );
             builder.appendLine(
-                `\t\t\t\t\treturn await AwaitHelper.execute(executorService.executeAstQuery(resolveInfo, context.tokens.cache, context.tokens.cacheSeconds));`
+                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.tokens.cache, context.tokens.cacheSeconds));`
             );
             builder.appendLine(`\t\t\t\t}`);
             builder.appendLine(`\t\t\t},`);
@@ -714,31 +670,21 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Mutation schema fields
         tables.forEach((table: TableSchema) => {
             // Get meta things
-            const tableSchema: TableSchema[] = databaseSchema.tables.filter((schema: TableSchema) => {
+            const tableSchema: TableSchema[] = connectionSchema.tables.filter((schema: TableSchema) => {
                 return schema.tableName === table.tableName;
             });
 
             // Insert
+            builder.appendLine(`\t\t\tinsert_${pluralize.plural(tableSchema[0].tableNamePascalCase)}: {`);
             builder.appendLine(
-                `\t\t\tinsert_${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                    tableSchema[0].tableNamePascalCase
-                )}: {`
-            );
-            builder.appendLine(
-                `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}ObjectType),`
+                `\t\t\t\ttype: new GraphQLList(${pluralize.singular(tableSchema[0].tableNamePascalCase)}ObjectType),`
             );
             builder.appendLine(`\t\t\t\targs: {`);
+            builder.appendLine(`\t\t\t\t\t${pluralize.plural(tableSchema[0].tableNameCamelCase)}: {`);
             builder.appendLine(
-                `\t\t\t\t\t${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                    tableSchema[0].tableNameCamelCase
-                )}: {`
-            );
-            builder.appendLine(
-                `\t\t\t\t\t\ttype: new GraphQLList(${
-                    databaseWorker.config.metadata.generatorPrefix
-                }${pluralize.singular(tableSchema[0].tableNamePascalCase)}MutationType),`
+                `\t\t\t\t\t\ttype: new GraphQLList(${pluralize.singular(
+                    tableSchema[0].tableNamePascalCase
+                )}MutationType),`
             );
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t\tcustomDmlArgs: {`);
@@ -746,7 +692,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t},`);
             builder.appendLine(
-                `\t\t\t\tresolve: async (parent, { ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
+                `\t\t\t\tresolve: async (parent, { ${pluralize.plural(
                     tableSchema[0].tableNameCamelCase
                 )}, customDmlArgs }, context, resolveInfo) => {`
             );
@@ -760,13 +706,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Before insert custom function
 
-            const beforeInsertArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const beforeInsertArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.Before &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -775,8 +720,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     beforeInsertArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -785,11 +729,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             if (beforeInsertArray.length > 0) {
                 _.orderBy(beforeInsertArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
                     builder.appendLine(
-                        `\t\t\t\t\t\t{${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                            tableSchema[0].tableNameCamelCase
-                        )}, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${
-                            tableSchema[0].tableName
-                        }", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
+                        `\t\t\t\t\t\t{${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs} = ${
+                            lifecycleWorker.worker.name
+                        }("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${pluralize.plural(
                             tableSchema[0].tableNameCamelCase
                         )}, customDmlArgs);`
                     );
@@ -800,13 +742,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Instead of insert custom function
 
-            const insteadOfInsertArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const insteadOfInsertArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -815,8 +756,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     insteadOfInsertArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -828,17 +768,15 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                         builder.appendLine(
                             `\t\t\t\t\t\tvar insertResponse = ${lifecycleWorker.worker.name}("${
                                 databaseWorker.config.name
-                            }", "${tableSchema[0].tableName}", ${
-                                databaseWorker.config.metadata.generatorPrefix
-                            }${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs);`
+                            }", "${tableSchema[0].tableName}", ${pluralize.plural(
+                                tableSchema[0].tableNameCamelCase
+                            )}, customDmlArgs);`
                         );
                     } else {
                         builder.appendLine(
-                            `\t\t\t\t\t\t{${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
-                                tableSchema[0].tableNameCamelCase
-                            )}, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${
-                                tableSchema[0].tableName
-                            }", ${databaseWorker.config.metadata.generatorPrefix}${pluralize.plural(
+                            `\t\t\t\t\t\t{${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs} = ${
+                                lifecycleWorker.worker.name
+                            }("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${pluralize.plural(
                                 tableSchema[0].tableNameCamelCase
                             )}, customDmlArgs);`
                         );
@@ -848,9 +786,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 builder.appendLine(
                     `\t\t\t\t\t\tvar insertResponse = await AwaitHelper.execute(graphParser.parseInsert("${
                         databaseWorker.config.name
-                    }", "${tableSchema[0].tableName}", ${
-                        databaseWorker.config.metadata.generatorPrefix
-                    }${pluralize.plural(tableSchema[0].tableNameCamelCase)}, customDmlArgs));`
+                    }", "${tableSchema[0].tableName}", ${pluralize.plural(
+                        tableSchema[0].tableNameCamelCase
+                    )}, customDmlArgs));`
                 );
             }
 
@@ -858,13 +796,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // After insert custom function
 
-            const afterInsertArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const afterInsertArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.After &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -873,8 +810,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     afterInsertArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -897,11 +833,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t},`);
 
             // Update
-            builder.appendLine(
-                `\t\t\tupdate_${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}: {`
-            );
+            builder.appendLine(`\t\t\tupdate_${pluralize.singular(tableSchema[0].tableNamePascalCase)}: {`);
             builder.appendLine(`\t\t\t\ttype: GraphQLInt,`);
             builder.appendLine(`\t\t\t\targs: {`);
             builder.appendLine(`\t\t\t\t\tcustomDmlArgs: {`);
@@ -909,16 +841,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t\tupdateObject: {`);
             builder.appendLine(
-                `\t\t\t\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}MutationType,`
+                `\t\t\t\t\t\ttype: ${pluralize.singular(tableSchema[0].tableNamePascalCase)}MutationType,`
             );
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t\twhereObject: {`);
             builder.appendLine(
-                `\t\t\t\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}MutationWhereType,`
+                `\t\t\t\t\t\ttype: ${pluralize.singular(tableSchema[0].tableNamePascalCase)}MutationWhereType,`
             );
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t},`);
@@ -934,13 +862,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             );
 
             // Before update custom function
-            const beforeUpdateArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const beforeUpdateArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.Before &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Update &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -949,8 +876,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     beforeUpdateArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -967,13 +893,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // Instead of update custom function
-            const insteadOfUpdateArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const insteadOfUpdateArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Update &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -982,8 +907,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     insteadOfUpdateArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -1010,13 +934,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // After update custom function
-            const afterUpdateArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const afterUpdateArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.After &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Update &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -1025,8 +948,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     afterUpdateArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -1049,11 +971,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t},`);
 
             // Delete
-            builder.appendLine(
-                `\t\t\tdelete_${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}: {`
-            );
+            builder.appendLine(`\t\t\tdelete_${pluralize.singular(tableSchema[0].tableNamePascalCase)}: {`);
             builder.appendLine(`\t\t\t\ttype: GraphQLInt,`);
             builder.appendLine(`\t\t\t\targs: {`);
             builder.appendLine(`\t\t\t\t\tcustomDmlArgs: {`);
@@ -1061,9 +979,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t\twhereObject: {`);
             builder.appendLine(
-                `\t\t\t\t\t\ttype: ${databaseWorker.config.metadata.generatorPrefix}${pluralize.singular(
-                    tableSchema[0].tableNamePascalCase
-                )}MutationWhereType,`
+                `\t\t\t\t\t\ttype: ${pluralize.singular(tableSchema[0].tableNamePascalCase)}MutationWhereType,`
             );
             builder.appendLine(`\t\t\t\t\t},`);
             builder.appendLine(`\t\t\t\t},`);
@@ -1079,13 +995,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             );
 
             // Before delete custom function
-            const beforeDeleteArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const beforeDeleteArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.Before &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -1094,8 +1009,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     beforeDeleteArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -1112,13 +1026,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // Instead of delete custom function
-            const insteadOfDeleteArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const insteadOfDeleteArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -1127,8 +1040,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     insteadOfDeleteArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -1155,13 +1067,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
 
             // After delete custom function
-            const afterDeleteArray: { worker: HiveWorker; instance: any; order: number }[] = [];
+            const afterDeleteArray: { worker: RegisteredHiveWorker; order: number }[] = [];
 
-            lifecycleWorkers.forEach((lifecycleWorker: [HiveWorker, any]) => {
-                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker[0]
-                    .metadata as HiveWorkerMetadataLifecycleFunction;
+            lifecycleWorkers.forEach((lifecycleWorker: RegisteredHiveWorker) => {
+                const metadata: HiveWorkerMetadataLifecycleFunction = lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
-                    lifecycleWorker[0].type == HiveWorkerType.DataLifecycleFunction &&
+                    lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
                     metadata.lifecycleStage == LifecycleWorkerStage.After &&
                     metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
                     metadata.lifecycleWorker === databaseWorker.config.name &&
@@ -1170,8 +1081,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     )
                 ) {
                     afterDeleteArray.push({
-                        worker: lifecycleWorker[0],
-                        instance: lifecycleWorker[1],
+                        worker: lifecycleWorker,
                         order: metadata.lifecycleOrder,
                     });
                 }
@@ -1201,23 +1111,21 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine();
 
         // Build stored proc object if they exist
-        if (databaseSchema.storedProcs.length > 0) {
+        if (connectionSchema.storedProcs.length > 0) {
             // Stored proc object type
-            builder.appendLine(
-                `var ${databaseWorker.config.metadata.generatorPrefix}StoredProcObjectType = new GraphQLObjectType({`
-            );
-            builder.appendLine(`\tname: '${databaseWorker.config.metadata.generatorPrefix}storedProcedures',`);
+            builder.appendLine(`var StoredProcObjectType = new GraphQLObjectType({`);
+            builder.appendLine(`\tname: 'storedProcedures',`);
             builder.appendLine(`\tfields: () => ({`);
 
             // Build all stored procedures as graph fields
 
-            const storedProcedures = _.uniqBy(databaseSchema.storedProcs, "storedProcName");
+            const storedProcedures = _.uniqBy(connectionSchema.storedProcs, "storedProcName");
 
             storedProcedures.forEach((proc: StoredProcSchema) => {
                 builder.appendLine(`\t\t${proc.storedProcName}: {`);
                 builder.appendLine(`\t\t\ttype: GraphQLJSONObject,`);
                 builder.appendLine(`\t\t\targs: {`);
-                databaseSchema.storedProcs
+                connectionSchema.storedProcs
                     .filter(
                         (arg: StoredProcSchema) =>
                             arg.schema === proc.schema && arg.storedProcName === proc.storedProcName
@@ -1261,10 +1169,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\tquery: new GraphQLObjectType({`);
             builder.appendLine(`\t\tname: 'Query',`);
             builder.appendLine(`\t\tfields: () => ({`);
-            builder.appendLine(`\t\t\t${databaseWorker.config.metadata.generatorPrefix}storedProcedures: {`);
-            builder.appendLine(
-                `\t\t\t\ttype: new GraphQLList(${databaseWorker.config.metadata.generatorPrefix}StoredProcObjectType),`
-            );
+            builder.appendLine(`\t\t\tstoredProcedures: {`);
+            builder.appendLine(`\t\t\t\ttype: new GraphQLList(StoredProcObjectType),`);
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
             builder.appendLine(

@@ -1,53 +1,33 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
+import { TestConfigSettings } from "@withonevision/omnihive-core/models/TestConfigSettings";
 import { assert } from "chai";
-import fs from "fs";
 import { serializeError } from "serialize-error";
 import NodeCacheWorker from "..";
 import packageJson from "../package.json";
 
-const getConfig = function (): ServerSettings | undefined {
-    try {
-        if (!process.env.omnihive_test_worker_cache_nodecache) {
-            return undefined;
-        }
-
-        const config: ServerSettings = ObjectHelper.create(
-            ServerSettings,
-            JSON.parse(fs.readFileSync(`${process.env.omnihive_test_worker_cache_nodecache}`, { encoding: "utf8" }))
-        );
-
-        if (!config.workers.some((worker) => worker.package === packageJson.name)) {
-            return undefined;
-        }
-
-        return config;
-    } catch {
-        return undefined;
-    }
-};
-
-let settings: ServerSettings;
+let settings: TestConfigSettings;
 let worker: NodeCacheWorker = new NodeCacheWorker();
 
 describe("cache (node) worker tests", function () {
     before(function () {
-        const config: ServerSettings | undefined = getConfig();
+        const config: TestConfigSettings | undefined = NodeServiceFactory.testService.getTestConfig(packageJson.name);
 
         if (!config) {
             this.skip();
         }
 
-        CommonStore.getInstance().clearWorkers();
+        CoreServiceFactory.workerService.clearWorkers();
         settings = config;
     });
 
     const init = async function (): Promise<void> {
         try {
-            await AwaitHelper.execute(CommonStore.getInstance().initWorkers(settings.workers));
-            const newWorker = CommonStore.getInstance().workers.find((x) => x[0].package === packageJson.name);
+            await AwaitHelper.execute(CoreServiceFactory.workerService.initWorkers(settings.workers));
+            const newWorker = CoreServiceFactory.workerService.registeredWorkers.find(
+                (x) => x[0].package === packageJson.name
+            );
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];

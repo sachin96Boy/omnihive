@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import childProcess from "child_process";
 import figlet from "figlet";
-import fs, { copyFileSync, readdirSync, statSync } from "fs";
+import fse from "fs-extra";
 import { join } from "path";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import semver from "semver";
@@ -90,18 +90,17 @@ const build = async (): Promise<void> => {
             return true;
         }).argv;
 
-    clear();
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
 
     console.log(chalk.hex("#FFC022")("Building OmniHive monorepo..."));
     console.log();
     console.log(chalk.yellow("Clearing existing dist directory..."));
 
-    fs.rmSync("./dist", { recursive: true, force: true });
+    fse.rmSync("./dist", { recursive: true, force: true });
 
-    const directories: string[] = readdirSync("./src/packages").filter((f) =>
-        statSync(join("./src/packages", f)).isDirectory()
-    );
+    const directories: string[] = fse
+        .readdirSync("./src/packages")
+        .filter((f) => fse.statSync(join("./src/packages", f)).isDirectory());
 
     console.log();
     console.log(chalk.blue("Building core libraries..."));
@@ -115,7 +114,15 @@ const build = async (): Promise<void> => {
         });
 
     directories
-        .filter((value: string) => value === "omnihive-client") // || value === "omnihive")
+        .filter((value: string) => value === "omnihive-core-node")
+        .forEach((value: string) => {
+            console.log(chalk.yellow(`Building ${value}...`));
+            execSpawn("yarn run build", `./src/packages/${value}`);
+            console.log(chalk.greenBright(`Done building ${value}...`));
+        });
+
+    directories
+        .filter((value: string) => value === "omnihive-client")
         .forEach((value: string) => {
             console.log(chalk.yellow(`Building ${value}...`));
             execSpawn("yarn run build", `./src/packages/${value}`);
@@ -139,22 +146,28 @@ const build = async (): Promise<void> => {
     console.log(chalk.blue("Building server..."));
 
     directories
-        .filter((value: string) => value === "omnihive-server")
+        .filter((value: string) => value === "omnihive")
         .forEach((value: string) => {
             console.log(chalk.yellow(`Building main server package ${value}...`));
             execSpawn("yarn run build", `./src/packages/${value}`);
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 
-    console.log(chalk.yellow("Copying NextJS OmniHive files..."));
+    console.log(chalk.yellow("Copying miscellaneous OmniHive files..."));
 
-    const nextJsFiles = ["next-env.d.ts", "next.config.js", "postcss.config.js", "tailwind.config.js"];
+    const miscFiles = [".npmignore"];
 
-    nextJsFiles.forEach((value: string) => {
-        copyFileSync(`./src/packages/omnihive-server/${value}`, `./dist/packages/omnihive-server/${value}`);
+    miscFiles.forEach((value: string) => {
+        fse.copyFileSync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
     });
 
-    console.log(chalk.greenBright("Done copying NextJS OmniHive files..."));
+    const miscFolders = ["public", "views"];
+
+    miscFolders.forEach((value: string) => {
+        fse.copySync(`./src/packages/omnihive/${value}`, `./dist/packages/omnihive/${value}`);
+    });
+
+    console.log(chalk.greenBright("Done copying miscellaneous OmniHive files..."));
 
     console.log(chalk.blue("Done building server..."));
     console.log();
@@ -278,7 +291,15 @@ const build = async (): Promise<void> => {
             });
 
         directories
-            .filter((value: string) => value === "omnihive-client") // || value === "omnihive")
+            .filter((value: string) => value === "omnihive-core-node")
+            .forEach((value: string) => {
+                console.log(chalk.yellow(`Publishing ${value}...`));
+                execSpawn("npm publish --access public", `./dist/packages/${value}`);
+                console.log(chalk.greenBright(`Done publishing ${value}...`));
+            });
+
+        directories
+            .filter((value: string) => value === "omnihive-client")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
                 execSpawn("npm publish --access public", `./dist/packages/${value}`);
@@ -298,11 +319,22 @@ const build = async (): Promise<void> => {
             });
 
         console.log(chalk.blue("Done publishing workers..."));
+        console.log();
+        console.log(chalk.blue("Publishing server..."));
+
+        directories
+            .filter((value: string) => value === "omnihive")
+            .forEach((value: string) => {
+                console.log(chalk.yellow(`Publishing ${value}...`));
+                execSpawn("npm publish --access public", `./dist/packages/${value}`);
+                console.log(chalk.greenBright(`Done publishing ${value}...`));
+            });
+
+        console.log(chalk.blue("Done publishing server..."));
     }
 
     console.log();
     console.log(chalk.hex("#FFC022#")("Done building OmniHive monorepo..."));
-
     console.log();
     process.exit();
 };
@@ -327,11 +359,6 @@ const execSpawn = (commandString: string, cwd: string): string => {
     } else {
         return "";
     }
-};
-
-const clear = () => {
-    process.stdout.write("\x1b[2J");
-    process.stdout.write("\x1b[0f");
 };
 
 build();

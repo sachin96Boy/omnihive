@@ -4,6 +4,6 @@ export class HiveWorkerMetadataDatabase {
     public databaseName: string = "";
     public userName: string = "";
     public password: string = "";
-    public generatorPrefix: string = "";
     public rowLimit: number = 0;
+    public urlRoute: string = "";
 }

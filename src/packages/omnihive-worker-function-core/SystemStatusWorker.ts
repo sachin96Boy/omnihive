@@ -1,9 +1,11 @@
+import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 
@@ -18,9 +20,9 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
         super();
     }
 
-    public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
+    public execute = async (headers: any, _url: string, body: any): Promise<RestEndpointExecuteResponse> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {
@@ -37,9 +39,9 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             if (!verified) {
                 throw new Error("Invalid Access Token");
             }
-            return [CommonStore.getInstance().status, 200];
+            return { response: NodeServiceFactory.appService.serverStatus, status: 200 };
         } catch (e) {
-            return [{ error: serializeError(e) }, 400];
+            return { response: { error: serializeError(e) }, status: 400 };
         }
     };
 
@@ -130,7 +132,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== CoreServiceFactory.configurationService.settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     };

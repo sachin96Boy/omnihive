@@ -14,7 +14,7 @@ export class ParseMaster {
         cacheTime: string
     ): Promise<any> => {
         const parser: ParseAstQuery = new ParseAstQuery();
-        parser.parse(workerName, resolveInfo, cacheSetting, cacheTime);
+        return await parser.parse(workerName, resolveInfo, cacheSetting, cacheTime);
     };
 
     public parseCustomSql = async (workerName: string, encryptedSql: string): Promise<any[][]> => {

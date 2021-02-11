@@ -3,15 +3,32 @@
     "version": "0.0.1",
     "description": "OmniHive Sentry Node Error Worker",
     "license": "MIT",
+    "author": {
+        "name": "With One Vision Technologies",
+        "url": "https://www.withone.vision",
+        "email": "developers@withone.vision"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "keywords": [
+        "OmniHive",
+        "With One Vision"
+    ],
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@sentry/node": "6.0.2",
+        "@sentry/node": "6.0.4",
         "@withonevision/omnihive-core": "workspace:*",
         "serialize-error": "8.0.1"
     },
     "devDependencies": {
+        "@withonevision/omnihive-core-node": "workspace:*",
         "chai": "4.2.0",
         "typescript": "4.1.3"
     }

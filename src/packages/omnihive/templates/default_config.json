@@ -1,0 +1,22 @@
+{
+    "config": {
+        "adminPassword": "XXX",
+        "adminPortNumber": 7205,
+        "serverGroupName": "XXX",
+        "rootUrl": "http://localhost:3001",
+        "webPortNumber": 3001
+    },
+    "constants": {
+        "ohEncryptionKey": "XXX",
+        "ohTokenAudience": "XXX",
+        "ohTokenSecret": "XXX"
+    },
+    "features": {
+        "consoleOnlyLogging": true,
+        "graphIntrospection": false,
+        "graphPlayground": true,
+        "graphTracing": false,
+        "swagger": true
+    },
+    "workers": []
+}

@@ -1,10 +1,10 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { CommonStore } from "@withonevision/omnihive-core/stores/CommonStore";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 
@@ -19,9 +19,9 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
         super();
     }
 
-    public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
+    public execute = async (headers: any, _url: string, body: any): Promise<RestEndpointExecuteResponse> => {
         const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CommonStore.getInstance().getHiveWorker<ITokenWorker>(HiveWorkerType.Token)
+            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
         );
 
         if (!tokenWorker) {
@@ -39,30 +39,9 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
                 throw new Error("Invalid Access Token");
             }
 
-            const adminPubSubServerWorkerName: string | undefined = CommonStore.getInstance().settings.constants[
-                "adminPubSubServerWorkerInstance"
-            ];
-
-            const adminPubSubServer: IPubSubServerWorker | undefined = await AwaitHelper.execute<
-                IPubSubServerWorker | undefined
-            >(
-                CommonStore.getInstance().getHiveWorker<IPubSubServerWorker>(
-                    HiveWorkerType.PubSubServer,
-                    adminPubSubServerWorkerName
-                )
-            );
-
-            if (!adminPubSubServer) {
-                throw new Error("No admin pub-sub server hive worker found");
-            }
-
-            adminPubSubServer.emit(CommonStore.getInstance().settings.config.serverGroupName, "server-reset-request", {
-                reset: true,
-            });
-
-            return [{ message: "Server Refresh/Reset Initiated" }, 200];
+            return { response: { message: "Server Refresh/Reset Initiated" }, status: 200 };
         } catch (e) {
-            return [{ error: serializeError(e) }, 400];
+            return { response: { error: serializeError(e) }, status: 400 };
         }
     };
 
@@ -143,7 +122,7 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== CommonStore.getInstance().settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== CoreServiceFactory.configurationService.settings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     };

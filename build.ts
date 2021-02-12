@@ -7,7 +7,10 @@ import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import semver from "semver";
 import yargs from "yargs";
 import { Client } from "@elastic/elasticsearch";
+import readPkgUp from "read-pkg-up";
+import writePkg from "write-pkg";
 
+// Elastic version record
 type Version = {
     main: string;
     beta: string;
@@ -15,6 +18,7 @@ type Version = {
 };
 
 const build = async (): Promise<void> => {
+    // Check if Elastic settings are available and get versions
     if (
         !process.env.omnihive_build_elastic_cloudId ||
         !process.env.omnihive_build_elastic_cloudPassword ||
@@ -36,8 +40,11 @@ const build = async (): Promise<void> => {
     const versionDoc = await elasticClient.get({ index: "master-version", id: "1" });
     const version: Version = versionDoc.body._source as Version;
 
-    const args = yargs(process.argv.slice(2));
+    // Get the current git branch
     const currentBranch: string = execSpawn("git branch --show-current", "./");
+
+    // Handle args
+    const args = yargs(process.argv.slice(2));
 
     args
         .help(false)
@@ -90,18 +97,22 @@ const build = async (): Promise<void> => {
             return true;
         }).argv;
 
+    // Header
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
-
     console.log(chalk.hex("#FFC022")("Building OmniHive monorepo..."));
     console.log();
+
+    // Clear out existing dist directory
     console.log(chalk.yellow("Clearing existing dist directory..."));
-
     fse.rmSync("./dist", { recursive: true, force: true });
+    console.log(chalk.greenBright("Done clearing existing dist directory..."));
 
+    // Get all packages directories
     const directories: string[] = fse
         .readdirSync("./src/packages")
         .filter((f) => fse.statSync(join("./src/packages", f)).isDirectory());
 
+    // Build core libraries
     console.log();
     console.log(chalk.blue("Building core libraries..."));
 
@@ -121,16 +132,10 @@ const build = async (): Promise<void> => {
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
-    directories
-        .filter((value: string) => value === "omnihive-client")
-        .forEach((value: string) => {
-            console.log(chalk.yellow(`Building ${value}...`));
-            execSpawn("yarn run build", `./src/packages/${value}`);
-            console.log(chalk.greenBright(`Done building ${value}...`));
-        });
-
     console.log(chalk.blue("Done building core libraries..."));
     console.log();
+
+    // Build workers
     console.log(chalk.blue("Building workers..."));
 
     directories
@@ -143,7 +148,17 @@ const build = async (): Promise<void> => {
 
     console.log(chalk.blue("Done building workers..."));
     console.log();
-    console.log(chalk.blue("Building server..."));
+
+    // Build client and server
+    console.log(chalk.blue("Building client and server..."));
+
+    directories
+        .filter((value: string) => value === "omnihive-client")
+        .forEach((value: string) => {
+            console.log(chalk.yellow(`Building ${value}...`));
+            execSpawn("yarn run build", `./src/packages/${value}`);
+            console.log(chalk.greenBright(`Done building ${value}...`));
+        });
 
     directories
         .filter((value: string) => value === "omnihive")
@@ -153,6 +168,7 @@ const build = async (): Promise<void> => {
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 
+    //Copy over miscellaneous files (npmignore, pug, etc.)
     console.log(chalk.yellow("Copying miscellaneous OmniHive files..."));
 
     const miscFiles = [".npmignore"];
@@ -169,9 +185,41 @@ const build = async (): Promise<void> => {
 
     console.log(chalk.greenBright("Done copying miscellaneous OmniHive files..."));
 
-    console.log(chalk.blue("Done building server..."));
+    //Remove non-core packages from package.json in server
+    console.log(chalk.yellow("Removing non-core packages from OmniHive package.json..."));
+
+    const packageJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp({
+        cwd: `./dist/packages/omnihive`,
+    });
+
+    const corePackages: any = packageJson.packageJson.omniHive.coreDependencies;
+    const loadedPackages: any = packageJson.packageJson.dependencies;
+
+    for (const loadedPackage of Object.entries(loadedPackages)) {
+        let removeLoadedPackage: boolean = true;
+
+        for (const corePackage of Object.entries(corePackages)) {
+            if (corePackage[0] === loadedPackage[0] && corePackage[1] === loadedPackage[1]) {
+                removeLoadedPackage = false;
+                break;
+            }
+        }
+
+        if (removeLoadedPackage) {
+            delete packageJson.packageJson.dependencies[loadedPackage[0]];
+        }
+    }
+
+    await writePkg(`./dist/packages/omnihive`, packageJson.packageJson);
+    console.log(chalk.greenBright("Done removing non-core packages from OmniHive package.json..."));
+
+    console.log(chalk.blue("Done building client and server..."));
     console.log();
+
+    // Handle version maintenance
     console.log(chalk.blue("Version maintenance..."));
+
+    // SemVer Updates
     console.log(chalk.yellow("Getting semver..."));
 
     let currentVersion: string | null = null;
@@ -243,6 +291,8 @@ const build = async (): Promise<void> => {
     }
 
     console.log(chalk.greenBright(`Done getting semver ${currentVersion}...`));
+
+    // Patch package.json with SemVer
     console.log(chalk.yellow("Patching package.json files..."));
 
     const replaceWorkspaceOptions: ReplaceInFileConfig = {
@@ -264,22 +314,30 @@ const build = async (): Promise<void> => {
     await replaceInFile.replaceInFile(replaceVersionOptions);
 
     console.log(chalk.greenBright("Done patching package.json files..."));
+
+    // Upate Elastic with new version
     console.log(chalk.yellow("Updating version metadata..."));
 
     await elasticClient.update({ index: "master-version", id: "1", body: { doc: version } });
 
     console.log(chalk.greenBright("Done updating version metadata..."));
+
+    // Tag Github branch with version
     console.log(chalk.yellow("Tagging GitHub..."));
 
     execSpawn(`git tag ${currentVersion}`, "./");
 
     console.log(chalk.greenBright("Done tagging GitHub..."));
+
+    // Finish version maintenance
     console.log(chalk.blue("Done with version maintenance..."));
     console.log();
 
+    // Check for publish flag and start publish if there
     if (!args.argv.publish as boolean) {
         console.log(chalk.redBright("Publish not specified...skipping"));
     } else {
+        // Publish core libraries
         console.log(chalk.blue("Publishing core libraries..."));
 
         directories
@@ -298,16 +356,10 @@ const build = async (): Promise<void> => {
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 
-        directories
-            .filter((value: string) => value === "omnihive-client")
-            .forEach((value: string) => {
-                console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", `./dist/packages/${value}`);
-                console.log(chalk.greenBright(`Done publishing ${value}...`));
-            });
-
         console.log(chalk.blue("Done publishing core libraries..."));
         console.log();
+
+        // Publish workers
         console.log(chalk.blue("Publishing workers..."));
 
         directories
@@ -320,7 +372,17 @@ const build = async (): Promise<void> => {
 
         console.log(chalk.blue("Done publishing workers..."));
         console.log();
-        console.log(chalk.blue("Publishing server..."));
+
+        // Publish client and server
+        console.log(chalk.blue("Publishing client and server..."));
+
+        directories
+            .filter((value: string) => value === "omnihive-client")
+            .forEach((value: string) => {
+                console.log(chalk.yellow(`Publishing ${value}...`));
+                execSpawn("npm publish --access public", `./dist/packages/${value}`);
+                console.log(chalk.greenBright(`Done publishing ${value}...`));
+            });
 
         directories
             .filter((value: string) => value === "omnihive")
@@ -330,9 +392,10 @@ const build = async (): Promise<void> => {
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 
-        console.log(chalk.blue("Done publishing server..."));
+        console.log(chalk.blue("Done publishing client server..."));
     }
 
+    // Close out
     console.log();
     console.log(chalk.hex("#FFC022#")("Done building OmniHive monorepo..."));
     console.log();

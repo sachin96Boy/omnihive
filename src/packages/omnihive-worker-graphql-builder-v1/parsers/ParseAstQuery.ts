@@ -21,8 +21,10 @@ import {
     GraphQLResolveInfo,
     SelectionNode,
 } from "graphql";
+import Knex from "knex";
 import knex from "knex";
 import _ from "lodash";
+import { WhereMode } from "../enum/WhereModes";
 import { GraphHelper } from "../helpers/GraphHelper";
 import { ConverterDatabaseTable } from "../models/ConverterDatabaseTable";
 import { ConverterOrderBy } from "../models/ConverterOrderBy";
@@ -34,6 +36,7 @@ export class ParseAstQuery {
     private cacheWorker!: ICacheWorker | undefined;
     private dateWorker!: IDateWorker | undefined;
     private parentPath!: GraphQLField<any, any>;
+    private knex!: Knex;
     private query!: knex.QueryBuilder;
     private currentTableIndex: number = 0;
     private currentFieldIndex: number = 0;
@@ -41,6 +44,7 @@ export class ParseAstQuery {
     private orderByList: ConverterOrderBy[] = [];
     private objPagination: { key: string; tableName: string; limit: number; page: number }[] = [];
     private whereHitCounter: number = 0;
+    private whereMode: WhereMode = WhereMode.All;
 
     public parse = async (
         workerName: string,
@@ -179,7 +183,8 @@ export class ParseAstQuery {
         const graphReturnType: GraphQLObjectType = (resolveInfo.returnType as GraphQLList<GraphQLObjectType>).ofType;
         const graphParentType: GraphQLObjectType = (this.parentPath.type as GraphQLList<GraphQLObjectType>).ofType;
 
-        this.query = (this.databaseWorker.connection as knex).queryBuilder();
+        this.knex = this.databaseWorker.connection as knex;
+        this.query = this.knex.queryBuilder();
 
         // Build the root table
         const currentTable: ConverterDatabaseTable = {
@@ -208,6 +213,7 @@ export class ParseAstQuery {
             if (
                 graphKey !== "dbPage" &&
                 graphKey !== "dbLimit" &&
+                graphKey !== "whereMode" &&
                 graphKey !== "objPage" &&
                 graphKey !== "objLimit" &&
                 !graphReturnType.extensions?.aggregateType
@@ -292,6 +298,10 @@ export class ParseAstQuery {
         // Handle first pass
         if (!parentTable) {
             let pageNumber = 1;
+
+            if (args.whereMode) {
+                this.whereMode = args.whereMode;
+            }
 
             _.forOwn(args, (value: any, key: any) => {
                 if (key === "dbLimit") {
@@ -464,55 +474,75 @@ export class ParseAstQuery {
 
             this.tables.push(subTable);
 
+            const currentTableIndex = this.currentTableIndex;
+            const knexObj = this.knex;
+            const dbNames = (selection as FieldNode).arguments?.map((arg: any) => ({
+                name: arg.name.value,
+                dbName: this.getDbColumnName(graphField, arg),
+            }));
+            const whereMode = this.whereMode;
+
             // Build the join based off of the field properties
             if (graphField.name.toString().startsWith("from_")) {
-                this.query.leftJoin(
-                    `${graphField.extensions?.dbTableName} as t${this.currentTableIndex}`,
-                    `${parentTable?.tableAlias}.${graphField.extensions?.dbJoinForeignColumn}`,
-                    `t${this.currentTableIndex}.${graphField.extensions?.dbJoinPrimaryColumn}`
-                );
+                this.query.leftJoin(`${graphField.extensions?.dbTableName} as t${this.currentTableIndex}`, function () {
+                    this.on(
+                        `${parentTable?.tableAlias}.${graphField.extensions?.dbJoinForeignColumn}`,
+                        "=",
+                        `t${currentTableIndex}.${graphField.extensions?.dbJoinPrimaryColumn}`
+                    );
+
+                    if (whereMode === WhereMode.Specific) {
+                        (selection as FieldNode).arguments?.forEach((args: any) => {
+                            const dbName = dbNames?.find(
+                                (x: { name: string; dbName: string }) => x.name === args.name.value
+                            )?.dbName;
+
+                            if (dbName) {
+                                const conditions = args.value.value.split("||");
+
+                                this.andOn(function () {
+                                    conditions.forEach((cond: string) =>
+                                        this.orOn(knexObj.raw(`t${currentTableIndex}.${dbName} ${cond}`))
+                                    );
+                                });
+                            }
+                        });
+                    }
+                });
             }
 
             if (graphField.name.toString().startsWith("to_")) {
-                this.query.leftJoin(
-                    `${graphField.extensions?.dbTableName} as t${this.currentTableIndex}`,
-                    `${parentTable?.tableAlias}.${graphField.extensions?.dbJoinPrimaryColumn}`,
-                    `t${this.currentTableIndex}.${graphField.extensions?.dbJoinForeignColumn}`
-                );
+                this.query.leftJoin(`${graphField.extensions?.dbTableName} as t${this.currentTableIndex}`, function () {
+                    this.on(
+                        `${parentTable?.tableAlias}.${graphField.extensions?.dbJoinPrimaryColumn}`,
+                        "=",
+                        `t${currentTableIndex}.${graphField.extensions?.dbJoinForeignColumn}`
+                    );
+
+                    if (whereMode === WhereMode.Specific) {
+                        (selection as FieldNode).arguments?.forEach((args: any) => {
+                            const dbName = dbNames?.find(
+                                (x: { name: string; dbName: string }) => x.name === args.name.value
+                            )?.dbName;
+
+                            if (dbName) {
+                                const conditions = args.value.value.split("||");
+
+                                this.andOn(function () {
+                                    conditions.forEach((cond: string) =>
+                                        this.orOn(knexObj.raw(`t${currentTableIndex}.${dbName} ${cond}`))
+                                    );
+                                });
+                            }
+                        });
+                    }
+                });
             }
 
             // Since we're in a "subtable", there could be arguments (where, orderby, etc), so build those
             const subArgs: any = {};
 
             _.forEach((selection as FieldNode).arguments, (arg: any) => {
-                let dbColumnName: string = "";
-                if (graphField.extensions?.aggregateType) {
-                    dbColumnName = graphField.args.filter((field: GraphQLArgument) => field.name === arg.name.value)[0]
-                        .extensions?.dbColumnName;
-                } else {
-                    if (
-                        graphField.name.toString().startsWith("from_") &&
-                        arg.name.value !== "objPage" &&
-                        arg.name.value !== "objLimit"
-                    ) {
-                        dbColumnName = _.filter(
-                            (graphField.type as GraphQLList<GraphQLObjectType>).ofType.getFields(),
-                            (field: GraphQLField<any, any>) => field.name === arg.name.value
-                        )[0].extensions?.dbColumnName;
-                    }
-
-                    if (
-                        graphField.name.toString().startsWith("to_") &&
-                        arg.name.value !== "objPage" &&
-                        arg.name.value !== "objLimit"
-                    ) {
-                        dbColumnName = _.filter(
-                            (graphField.type as GraphQLObjectType).getFields(),
-                            (field: GraphQLField<any, any>) => field.name === arg.name.value
-                        )[0].extensions?.dbColumnName;
-                    }
-                }
-
                 if (arg.name.value === "objPage" || arg.name.value === "objLimit") {
                     if (this.objPagination.some((x) => x.key === graphField.name)) {
                         const foundPageObject = this.objPagination.find((x) => x.key === graphField.name);
@@ -540,12 +570,14 @@ export class ParseAstQuery {
                     }
                 }
 
+                const dbColumnName = this.getDbColumnName(graphField, arg);
+
                 if (arg.name.value !== "objLimit" && arg.name.value !== "objPage") {
                     subArgs[dbColumnName] = arg.value.value;
                 }
             });
 
-            if (!_.isEmpty(subArgs)) {
+            if (!_.isEmpty(subArgs) && this.whereMode === WhereMode.All) {
                 this.whereOrderByHandler(graphField.extensions?.dbTableName, `t${this.currentTableIndex}`, subArgs);
             }
 
@@ -683,5 +715,37 @@ export class ParseAstQuery {
 
             this.whereHitCounter++;
         });
+    };
+
+    private getDbColumnName = (graphField: any, arg: any): string => {
+        let dbColumnName: string = "";
+        if (graphField.extensions?.aggregateType) {
+            dbColumnName = graphField.args.filter((field: GraphQLArgument) => field.name === arg.name.value)[0]
+                .extensions?.dbColumnName;
+        } else {
+            if (
+                graphField.name.toString().startsWith("from_") &&
+                arg.name.value !== "objPage" &&
+                arg.name.value !== "objLimit"
+            ) {
+                dbColumnName = _.filter(
+                    (graphField.type as GraphQLList<GraphQLObjectType>).ofType.getFields(),
+                    (field: GraphQLField<any, any>) => field.name === arg.name.value
+                )[0].extensions?.dbColumnName;
+            }
+
+            if (
+                graphField.name.toString().startsWith("to_") &&
+                arg.name.value !== "objPage" &&
+                arg.name.value !== "objLimit"
+            ) {
+                dbColumnName = _.filter(
+                    (graphField.type as GraphQLObjectType).getFields(),
+                    (field: GraphQLField<any, any>) => field.name === arg.name.value
+                )[0].extensions?.dbColumnName;
+            }
+        }
+
+        return dbColumnName;
     };
 }

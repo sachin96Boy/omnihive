@@ -71,7 +71,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         // Get imports
         builder.appendLine(
-            `var { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`
+            `var { GraphQLEnumType, GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`
         );
         builder.appendLine(`var { GraphQLJSONObject } = require("@withonevision/omnihive-core/models/GraphQLJSON");`);
         builder.appendLine(`var { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`);
@@ -86,6 +86,15 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(
             `var { ParseMaster } = require("@withonevision/omnihive-worker-graphql-builder-v1/parsers/ParseMaster");`
         );
+        builder.appendLine();
+
+        builder.appendLine(`var WhereModes = new GraphQLEnumType({
+            name: "WhereMode",
+            values: {
+                all: { value: "all" },
+                specific: { value: "specific" },
+            }
+        })`);
         builder.appendLine();
 
         enabledWorkers.forEach((rw: RegisteredHiveWorker) => {
@@ -620,6 +629,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 builder.appendLine(`\t\t\t\t\t${column.columnNameEntity}: { type : GraphQLString },`);
             });
 
+            builder.appendLine("\t\t\t\t\twhereMode: { type : WhereModes },");
             builder.appendLine("\t\t\t\t\tdbPage: { type : GraphQLInt },");
             builder.appendLine("\t\t\t\t\tdbLimit: { type : GraphQLInt },");
             builder.appendLine(`\t\t\t\t},`);

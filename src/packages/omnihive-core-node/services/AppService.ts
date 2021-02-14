@@ -1,3 +1,5 @@
+/// <reference path="../globals.omnihive.node.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
@@ -13,7 +15,6 @@ import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/mod
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
 import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import bodyParser from "body-parser";
 import childProcess from "child_process";
 import cors from "cors";
@@ -26,39 +27,65 @@ import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 
 export class AppService {
-    private static singleton: AppService;
+    public get appServer(): express.Express {
+        return global.omnihive.node.appServer;
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
+    public set appServer(value: express.Express) {
+        global.omnihive.node.appServer = value;
+    }
 
-    public static getSingleton = (): AppService => {
-        if (!AppService.singleton) {
-            AppService.singleton = new AppService();
+    public get serverError(): any {
+        if (!global.omnihive.node.serverError) {
+            global.omnihive.node.serverError = {};
         }
 
-        return AppService.singleton;
-    };
+        return global.omnihive.node.serverError;
+    }
 
-    public appServer!: express.Express;
-    public serverStatus: ServerStatus = ServerStatus.Unknown;
-    public serverError: any = {};
-    public webServer: Server | undefined = undefined;
-    public registeredUrls: RegisteredUrl[] = [];
+    public set serverError(value: any) {
+        global.omnihive.node.serverError = value;
+    }
+
+    public get serverStatus(): ServerStatus {
+        if (!global.omnihive.node.serverStatus) {
+            global.omnihive.node.serverStatus = ServerStatus.Unknown;
+        }
+
+        return global.omnihive.node.serverStatus;
+    }
+
+    public set serverStatus(value: ServerStatus) {
+        global.omnihive.node.serverStatus = value;
+    }
+
+    public get webServer(): Server | undefined {
+        if (!global.omnihive.node.webServer) {
+            global.omnihive.node.webServer = undefined;
+        }
+
+        return global.omnihive.node.webServer;
+    }
+
+    public set webServer(value: Server | undefined) {
+        global.omnihive.node.webServer = value;
+    }
 
     public changeServerStatus = (serverStatus: ServerStatus, error?: Error): void => {
-        this.serverStatus = serverStatus;
+        global.omnihive.node.serverStatus = serverStatus;
 
         if (error) {
-            this.serverError = serializeError(error);
+            global.omnihive.node.serverError = serializeError(error);
         } else {
-            this.serverError = {};
+            global.omnihive.node.serverError = {};
         }
     };
 
-    public initCore = async (
-        packageJson: readPkgUp.NormalizedReadResult | undefined,
-        serverSettings: ServerSettings
-    ) => {
+    public getAllRegisteredUrls = (): RegisteredUrl[] => {
+        return global.omnihive.node.registeredUrls ?? [];
+    };
+
+    public initCore = async (packageJson: readPkgUp.NormalizedReadResult | undefined) => {
         // Load Core Workers
         if (
             packageJson &&
@@ -82,11 +109,6 @@ export class AppService {
         if (!logWorker) {
             throw new Error("Core Log Worker Not Found.  App worker needs the core log worker ohreqLogWorker");
         }
-
-        // Get Server Settings
-
-        CoreServiceFactory.configurationService.settings = serverSettings;
-        logWorker.write(OmniHiveLogLevel.Info, `Server Settings Applied...`);
 
         // Load Workers
         logWorker.write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
@@ -276,15 +298,15 @@ export class AppService {
 
         // Get account if hive worker exists
         if (
-            CoreServiceFactory.workerService.registeredWorkers.some(
-                (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.HiveAccount
-            )
+            CoreServiceFactory.workerService
+                .getAllWorkers()
+                .some((rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.HiveAccount)
         ) {
             const accountWorker:
                 | RegisteredHiveWorker
-                | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
-                (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.HiveAccount
-            );
+                | undefined = CoreServiceFactory.workerService
+                .getAllWorkers()
+                .find((rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.HiveAccount);
 
             if (accountWorker) {
                 const accountWorkerInstance: IHiveAccountWorker = accountWorker.instance as IHiveAccountWorker;
@@ -302,7 +324,7 @@ export class AppService {
         const restRoot: string = `/ohAdmin`;
 
         // Build app
-        this.registeredUrls = [];
+        global.omnihive.node.registeredUrls = [];
 
         const app = express();
 
@@ -345,7 +367,8 @@ export class AppService {
             definitions: {},
         };
 
-        CoreServiceFactory.workerService.registeredWorkers
+        CoreServiceFactory.workerService
+            .getAllWorkers()
             .filter(
                 (rw: RegisteredHiveWorker) =>
                     rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === true
@@ -395,7 +418,7 @@ export class AppService {
                     }
                 );
 
-                this.registeredUrls.push({
+                global.omnihive.node.registeredUrls.push({
                     path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}${restRoot}/rest/${workerMetaData.urlRoute}`,
                     type: RegisteredUrlType.RestFunction,
                 });
@@ -413,7 +436,7 @@ export class AppService {
 
         app.use(`${restRoot}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
 
-        this.registeredUrls.push({
+        global.omnihive.node.registeredUrls.push({
             path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}${restRoot}/api-docs`,
             type: RegisteredUrlType.Swagger,
         });
@@ -427,12 +450,15 @@ export class AppService {
     };
 
     public loadSpecialStatusApp = async (status: ServerStatus, error?: Error): Promise<void> => {
-        if (this.serverStatus === ServerStatus.Admin || this.serverStatus === ServerStatus.Rebuilding) {
+        if (
+            global.omnihive.node.serverStatus === ServerStatus.Admin ||
+            global.omnihive.node.serverStatus === ServerStatus.Rebuilding
+        ) {
             return;
         }
 
-        this.serverStatus = status;
-        this.serverError = error;
+        global.omnihive.node.serverStatus = status;
+        global.omnihive.node.serverError = error;
 
         const app: express.Express = await this.getCleanAppServer();
 
@@ -440,12 +466,16 @@ export class AppService {
             res.setHeader("Content-Type", "application/json");
             return res.status(200).render("index", {
                 rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                status: this.serverStatus,
-                error: this.serverError,
+                status: global.omnihive.node.serverStatus,
+                error: global.omnihive.node.serverError,
             });
         });
 
-        this.appServer = app;
+        global.omnihive.node.appServer = app;
+    };
+
+    public pushRegisteredUrl = (url: RegisteredUrl) => {
+        global.omnihive.node.registeredUrls.push(url);
     };
 
     public serverChangeHandler = async (): Promise<void> => {
@@ -460,16 +490,19 @@ export class AppService {
 
         logWorker.write(OmniHiveLogLevel.Info, `Server Change Handler Started`);
 
-        const server: Server = http.createServer(this.appServer);
-        this.webServer?.removeAllListeners().close();
-        this.webServer = server;
+        const server: Server = http.createServer(global.omnihive.node.appServer);
+        global.omnihive.node.webServer?.removeAllListeners().close();
+        global.omnihive.node.webServer = server;
 
-        this.webServer?.listen(CoreServiceFactory.configurationService.settings.config.webPortNumber, () => {
-            logWorker.write(
-                OmniHiveLogLevel.Info,
-                `New Server Listening on process ${process.pid} using port ${CoreServiceFactory.configurationService.settings.config.webPortNumber}`
-            );
-        });
+        global.omnihive.node.webServer?.listen(
+            CoreServiceFactory.configurationService.settings.config.webPortNumber,
+            () => {
+                logWorker.write(
+                    OmniHiveLogLevel.Info,
+                    `New Server Listening on process ${process.pid} using port ${CoreServiceFactory.configurationService.settings.config.webPortNumber}`
+                );
+            }
+        );
 
         logWorker.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
     };

@@ -64,16 +64,12 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     }
 
     public async afterInit(): Promise<void> {
-        try {
-            this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-                CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-            );
+        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
+            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+        );
 
-            if (!this.logWorker) {
-                throw new Error("Log Worker Not Defined.  Database Worker Will Not Function Without Log Worker.");
-            }
-        } catch (err) {
-            throw new Error("MSSQL Dependencies Error => " + JSON.stringify(serializeError(err)));
+        if (!this.logWorker) {
+            throw new Error("Log Worker Not Defined.  Database Worker Will Not Function Without Log Worker.");
         }
     }
 

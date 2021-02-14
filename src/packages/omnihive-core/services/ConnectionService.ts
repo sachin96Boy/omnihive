@@ -1,22 +1,26 @@
+/// <reference path="../globals.omnihive.core.d.ts" />
+
 import { ConnectionSchema } from "../models/ConnectionSchema";
 
 export class ConnectionService {
-    private static singleton: ConnectionService;
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
-
-    public static getSingleton = (): ConnectionService => {
-        if (!ConnectionService.singleton) {
-            ConnectionService.singleton = new ConnectionService();
-        }
-
-        return ConnectionService.singleton;
+    public getAllSchemas = (): ConnectionSchema[] => {
+        return global.omnihive.core.registeredSchemas ?? [];
     };
 
-    public registeredSchemas: ConnectionSchema[] = [];
-
     public getSchema = (workerName: string): ConnectionSchema | undefined => {
-        return this.registeredSchemas.find((value: ConnectionSchema) => value.workerName === workerName);
+        return global.omnihive.core.registeredSchemas?.find(
+            (value: ConnectionSchema) => value.workerName === workerName
+        );
+    };
+
+    public pushSchema = (schema: ConnectionSchema) => {
+        let globalSchemas: ConnectionSchema[] | undefined = global.omnihive.core.registeredSchemas;
+
+        if (!globalSchemas) {
+            globalSchemas = [];
+        }
+
+        globalSchemas.push(schema);
+        global.omnihive.core.registeredSchemas = globalSchemas;
     };
 }

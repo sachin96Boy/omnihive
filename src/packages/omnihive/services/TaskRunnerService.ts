@@ -6,16 +6,15 @@ import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper"
 import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 
 export class TaskRunnerService {
-    public run = async (settings: ServerSettings, worker: string, args: string): Promise<void> => {
+    public run = async (worker: string, args: string): Promise<void> => {
         // Run basic app service
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
-        await NodeServiceFactory.appService.initCore(pkgJson, settings);
+        await NodeServiceFactory.appService.initCore(pkgJson);
 
         const fileSystemWorker:
             | IFileSystemWorker
@@ -38,10 +37,12 @@ export class TaskRunnerService {
 
         // Get TaskWorker
 
-        const taskWorker: RegisteredHiveWorker | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
-            (rw: RegisteredHiveWorker) =>
-                rw.name === worker && rw.enabled === true && rw.type === HiveWorkerType.TaskFunction
-        );
+        const taskWorker: RegisteredHiveWorker | undefined = CoreServiceFactory.workerService
+            .getAllWorkers()
+            .find(
+                (rw: RegisteredHiveWorker) =>
+                    rw.name === worker && rw.enabled === true && rw.type === HiveWorkerType.TaskFunction
+            );
 
         if (!taskWorker) {
             this.logError(

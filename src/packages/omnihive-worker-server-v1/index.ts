@@ -75,7 +75,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             // Get build workers
             const buildWorkers: RegisteredHiveWorker[] = [];
 
-            CoreServiceFactory.workerService.registeredWorkers.forEach((worker: RegisteredHiveWorker) => {
+            CoreServiceFactory.workerService.getAllWorkers().forEach((worker: RegisteredHiveWorker) => {
                 if (
                     worker.type === HiveWorkerType.GraphBuilder &&
                     worker.enabled &&
@@ -92,7 +92,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 const buildWorkerMetadata: HiveWorkerMetadataGraphBuilder = worker.metadata as HiveWorkerMetadataGraphBuilder;
 
                 if (buildWorkerMetadata.dbWorkers.includes("*")) {
-                    CoreServiceFactory.workerService.registeredWorkers
+                    CoreServiceFactory.workerService
+                        .getAllWorkers()
                         .filter(
                             (worker: RegisteredHiveWorker) =>
                                 worker.type === HiveWorkerType.Database && worker.enabled === true
@@ -104,12 +105,14 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     buildWorkerMetadata.dbWorkers.forEach((value: string) => {
                         const dbWorker:
                             | RegisteredHiveWorker
-                            | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
-                            (worker: RegisteredHiveWorker) =>
-                                worker.name === value &&
-                                worker.type === HiveWorkerType.Database &&
-                                worker.enabled === true
-                        );
+                            | undefined = CoreServiceFactory.workerService
+                            .getAllWorkers()
+                            .find(
+                                (worker: RegisteredHiveWorker) =>
+                                    worker.name === value &&
+                                    worker.type === HiveWorkerType.Database &&
+                                    worker.enabled === true
+                            );
                         if (dbWorker) {
                             dbWorkers.push({ registeredWorker: dbWorker, builderName: worker.name });
                         }
@@ -158,7 +161,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     schema.columnNameEntity = columnWorkingName.toString();
                 });
 
-                CoreServiceFactory.connectionService.registeredSchemas.push({
+                CoreServiceFactory.connectionService.pushSchema({
                     workerName: worker.registeredWorker.name,
                     tables: result.tables,
                     storedProcs: result.storedProcs,
@@ -191,10 +194,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             // Build custom graph workers
             let graphEndpointModule: any | undefined = undefined;
 
-            const customGraphWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService.registeredWorkers.filter(
-                (worker: RegisteredHiveWorker) =>
-                    worker.type === HiveWorkerType.GraphEndpointFunction && worker.enabled === true
-            );
+            const customGraphWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService
+                .getAllWorkers()
+                .filter(
+                    (worker: RegisteredHiveWorker) =>
+                        worker.type === HiveWorkerType.GraphEndpointFunction && worker.enabled === true
+                );
             if (customGraphWorkers.length > 0) {
                 const builder: StringBuilder = new StringBuilder();
 
@@ -331,7 +336,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             path: `/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
                         });
 
-                        NodeServiceFactory.appService.registeredUrls.push({
+                        NodeServiceFactory.appService.pushRegisteredUrl({
                             path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
                             type: RegisteredUrlType.GraphDatabase,
                         });
@@ -345,10 +350,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Graph Endpoint Registering`);
 
             if (
-                CoreServiceFactory.workerService.registeredWorkers.some(
-                    (worker: RegisteredHiveWorker) =>
-                        worker.type === HiveWorkerType.GraphEndpointFunction && worker.enabled === true
-                ) &&
+                CoreServiceFactory.workerService
+                    .getAllWorkers()
+                    .some(
+                        (worker: RegisteredHiveWorker) =>
+                            worker.type === HiveWorkerType.GraphEndpointFunction && worker.enabled === true
+                    ) &&
                 graphEndpointModule
             ) {
                 const functionDynamicModule: any = graphEndpointModule;
@@ -383,7 +390,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     path: `/${this.metadata.urlRoute}/custom/graphql`,
                 });
 
-                NodeServiceFactory.appService.registeredUrls.push({
+                NodeServiceFactory.appService.pushRegisteredUrl({
                     path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/custom/graphql`,
                     type: RegisteredUrlType.GraphFunction,
                 });
@@ -394,10 +401,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
             // Register "custom" REST endpoints
             if (
-                CoreServiceFactory.workerService.registeredWorkers.some(
-                    (worker: RegisteredHiveWorker) =>
-                        worker.type === HiveWorkerType.RestEndpointFunction && worker.enabled === true
-                )
+                CoreServiceFactory.workerService
+                    .getAllWorkers()
+                    .some(
+                        (worker: RegisteredHiveWorker) =>
+                            worker.type === HiveWorkerType.RestEndpointFunction && worker.enabled === true
+                    )
             ) {
                 const swaggerDefinition: swaggerUi.JsonObject = {
                     info: {
@@ -415,10 +424,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     ],
                 };
 
-                const restWorkers = CoreServiceFactory.workerService.registeredWorkers.filter(
-                    (rw: RegisteredHiveWorker) =>
-                        rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === false
-                );
+                const restWorkers = CoreServiceFactory.workerService
+                    .getAllWorkers()
+                    .filter(
+                        (rw: RegisteredHiveWorker) =>
+                            rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === false
+                    );
 
                 restWorkers.forEach((rw: RegisteredHiveWorker) => {
                     let workerMetaData: HiveWorkerMetadataRestFunction;
@@ -465,7 +476,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         }
                     );
 
-                    NodeServiceFactory.appService.registeredUrls.push({
+                    NodeServiceFactory.appService.pushRegisteredUrl({
                         path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/custom/rest/${workerMetaData.urlRoute}`,
                         type: RegisteredUrlType.RestFunction,
                     });
@@ -488,7 +499,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         swaggerUi.setup(swaggerDefinition)
                     );
 
-                    NodeServiceFactory.appService.registeredUrls.push({
+                    NodeServiceFactory.appService.pushRegisteredUrl({
                         path: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/${this.metadata.urlRoute}/custom/rest/api-docs`,
                         type: RegisteredUrlType.Swagger,
                     });

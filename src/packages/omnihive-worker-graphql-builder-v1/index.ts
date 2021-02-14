@@ -5,7 +5,6 @@ import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreS
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
@@ -38,16 +37,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         if (!logWorker) {
             throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
         }
-
-        const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<
-            IEncryptionWorker | undefined
-        >(CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
-
-        if (!encryptionWorker) {
-            throw new Error(
-                "Encryption Worker Not Defined.  This graph converter with Cache worker enabled will not work without an Encryption worker."
-            );
-        }
     }
 
     public buildDatabaseWorkerSchema = (
@@ -58,9 +47,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             throw new Error("Connection Schema is Undefined.");
         }
 
-        const enabledWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService.registeredWorkers.filter(
-            (rw: RegisteredHiveWorker) => rw.enabled === true
-        );
+        const enabledWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService
+            .getAllWorkers()
+            .filter((rw: RegisteredHiveWorker) => rw.enabled === true);
 
         const tables = _.uniqBy(connectionSchema.tables, "tableName");
         const lifecycleWorkers: RegisteredHiveWorker[] = enabledWorkers.filter(

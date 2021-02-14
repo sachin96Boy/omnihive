@@ -4,19 +4,6 @@ import { TestSettings } from "@withonevision/omnihive-core/models/TestSettings";
 import fse from "fs-extra";
 
 export class TestService {
-    private static singleton: TestService;
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
-
-    public static getSingleton = (): TestService => {
-        if (!TestService.singleton) {
-            TestService.singleton = new TestService();
-        }
-
-        return TestService.singleton;
-    };
-
     public getConstants = (): { [key: string]: string }[] | undefined => {
         try {
             if (!process.env.omnihive_test_settings) {

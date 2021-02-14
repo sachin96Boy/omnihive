@@ -7,16 +7,15 @@ import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import express from "express";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 //import listEndpoints from "express-list-endpoints";
 
 export class ServerService {
-    public run = async (settings: ServerSettings): Promise<void> => {
+    public run = async (): Promise<void> => {
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
-        await NodeServiceFactory.appService.initCore(pkgJson, settings);
+        await NodeServiceFactory.appService.initCore(pkgJson);
 
         // Intialize "backbone" hive workers
 
@@ -59,7 +58,7 @@ export class ServerService {
             app.get("/", (_req, res) => {
                 res.status(200).render("index", {
                     rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                    registeredUrls: NodeServiceFactory.appService.registeredUrls,
+                    registeredUrls: NodeServiceFactory.appService.getAllRegisteredUrls(),
                     status: NodeServiceFactory.appService.serverStatus,
                     error: NodeServiceFactory.appService.serverError,
                 });

@@ -44,3 +44,6 @@ yarn-error.log*
 #pull request protect
 /src/custom/*
 !/src/custom/README.md
+
+#custom types
+!**/globals.omnihive.*.d.ts

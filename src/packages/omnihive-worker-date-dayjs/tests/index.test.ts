@@ -26,9 +26,9 @@ describe("date worker tests", function () {
     const init = async function (): Promise<void> {
         try {
             await AwaitHelper.execute(CoreServiceFactory.workerService.initWorkers(settings.workers));
-            const newWorker = CoreServiceFactory.workerService.registeredWorkers.find(
-                (x) => x[0].package === packageJson.name
-            );
+            const newWorker = CoreServiceFactory.workerService
+                .getAllWorkers()
+                .find((x) => x[0].package === packageJson.name);
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];

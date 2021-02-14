@@ -1,14 +1,19 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
+import { serializeError } from "serialize-error";
 
 export class OmniHiveClient {
     private static singleton: OmniHiveClient;
+    public registeredWorkers: RegisteredHiveWorker[] = [];
+    public settings: ServerSettings = new ServerSettings();
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
@@ -26,7 +31,120 @@ export class OmniHiveClient {
     };
 
     public init = async (settings: ServerSettings): Promise<void> => {
-        await CoreServiceFactory.workerService.initWorkers(settings.workers);
+        this.settings = settings;
+        try {
+            for (const hiveWorker of settings.workers) {
+                await this.pushWorker(hiveWorker, false);
+            }
+
+            for (const worker of this.registeredWorkers ?? []) {
+                await AwaitHelper.execute<void>((worker.instance as IHiveWorker).afterInit());
+            }
+        } catch (err) {
+            throw new Error("Worker Factory Init Error => " + JSON.stringify(serializeError(err)));
+        }
+    };
+
+    public clearWorkers = (): void => {
+        this.registeredWorkers = [];
+    };
+
+    public getAllWorkers = (): RegisteredHiveWorker[] => {
+        return this.registeredWorkers ?? [];
+    };
+
+    public getWorker = async <T extends IHiveWorker | undefined>(
+        type: string,
+        name?: string
+    ): Promise<T | undefined> => {
+        if (this.registeredWorkers?.length === 0) {
+            return undefined;
+        }
+
+        let hiveWorker: RegisteredHiveWorker | undefined = undefined;
+
+        if (!name) {
+            const defaultWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers?.filter(
+                (rw: RegisteredHiveWorker) => rw.type === type && rw.default === true && rw.enabled === true
+            );
+
+            if (defaultWorkers && defaultWorkers.length > 1) {
+                throw new Error("You cannot have multiple default workers of the same type");
+            }
+
+            if (defaultWorkers && defaultWorkers.length === 1) {
+                hiveWorker = defaultWorkers[0];
+            }
+
+            if (!hiveWorker) {
+                const anyWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers?.filter(
+                    (rw: RegisteredHiveWorker) => rw.type === type && rw.enabled === true
+                );
+
+                if (anyWorkers && anyWorkers.length > 0) {
+                    hiveWorker = anyWorkers[0];
+                } else {
+                    return undefined;
+                }
+            }
+        } else {
+            hiveWorker = this.registeredWorkers?.find(
+                (rw: RegisteredHiveWorker) => rw.type === type && rw.name === name && rw.enabled === true
+            );
+
+            if (!hiveWorker) {
+                return undefined;
+            }
+        }
+
+        return hiveWorker.instance as T;
+    };
+
+    public getWorkersByType = (type: string): RegisteredHiveWorker[] => {
+        return (
+            this.registeredWorkers?.filter((rw: RegisteredHiveWorker) => rw.type === type && rw.enabled === true) ?? []
+        );
+    };
+
+    public pushWorker = async (hiveWorker: HiveWorker, runAfterInit: boolean = true): Promise<void> => {
+        if (!hiveWorker.enabled) {
+            return;
+        }
+
+        if (
+            this.registeredWorkers?.find((value: RegisteredHiveWorker) => {
+                return value.name === hiveWorker.name;
+            })
+        ) {
+            return;
+        }
+
+        if (
+            !hiveWorker.importPath ||
+            hiveWorker.importPath === "" ||
+            !hiveWorker.package ||
+            hiveWorker.package === ""
+        ) {
+            throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`);
+        }
+
+        const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.importPath));
+        const newWorkerInstance: any = new newWorker.default();
+        await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
+
+        if (runAfterInit) {
+            await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).afterInit());
+        }
+
+        const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };
+        let globalWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers;
+
+        if (!globalWorkers) {
+            globalWorkers = [];
+        }
+
+        globalWorkers.push(registeredWorker);
+        this.registeredWorkers = globalWorkers;
     };
 
     public restClient = async (url: string, method: RestMethod, headers?: any, data?: any): Promise<any> => {
@@ -119,35 +237,20 @@ export class OmniHiveClient {
         return graphCall;
     };
 
-    public runCustomSql = async (
-        url: string,
-        sql: string,
-        dbWorkerName: string,
-        encryptionWorkerName?: string
-    ): Promise<any> => {
+    public runCustomSql = async (url: string, sql: string, encryptionWorkerName?: string): Promise<any> => {
         let encryptionWorker: IEncryptionWorker | undefined = undefined;
 
         if (encryptionWorkerName) {
-            encryptionWorker = await CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(
+            encryptionWorker = await this.getWorker<IEncryptionWorker | undefined>(
                 HiveWorkerType.Encryption,
                 encryptionWorkerName
             );
         } else {
-            encryptionWorker = await CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(
-                HiveWorkerType.Encryption
-            );
+            encryptionWorker = await this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
         }
 
         if (!encryptionWorker) {
             throw new Error("No encryption worker found.  An encryption worker is required for custom SQL");
-        }
-
-        const dbWorker: IDatabaseWorker | undefined = await CoreServiceFactory.workerService.getWorker<
-            IDatabaseWorker | undefined
-        >(HiveWorkerType.Database, dbWorkerName);
-
-        if (!dbWorker) {
-            throw new Error("No database worker with the given name found.");
         }
 
         const target: string = `customSql`;

@@ -1,8 +1,11 @@
 #!/usr/bin/env node
+/// <reference path="../omnihive-core-node/globals.omnihive.node.d.ts" />
 
+import { NodeGlobalObject } from "@withonevision/omnihive-core-node/models/NodeGlobalObject";
 import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { CoreGlobalObject } from "@withonevision/omnihive-core/models/CoreGlobalObject";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
 import Conf from "conf";
@@ -17,6 +20,11 @@ import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
 
 const init = async () => {
+    global.omnihive = {
+        core: new CoreGlobalObject(),
+        node: new NodeGlobalObject(),
+    };
+
     const config = new Conf();
     const latestConf: string | undefined = config.get<string>("latest-settings") as string;
     const newAdminPassword = crypto.randomBytes(32).toString("hex");
@@ -291,22 +299,26 @@ const init = async () => {
         serverSettings.config.adminPortNumber = args.argv.adminPort as number;
     }
 
+    CoreServiceFactory.configurationService.settings = serverSettings;
+
     switch (args.argv._[0]) {
         case "taskRunner":
             const taskRunnerService: TaskRunnerService = new TaskRunnerService();
-            await taskRunnerService.run(serverSettings, args.argv.worker as string, args.argv.args as string);
+            await taskRunnerService.run(args.argv.worker as string, args.argv.args as string);
             break;
         case "init":
         case "server":
         default:
             if (args.argv._[0] === "init") {
                 console.log(
-                    chalk.yellow(`New Server Starting => Admin Password: ${serverSettings.config.adminPassword}`)
+                    chalk.yellow(
+                        `New Server Starting => Admin Password: ${CoreServiceFactory.configurationService.settings.config.adminPassword}`
+                    )
                 );
                 console.log();
             }
             const serverService: ServerService = new ServerService();
-            await serverService.run(serverSettings);
+            await serverService.run();
             break;
     }
 };

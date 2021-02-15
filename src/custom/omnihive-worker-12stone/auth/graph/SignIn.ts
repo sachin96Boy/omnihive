@@ -38,9 +38,6 @@ export default class SignIn
                 danyPost("/Security/Login", customArgs)
             );
 
-            DanyService.getSingleton().authToken =
-                result.data.AuthenticationToken;
-
             return result.data;
         } catch (err) {
             console.log(JSON.stringify(serializeError(err)));

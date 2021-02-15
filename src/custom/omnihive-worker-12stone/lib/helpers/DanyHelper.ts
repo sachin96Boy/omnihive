@@ -2,15 +2,19 @@ import axios from "axios";
 import { serializeError } from "serialize-error";
 import DanyService from "../services/DanyService";
 
-export const danyPost = async (path: string, body: any): Promise<any> => {
+export const danyPost = async (
+    path: string,
+    body: any,
+    authToken: string = ""
+): Promise<any> => {
     try {
         const headers: any = {
             "content-type": "application/json",
             "ccc-apikey": DanyService.getSingleton().apiKey,
         };
 
-        if (DanyService.getSingleton().authToken) {
-            headers["authorization"] = DanyService.getSingleton().authToken;
+        if (authToken) {
+            headers["authorization"] = authToken;
         }
 
         return await axios.post(
@@ -25,15 +29,19 @@ export const danyPost = async (path: string, body: any): Promise<any> => {
     }
 };
 
-export const danyPut = async (path: string, body: any): Promise<any> => {
+export const danyPut = async (
+    path: string,
+    body: any,
+    authToken: string = ""
+): Promise<any> => {
     try {
         const headers: any = {
             "content-type": "application/json",
             "ccc-apikey": DanyService.getSingleton().apiKey,
         };
 
-        if (DanyService.getSingleton().authToken) {
-            headers["authorization"] = DanyService.getSingleton().authToken;
+        if (authToken) {
+            headers["authorization"] = authToken;
         }
 
         return await axios.put(
@@ -48,15 +56,18 @@ export const danyPut = async (path: string, body: any): Promise<any> => {
     }
 };
 
-export const danyGet = async (path: string): Promise<any> => {
+export const danyGet = async (
+    path: string,
+    authToken: string = ""
+): Promise<any> => {
     try {
         const headers: any = {
             "content-type": "application/json",
             "ccc-apikey": DanyService.getSingleton().apiKey,
         };
 
-        if (DanyService.getSingleton().authToken) {
-            headers["authorization"] = DanyService.getSingleton().authToken;
+        if (authToken) {
+            headers["authorization"] = authToken;
         }
 
         return await axios.get(DanyService.getSingleton().rootUrl + path, {
@@ -67,15 +78,18 @@ export const danyGet = async (path: string): Promise<any> => {
     }
 };
 
-export const danyDelete = async (path: string): Promise<any> => {
+export const danyDelete = async (
+    path: string,
+    authToken: string = ""
+): Promise<any> => {
     try {
         const headers: any = {
             "content-type": "application/json",
             "ccc-apikey": DanyService.getSingleton().apiKey,
         };
 
-        if (DanyService.getSingleton().authToken) {
-            headers["authorization"] = DanyService.getSingleton().authToken;
+        if (authToken) {
+            headers["authorization"] = authToken;
         }
 
         return await axios.delete(DanyService.getSingleton().rootUrl + path, {

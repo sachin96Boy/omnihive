@@ -15,7 +15,6 @@ export default class DanyService {
     };
 
     public apiKey: string = "";
-    public authToken: string = "";
     public rootUrl: string = "";
 
     public getMetaData = (workerName: string) => {

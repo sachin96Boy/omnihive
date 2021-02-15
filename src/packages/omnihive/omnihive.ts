@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/// <reference path="../omnihive-core-node/globals.omnihive.node.d.ts" />
+/// <reference path="../../types/globals.omnihive.d.ts" />
 
 import { NodeGlobalObject } from "@withonevision/omnihive-core-node/models/NodeGlobalObject";
 import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";

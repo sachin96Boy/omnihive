@@ -1,21 +1,8 @@
-/// <reference path="../globals.omnihive.core.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { HiveAccount } from "../models/HiveAccount";
 import { ServerSettings } from "../models/ServerSettings";
 
 export class ConfigurationService {
-    public get account(): HiveAccount {
-        if (!global.omnihive.core.account) {
-            global.omnihive.core.account = new HiveAccount();
-        }
-
-        return global.omnihive.core.account;
-    }
-
-    public set account(value: HiveAccount) {
-        global.omnihive.core.account = value;
-    }
-
     public get settings(): ServerSettings {
         if (!global.omnihive.core.serverSettings) {
             global.omnihive.core.serverSettings = new ServerSettings();

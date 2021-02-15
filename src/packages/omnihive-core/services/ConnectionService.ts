@@ -1,4 +1,4 @@
-/// <reference path="../globals.omnihive.core.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
 import { ConnectionSchema } from "../models/ConnectionSchema";
 

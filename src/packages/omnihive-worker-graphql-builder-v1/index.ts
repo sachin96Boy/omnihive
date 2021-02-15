@@ -1,12 +1,10 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
 import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
@@ -29,16 +27,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.checkObjectStructure<HiveWorkerMetadataGraphBuilder>(HiveWorkerMetadataGraphBuilder, config.metadata);
     }
 
-    public async afterInit(): Promise<void> {
-        const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-        );
-
-        if (!logWorker) {
-            throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
-        }
-    }
-
     public buildDatabaseWorkerSchema = (
         databaseWorker: IDatabaseWorker,
         connectionSchema: ConnectionSchema | undefined
@@ -47,9 +35,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             throw new Error("Connection Schema is Undefined.");
         }
 
-        const enabledWorkers: RegisteredHiveWorker[] = CoreServiceFactory.workerService
-            .getAllWorkers()
-            .filter((rw: RegisteredHiveWorker) => rw.enabled === true);
+        const enabledWorkers: RegisteredHiveWorker[] = this.registeredWorkers.filter(
+            (rw: RegisteredHiveWorker) => rw.enabled === true
+        );
 
         const tables = _.uniqBy(connectionSchema.tables, "tableName");
         const lifecycleWorkers: RegisteredHiveWorker[] = enabledWorkers.filter(
@@ -67,12 +55,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`var { ITokenWorker } = require("@withonevision/omnihive-core/interfaces/ITokenWorker");`);
         builder.appendLine(`var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`);
         builder.appendLine(
-            `var { CoreServiceFactory } = require("@withonevision/omnihive-core/factories/CoreServiceFactory");`
-        );
-        builder.appendLine(
-            `var { NodeServiceFactory } = require("@withonevision/omnihive-core-node/factories/NodeServiceFactory");`
-        );
-        builder.appendLine(
             `var { ParseMaster } = require("@withonevision/omnihive-worker-graphql-builder-v1/parsers/ParseMaster");`
         );
         builder.appendLine();
@@ -89,25 +71,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         enabledWorkers.forEach((rw: RegisteredHiveWorker) => {
             builder.appendLine(`var ${rw.name} = require("${rw.importPath}");`);
         });
-
-        // Token checker
-        builder.appendLine(`const accessTokenChecker = async (accessToken) => {`);
-        builder.appendLine(
-            `\tconst tokenWorker = await AwaitHelper.execute(CoreServiceFactory.workerService.getWorker(HiveWorkerType.Token));`
-        );
-        builder.appendLine();
-        builder.appendLine(`\tif (accessToken) {`);
-        builder.appendLine(`\t\tconst verified = await AwaitHelper.execute(tokenWorker.verify(accessToken));`);
-        builder.appendLine();
-        builder.appendLine(`\t\tif (verified === false) {`);
-        builder.appendLine(
-            `\t\t\tthrow new Error("ohAccessError: Access token is either the wrong client, invalid, or expired");`
-        );
-        builder.appendLine(`\t\t}`);
-        builder.appendLine(`\t}`);
-        builder.appendLine();
-        builder.appendLine(`\treturn true;`);
-        builder.appendLine(`}`);
 
         // Loop through tables and build base objects
         // ObjectType, MutationType, MutationWhereType
@@ -591,9 +554,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
         builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
         builder.appendLine(
-            `\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
-        );
-        builder.appendLine(
             `\t\t\t\t\tvar dbResponse = await AwaitHelper.execute(graphParser.parseCustomSql("${databaseWorker.config.name}", args.encryptedSql));`
         );
         builder.appendLine(`\t\t\t\t\treturn { recordset: dbResponse };`);
@@ -625,9 +585,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
             builder.appendLine(
-                `\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
-            );
-            builder.appendLine(
                 `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.tokens.cache, context.tokens.cacheSeconds));`
             );
             builder.appendLine(`\t\t\t\t}`);
@@ -649,9 +606,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\t},`);
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
-            builder.appendLine(
-                `\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
-            );
             builder.appendLine(
                 `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.tokens.cache, context.tokens.cacheSeconds));`
             );
@@ -699,9 +653,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
             builder.appendLine(`\t\t\t\t\ttry {`);
             builder.appendLine();
-            builder.appendLine(
-                `\t\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
-            );
 
             // Before insert custom function
 
@@ -856,9 +807,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
             builder.appendLine(`\t\t\t\t\ttry {`);
             builder.appendLine();
-            builder.appendLine(
-                `\t\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
-            );
 
             // Before update custom function
             const beforeUpdateArray: { worker: RegisteredHiveWorker; order: number }[] = [];
@@ -989,9 +937,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine();
             builder.appendLine(`\t\t\t\t\ttry {`);
             builder.appendLine();
-            builder.appendLine(
-                `\t\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
-            );
 
             // Before delete custom function
             const beforeDeleteArray: { worker: RegisteredHiveWorker; order: number }[] = [];
@@ -1172,9 +1117,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\ttype: new GraphQLList(StoredProcObjectType),`);
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
-            builder.appendLine(
-                `\t\t\t\t\tvar valid = await AwaitHelper.execute(accessTokenChecker(context.tokens.access));`
-            );
             builder.appendLine(
                 `\t\t\t\t\tvar dbResponses = await AwaitHelper.execute(graphParser.parseStoredProcedure("${databaseWorker.config.name}", resolveInfo));`
             );

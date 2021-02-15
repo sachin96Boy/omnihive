@@ -85,6 +85,17 @@
         },
         "coreWorkers": [
             {
+                "name": "ohreqLogWorker",
+                "type": "log",
+                "package": "@withonevision/omnihive-worker-log-core",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-log-core/index",
+                "core": true,
+                "default": false,
+                "enabled": true,
+                "metadata": {}
+            },
+            {
                 "name": "ohreqFeatureWorker",
                 "type": "feature",
                 "package": "@withonevision/omnihive-worker-feature-local",
@@ -101,17 +112,6 @@
                 "package": "@withonevision/omnihive-worker-filesystem-fsextra",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
-                "core": true,
-                "default": false,
-                "enabled": true,
-                "metadata": {}
-            },
-            {
-                "name": "ohreqLogWorker",
-                "type": "log",
-                "package": "@withonevision/omnihive-worker-log-core",
-                "version": "workspace:*",
-                "importPath": "@withonevision/omnihive-worker-log-core/index",
                 "core": true,
                 "default": false,
                 "enabled": true,

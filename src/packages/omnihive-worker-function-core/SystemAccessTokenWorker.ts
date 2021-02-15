@@ -1,5 +1,4 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
@@ -20,10 +19,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
     }
 
     public execute = async (_headers: any, _url: string, body: any): Promise<RestEndpointExecuteResponse> => {
-        const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
-        );
-
+        const tokenWorker: ITokenWorker | undefined = this.getWorker<ITokenWorker>(HiveWorkerType.Token);
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");
         }

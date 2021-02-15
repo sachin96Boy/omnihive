@@ -1,6 +1,7 @@
+/// <reference path="../../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
@@ -21,8 +22,7 @@ import {
     GraphQLResolveInfo,
     SelectionNode,
 } from "graphql";
-import Knex from "knex";
-import knex from "knex";
+import { default as Knex, default as knex } from "knex";
 import _ from "lodash";
 import { WhereMode } from "../enum/WhereModes";
 import { GraphHelper } from "../helpers/GraphHelper";
@@ -30,7 +30,6 @@ import { ConverterDatabaseTable } from "../models/ConverterDatabaseTable";
 import { ConverterOrderBy } from "../models/ConverterOrderBy";
 
 export class ParseAstQuery {
-    private logWorker!: ILogWorker;
     private databaseWorker!: IDatabaseWorker;
     private encryptionWorker!: IEncryptionWorker;
     private cacheWorker!: ICacheWorker | undefined;
@@ -52,27 +51,26 @@ export class ParseAstQuery {
         cacheSetting: string,
         cacheTime: string
     ): Promise<any> => {
-        const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-        );
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         if (!logWorker) {
             throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
         }
 
-        const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+        const databaseWorker: IDatabaseWorker | undefined = global.omnihive.getWorker<IDatabaseWorker | undefined>(
+            HiveWorkerType.Database,
+            workerName
         );
 
         if (!databaseWorker) {
             throw new Error(
-                "Database Worker Not Defined.  This graph converter will not work without a database worker."
+                "Database Worker Not Defined.  This graph converter will not work without a Database worker."
             );
         }
 
-        const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<
+        const encryptionWorker: IEncryptionWorker | undefined = global.omnihive.getWorker<
             IEncryptionWorker | undefined
-        >(CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
+        >(HiveWorkerType.Encryption);
 
         if (!encryptionWorker) {
             throw new Error(
@@ -80,15 +78,8 @@ export class ParseAstQuery {
             );
         }
 
-        this.cacheWorker = await AwaitHelper.execute<ICacheWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache)
-        );
-
-        this.dateWorker = await AwaitHelper.execute<IDateWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<IDateWorker | undefined>(HiveWorkerType.Date)
-        );
-
-        this.logWorker = logWorker;
+        this.cacheWorker = global.omnihive.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache);
+        this.dateWorker = global.omnihive.getWorker<IDateWorker | undefined>(HiveWorkerType.Date);
         this.databaseWorker = databaseWorker;
         this.encryptionWorker = encryptionWorker;
 
@@ -114,7 +105,7 @@ export class ParseAstQuery {
                 const keyExists: boolean = await this.cacheWorker.exists(cacheKey);
 
                 if (keyExists) {
-                    this.logWorker.write(
+                    logWorker.write(
                         OmniHiveLogLevel.Info,
                         `(Retrieved from Cache) => ${workerName} => ${converterInfo.sql}`
                     );
@@ -131,17 +122,12 @@ export class ParseAstQuery {
             }
         }
 
-        const dataResults: any[][] = await AwaitHelper.execute<any[][]>(
-            this.databaseWorker.executeQuery(converterInfo.sql)
-        );
+        const dataResults: any[][] = await AwaitHelper.execute<any[][]>(databaseWorker.executeQuery(converterInfo.sql));
         const treeResults: any = this.getGraphFromData(dataResults[0], converterInfo.hydrationDefinition);
 
         if (this.cacheWorker) {
             if (!StringHelper.isNullOrWhiteSpace(cacheSetting) && cacheSetting !== "none") {
-                this.logWorker.write(
-                    OmniHiveLogLevel.Info,
-                    `(Written to Cache) => ${workerName} => ${converterInfo.sql}`
-                );
+                logWorker.write(OmniHiveLogLevel.Info, `(Written to Cache) => ${workerName} => ${converterInfo.sql}`);
                 this.cacheWorker.set(cacheKey, JSON.stringify(treeResults), cacheSeconds);
             }
         }
@@ -615,8 +601,8 @@ export class ParseAstQuery {
             return;
         }
 
-        const schema: ConnectionSchema | undefined = CoreServiceFactory.connectionService.getSchema(
-            this.databaseWorker.config.name
+        const schema: ConnectionSchema | undefined = global.omnihive.registeredSchemas.find(
+            (value: ConnectionSchema) => value.workerName === this.databaseWorker.config.name
         );
 
         let tableSchema: TableSchema[] = [];

@@ -1,6 +1,6 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
+/// <reference path="../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
@@ -21,9 +21,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
     }
 
     public execute = async (headers: any, _url: string, body: any): Promise<RestEndpointExecuteResponse> => {
-        const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
-        );
+        const tokenWorker: ITokenWorker | undefined = this.getWorker<ITokenWorker>(HiveWorkerType.Token);
 
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");
@@ -39,7 +37,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             if (!verified) {
                 throw new Error("Invalid Access Token");
             }
-            return { response: NodeServiceFactory.appService.serverStatus, status: 200 };
+            return { response: global.omnihive.serverStatus, status: 200 };
         } catch (e) {
             return { response: { error: serializeError(e) }, status: 400 };
         }
@@ -132,7 +130,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== CoreServiceFactory.configurationService.settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== this.serverSettings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     };

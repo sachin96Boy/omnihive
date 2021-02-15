@@ -10,7 +10,6 @@ import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/Regist
 import express from "express";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
-//import listEndpoints from "express-list-endpoints";
 
 export class ServerService {
     public run = async (): Promise<void> => {
@@ -76,8 +75,6 @@ export class ServerService {
                     error: serializeError(err),
                 });
             });
-
-            //console.log(listEndpoints(app));
 
             NodeServiceFactory.appService.appServer = app;
             NodeServiceFactory.appService.serverStatus = ServerStatus.Online;

@@ -38,7 +38,9 @@ export class OmniHiveClient {
             }
 
             for (const worker of this.registeredWorkers ?? []) {
-                await AwaitHelper.execute<void>((worker.instance as IHiveWorker).afterInit());
+                await AwaitHelper.execute<void>(
+                    (worker.instance as IHiveWorker).afterInit(this.registeredWorkers, this.settings)
+                );
             }
         } catch (err) {
             throw new Error("Worker Factory Init Error => " + JSON.stringify(serializeError(err)));
@@ -133,7 +135,9 @@ export class OmniHiveClient {
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 
         if (runAfterInit) {
-            await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).afterInit());
+            await AwaitHelper.execute<void>(
+                (newWorkerInstance as IHiveWorker).afterInit(this.registeredWorkers, this.settings)
+            );
         }
 
         const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };

@@ -1,9 +1,6 @@
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import LaunchDarkly, { LDUser } from "launchdarkly-node-server-sdk";
@@ -36,7 +33,6 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
     private features: LaunchDarklyFeature[] = [];
     private user!: LDUser;
     private project!: string;
-    private logWorker: ILogWorker | undefined = undefined;
 
     constructor() {
         super();
@@ -69,16 +65,6 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
             });
         } catch (err) {
             throw new Error("Launch Darkly Init Error => " + JSON.stringify(serializeError(err)));
-        }
-    }
-
-    public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-        );
-
-        if (!this.logWorker) {
-            throw new Error("Log Worker Not Defined.  Feature worker Will Not Function Without Log Worker.");
         }
     }
 

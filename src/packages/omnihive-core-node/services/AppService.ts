@@ -1,4 +1,4 @@
-/// <reference path="../globals.omnihive.node.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
@@ -7,7 +7,6 @@ import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IHiveAccountWorker } from "@withonevision/omnihive-core/interfaces/IHiveAccountWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
@@ -295,24 +294,6 @@ export class AppService {
         logWorker.write(OmniHiveLogLevel.Info, "Working on hive workers...");
         await CoreServiceFactory.workerService.initWorkers(CoreServiceFactory.configurationService.settings.workers);
         logWorker.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
-
-        // Get account if hive worker exists
-        if (
-            CoreServiceFactory.workerService
-                .getAllWorkers()
-                .some((rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.HiveAccount)
-        ) {
-            const accountWorker:
-                | RegisteredHiveWorker
-                | undefined = CoreServiceFactory.workerService
-                .getAllWorkers()
-                .find((rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.HiveAccount);
-
-            if (accountWorker) {
-                const accountWorkerInstance: IHiveAccountWorker = accountWorker.instance as IHiveAccountWorker;
-                CoreServiceFactory.configurationService.account = await accountWorkerInstance.getHiveAccount();
-            }
-        }
     };
 
     public getCleanAppServer = async (): Promise<express.Express> => {

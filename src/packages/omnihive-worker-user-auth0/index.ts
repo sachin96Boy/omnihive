@@ -1,9 +1,6 @@
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IUserWorker } from "@withonevision/omnihive-core/interfaces/IUserWorker";
 import { AuthUser } from "@withonevision/omnihive-core/models/AuthUser";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
@@ -33,7 +30,6 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     private metadata!: AuthZeroUserWorkerMetadata;
     private authClient!: AuthenticationClient;
     private managementClient!: ManagementClient;
-    private logWorker: ILogWorker | undefined = undefined;
 
     constructor() {
         super();
@@ -62,16 +58,6 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             });
         } catch (err) {
             console.log("User Init Error => " + JSON.stringify(serializeError(err)));
-        }
-    }
-
-    public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-        );
-
-        if (!this.logWorker) {
-            throw new Error("Log Worker Not Defined.  Cross-Storage Will Not Function Without Log Worker.");
         }
     }
 

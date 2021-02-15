@@ -1,5 +1,4 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
@@ -21,9 +20,7 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
     }
 
     public execute = async (headers: any, _url: string, body: any): Promise<RestEndpointExecuteResponse> => {
-        const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
-        );
+        const tokenWorker: ITokenWorker | undefined = this.getWorker<ITokenWorker>(HiveWorkerType.Token);
 
         if (!tokenWorker) {
             throw new Error("Token Worker cannot be found");
@@ -121,7 +118,7 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== CoreServiceFactory.configurationService.settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== this.serverSettings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
 
@@ -129,9 +126,7 @@ export default class SystemCheckSettingsWorker extends HiveWorkerBase implements
             throw new Error(`Request Denied`);
         }
 
-        if (
-            paramsStructured.serverGroupName !== CoreServiceFactory.configurationService.settings.config.serverGroupName
-        ) {
+        if (paramsStructured.serverGroupName !== this.serverSettings.config.serverGroupName) {
             throw new Error(`Request Denied`);
         }
     };

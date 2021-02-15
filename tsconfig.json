@@ -40,11 +40,5 @@
         "src/custom/**/tests/**/*.ts",
         "src/custom/**/nodemon*.json"
     ],
-    "include": [
-        "src/packages/**/*.ts",
-        "src/packages/**/globals.omnihive.*.d.ts",
-        "src/packages/**/*.json",
-        "src/custom/**/*.ts",
-        "src/custom/**/*.json"
-    ]
+    "include": ["src/packages/**/*.ts", "src/packages/**/*.json", "src/custom/**/*.ts", "src/custom/**/*.json"]
 }

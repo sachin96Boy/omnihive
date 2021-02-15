@@ -1,28 +1,30 @@
+/// <reference path="../../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 
 export class ParseCustomSql {
     public parse = async (workerName: string, encryptedSql: string): Promise<any[][]> => {
-        const encryptionWorker: IEncryptionWorker | undefined = await AwaitHelper.execute<
-            IEncryptionWorker | undefined
-        >(CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption));
-
-        if (!encryptionWorker) {
-            throw new Error(
-                "Encryption Worker Not Defined.  This graph converter will not work without an Encryption worker."
-            );
-        }
-
-        const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+        const databaseWorker: IDatabaseWorker | undefined = global.omnihive.getWorker<IDatabaseWorker | undefined>(
+            HiveWorkerType.Database,
+            workerName
         );
 
         if (!databaseWorker) {
             throw new Error(
-                "Database Worker Not Defined.  This graph converter will not work without a Database worker."
+                "Database Worker Not Defined.  This graph converter will not work without an Encryption worker."
+            );
+        }
+
+        const encryptionWorker: IEncryptionWorker | undefined = global.omnihive.getWorker<
+            IEncryptionWorker | undefined
+        >(HiveWorkerType.Encryption);
+
+        if (!encryptionWorker) {
+            throw new Error(
+                "Encryption Worker Not Defined.  This graph converter will not work without an Encryption worker."
             );
         }
 

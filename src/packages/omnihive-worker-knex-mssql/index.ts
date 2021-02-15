@@ -1,11 +1,8 @@
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
@@ -25,7 +22,6 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: sql.config;
     private metadata!: MssqlDatabaseWorkerMetadata;
-    private logWorker: ILogWorker | undefined = undefined;
 
     constructor() {
         super();
@@ -60,16 +56,6 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             this.connection = knex(connectionOptions);
         } catch (err) {
             throw new Error("MSSQL Init Error => " + JSON.stringify(serializeError(err)));
-        }
-    }
-
-    public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-        );
-
-        if (!this.logWorker) {
-            throw new Error("Log Worker Not Defined.  Database Worker Will Not Function Without Log Worker.");
         }
     }
 

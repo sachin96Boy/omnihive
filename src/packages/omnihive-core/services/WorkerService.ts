@@ -1,4 +1,4 @@
-/// <reference path="../globals.omnihive.core.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
 import path from "path";
 import { serializeError } from "serialize-error";
@@ -17,7 +17,12 @@ export class WorkerService {
             }
 
             for (const worker of global.omnihive.core.registeredWorkers ?? []) {
-                await AwaitHelper.execute<void>((worker.instance as IHiveWorker).afterInit());
+                await AwaitHelper.execute<void>(
+                    (worker.instance as IHiveWorker).afterInit(
+                        global.omnihive.core.registeredWorkers,
+                        global.omnihive.core.serverSettings
+                    )
+                );
             }
         } catch (err) {
             throw new Error("Worker Factory Init Error => " + JSON.stringify(serializeError(err)));
@@ -120,7 +125,12 @@ export class WorkerService {
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 
         if (runAfterInit) {
-            await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).afterInit());
+            await AwaitHelper.execute<void>(
+                (newWorkerInstance as IHiveWorker).afterInit(
+                    global.omnihive.core.registeredWorkers,
+                    global.omnihive.core.serverSettings
+                )
+            );
         }
 
         const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };

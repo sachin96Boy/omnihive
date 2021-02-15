@@ -5,37 +5,31 @@ import { serializeError } from "serialize-error";
 import { danyPost } from "../../lib/helpers/DanyHelper";
 import DanyService from "../../lib/services/DanyService";
 
-class SignInArgs {
-    UserName: string = "";
+class CreateUserArgs {
+    AddressLine1: string = "";
+    AddressLine2: string = "";
+    City: string = "";
+    CustomData: string = "";
+    Data: string = "";
+    Email: string = "";
+    FirstName: string = "";
+    LastName: string = "";
     Password: string = "";
+    PhoneNumber: string = "";
+    PostalCode: string = "";
+    State: string = "";
 }
 
-export default class SignIn
+export default class CreateUser
     extends HiveWorkerBase
     implements IGraphEndpointWorker {
-    public execute = async (customArgs: any): Promise<any> => {
+    public execute = async (customArgs: CreateUserArgs): Promise<any> => {
         try {
-            if (customArgs.Data) {
-                throw new Error("Unauthorized");
-            }
-
             // Get Metadata
-            DanyService.getSingleton().getMetaData("SignIn");
-
-            // Sanitize arguments
-            const trueArgs: any = {};
-
-            Object.keys(customArgs).forEach((key: string) => {
-                if (key !== "Data") {
-                    trueArgs[key] = customArgs[key];
-                }
-            });
-
-            // Validate arguments
-            this.checkObjectStructure(SignInArgs, trueArgs);
+            DanyService.getSingleton().getMetaData("CreateUser");
 
             const result = await AwaitHelper.execute(
-                danyPost("/Security/Login", customArgs)
+                danyPost("/Security/Register", customArgs)
             );
 
             return result.data;

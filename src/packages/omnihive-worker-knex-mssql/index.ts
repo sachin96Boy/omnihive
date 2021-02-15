@@ -1,12 +1,16 @@
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import knex from "knex";
@@ -22,6 +26,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: sql.config;
     private metadata!: MssqlDatabaseWorkerMetadata;
+    private logWorker!: ILogWorker | undefined;
 
     constructor() {
         super();
@@ -57,6 +62,12 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         } catch (err) {
             throw new Error("MSSQL Init Error => " + JSON.stringify(serializeError(err)));
         }
+    }
+
+    public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
+        await AwaitHelper.execute<void>(super.afterInit(registeredWorkers, serverSettings));
+
+        this.logWorker = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
     }
 
     public executeQuery = async (query: string): Promise<any[][]> => {

@@ -11,6 +11,7 @@ import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper"
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
@@ -22,6 +23,7 @@ import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/mod
 import { HiveWorkerMetadataServer } from "@withonevision/omnihive-core/models/HiveWorkerMetadataServer";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
@@ -37,6 +39,7 @@ type BuilderDatabaseWorker = {
 
 export default class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
     private metadata!: HiveWorkerMetadataServer;
+    private logWorker!: ILogWorker | undefined;
 
     constructor() {
         super();
@@ -53,6 +56,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
         } catch (err) {
             throw new Error("Server Init Error => " + JSON.stringify(serializeError(err)));
         }
+    }
+
+    public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
+        await AwaitHelper.execute<void>(super.afterInit(registeredWorkers, serverSettings));
+
+        this.logWorker = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
     }
 
     public buildServer = async (app: express.Express): Promise<express.Express> => {

@@ -55,51 +55,36 @@ export class OmniHiveClient {
         return this.registeredWorkers ?? [];
     };
 
-    public getWorker = async <T extends IHiveWorker | undefined>(
-        type: string,
-        name?: string
-    ): Promise<T | undefined> => {
-        if (this.registeredWorkers?.length === 0) {
+    public getWorker = <T extends IHiveWorker | undefined>(type: string, name?: string): T | undefined => {
+        if (name) {
+            const namedWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
+                (value: RegisteredHiveWorker) => value.name === name && value.type === type && value.enabled === true
+            );
+
+            if (namedWorker) {
+                return namedWorker.instance as T;
+            }
+
             return undefined;
         }
 
-        let hiveWorker: RegisteredHiveWorker | undefined = undefined;
+        const defaultWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
+            (value: RegisteredHiveWorker) => value.type === type && value.enabled === true && value.default === true
+        );
 
-        if (!name) {
-            const defaultWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers?.filter(
-                (rw: RegisteredHiveWorker) => rw.type === type && rw.default === true && rw.enabled === true
-            );
-
-            if (defaultWorkers && defaultWorkers.length > 1) {
-                throw new Error("You cannot have multiple default workers of the same type");
-            }
-
-            if (defaultWorkers && defaultWorkers.length === 1) {
-                hiveWorker = defaultWorkers[0];
-            }
-
-            if (!hiveWorker) {
-                const anyWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers?.filter(
-                    (rw: RegisteredHiveWorker) => rw.type === type && rw.enabled === true
-                );
-
-                if (anyWorkers && anyWorkers.length > 0) {
-                    hiveWorker = anyWorkers[0];
-                } else {
-                    return undefined;
-                }
-            }
-        } else {
-            hiveWorker = this.registeredWorkers?.find(
-                (rw: RegisteredHiveWorker) => rw.type === type && rw.name === name && rw.enabled === true
-            );
-
-            if (!hiveWorker) {
-                return undefined;
-            }
+        if (defaultWorker) {
+            return defaultWorker.instance as T;
         }
 
-        return hiveWorker.instance as T;
+        const anyWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers.filter(
+            (value: RegisteredHiveWorker) => value.type === type && value.enabled === true
+        );
+
+        if (anyWorkers && anyWorkers.length > 0) {
+            return anyWorkers[0].instance as T;
+        }
+
+        return undefined;
     };
 
     public getWorkersByType = (type: string): RegisteredHiveWorker[] => {

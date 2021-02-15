@@ -1,11 +1,8 @@
 #!/usr/bin/env node
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { NodeGlobalObject } from "@withonevision/omnihive-core-node/models/NodeGlobalObject";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
-import { CoreGlobalObject } from "@withonevision/omnihive-core/models/CoreGlobalObject";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
 import Conf from "conf";
@@ -16,21 +13,19 @@ import fse from "fs-extra";
 import inquirer from "inquirer";
 import path from "path";
 import yargs from "yargs";
+import { GlobalObject } from "./models/GlobalObject";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
 
 const init = async () => {
-    global.omnihive = {
-        core: new CoreGlobalObject(),
-        node: new NodeGlobalObject(),
-    };
+    global.omnihive = new GlobalObject();
 
     const config = new Conf();
     const latestConf: string | undefined = config.get<string>("latest-settings") as string;
     const newAdminPassword = crypto.randomBytes(32).toString("hex");
     const newServerGroupName = crypto.randomBytes(8).toString("hex");
 
-    CoreServiceFactory.configurationService.ohDirName = __dirname;
+    global.omnihive.ohDirName = __dirname;
 
     if (!process.env.omnihive_settings) {
         dotenv.config();
@@ -217,12 +212,9 @@ const init = async () => {
         const settings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
             ServerSettings,
             JSON.parse(
-                fse.readFileSync(
-                    path.join(CoreServiceFactory.configurationService.ohDirName, `templates`, `default_config.json`),
-                    {
-                        encoding: "utf8",
-                    }
-                )
+                fse.readFileSync(path.join(global.omnihive.ohDirName, `templates`, `default_config.json`), {
+                    encoding: "utf8",
+                })
             )
         );
 
@@ -299,7 +291,7 @@ const init = async () => {
         serverSettings.config.adminPortNumber = args.argv.adminPort as number;
     }
 
-    CoreServiceFactory.configurationService.settings = serverSettings;
+    global.omnihive.serverSettings = serverSettings;
 
     switch (args.argv._[0]) {
         case "taskRunner":
@@ -312,7 +304,7 @@ const init = async () => {
             if (args.argv._[0] === "init") {
                 console.log(
                     chalk.yellow(
-                        `New Server Starting => Admin Password: ${CoreServiceFactory.configurationService.settings.config.adminPassword}`
+                        `New Server Starting => Admin Password: ${global.omnihive.serverSettings.config.adminPassword}`
                     )
                 );
                 console.log();

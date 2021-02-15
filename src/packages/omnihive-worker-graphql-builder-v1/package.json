@@ -24,7 +24,6 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "@withonevision/omnihive-core-node": "workspace:*",
         "graphql": "15.5.0",
         "knex": "0.21.17",
         "lodash": "4.17.20",

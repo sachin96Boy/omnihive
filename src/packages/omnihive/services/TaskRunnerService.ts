@@ -1,7 +1,7 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
+/// <reference path="../../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
@@ -9,16 +9,21 @@ import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/Regist
 import chalk from "chalk";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
+import { AppService } from "./AppService";
+import { WorkerService } from "./WorkerService";
 
 export class TaskRunnerService {
+    private logWorker!: ILogWorker;
+
     public run = async (worker: string, args: string): Promise<void> => {
         // Run basic app service
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
-        await NodeServiceFactory.appService.initCore(pkgJson);
+        const appService: AppService = new AppService();
+        const workerService: WorkerService = new WorkerService();
 
-        const fileSystemWorker:
-            | IFileSystemWorker
-            | undefined = await CoreServiceFactory.workerService.getWorker<IFileSystemWorker>(
+        await appService.initCore(pkgJson);
+
+        const fileSystemWorker: IFileSystemWorker | undefined = workerService.getWorker<IFileSystemWorker>(
             HiveWorkerType.FileSystem
         );
 
@@ -26,7 +31,7 @@ export class TaskRunnerService {
             throw new Error("FileSystem Worker Not Found...Cannot Read Args");
         }
 
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = workerService.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );
@@ -35,9 +40,11 @@ export class TaskRunnerService {
             throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
         }
 
+        this.logWorker = logWorker;
+
         // Get TaskWorker
 
-        const taskWorker: RegisteredHiveWorker | undefined = CoreServiceFactory.workerService
+        const taskWorker: RegisteredHiveWorker | undefined = workerService
             .getAllWorkers()
             .find(
                 (rw: RegisteredHiveWorker) =>
@@ -83,17 +90,8 @@ export class TaskRunnerService {
     };
 
     private logError = async (workerName: string, err: Error) => {
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
-
-        if (!logWorker) {
-            throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
-        }
-
         console.log(err);
-        logWorker.write(
+        this.logWorker.write(
             OmniHiveLogLevel.Error,
             `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`
         );

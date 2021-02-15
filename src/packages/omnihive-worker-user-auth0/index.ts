@@ -1,10 +1,14 @@
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IUserWorker } from "@withonevision/omnihive-core/interfaces/IUserWorker";
 import { AuthUser } from "@withonevision/omnihive-core/models/AuthUser";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import {
     AppMetadata,
     AuthenticationClient,
@@ -30,6 +34,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     private metadata!: AuthZeroUserWorkerMetadata;
     private authClient!: AuthenticationClient;
     private managementClient!: ManagementClient;
+    private logWorker!: ILogWorker | undefined;
 
     constructor() {
         super();
@@ -59,6 +64,12 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         } catch (err) {
             console.log("User Init Error => " + JSON.stringify(serializeError(err)));
         }
+    }
+
+    public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
+        await AwaitHelper.execute<void>(super.afterInit(registeredWorkers, serverSettings));
+
+        this.logWorker = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
     }
 
     public create = async (email: string, password: string): Promise<AuthUser> => {

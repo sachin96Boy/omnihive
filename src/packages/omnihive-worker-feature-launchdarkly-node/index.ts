@@ -1,8 +1,12 @@
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import LaunchDarkly, { LDUser } from "launchdarkly-node-server-sdk";
 import { serializeError } from "serialize-error";
 
@@ -33,6 +37,7 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
     private features: LaunchDarklyFeature[] = [];
     private user!: LDUser;
     private project!: string;
+    private logWorker!: ILogWorker | undefined;
 
     constructor() {
         super();
@@ -66,6 +71,12 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
         } catch (err) {
             throw new Error("Launch Darkly Init Error => " + JSON.stringify(serializeError(err)));
         }
+    }
+
+    public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
+        await AwaitHelper.execute<void>(super.afterInit(registeredWorkers, serverSettings));
+
+        this.logWorker = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
     }
 
     public get = async <T extends unknown>(name: string, defaultValue?: unknown): Promise<T | undefined> => {

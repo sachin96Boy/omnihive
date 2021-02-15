@@ -1,8 +1,8 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
+/// <reference path="../../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
@@ -10,15 +10,20 @@ import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/Regist
 import express from "express";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
+import { AppService } from "./AppService";
+import { WorkerService } from "./WorkerService";
 
 export class ServerService {
     public run = async (): Promise<void> => {
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
-        await NodeServiceFactory.appService.initCore(pkgJson);
+        const appService: AppService = new AppService();
+        const workerService: WorkerService = new WorkerService();
+
+        await appService.initCore(pkgJson);
 
         // Intialize "backbone" hive workers
 
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = workerService.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );
@@ -28,18 +33,14 @@ export class ServerService {
         }
 
         // Set server to rebuilding first
-        await AwaitHelper.execute<void>(NodeServiceFactory.appService.loadSpecialStatusApp(ServerStatus.Rebuilding));
-        await NodeServiceFactory.appService.serverChangeHandler();
+        await AwaitHelper.execute<void>(appService.loadSpecialStatusApp(ServerStatus.Rebuilding));
+        await appService.serverChangeHandler();
 
         // Try to spin up full server
         try {
-            let app: express.Express = await AwaitHelper.execute<express.Express>(
-                NodeServiceFactory.appService.getCleanAppServer()
-            );
+            let app: express.Express = await AwaitHelper.execute<express.Express>(appService.getCleanAppServer());
 
-            const servers: RegisteredHiveWorker[] = CoreServiceFactory.workerService.getWorkersByType(
-                HiveWorkerType.Server
-            );
+            const servers: RegisteredHiveWorker[] = workerService.getWorkersByType(HiveWorkerType.Server);
 
             for (const server of servers) {
                 try {
@@ -56,33 +57,31 @@ export class ServerService {
 
             app.get("/", (_req, res) => {
                 res.status(200).render("index", {
-                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                    registeredUrls: NodeServiceFactory.appService.getAllRegisteredUrls(),
-                    status: NodeServiceFactory.appService.serverStatus,
-                    error: NodeServiceFactory.appService.serverError,
+                    rootUrl: global.omnihive.serverSettings.config.rootUrl,
+                    registeredUrls: global.omnihive.registeredUrls,
+                    status: global.omnihive.serverStatus,
+                    error: global.omnihive.serverError,
                 });
             });
 
             app.use((_req, res) => {
-                return res
-                    .status(404)
-                    .render("404", { rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl });
+                return res.status(404).render("404", { rootUrl: global.omnihive.serverSettings.config.rootUrl });
             });
 
             app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
-                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
+                    rootUrl: global.omnihive.serverSettings.config.rootUrl,
                     error: serializeError(err),
                 });
             });
 
-            NodeServiceFactory.appService.appServer = app;
-            NodeServiceFactory.appService.serverStatus = ServerStatus.Online;
-            await NodeServiceFactory.appService.serverChangeHandler();
+            global.omnihive.appServer = app;
+            global.omnihive.serverStatus = ServerStatus.Online;
+            await appService.serverChangeHandler();
         } catch (err) {
             // Problem...spin up admin server
-            NodeServiceFactory.appService.loadSpecialStatusApp(ServerStatus.Admin, err);
-            await NodeServiceFactory.appService.serverChangeHandler();
+            appService.loadSpecialStatusApp(ServerStatus.Admin, err);
+            await appService.serverChangeHandler();
             logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
         }
     };

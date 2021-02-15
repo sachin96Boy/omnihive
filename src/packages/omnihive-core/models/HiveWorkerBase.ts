@@ -1,7 +1,5 @@
-import { HiveWorkerType } from "../enums/HiveWorkerType";
 import { ObjectHelper } from "../helpers/ObjectHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
-import { ILogWorker } from "../interfaces/ILogWorker";
 import { HiveWorker } from "./HiveWorker";
 import { RegisteredHiveWorker } from "./RegisteredHiveWorker";
 import { ServerSettings } from "./ServerSettings";
@@ -10,19 +8,10 @@ export abstract class HiveWorkerBase implements IHiveWorker {
     public config!: HiveWorker;
     public registeredWorkers!: RegisteredHiveWorker[];
     public serverSettings!: ServerSettings;
-    public logWorker!: ILogWorker | undefined;
 
     public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
         this.registeredWorkers = registeredWorkers;
         this.serverSettings = serverSettings;
-
-        this.logWorker = <ILogWorker | undefined>this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
-
-        if (!this.logWorker) {
-            throw new Error("Log Worker Not Defined.  Feature worker Will Not Function Without Log Worker.");
-        }
-
-        return;
     }
 
     public async init(config: HiveWorker): Promise<void> {
@@ -46,14 +35,10 @@ export abstract class HiveWorkerBase implements IHiveWorker {
         return objectData;
     };
 
-    public getWorker = <T extends IHiveWorker | undefined>(type: string, name?: string): T | undefined => {
-        if (this.registeredWorkers.length === 0) {
-            return undefined;
-        }
-
+    public getWorker<T extends IHiveWorker | undefined>(type: string, name?: string): T | undefined {
         if (name) {
-            const namedWorker = this.registeredWorkers.find(
-                (value: RegisteredHiveWorker) => value.name === name && value.type === type
+            const namedWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
+                (value: RegisteredHiveWorker) => value.name === name && value.type === type && value.enabled === true
             );
 
             if (namedWorker) {
@@ -63,14 +48,22 @@ export abstract class HiveWorkerBase implements IHiveWorker {
             return undefined;
         }
 
-        const typeWorker = this.registeredWorkers.find(
-            (value: RegisteredHiveWorker) => value.type === type && value.default === true
+        const defaultWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
+            (value: RegisteredHiveWorker) => value.type === type && value.enabled === true && value.default === true
         );
 
-        if (typeWorker) {
-            return typeWorker.instance as T;
+        if (defaultWorker) {
+            return defaultWorker.instance as T;
+        }
+
+        const anyWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers.filter(
+            (value: RegisteredHiveWorker) => value.type === type && value.enabled === true
+        );
+
+        if (anyWorkers && anyWorkers.length > 0) {
+            return anyWorkers[0].instance as T;
         }
 
         return undefined;
-    };
+    }
 }

@@ -7,8 +7,6 @@ import { IUserWorker } from "@withonevision/omnihive-core/interfaces/IUserWorker
 import { AuthUser } from "@withonevision/omnihive-core/models/AuthUser";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import {
     AppMetadata,
     AuthenticationClient,
@@ -34,7 +32,6 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
     private metadata!: AuthZeroUserWorkerMetadata;
     private authClient!: AuthenticationClient;
     private managementClient!: ManagementClient;
-    private logWorker!: ILogWorker | undefined;
 
     constructor() {
         super();
@@ -66,16 +63,12 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         }
     }
 
-    public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
-        await AwaitHelper.execute<void>(super.afterInit(registeredWorkers, serverSettings));
-
-        this.logWorker = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
-    }
-
     public create = async (email: string, password: string): Promise<AuthUser> => {
         if (StringHelper.isNullOrWhiteSpace(email) || StringHelper.isNullOrWhiteSpace(password)) {
             throw new Error("All parameters must be valid strings");
         }
+
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         try {
             const authUser: AuthUser = new AuthUser();
@@ -89,7 +82,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             return authUser;
         } catch (err) {
             const error = `Create User Error => ${JSON.stringify(serializeError(err))}`;
-            this.logWorker?.write(OmniHiveLogLevel.Error, error);
+            logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
     };
@@ -98,6 +91,8 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         if (StringHelper.isNullOrWhiteSpace(email)) {
             throw new Error("Must have an email to search by");
         }
+
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         let fullUser: User<AppMetadata, UserMetadata> | undefined = undefined;
         let user: User | undefined = undefined;
@@ -175,7 +170,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             return authUser;
         } catch (err) {
             const error = `Get User Error => ${JSON.stringify(serializeError(err))}`;
-            this.logWorker?.write(OmniHiveLogLevel.Error, error);
+            logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
     };
@@ -184,6 +179,8 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         if (StringHelper.isNullOrWhiteSpace(email) || StringHelper.isNullOrWhiteSpace(password)) {
             throw new Error("All parameters must be valid strings");
         }
+
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         try {
             const databaseLoginData: PasswordGrantOptions = {
@@ -194,7 +191,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             await AwaitHelper.execute<TokenResponse>(this.authClient.passwordGrant(databaseLoginData));
         } catch (err) {
             const error = `Login Error => ${JSON.stringify(serializeError(err))}`;
-            this.logWorker?.write(OmniHiveLogLevel.Error, error);
+            logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
 
@@ -206,13 +203,15 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             throw new Error("All parameters must be valid strings");
         }
 
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
+
         const changePasswordData: ResetPasswordEmailOptions = { email, connection: this.metadata.connection };
 
         try {
             await AwaitHelper.execute<any>(this.authClient.requestChangePasswordEmail(changePasswordData));
         } catch (err) {
             const error = `Change Password Error => ${JSON.stringify(serializeError(err))}`;
-            this.logWorker?.write(OmniHiveLogLevel.Error, error);
+            logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
 
@@ -223,6 +222,8 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         if (StringHelper.isNullOrWhiteSpace(userName) || !authUser) {
             throw new Error("Must have a username and some valid properties to update.");
         }
+
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         let user: User | undefined = undefined;
 
@@ -297,7 +298,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             );
         } catch (err) {
             const error = `Update User Error => ${JSON.stringify(serializeError(err))}`;
-            this.logWorker?.write(OmniHiveLogLevel.Error, error);
+            logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
 
@@ -309,6 +310,8 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             throw new Error("All parameters must be valid strings");
         }
 
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
+
         try {
             const deleteUserData: any = { id };
 
@@ -317,7 +320,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             return "User successfully deleted";
         } catch (err) {
             const error = `Delete User Error => ${JSON.stringify(serializeError(err))}`;
-            this.logWorker?.write(OmniHiveLogLevel.Error, error);
+            logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
     };
@@ -326,6 +329,8 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
         if (StringHelper.isNullOrWhiteSpace(email)) {
             throw new Error("Must provide an email to search.");
         }
+
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         let user: User | undefined = undefined;
 
@@ -342,7 +347,7 @@ export default class AuthZeroUserWorker extends HiveWorkerBase implements IUserW
             }
         } catch (err) {
             const error = `Get UserId By Email Error => ${JSON.stringify(serializeError(err))}`;
-            this.logWorker?.write(OmniHiveLogLevel.Error, error);
+            logWorker?.write(OmniHiveLogLevel.Error, error);
             throw new Error(error);
         }
     };

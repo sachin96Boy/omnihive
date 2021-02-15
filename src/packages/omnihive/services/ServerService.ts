@@ -11,19 +11,17 @@ import express from "express";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AppService } from "./AppService";
-import { WorkerService } from "./WorkerService";
 
 export class ServerService {
     public run = async (): Promise<void> => {
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
         const appService: AppService = new AppService();
-        const workerService: WorkerService = new WorkerService();
 
         await appService.initCore(pkgJson);
 
         // Intialize "backbone" hive workers
 
-        const logWorker: ILogWorker | undefined = workerService.getWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );
@@ -40,7 +38,9 @@ export class ServerService {
         try {
             let app: express.Express = await AwaitHelper.execute<express.Express>(appService.getCleanAppServer());
 
-            const servers: RegisteredHiveWorker[] = workerService.getWorkersByType(HiveWorkerType.Server);
+            const servers: RegisteredHiveWorker[] = global.omnihive.registeredWorkers.filter(
+                (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.Server && rw.enabled === true
+            );
 
             for (const server of servers) {
                 try {

@@ -34,25 +34,16 @@ export class OmniHiveClient {
         this.settings = settings;
         try {
             for (const hiveWorker of settings.workers) {
-                await this.pushWorker(hiveWorker, false);
+                await this.pushWorker(hiveWorker);
             }
 
-            for (const worker of this.registeredWorkers ?? []) {
-                await AwaitHelper.execute<void>(
-                    (worker.instance as IHiveWorker).afterInit(this.registeredWorkers, this.settings)
-                );
+            for (const worker of this.registeredWorkers) {
+                (worker.instance as IHiveWorker).registeredWorkers = this.registeredWorkers;
+                (worker.instance as IHiveWorker).serverSettings = this.settings;
             }
         } catch (err) {
             throw new Error("Worker Factory Init Error => " + JSON.stringify(serializeError(err)));
         }
-    };
-
-    public clearWorkers = (): void => {
-        this.registeredWorkers = [];
-    };
-
-    public getAllWorkers = (): RegisteredHiveWorker[] => {
-        return this.registeredWorkers ?? [];
     };
 
     public getWorker = <T extends IHiveWorker | undefined>(type: string, name?: string): T | undefined => {
@@ -87,13 +78,7 @@ export class OmniHiveClient {
         return undefined;
     };
 
-    public getWorkersByType = (type: string): RegisteredHiveWorker[] => {
-        return (
-            this.registeredWorkers?.filter((rw: RegisteredHiveWorker) => rw.type === type && rw.enabled === true) ?? []
-        );
-    };
-
-    public pushWorker = async (hiveWorker: HiveWorker, runAfterInit: boolean = true): Promise<void> => {
+    public pushWorker = async (hiveWorker: HiveWorker): Promise<void> => {
         if (!hiveWorker.enabled) {
             return;
         }
@@ -118,12 +103,6 @@ export class OmniHiveClient {
         const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.importPath));
         const newWorkerInstance: any = new newWorker.default();
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
-
-        if (runAfterInit) {
-            await AwaitHelper.execute<void>(
-                (newWorkerInstance as IHiveWorker).afterInit(this.registeredWorkers, this.settings)
-            );
-        }
 
         const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };
         let globalWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers;

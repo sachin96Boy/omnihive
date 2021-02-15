@@ -10,7 +10,6 @@ import chalk from "chalk";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AppService } from "./AppService";
-import { WorkerService } from "./WorkerService";
 
 export class TaskRunnerService {
     private logWorker!: ILogWorker;
@@ -19,11 +18,10 @@ export class TaskRunnerService {
         // Run basic app service
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
         const appService: AppService = new AppService();
-        const workerService: WorkerService = new WorkerService();
 
         await appService.initCore(pkgJson);
 
-        const fileSystemWorker: IFileSystemWorker | undefined = workerService.getWorker<IFileSystemWorker>(
+        const fileSystemWorker: IFileSystemWorker | undefined = global.omnihive.getWorker<IFileSystemWorker>(
             HiveWorkerType.FileSystem
         );
 
@@ -31,7 +29,7 @@ export class TaskRunnerService {
             throw new Error("FileSystem Worker Not Found...Cannot Read Args");
         }
 
-        const logWorker: ILogWorker | undefined = workerService.getWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );
@@ -44,12 +42,10 @@ export class TaskRunnerService {
 
         // Get TaskWorker
 
-        const taskWorker: RegisteredHiveWorker | undefined = workerService
-            .getAllWorkers()
-            .find(
-                (rw: RegisteredHiveWorker) =>
-                    rw.name === worker && rw.enabled === true && rw.type === HiveWorkerType.TaskFunction
-            );
+        const taskWorker: RegisteredHiveWorker | undefined = global.omnihive.registeredWorkers.find(
+            (rw: RegisteredHiveWorker) =>
+                rw.name === worker && rw.enabled === true && rw.type === HiveWorkerType.TaskFunction
+        );
 
         if (!taskWorker) {
             this.logError(

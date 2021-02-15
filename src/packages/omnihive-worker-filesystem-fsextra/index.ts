@@ -3,6 +3,10 @@ import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBa
 import fse from "fs-extra";
 
 export default class FileSystemWorker extends HiveWorkerBase implements IFileSystemWorker {
+    constructor() {
+        super();
+    }
+
     public copyDirectory = (sourcePath: string, destPath: string): void => {
         fse.copySync(sourcePath, destPath);
     };

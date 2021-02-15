@@ -22,7 +22,6 @@ import path from "path";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
-import { WorkerService } from "./WorkerService";
 
 export class AppService {
     public changeServerStatus = (serverStatus: ServerStatus, error?: Error): void => {
@@ -36,8 +35,6 @@ export class AppService {
     };
 
     public initCore = async (packageJson: readPkgUp.NormalizedReadResult | undefined) => {
-        const workerService: WorkerService = new WorkerService();
-
         // Load Core Workers
         if (
             packageJson &&
@@ -48,12 +45,12 @@ export class AppService {
             const coreWorkers: HiveWorker[] = packageJson.packageJson.omniHive.coreWorkers as HiveWorker[];
 
             for (const coreWorker of coreWorkers) {
-                await workerService.pushWorker(coreWorker);
+                await global.omnihive.pushWorker(coreWorker);
                 global.omnihive.serverSettings.workers.push(coreWorker);
             }
         }
 
-        const logWorker: ILogWorker | undefined = workerService.getWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );
@@ -245,14 +242,12 @@ export class AppService {
 
         // Register hive workers
         logWorker.write(OmniHiveLogLevel.Info, "Working on hive workers...");
-        await workerService.initWorkers(global.omnihive.serverSettings.workers);
+        await global.omnihive.initWorkers(global.omnihive.serverSettings.workers);
         logWorker.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
     };
 
     public getCleanAppServer = async (): Promise<express.Express> => {
-        const workerService: WorkerService = new WorkerService();
-
-        const logWorker: ILogWorker | undefined = workerService.getWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );
@@ -303,8 +298,7 @@ export class AppService {
             definitions: {},
         };
 
-        workerService
-            .getAllWorkers()
+        global.omnihive.registeredWorkers
             .filter(
                 (rw: RegisteredHiveWorker) =>
                     rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === true
@@ -411,9 +405,7 @@ export class AppService {
     };
 
     public serverChangeHandler = async (): Promise<void> => {
-        const workerService: WorkerService = new WorkerService();
-
-        const logWorker: ILogWorker | undefined = workerService.getWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohreqLogWorker"
         );

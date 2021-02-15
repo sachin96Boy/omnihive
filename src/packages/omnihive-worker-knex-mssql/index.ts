@@ -9,8 +9,6 @@ import { ConnectionSchema } from "@withonevision/omnihive-core/models/Connection
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import knex from "knex";
@@ -26,7 +24,6 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: sql.config;
     private metadata!: MssqlDatabaseWorkerMetadata;
-    private logWorker!: ILogWorker | undefined;
 
     constructor() {
         super();
@@ -64,14 +61,9 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         }
     }
 
-    public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
-        await AwaitHelper.execute<void>(super.afterInit(registeredWorkers, serverSettings));
-
-        this.logWorker = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
-    }
-
     public executeQuery = async (query: string): Promise<any[][]> => {
-        this.logWorker?.write(OmniHiveLogLevel.Info, query);
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
+        logWorker?.write(OmniHiveLogLevel.Info, query);
 
         const poolRequest = this.connectionPool.request();
         const result = await AwaitHelper.execute<any>(poolRequest.query(query));

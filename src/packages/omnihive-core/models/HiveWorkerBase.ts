@@ -6,13 +6,8 @@ import { ServerSettings } from "./ServerSettings";
 
 export abstract class HiveWorkerBase implements IHiveWorker {
     public config!: HiveWorker;
-    public registeredWorkers!: RegisteredHiveWorker[];
+    public registeredWorkers: RegisteredHiveWorker[] = [];
     public serverSettings!: ServerSettings;
-
-    public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
-        this.registeredWorkers = registeredWorkers;
-        this.serverSettings = serverSettings;
-    }
 
     public async init(config: HiveWorker): Promise<void> {
         if (!config || Object.keys(config).length <= 0) {

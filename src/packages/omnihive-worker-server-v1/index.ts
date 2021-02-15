@@ -23,7 +23,6 @@ import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/mod
 import { HiveWorkerMetadataServer } from "@withonevision/omnihive-core/models/HiveWorkerMetadataServer";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
@@ -39,7 +38,6 @@ type BuilderDatabaseWorker = {
 
 export default class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
     private metadata!: HiveWorkerMetadataServer;
-    private logWorker!: ILogWorker | undefined;
 
     constructor() {
         super();
@@ -58,17 +56,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
         }
     }
 
-    public async afterInit(registeredWorkers: RegisteredHiveWorker[], serverSettings: ServerSettings): Promise<void> {
-        await AwaitHelper.execute<void>(super.afterInit(registeredWorkers, serverSettings));
-
-        this.logWorker = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
-    }
-
     public buildServer = async (app: express.Express): Promise<express.Express> => {
         const featureWorker: IFeatureWorker | undefined = this.getWorker<IFeatureWorker>(HiveWorkerType.Feature);
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         try {
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Loaded`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Loaded`);
 
             // Get build workers
             const buildWorkers: RegisteredHiveWorker[] = [];
@@ -116,7 +109,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             // Write database schemas
 
             for (const worker of dbWorkers) {
-                this.logWorker?.write(OmniHiveLogLevel.Info, `Retrieving ${worker.registeredWorker.name} Schema`);
+                logWorker?.write(OmniHiveLogLevel.Info, `Retrieving ${worker.registeredWorker.name} Schema`);
 
                 const result: ConnectionSchema = await AwaitHelper.execute<ConnectionSchema>(
                     (worker.registeredWorker.instance as IDatabaseWorker).getSchema()
@@ -161,8 +154,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 });
             }
 
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Completed`);
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Writing Graph Generation Files`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Completed`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Writing Graph Generation Files`);
 
             // Get all build workers and write out their graph schema
             const dbWorkerModules: { workerName: string; dbModule: any }[] = [];
@@ -249,12 +242,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 graphEndpointModule = requireFromString(builder.outputString());
             }
 
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Graph Generation Files Completed`);
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Graph Schema Build Completed Successfully`);
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Booting Up Graph Server`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Generation Files Completed`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Schema Build Completed Successfully`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Booting Up Graph Server`);
 
             // Register graph builder databases
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registering`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registering`);
 
             for (const builder of buildWorkers) {
                 const builderMeta = builder.metadata as HiveWorkerMetadataGraphBuilder;
@@ -276,7 +269,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         // eslint-disable-next-line prefer-const
                         graphDatabaseSchema = databaseQuerySchema;
 
-                        this.logWorker?.write(
+                        logWorker?.write(
                             OmniHiveLogLevel.Info,
                             `Graph Progress => ${builder.name} => ${databaseWorker.registeredWorker.name} Query Schema Merged`
                         );
@@ -287,7 +280,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             graphDatabaseSchema = mergeSchemas({ schemas: [graphDatabaseSchema, procSchema] });
                         }
 
-                        this.logWorker?.write(
+                        logWorker?.write(
                             OmniHiveLogLevel.Info,
                             `Graph Progress => ${builder.name} => ${databaseWorker.registeredWorker.name} Stored Proc Schema Merged`
                         );
@@ -329,13 +322,10 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 }
             }
 
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registered`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registered`);
 
             // Register custom graph apollo server
-            this.logWorker?.write(
-                OmniHiveLogLevel.Info,
-                `Graph Progress => Custom Functions Graph Endpoint Registering`
-            );
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Graph Endpoint Registering`);
 
             if (
                 this.registeredWorkers.some(
@@ -382,8 +372,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 });
             }
 
-            this.logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Endpoint Registered`);
-            this.logWorker?.write(OmniHiveLogLevel.Info, `REST Server Generation Started`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Endpoint Registered`);
+            logWorker?.write(OmniHiveLogLevel.Info, `REST Server Generation Started`);
 
             // Register "custom" REST endpoints
             if (
@@ -422,7 +412,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             rw.metadata
                         );
                     } catch (e) {
-                        this.logWorker?.write(
+                        logWorker?.write(
                             OmniHiveLogLevel.Error,
                             `Cannot register custom REST worker ${rw.name}.  MetaData is incorrect.`
                         );
@@ -488,17 +478,14 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 }
             }
 
-            this.logWorker?.write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
+            logWorker?.write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
             global.omnihive.serverStatus = ServerStatus.Online;
-            this.logWorker?.write(OmniHiveLogLevel.Info, `New Server Built`);
+            logWorker?.write(OmniHiveLogLevel.Info, `New Server Built`);
 
             // Return app
             return app;
         } catch (err) {
-            this.logWorker?.write(
-                OmniHiveLogLevel.Error,
-                `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`
-            );
+            logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
             throw new Error(err);
         }
     };

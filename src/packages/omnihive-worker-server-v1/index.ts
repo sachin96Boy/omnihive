@@ -243,7 +243,6 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     builder.appendLine(`\t\t\t\t\tcustomArgs: { type: GraphQLJSONObject },`);
                     builder.appendLine(`\t\t\t\t},`);
                     builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
-                    builder.appendLine(`\t\t\t\t\tconsole.log(args);`);
                     builder.appendLine(`\t\t\t\t\tvar customFunctionInstance = new ${worker.name}.default();`);
                     builder.appendLine(
                         `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(customFunctionInstance.execute(args.customArgs));`

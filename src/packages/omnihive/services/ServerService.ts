@@ -4,38 +4,29 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import express from "express";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AppService } from "./AppService";
+import { LogService } from "./LogService";
 
 export class ServerService {
     public run = async (): Promise<void> => {
-        const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
         const appService: AppService = new AppService();
 
-        await appService.initCore(pkgJson);
-
-        // Intialize "backbone" hive workers
-
-        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
-
-        if (!logWorker) {
-            throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
-        }
-
-        // Set server to rebuilding first
-        await AwaitHelper.execute<void>(appService.loadSpecialStatusApp(ServerStatus.Rebuilding));
-        await appService.serverChangeHandler();
-
-        // Try to spin up full server
         try {
+            const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
+            const logService: LogService = new LogService();
+
+            await appService.initCore(pkgJson);
+
+            // Set server to rebuilding first
+            await AwaitHelper.execute<void>(appService.loadSpecialStatusApp(ServerStatus.Rebuilding));
+            await appService.serverChangeHandler();
+
+            // Try to spin up full server
             let app: express.Express = await AwaitHelper.execute<express.Express>(appService.getCleanAppServer());
 
             const servers: RegisteredHiveWorker[] = global.omnihive.registeredWorkers.filter(
@@ -48,7 +39,7 @@ export class ServerService {
                         (server.instance as IServerWorker).buildServer(app)
                     );
                 } catch (e) {
-                    logWorker.write(
+                    logService.write(
                         OmniHiveLogLevel.Error,
                         `Skipping server worker ${server.name} due to error: ${serializeError(e)}`
                     );
@@ -82,7 +73,8 @@ export class ServerService {
             // Problem...spin up admin server
             appService.loadSpecialStatusApp(ServerStatus.Admin, err);
             await appService.serverChangeHandler();
-            logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
+            const logService: LogService = new LogService();
+            logService.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
         }
     };
 }

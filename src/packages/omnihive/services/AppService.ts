@@ -6,7 +6,6 @@ import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/Registered
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
@@ -22,6 +21,7 @@ import path from "path";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
+import { LogService } from "./LogService";
 
 export class AppService {
     public changeServerStatus = (serverStatus: ServerStatus, error?: Error): void => {
@@ -35,6 +35,8 @@ export class AppService {
     };
 
     public initCore = async (packageJson: readPkgUp.NormalizedReadResult | undefined) => {
+        const logService: LogService = new LogService();
+
         // Load Core Workers
         if (
             packageJson &&
@@ -50,17 +52,8 @@ export class AppService {
             }
         }
 
-        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
-
-        if (!logWorker) {
-            throw new Error("Core Log Worker Not Found.  App worker needs the core log worker ohreqLogWorker");
-        }
-
         // Load Workers
-        logWorker.write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
+        logService.write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
 
         // Load Default Workers
         if (
@@ -95,7 +88,7 @@ export class AppService {
                                     defaultWorker.metadata[metaKey] = envValue;
                                 } else {
                                     registerWorker = false;
-                                    logWorker.write(
+                                    logService.write(
                                         OmniHiveLogLevel.Warn,
                                         `Cannot register ${defaultWorker.name}...missing ${metaKey} in constants`
                                     );
@@ -111,7 +104,7 @@ export class AppService {
             });
         }
 
-        logWorker.write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
+        logService.write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
 
         if (
             packageJson &&
@@ -164,9 +157,9 @@ export class AppService {
             }
 
             if (packagesToRemove.length === 0) {
-                logWorker.write(OmniHiveLogLevel.Info, `No Custom Packages to Uninstall...Moving On`);
+                logService.write(OmniHiveLogLevel.Info, `No Custom Packages to Uninstall...Moving On`);
             } else {
-                logWorker.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Custom Package(s)`);
+                logService.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Custom Package(s)`);
                 const removeCommand = new StringBuilder();
                 removeCommand.append("yarn remove ");
 
@@ -210,9 +203,9 @@ export class AppService {
             }
 
             if (packagesToAdd.length === 0) {
-                logWorker.write(OmniHiveLogLevel.Info, `No Custom Packages to Add...Moving On`);
+                logService.write(OmniHiveLogLevel.Info, `No Custom Packages to Add...Moving On`);
             } else {
-                logWorker.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Custom Package(s)`);
+                logService.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Custom Package(s)`);
                 const addCommand = new StringBuilder();
                 addCommand.append("yarn add ");
 
@@ -238,19 +231,16 @@ export class AppService {
             }
         }
 
-        logWorker.write(OmniHiveLogLevel.Info, "Custom packages complete");
+        logService.write(OmniHiveLogLevel.Info, "Custom packages complete");
 
         // Register hive workers
-        logWorker.write(OmniHiveLogLevel.Info, "Working on hive workers...");
+        logService.write(OmniHiveLogLevel.Info, "Working on hive workers...");
         await global.omnihive.initWorkers(global.omnihive.serverSettings.workers);
-        logWorker.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
+        logService.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
     };
 
     public getCleanAppServer = async (): Promise<express.Express> => {
-        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
+        const logService: LogService = new LogService();
 
         const restRoot: string = `/ohAdmin`;
 
@@ -312,7 +302,7 @@ export class AppService {
                         rw.metadata
                     );
                 } catch (e) {
-                    logWorker?.write(
+                    logService?.write(
                         OmniHiveLogLevel.Error,
                         `Cannot register system REST worker ${rw.name}.  MetaData is incorrect.`
                     );
@@ -405,28 +395,25 @@ export class AppService {
     };
 
     public serverChangeHandler = async (): Promise<void> => {
-        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
+        const logService: LogService = new LogService();
 
-        if (!logWorker) {
-            throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
+        if (!logService) {
+            throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqlogService");
         }
 
-        logWorker.write(OmniHiveLogLevel.Info, `Server Change Handler Started`);
+        logService.write(OmniHiveLogLevel.Info, `Server Change Handler Started`);
 
         const server: Server = http.createServer(global.omnihive.appServer);
         global.omnihive.webServer?.removeAllListeners().close();
         global.omnihive.webServer = server;
 
         global.omnihive.webServer?.listen(global.omnihive.serverSettings.config.webPortNumber, () => {
-            logWorker.write(
+            logService.write(
                 OmniHiveLogLevel.Info,
                 `New Server Listening on process ${process.pid} using port ${global.omnihive.serverSettings.config.webPortNumber}`
             );
         });
 
-        logWorker.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
+        logService.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
     };
 }

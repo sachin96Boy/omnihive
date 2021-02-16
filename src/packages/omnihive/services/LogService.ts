@@ -2,18 +2,13 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
 import { serializeError } from "serialize-error";
 
-export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
-    constructor() {
-        super();
-    }
-
+export class LogService {
     public write = async (logLevel: OmniHiveLogLevel, logString: string): Promise<void> => {
         let featureWorker: IFeatureWorker | undefined = undefined;
         let consoleOnlyLogging: boolean = true;

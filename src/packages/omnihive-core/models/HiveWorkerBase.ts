@@ -1,12 +1,11 @@
 import { ObjectHelper } from "../helpers/ObjectHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "./HiveWorker";
-import { RegisteredHiveWorker } from "./RegisteredHiveWorker";
 import { ServerSettings } from "./ServerSettings";
+import { WorkerGetterBase } from "./WorkerGetterBase";
 
-export abstract class HiveWorkerBase implements IHiveWorker {
+export abstract class HiveWorkerBase extends WorkerGetterBase implements IHiveWorker {
     public config!: HiveWorker;
-    public registeredWorkers: RegisteredHiveWorker[] = [];
     public serverSettings!: ServerSettings;
 
     public async init(config: HiveWorker): Promise<void> {
@@ -29,36 +28,4 @@ export abstract class HiveWorkerBase implements IHiveWorker {
 
         return objectData;
     };
-
-    public getWorker<T extends IHiveWorker | undefined>(type: string, name?: string): T | undefined {
-        if (name) {
-            const namedWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
-                (value: RegisteredHiveWorker) => value.name === name && value.type === type && value.enabled === true
-            );
-
-            if (namedWorker) {
-                return namedWorker.instance as T;
-            }
-
-            return undefined;
-        }
-
-        const defaultWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
-            (value: RegisteredHiveWorker) => value.type === type && value.enabled === true && value.default === true
-        );
-
-        if (defaultWorker) {
-            return defaultWorker.instance as T;
-        }
-
-        const anyWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers.filter(
-            (value: RegisteredHiveWorker) => value.type === type && value.enabled === true
-        );
-
-        if (anyWorkers && anyWorkers.length > 0) {
-            return anyWorkers[0].instance as T;
-        }
-
-        return undefined;
-    }
 }

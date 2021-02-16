@@ -2,43 +2,20 @@
 
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import chalk from "chalk";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AppService } from "./AppService";
-
+import { LogService } from "./LogService";
+import fse from "fs-extra";
 export class TaskRunnerService {
-    private logWorker!: ILogWorker;
-
     public run = async (worker: string, args: string): Promise<void> => {
         // Run basic app service
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
         const appService: AppService = new AppService();
 
         await appService.initCore(pkgJson);
-
-        const fileSystemWorker: IFileSystemWorker | undefined = global.omnihive.getWorker<IFileSystemWorker>(
-            HiveWorkerType.FileSystem
-        );
-
-        if (!fileSystemWorker && args && !StringHelper.isNullOrWhiteSpace(args)) {
-            throw new Error("FileSystem Worker Not Found...Cannot Read Args");
-        }
-
-        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
-
-        if (!logWorker) {
-            throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
-        }
-
-        this.logWorker = logWorker;
 
         // Get TaskWorker
 
@@ -62,9 +39,7 @@ export class TaskRunnerService {
 
         if (args && args !== "") {
             try {
-                if (fileSystemWorker) {
-                    workerArgs = JSON.parse(fileSystemWorker.readFile(args));
-                }
+                workerArgs = JSON.parse(fse.readFileSync(args, { encoding: "utf8" }));
             } catch (err) {
                 this.logError(worker, err);
             }
@@ -86,11 +61,13 @@ export class TaskRunnerService {
     };
 
     private logError = async (workerName: string, err: Error) => {
-        console.log(err);
-        this.logWorker.write(
+        const logService: LogService = new LogService();
+
+        logService.write(
             OmniHiveLogLevel.Error,
             `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`
         );
+
         throw new Error(`Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
     };
 }

@@ -8,26 +8,24 @@ import packageJson from "../package.json";
 
 let settings: TestConfigSettings;
 let worker: RedisCacheWorker = new RedisCacheWorker();
+const testService: TestService = new TestService();
 
 describe("cache (redis) worker tests", function () {
     before(function () {
-        const testService: TestService = new TestService();
         const config: TestConfigSettings | undefined = testService.getTestConfig(packageJson.name);
 
         if (!config) {
             this.skip();
         }
 
-        CoreServiceFactory.workerService.clearWorkers();
+        testService.clearWorkers();
         settings = config;
     });
 
     const init = async function (): Promise<void> {
         try {
-            await AwaitHelper.execute(CoreServiceFactory.workerService.initWorkers(settings.workers));
-            const newWorker = CoreServiceFactory.workerService
-                .getAllWorkers()
-                .find((x) => x[0].package === packageJson.name);
+            await AwaitHelper.execute(testService.initWorkers(settings.workers));
+            const newWorker = testService.registeredWorkers.find((x) => x[0].package === packageJson.name);
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];

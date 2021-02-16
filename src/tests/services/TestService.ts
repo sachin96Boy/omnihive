@@ -1,9 +1,14 @@
 import { ObjectHelper } from "../../packages/omnihive-core/helpers/ObjectHelper";
 import { TestConfigSettings } from "../models/TestConfigSettings";
 import { TestSettings } from "../models/TestSettings";
+import { WorkerSetterBase } from "../../packages/omnihive-core/models/WorkerSetterBase";
 import fse from "fs-extra";
 
-export class TestService {
+export class TestService extends WorkerSetterBase {
+    public clearWorkers = (): void => {
+        this.registeredWorkers = [];
+    };
+
     public getConstants = (): { [key: string]: string }[] | undefined => {
         try {
             if (!process.env.omnihive_test_settings) {

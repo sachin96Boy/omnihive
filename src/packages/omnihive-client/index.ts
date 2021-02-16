@@ -1,22 +1,18 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
-import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
-import { serializeError } from "serialize-error";
+import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSetterBase";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
-export class OmniHiveClient {
+export class OmniHiveClient extends WorkerSetterBase {
     private static singleton: OmniHiveClient;
-    public registeredWorkers: RegisteredHiveWorker[] = [];
-    public settings: ServerSettings = new ServerSettings();
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
+    private constructor() {
+        super();
+    }
 
     public static getSingleton = (): OmniHiveClient => {
         if (!OmniHiveClient.singleton) {
@@ -30,89 +26,9 @@ export class OmniHiveClient {
         return new OmniHiveClient();
     };
 
-    public init = async (settings: ServerSettings): Promise<void> => {
-        this.settings = settings;
-        try {
-            for (const hiveWorker of settings.workers) {
-                await this.pushWorker(hiveWorker);
-            }
-
-            for (const worker of this.registeredWorkers) {
-                (worker.instance as IHiveWorker).registeredWorkers = this.registeredWorkers;
-                (worker.instance as IHiveWorker).serverSettings = this.settings;
-            }
-        } catch (err) {
-            throw new Error("Worker Factory Init Error => " + JSON.stringify(serializeError(err)));
-        }
-    };
-
-    public getWorker = <T extends IHiveWorker | undefined>(type: string, name?: string): T | undefined => {
-        if (name) {
-            const namedWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
-                (value: RegisteredHiveWorker) => value.name === name && value.type === type && value.enabled === true
-            );
-
-            if (namedWorker) {
-                return namedWorker.instance as T;
-            }
-
-            return undefined;
-        }
-
-        const defaultWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
-            (value: RegisteredHiveWorker) => value.type === type && value.enabled === true && value.default === true
-        );
-
-        if (defaultWorker) {
-            return defaultWorker.instance as T;
-        }
-
-        const anyWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers.filter(
-            (value: RegisteredHiveWorker) => value.type === type && value.enabled === true
-        );
-
-        if (anyWorkers && anyWorkers.length > 0) {
-            return anyWorkers[0].instance as T;
-        }
-
-        return undefined;
-    };
-
-    public pushWorker = async (hiveWorker: HiveWorker): Promise<void> => {
-        if (!hiveWorker.enabled) {
-            return;
-        }
-
-        if (
-            this.registeredWorkers?.find((value: RegisteredHiveWorker) => {
-                return value.name === hiveWorker.name;
-            })
-        ) {
-            return;
-        }
-
-        if (
-            !hiveWorker.importPath ||
-            hiveWorker.importPath === "" ||
-            !hiveWorker.package ||
-            hiveWorker.package === ""
-        ) {
-            throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`);
-        }
-
-        const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.importPath));
-        const newWorkerInstance: any = new newWorker.default();
-        await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
-
-        const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };
-        let globalWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers;
-
-        if (!globalWorkers) {
-            globalWorkers = [];
-        }
-
-        globalWorkers.push(registeredWorker);
-        this.registeredWorkers = globalWorkers;
+    public init = async (serverSettings: ServerSettings): Promise<void> => {
+        this.serverSettings = serverSettings;
+        this.initWorkers(serverSettings.workers);
     };
 
     public restClient = async (url: string, method: RestMethod, headers?: any, data?: any): Promise<any> => {
@@ -209,12 +125,12 @@ export class OmniHiveClient {
         let encryptionWorker: IEncryptionWorker | undefined = undefined;
 
         if (encryptionWorkerName) {
-            encryptionWorker = await this.getWorker<IEncryptionWorker | undefined>(
+            encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(
                 HiveWorkerType.Encryption,
                 encryptionWorkerName
             );
         } else {
-            encryptionWorker = await this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
+            encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
         }
 
         if (!encryptionWorker) {

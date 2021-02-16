@@ -4,8 +4,6 @@ import { WorkerService } from "@withonevision/omnihive-core/services/WorkerServi
 export default class DanyService {
     private static singleton: DanyService;
 
-    constructor() {}
-
     public static getSingleton = (): DanyService => {
         if (!DanyService.singleton) {
             DanyService.singleton = new DanyService();
@@ -18,13 +16,9 @@ export default class DanyService {
     public rootUrl: string = "";
 
     public getMetaData = (workerName: string) => {
-        const graphWorkers = WorkerService.getSingleton().getWorkersByType(
-            HiveWorkerType.GraphEndpointFunction
-        );
+        const graphWorkers = WorkerService.getSingleton().getWorkersByType(HiveWorkerType.GraphEndpointFunction);
 
-        const metadata = graphWorkers.find(
-            (worker: any) => worker.name === workerName
-        )?.metadata;
+        const metadata = graphWorkers.find((worker: any) => worker.name === workerName)?.metadata;
 
         DanyService.getSingleton().apiKey = metadata.apiKey;
         DanyService.getSingleton().rootUrl = metadata.rootUrl;

@@ -7,9 +7,7 @@ import { runQuery } from "../../lib/helpers/GraphHelper";
 import { WatchContent } from "../../lib/models/WatchModels";
 import { getMessageById } from "../common/GetMessaegById";
 
-export default class GetLatestMessage
-    extends HiveWorkerBase
-    implements IGraphEndpointWorker {
+export default class GetLatestMessage extends HiveWorkerBase implements IGraphEndpointWorker {
     private getLatestMessageId = async (): Promise<number | undefined> => {
         try {
             let latestSiteDocId: number = 0;
@@ -22,9 +20,7 @@ export default class GetLatestMessage
               }
           }
       `;
-            const response: any = await AwaitHelper.execute(
-                runQuery(latestMessageQuery)
-            );
+            const response: any = await AwaitHelper.execute(runQuery(latestMessageQuery));
 
             const validSiteDocuments = response.campaign;
 
@@ -37,10 +33,7 @@ export default class GetLatestMessage
                     if (topViewOrder < doc.viewOrder) {
                         topViewOrder = doc.viewOrder;
                         topId = doc.id;
-                    } else if (
-                        topViewOrder === doc.viewOrder &&
-                        dayjs(doc.startDate).isAfter(latestStartDate)
-                    ) {
+                    } else if (topViewOrder === doc.viewOrder && dayjs(doc.startDate).isAfter(latestStartDate)) {
                         latestStartDate = dayjs(doc.startDate);
                         topId = doc.id;
                     }

@@ -20,17 +20,13 @@ class CreateUserArgs {
     State: string = "";
 }
 
-export default class CreateUser
-    extends HiveWorkerBase
-    implements IGraphEndpointWorker {
+export default class CreateUser extends HiveWorkerBase implements IGraphEndpointWorker {
     public execute = async (customArgs: CreateUserArgs): Promise<any> => {
         try {
             // Get Metadata
             DanyService.getSingleton().getMetaData("CreateUser");
 
-            const result = await AwaitHelper.execute(
-                danyPost("/Security/Register", customArgs)
-            );
+            const result = await AwaitHelper.execute(danyPost("/Security/Register", customArgs));
 
             return result.data;
         } catch (err) {

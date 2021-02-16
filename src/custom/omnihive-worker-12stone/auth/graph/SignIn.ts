@@ -10,9 +10,7 @@ class SignInArgs {
     Password: string = "";
 }
 
-export default class SignIn
-    extends HiveWorkerBase
-    implements IGraphEndpointWorker {
+export default class SignIn extends HiveWorkerBase implements IGraphEndpointWorker {
     public execute = async (customArgs: any): Promise<any> => {
         try {
             if (customArgs.Data) {
@@ -34,9 +32,7 @@ export default class SignIn
             // Validate arguments
             this.checkObjectStructure(SignInArgs, trueArgs);
 
-            const result = await AwaitHelper.execute(
-                danyPost("/Security/Login", customArgs)
-            );
+            const result = await AwaitHelper.execute(danyPost("/Security/Login", customArgs));
 
             return result.data;
         } catch (err) {

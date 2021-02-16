@@ -8,9 +8,7 @@ class GetMessageByIdArguemnts {
     id: number = 0;
 }
 
-export default class GetMessageById
-    extends HiveWorkerBase
-    implements IGraphEndpointWorker {
+export default class GetMessageById extends HiveWorkerBase implements IGraphEndpointWorker {
     public execute = async (customArgs: any): Promise<WatchContent | {}> => {
         const args: GetMessageByIdArguemnts = this.checkObjectStructure<GetMessageByIdArguemnts>(
             GetMessageByIdArguemnts,

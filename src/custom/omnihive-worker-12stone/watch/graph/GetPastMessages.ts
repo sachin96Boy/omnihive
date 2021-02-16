@@ -6,9 +6,7 @@ import { runQuery } from "../../lib/helpers/GraphHelper";
 import { WatchContent } from "../../lib/models/WatchModels";
 import { transformDataToWatchContent } from "../common/DataToWatchContent";
 
-export default class getPastMessages
-    extends HiveWorkerBase
-    implements IGraphEndpointWorker {
+export default class getPastMessages extends HiveWorkerBase implements IGraphEndpointWorker {
     public execute = async (): Promise<WatchContent | {}> => {
         const query = `
           query {

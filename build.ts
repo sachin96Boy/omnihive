@@ -111,6 +111,9 @@ const build = async (): Promise<void> => {
     const directories: string[] = fse
         .readdirSync("./src/packages")
         .filter((f) => fse.statSync(join("./src/packages", f)).isDirectory());
+    const customDirectories: string[] = fse
+        .readdirSync("./src/custom")
+        .filter((f) => fse.statSync(join("./src/custom", f)).isDirectory());
 
     // Build core libraries
     console.log();
@@ -147,6 +150,18 @@ const build = async (): Promise<void> => {
         });
 
     console.log(chalk.blue("Done building workers..."));
+    console.log();
+
+    // Build custom workers
+    console.log(chalk.blue("Building custom workers..."));
+
+    customDirectories.forEach((value: string) => {
+        console.log(chalk.yellow(`Building ${value}...`));
+        execSpawn("yarn run build", `./src/custom/${value}`);
+        console.log(chalk.greenBright(`Done building ${value}...`));
+    });
+
+    console.log(chalk.blue("Done building custom workers..."));
     console.log();
 
     // Build client and server

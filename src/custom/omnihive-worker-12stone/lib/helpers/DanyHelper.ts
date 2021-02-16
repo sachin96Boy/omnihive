@@ -2,11 +2,7 @@ import axios from "axios";
 import { serializeError } from "serialize-error";
 import DanyService from "../services/DanyService";
 
-export const danyPost = async (
-    path: string,
-    body: any,
-    authToken: string = ""
-): Promise<any> => {
+export const danyPost = async (path: string, body: any, authToken: string = ""): Promise<any> => {
     try {
         const headers: any = {
             "content-type": "application/json",
@@ -17,23 +13,15 @@ export const danyPost = async (
             headers["authorization"] = authToken;
         }
 
-        return await axios.post(
-            DanyService.getSingleton().rootUrl + path,
-            body,
-            {
-                headers: headers,
-            }
-        );
+        return await axios.post(DanyService.getSingleton().rootUrl + path, body, {
+            headers: headers,
+        });
     } catch (err) {
         console.log(JSON.stringify(serializeError(err)));
     }
 };
 
-export const danyPut = async (
-    path: string,
-    body: any,
-    authToken: string = ""
-): Promise<any> => {
+export const danyPut = async (path: string, body: any, authToken: string = ""): Promise<any> => {
     try {
         const headers: any = {
             "content-type": "application/json",
@@ -44,22 +32,15 @@ export const danyPut = async (
             headers["authorization"] = authToken;
         }
 
-        return await axios.put(
-            DanyService.getSingleton().rootUrl + path,
-            JSON.stringify(body),
-            {
-                headers: headers,
-            }
-        );
+        return await axios.put(DanyService.getSingleton().rootUrl + path, JSON.stringify(body), {
+            headers: headers,
+        });
     } catch (err) {
         console.log(JSON.stringify(serializeError(err)));
     }
 };
 
-export const danyGet = async (
-    path: string,
-    authToken: string = ""
-): Promise<any> => {
+export const danyGet = async (path: string, authToken: string = ""): Promise<any> => {
     try {
         const headers: any = {
             "content-type": "application/json",
@@ -78,10 +59,7 @@ export const danyGet = async (
     }
 };
 
-export const danyDelete = async (
-    path: string,
-    authToken: string = ""
-): Promise<any> => {
+export const danyDelete = async (path: string, authToken: string = ""): Promise<any> => {
     try {
         const headers: any = {
             "content-type": "application/json",

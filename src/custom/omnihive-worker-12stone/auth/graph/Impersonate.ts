@@ -5,9 +5,7 @@ import { serializeError } from "serialize-error";
 import { danyPost } from "../../lib/helpers/DanyHelper";
 import DanyService from "../../lib/services/DanyService";
 
-export default class Impersonate
-    extends HiveWorkerBase
-    implements IGraphEndpointWorker {
+export default class Impersonate extends HiveWorkerBase implements IGraphEndpointWorker {
     public execute = async (customArgs: any): Promise<any> => {
         try {
             // Get Metadata
@@ -18,11 +16,7 @@ export default class Impersonate
             };
 
             const result = await AwaitHelper.execute(
-                danyPost(
-                    "/Security/Impersonate",
-                    impersonateArgs,
-                    customArgs.Authorization
-                )
+                danyPost("/Security/Impersonate", impersonateArgs, customArgs.Authorization)
             );
 
             return result.data;

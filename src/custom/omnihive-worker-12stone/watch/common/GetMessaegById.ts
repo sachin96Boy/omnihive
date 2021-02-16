@@ -12,9 +12,7 @@ export const getMessageById = async (
             query {
                 proc: storedProcedures {
                     document: api_12Stone_Custom_Cms_GetDynamicDocumentById (${
-                        siteDocumentId > 0
-                            ? `SiteDocumentId: ${siteDocumentId}`
-                            : ""
+                        siteDocumentId > 0 ? `SiteDocumentId: ${siteDocumentId}` : ""
                     }, 
                     ${documentId > 0 ? `DocumentId: ${documentId}` : ""})
                 }

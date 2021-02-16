@@ -1,10 +1,24 @@
 {
   "name": "@12stonechurch/omnihive-worker-12stone",
-  "version": "1.0.0",
-  "description": "OmniHive Custom Functions",
-  "author": "With One Vision Technologies, LLC",
+  "version": "0.0.1",
+  "description": "OmniHive Custom Function package",
   "license": "MIT",
-  "private": true,
+  "author": {
+    "name": "With One Vision Technologies",
+    "url": "https://www.withone.vision",
+    "email": "developers@withone.vision"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "OmniHive",
+    "With One Vision"
+  ],
   "scripts": {
     "build": "tsc"
   },

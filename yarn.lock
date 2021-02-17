@@ -5,33 +5,6 @@ __metadata:
   version: 4
   cacheKey: 7
 
-"@12stonechurch/omnihive-worker-12stone@workspace:src/custom/omnihive-worker-12stone":
-  version: 0.0.0-use.local
-  resolution: "@12stonechurch/omnihive-worker-12stone@workspace:src/custom/omnihive-worker-12stone"
-  dependencies:
-    "@istanbuljs/nyc-config-typescript": ^1.0.1
-    "@types/chai": ^4.2.14
-    "@types/mocha": ^8.2.0
-    "@types/node": ^14.14.22
-    "@typescript-eslint/eslint-plugin": ^4.14.1
-    "@typescript-eslint/parser": ^4.14.1
-    "@withonevision/omnihive-client": "workspace:*"
-    "@withonevision/omnihive-core": "workspace:*"
-    axios: ^0.21.1
-    chai: ^4.2.0
-    dayjs: ^1.10.4
-    eslint: ^7.18.0
-    eslint-config-prettier: ^7.2.0
-    eslint-plugin-prettier: ^3.3.1
-    mocha: ^8.2.1
-    nyc: ^15.1.0
-    prettier: ^2.2.1
-    serialize-error: ^8.0.1
-    ts-node: ^9.1.1
-    typescript: ^4.1.3
-  languageName: unknown
-  linkType: soft
-
 "@apollo/protobufjs@npm:^1.0.3":
   version: 1.0.5
   resolution: "@apollo/protobufjs@npm:1.0.5"
@@ -1489,6 +1462,33 @@ __metadata:
     graphql: 15.5.0
     serialize-error: 8.0.1
     typescript: 4.1.3
+  languageName: unknown
+  linkType: soft
+
+"@withonevision/omnihive-worker-12stone@workspace:src/custom/omnihive-worker-12stone":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-worker-12stone@workspace:src/custom/omnihive-worker-12stone"
+  dependencies:
+    "@istanbuljs/nyc-config-typescript": ^1.0.1
+    "@types/chai": ^4.2.14
+    "@types/mocha": ^8.2.0
+    "@types/node": ^14.14.22
+    "@typescript-eslint/eslint-plugin": ^4.14.1
+    "@typescript-eslint/parser": ^4.14.1
+    "@withonevision/omnihive-client": "workspace:*"
+    "@withonevision/omnihive-core": "workspace:*"
+    axios: ^0.21.1
+    chai: ^4.2.0
+    dayjs: ^1.10.4
+    eslint: ^7.18.0
+    eslint-config-prettier: ^7.2.0
+    eslint-plugin-prettier: ^3.3.1
+    mocha: ^8.2.1
+    nyc: ^15.1.0
+    prettier: ^2.2.1
+    serialize-error: ^8.0.1
+    ts-node: ^9.1.1
+    typescript: ^4.1.3
   languageName: unknown
   linkType: soft
 

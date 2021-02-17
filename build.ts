@@ -388,6 +388,15 @@ const build = async (): Promise<void> => {
         console.log(chalk.blue("Done publishing workers..."));
         console.log();
 
+        // Publish custom workers
+        console.log(chalk.blue("Publishing custom workers..."));
+
+        customDirectories.forEach((value: string) => {
+            console.log(chalk.yellow(`Publishing ${value}...`));
+            execSpawn("npm publish --access public", `./dist/custom/${value}`);
+            console.log(chalk.greenBright(`Done publishing ${value}...`));
+        });
+
         // Publish client and server
         console.log(chalk.blue("Publishing client and server..."));
 

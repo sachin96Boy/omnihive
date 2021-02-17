@@ -312,7 +312,7 @@ const build = async (): Promise<void> => {
 
     const replaceWorkspaceOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
-        files: ["dist/packages/**/package.json"],
+        files: ["dist/packages/**/package.json", "dist/custom/**/package.json"],
         from: /workspace:\*/g,
         to: `${currentVersion}`,
     };
@@ -321,7 +321,7 @@ const build = async (): Promise<void> => {
 
     const replaceVersionOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
-        files: ["dist/packages/**/package.json"],
+        files: ["dist/packages/**/package.json", "dist/custom/**/package.json"],
         from: /"version": "0.0.1"/g,
         to: `"version": "${currentVersion}"`,
     };

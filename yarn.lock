@@ -7334,6 +7334,8 @@ fsevents@~2.3.1:
     pug: 3.0.0
     read-pkg-up: 7.0.1
     serialize-error: 8.0.1
+    socket.io: 3.1.1
+    socket.io-client: 3.1.1
     swagger-ui-express: 4.1.6
     ts-node: 9.1.1
     typescript: 4.1.3
@@ -8960,6 +8962,21 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"socket.io-client@npm:3.1.1":
+  version: 3.1.1
+  resolution: "socket.io-client@npm:3.1.1"
+  dependencies:
+    "@types/component-emitter": ^1.2.10
+    backo2: ~1.0.2
+    component-emitter: ~1.3.0
+    debug: ~4.3.1
+    engine.io-client: ~4.1.0
+    parseuri: 0.0.6
+    socket.io-parser: ~4.0.4
+  checksum: a4461301ef4f89e3992f984215733aaac45a7871589261497baab66a5a97000b2128d48239d0cef455267e18dddcaf0ebc67aef200b7d196ca00d00b1f6d803c
+  languageName: node
+  linkType: hard
+
 "socket.io-parser@npm:~4.0.3, socket.io-parser@npm:~4.0.4":
   version: 4.0.4
   resolution: "socket.io-parser@npm:4.0.4"
@@ -8985,6 +9002,23 @@ fsevents@~2.3.1:
     socket.io-adapter: ~2.1.0
     socket.io-parser: ~4.0.3
   checksum: 2591a2b07863468a56efd4b55dab02bda4bee80b55c26c9bbedd624918a1d6ccd0f5d2cc3ff960024350e237c74e80bf452db795151c483be84731c5ba5b6607
+  languageName: node
+  linkType: hard
+
+"socket.io@npm:3.1.1":
+  version: 3.1.1
+  resolution: "socket.io@npm:3.1.1"
+  dependencies:
+    "@types/cookie": ^0.4.0
+    "@types/cors": ^2.8.8
+    "@types/node": ^14.14.10
+    accepts: ~1.3.4
+    base64id: ~2.0.0
+    debug: ~4.3.1
+    engine.io: ~4.1.0
+    socket.io-adapter: ~2.1.0
+    socket.io-parser: ~4.0.3
+  checksum: 7281e4307dccc6b4ba7eb165f08f24c74263c1df1dfe60e42c50978092b9d308cf4242912a339784433e7511254099fb833c4abdadeede329677da42e619f1f9
   languageName: node
   linkType: hard
 

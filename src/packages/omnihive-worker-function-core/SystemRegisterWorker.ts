@@ -1,36 +1,31 @@
-/// <reference path="../../types/globals.omnihive.d.ts" />
-
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 
-class SystemStatusRequest {
+class SystemRegisterRequest {
     adminPassword!: string;
 }
 
-export default class SystemStatusWorker extends HiveWorkerBase implements IRestEndpointWorker {
+export default class SystemRegisterWorker extends HiveWorkerBase implements IRestEndpointWorker {
     constructor() {
         super();
     }
 
     public execute = async (_headers: any, _url: string, body: any): Promise<RestEndpointExecuteResponse> => {
         try {
-            this.checkRequest(body);
-            return {
-                response: { status: global.omnihive.serverStatus, error: global.omnihive.serverError },
-                status: 200,
-            };
+            this.checkRequest(_headers, body);
+            return { response: { verified: true }, status: 200 };
         } catch (e) {
             return { response: { error: serializeError(e) }, status: 400 };
         }
     };
 
-    public getSwaggerDefinition = (): swaggerUi.JsonObject => {
+    public getSwaggerDefinition = (): swaggerUi.JsonObject | undefined => {
         return {
             definitions: {
-                GetStatusParameters: {
+                RegisterParameters: {
                     required: ["adminPassword"],
                     properties: {
                         adminPassword: {
@@ -38,21 +33,11 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
                         },
                     },
                 },
-                GetStatusReturn: {
-                    properties: {
-                        serverStatus: {
-                            type: "string",
-                        },
-                        serverError: {
-                            type: "string",
-                        },
-                    },
-                },
             },
             paths: {
-                "/status": {
+                "/register": {
                     post: {
-                        description: "Gets the OmniHive server status",
+                        description: "Checks if your register server settings are correct",
                         tags: [
                             {
                                 name: "System",
@@ -63,18 +48,18 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
                             content: {
                                 "application/json": {
                                     schema: {
-                                        $ref: "#/definitions/GetStatusParameters",
+                                        $ref: "#/definitions/RegisterParameters",
                                     },
                                 },
                             },
                         },
                         responses: {
                             "200": {
-                                description: "OmniHive Status Response",
+                                description: "OmniHive Register Response",
                                 content: {
-                                    "application/json": {
+                                    "text/plain": {
                                         schema: {
-                                            $ref: "#/definitions/GetStatusReturn",
+                                            type: "boolean",
                                         },
                                     },
                                 },
@@ -86,13 +71,13 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
         };
     };
 
-    private checkRequest = (body: any | undefined) => {
+    private checkRequest = (_headers: any, body: any | undefined) => {
         if (!body) {
             throw new Error("Request Denied");
         }
 
-        const paramsStructured: SystemStatusRequest = this.checkObjectStructure<SystemStatusRequest>(
-            SystemStatusRequest,
+        const paramsStructured: SystemRegisterRequest = this.checkObjectStructure<SystemRegisterRequest>(
+            SystemRegisterRequest,
             body
         );
 

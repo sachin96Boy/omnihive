@@ -48,7 +48,7 @@ export class ServerService {
 
             app.get("/", (_req, res) => {
                 res.status(200).render("index", {
-                    rootUrl: global.omnihive.serverSettings.config.rootUrl,
+                    rootUrl: global.omnihive.getWebRootUrlWithPort(),
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: global.omnihive.serverError,
@@ -56,12 +56,12 @@ export class ServerService {
             });
 
             app.use((_req, res) => {
-                return res.status(404).render("404", { rootUrl: global.omnihive.serverSettings.config.rootUrl });
+                return res.status(404).render("404", { rootUrl: global.omnihive.getWebRootUrlWithPort() });
             });
 
             app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
-                    rootUrl: global.omnihive.serverSettings.config.rootUrl,
+                    rootUrl: global.omnihive.getWebRootUrlWithPort(),
                     error: serializeError(err),
                 });
             });

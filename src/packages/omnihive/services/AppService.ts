@@ -32,6 +32,11 @@ export class AppService {
         } else {
             global.omnihive.serverError = {};
         }
+
+        global.omnihive.adminServer.emit("status", {
+            status: global.omnihive.serverStatus,
+            error: global.omnihive.serverError,
+        });
     };
 
     public initCore = async (packageJson: readPkgUp.NormalizedReadResult | undefined) => {
@@ -281,7 +286,7 @@ export class AppService {
             openapi: "3.0.0",
             servers: [
                 {
-                    url: `${global.omnihive.serverSettings.config.rootUrl}${restRoot}`,
+                    url: `${global.omnihive.getWebRootUrlWithPort()}${restRoot}`,
                 },
             ],
             paths: {},
@@ -331,7 +336,7 @@ export class AppService {
                             }
                         } catch (e) {
                             return res.status(500).render("500", {
-                                rootUrl: global.omnihive.serverSettings.config.rootUrl,
+                                rootUrl: global.omnihive.getWebRootUrlWithPort(),
                                 error: serializeError(e),
                             });
                         }
@@ -339,7 +344,7 @@ export class AppService {
                 );
 
                 global.omnihive.registeredUrls.push({
-                    path: `${global.omnihive.serverSettings.config.rootUrl}${restRoot}/rest/${workerMetaData.urlRoute}`,
+                    path: `${global.omnihive.getWebRootUrlWithPort()}${restRoot}/rest/${workerMetaData.urlRoute}`,
                     type: RegisteredUrlType.RestFunction,
                 });
 
@@ -364,11 +369,6 @@ export class AppService {
         return app;
     };
 
-    public getRootUrlPathName = (): string => {
-        const rootUrl: URL = new URL(global.omnihive.serverSettings.config.rootUrl);
-        return rootUrl.pathname;
-    };
-
     public loadSpecialStatusApp = async (status: ServerStatus, error?: Error): Promise<void> => {
         if (
             global.omnihive.serverStatus === ServerStatus.Admin ||
@@ -385,7 +385,7 @@ export class AppService {
         app.get("/", (_req, res) => {
             res.setHeader("Content-Type", "application/json");
             return res.status(200).render("index", {
-                rootUrl: global.omnihive.serverSettings.config.rootUrl,
+                rootUrl: global.omnihive.getWebRootUrlWithPort(),
                 status: global.omnihive.serverStatus,
                 error: global.omnihive.serverError,
             });

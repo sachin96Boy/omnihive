@@ -14,6 +14,7 @@ import inquirer from "inquirer";
 import path from "path";
 import yargs from "yargs";
 import { GlobalObject } from "./models/GlobalObject";
+import { AdminService } from "./services/AdminService";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
 
@@ -23,7 +24,6 @@ const init = async () => {
     const config = new Conf();
     const latestConf: string | undefined = config.get<string>("latest-settings") as string;
     const newAdminPassword = crypto.randomBytes(32).toString("hex");
-    const newServerGroupName = crypto.randomBytes(8).toString("hex");
 
     global.omnihive.ohDirName = __dirname;
 
@@ -164,12 +164,6 @@ const init = async () => {
                 default: newAdminPassword,
             },
             {
-                type: "input",
-                name: "serverGroup",
-                message: "What is your preferred server group name?",
-                default: newServerGroupName,
-            },
-            {
                 type: "number",
                 name: "webPort",
                 message: "What port number do you want for the web server?",
@@ -184,8 +178,8 @@ const init = async () => {
             {
                 type: "input",
                 name: "rootUrl",
-                message: "What is your root URL with the port?",
-                default: "http://localhost:3001",
+                message: "What is your root URL (without the port)?",
+                default: "http://localhost",
                 validate: (value) => {
                     try {
                         const url = new URL(value);
@@ -219,7 +213,6 @@ const init = async () => {
         );
 
         settings.config.adminPassword = answers.adminPassword as string;
-        settings.config.serverGroupName = answers.serverGroup as string;
         settings.config.adminPortNumber = answers.adminPort as number;
         settings.config.webPortNumber = answers.webPort as number;
 
@@ -309,7 +302,9 @@ const init = async () => {
                 );
                 console.log();
             }
+            const adminService: AdminService = new AdminService();
             const serverService: ServerService = new ServerService();
+            await adminService.run();
             await serverService.run();
             break;
     }

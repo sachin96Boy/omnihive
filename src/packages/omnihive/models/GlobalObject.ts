@@ -12,8 +12,10 @@ import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSett
 import express from "express";
 import { Server } from "http";
 import path from "path";
+import * as socketio from "socket.io";
 
 export class GlobalObject extends WorkerSetterBase {
+    public adminServer: socketio.Server = new socketio.Server();
     public appServer: express.Express | undefined = undefined;
     public ohDirName: string = "";
     public registeredSchemas: ConnectionSchema[] = [];
@@ -21,6 +23,17 @@ export class GlobalObject extends WorkerSetterBase {
     public serverError: any = {};
     public serverStatus: ServerStatus = ServerStatus.Unknown;
     public webServer: Server | undefined = undefined;
+
+    public getRootUrlWithPort = (): string => {
+        const rootUrl: string = global.omnihive.serverSettings.config.rootUrl;
+        if (
+            global.omnihive.serverSettings.config.webPortNumber === 80 ||
+            global.omnihive.serverSettings.config.webPortNumber === 443
+        ) {
+            return rootUrl;
+        }
+        return `${rootUrl}:${global.omnihive.serverSettings.config.webPortNumber}`;
+    };
 
     public async pushWorker(hiveWorker: HiveWorker): Promise<void> {
         if (!hiveWorker.enabled) {

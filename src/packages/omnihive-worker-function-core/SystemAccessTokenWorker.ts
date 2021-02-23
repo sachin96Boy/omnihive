@@ -51,7 +51,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
                 },
             },
             paths: {
-                "/accessToken": {
+                "/token": {
                     post: {
                         description: "Retrieve an OmniHive access token",
                         tags: [

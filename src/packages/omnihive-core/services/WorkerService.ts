@@ -5,6 +5,7 @@ import { StringHelper } from "../helpers/StringHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "../models/HiveWorker";
 import { RegisteredHiveWorker } from "../models/RegisteredHiveWorker";
+import { ConfigurationService } from "./ConfigurationService";
 
 export class WorkerService {
     private static singleton: WorkerService;
@@ -36,7 +37,7 @@ export class WorkerService {
                 }
 
                 if (hiveWorker.package === "") {
-                    try {
+                    if (!ConfigurationService.getSingleton().settings.features.mobile) {
                         const path = await import("path");
                         if (!StringHelper.isNullOrWhiteSpace(CoreServiceFactory.configurationService.ohDirName)) {
                             hiveWorker.importPath = path.join(
@@ -46,7 +47,7 @@ export class WorkerService {
                         } else {
                             hiveWorker.importPath = path.join(process.cwd(), hiveWorker.importPath);
                         }
-                    } catch (_err) {
+                    } else {
                         if (!StringHelper.isNullOrWhiteSpace(CoreServiceFactory.configurationService.ohDirName)) {
                             hiveWorker.importPath = `${CoreServiceFactory.configurationService.ohDirName}/${hiveWorker.importPath}`;
                         } else {

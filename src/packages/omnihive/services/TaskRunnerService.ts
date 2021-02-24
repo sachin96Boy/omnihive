@@ -4,18 +4,19 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import chalk from "chalk";
+import fse from "fs-extra";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AppService } from "./AppService";
 import { LogService } from "./LogService";
-import fse from "fs-extra";
+
 export class TaskRunnerService {
     public run = async (worker: string, args: string): Promise<void> => {
         // Run basic app service
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
         const appService: AppService = new AppService();
 
-        await appService.initCore(pkgJson);
+        await appService.initOmniHiveApp(pkgJson);
 
         // Get TaskWorker
 

@@ -66,7 +66,7 @@ export class AdminService {
         global.omnihive.adminServerClient.on("refresh", (data: { refresh?: boolean }) => {
             if (!data || !data.refresh) {
                 const serverService: ServerService = new ServerService();
-                serverService.run();
+                serverService.run(true);
             }
         });
 

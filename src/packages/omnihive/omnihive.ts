@@ -61,7 +61,7 @@ const init = async () => {
                     alias: "d",
                     type: "boolean",
                     demandOption: false,
-                    default: false,
+                    default: true,
                     description: "Set given settings as the default on the next run",
                 })
                 .check((args) => {

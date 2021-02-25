@@ -374,6 +374,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@elastic/elasticsearch@npm:7.11.0":
+  version: 7.11.0
+  resolution: "@elastic/elasticsearch@npm:7.11.0"
+  dependencies:
+    debug: ^4.1.1
+    hpagent: ^0.1.1
+    ms: ^2.1.1
+    pump: ^3.0.0
+    secure-json-parse: ^2.1.0
+  checksum: 09e207c80991d3cdd7044bdf537ad230d8607031424abd8aca3fe91631ba407f15059e3a4103ceb563822c170502efcffaaa1b3cb57d8096db634a3dd18390c0
+  languageName: node
+  linkType: hard
+
 "@eslint/eslintrc@npm:^0.3.0":
   version: 0.3.0
   resolution: "@eslint/eslintrc@npm:0.3.0"
@@ -1527,6 +1540,19 @@ __metadata:
     "@withonevision/omnihive-core-node": "workspace:*"
     chai: 4.2.0
     dayjs: 1.10.4
+    serialize-error: 8.0.1
+    typescript: 4.1.3
+  languageName: unknown
+  linkType: soft
+
+"@withonevision/omnihive-worker-elastic@workspace:src/custom/omnihive-worker-elastic":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-worker-elastic@workspace:src/custom/omnihive-worker-elastic"
+  dependencies:
+    "@elastic/elasticsearch": 7.11.0
+    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-node": "workspace:*"
+    chai: 4.2.0
     serialize-error: 8.0.1
     typescript: 4.1.3
   languageName: unknown

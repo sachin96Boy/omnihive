@@ -1,3 +1,4 @@
+import path from "path";
 import { serializeError } from "serialize-error";
 import { CoreServiceFactory } from "../factories/CoreServiceFactory";
 import { AwaitHelper } from "../helpers/AwaitHelper";
@@ -5,7 +6,6 @@ import { StringHelper } from "../helpers/StringHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "../models/HiveWorker";
 import { RegisteredHiveWorker } from "../models/RegisteredHiveWorker";
-import { ConfigurationService } from "./ConfigurationService";
 
 export class WorkerService {
     private static singleton: WorkerService;
@@ -37,22 +37,13 @@ export class WorkerService {
                 }
 
                 if (hiveWorker.package === "") {
-                    if (!ConfigurationService.getSingleton().settings.features.mobile) {
-                        const path = await import("path");
-                        if (!StringHelper.isNullOrWhiteSpace(CoreServiceFactory.configurationService.ohDirName)) {
-                            hiveWorker.importPath = path.join(
-                                CoreServiceFactory.configurationService.ohDirName,
-                                hiveWorker.importPath
-                            );
-                        } else {
-                            hiveWorker.importPath = path.join(process.cwd(), hiveWorker.importPath);
-                        }
+                    if (!StringHelper.isNullOrWhiteSpace(CoreServiceFactory.configurationService.ohDirName)) {
+                        hiveWorker.importPath = path.join(
+                            CoreServiceFactory.configurationService.ohDirName,
+                            hiveWorker.importPath
+                        );
                     } else {
-                        if (!StringHelper.isNullOrWhiteSpace(CoreServiceFactory.configurationService.ohDirName)) {
-                            hiveWorker.importPath = `${CoreServiceFactory.configurationService.ohDirName}/${hiveWorker.importPath}`;
-                        } else {
-                            hiveWorker.importPath = `${process.cwd()}/${hiveWorker.importPath}`;
-                        }
+                        hiveWorker.importPath = path.join(process.cwd(), hiveWorker.importPath);
                     }
                 }
 

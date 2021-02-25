@@ -24,7 +24,8 @@
         "cli:debug": "cd src/packages/omnihive && yarn run cli:debug",
         "doctor": "yarn dlx @yarnpkg/doctor",
         "server:debug": "cd src/packages/omnihive && yarn run server:debug",
-        "test": "DOTENV_CONFIG_PATH=\"./settings/.env\" nyc mocha -r dotenv/config -r ts-node/register 'src/packages/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors"
+        "test": "DOTENV_CONFIG_PATH=\"./settings/.env\" nyc mocha -r dotenv/config -r ts-node/register 'src/packages/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors",
+        "test:custom": "DOTENV_CONFIG_PATH=\"./settings/.env\" nyc mocha -r dotenv/config -r ts-node/register 'src/custom/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors"
     },
     "devDependencies": {
         "@elastic/elasticsearch": "7.10.0",

@@ -58,10 +58,10 @@ export class LogService {
                 console.log(`${chalk.blueBright("info:")} ${logString}`);
                 break;
             case OmniHiveLogLevel.Warn:
-                console.log(`${chalk.yellow("warn:")} ${logString}`);
+                console.log(chalk.yellow(`warn: ${logString}`));
                 break;
             case OmniHiveLogLevel.Error:
-                console.log(`${chalk.red("error:")} ${logString}`);
+                console.log(chalk.red(`error: ${logString}`));
                 break;
             default:
                 console.log(logString);

@@ -13,11 +13,9 @@ import express from "express";
 import { Server } from "http";
 import path from "path";
 import * as socketio from "socket.io";
-import * as socketioClient from "socket.io-client";
 
 export class GlobalObject extends WorkerSetterBase {
     public adminServer: socketio.Server = new socketio.Server();
-    public adminServerClient!: socketioClient.Socket;
     public appServer: express.Express | undefined = undefined;
     public ohDirName: string = "";
     public registeredSchemas: ConnectionSchema[] = [];

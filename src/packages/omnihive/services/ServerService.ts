@@ -139,9 +139,11 @@ export class ServerService {
             );
         });
 
-        global.omnihive.adminServer.emit("status", {
-            status: global.omnihive.serverStatus,
-            error: global.omnihive.serverError,
+        global.omnihive.adminServer.emit("status-response", {
+            requestComplete: true,
+            requestError: "",
+            serverStatus: global.omnihive.serverStatus,
+            serverError: global.omnihive.serverError,
         });
 
         logService.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);

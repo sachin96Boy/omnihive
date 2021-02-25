@@ -3,7 +3,6 @@
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import * as socketio from "socket.io";
-import * as socketioClient from "socket.io-client";
 import { LogService } from "./LogService";
 import { ServerService } from "./ServerService";
 
@@ -16,58 +15,108 @@ export class AdminService {
             `Setting up admin server on port ${global.omnihive.serverSettings.config.adminPortNumber}...`
         );
 
-        global.omnihive.adminServerClient = socketioClient.io(
-            `${global.omnihive.serverSettings.config.rootUrl}:${global.omnihive.serverSettings.config.adminPortNumber}`
-        );
-
-        global.omnihive.adminServer.listen(global.omnihive.serverSettings.config.adminPortNumber);
+        global.omnihive.adminServer.listen(global.omnihive.serverSettings.config.adminPortNumber, {
+            cors: { origin: "*" },
+        });
 
         global.omnihive.adminServer.once("connection", (socket: socketio.Socket) => {
-            socket.on("register", (data: { adminPassword: string }) => {
+            logService.write(OmniHiveLogLevel.Info, `New admin client connected from ${socket.handshake.address} ...`);
+
+            socket.on("register-request", (request: { adminPassword: string }) => {
                 if (
-                    !data ||
-                    !data.adminPassword ||
-                    StringHelper.isNullOrWhiteSpace(data.adminPassword) ||
-                    data.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                    !request ||
+                    !request.adminPassword ||
+                    StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
+                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
                 ) {
-                    socket.emit("register", { socketError: true });
+                    logService.write(
+                        OmniHiveLogLevel.Warn,
+                        `Admin client register error from ${socket.handshake.address} using password ${request.adminPassword}...`
+                    );
+
+                    socket.emit("register-response", {
+                        requestComplete: false,
+                        requestError: "Invalid Password",
+                        verified: false,
+                    });
+
+                    return;
                 }
 
-                socket.emit("register", { verified: true });
+                logService.write(
+                    OmniHiveLogLevel.Info,
+                    `Admin client register success from ${socket.handshake.address}...`
+                );
+
+                socket.emit("register-response", {
+                    requestComplete: true,
+                    requestError: "",
+                    verified: true,
+                });
             });
 
-            socket.on("status", (data: { adminPassword: string }) => {
+            socket.on("status-request", (request: { adminPassword: string }) => {
                 if (
-                    !data ||
-                    !data.adminPassword ||
-                    StringHelper.isNullOrWhiteSpace(data.adminPassword) ||
-                    data.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                    !request ||
+                    !request.adminPassword ||
+                    StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
+                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
                 ) {
-                    socket.emit("status", { socketError: true });
+                    socket.emit("status-response", {
+                        requestComplete: false,
+                        requestError: "Invalid Password",
+                        serverStatus: global.omnihive.serverStatus,
+                        serverError: global.omnihive.serverError,
+                    });
+
+                    return;
                 }
 
-                socket.emit("status", { status: global.omnihive.serverStatus, error: global.omnihive.serverError });
+                socket.emit("status-response", {
+                    requestComplete: true,
+                    requestError: "",
+                    serverStatus: global.omnihive.serverStatus,
+                    serverError: global.omnihive.serverError,
+                });
             });
 
-            socket.on("urls", (data: { adminPassword: string }) => {
+            socket.on("urls-request", (request: { adminPassword: string }) => {
                 if (
-                    !data ||
-                    !data.adminPassword ||
-                    StringHelper.isNullOrWhiteSpace(data.adminPassword) ||
-                    data.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                    !request ||
+                    !request.adminPassword ||
+                    StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
+                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
                 ) {
-                    socket.emit("status", { socketError: true });
+                    socket.emit("urls-response", {
+                        requestComplete: false,
+                        requestError: "Invalid Password",
+                        urls: [],
+                    });
+
+                    return;
                 }
 
-                socket.emit("urls", { urls: global.omnihive.registeredUrls });
+                socket.emit("urls-response", {
+                    requestComplete: true,
+                    requestError: "",
+                    urls: global.omnihive.registeredUrls,
+                });
             });
         });
 
-        global.omnihive.adminServerClient.on("refresh", (data: { refresh?: boolean }) => {
-            if (!data || !data.refresh) {
-                const serverService: ServerService = new ServerService();
-                serverService.run(true);
+        global.omnihive.adminServer.on("refresh-request", (request: { adminPassword: string; refresh?: boolean }) => {
+            if (
+                !request ||
+                !request.adminPassword ||
+                StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
+                request.adminPassword !== global.omnihive.serverSettings.config.adminPassword ||
+                !request.refresh
+            ) {
+                return;
             }
+
+            const serverService: ServerService = new ServerService();
+            serverService.run(true);
         });
 
         logService.write(

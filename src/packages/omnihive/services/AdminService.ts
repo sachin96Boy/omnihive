@@ -19,7 +19,11 @@ export class AdminService {
             cors: { origin: "*" },
         });
 
-        global.omnihive.adminServer.once("connection", (socket: socketio.Socket) => {
+        global.omnihive.adminServer.on("disconnect", (socket: socketio.Socket) => {
+            logService.write(OmniHiveLogLevel.Info, `Admin client disconnected from ${socket.handshake.address} ...`);
+        });
+
+        global.omnihive.adminServer.on("connection", (socket: socketio.Socket) => {
             logService.write(OmniHiveLogLevel.Info, `New admin client connected from ${socket.handshake.address} ...`);
 
             socket.on("register-request", (request: { adminPassword: string }) => {

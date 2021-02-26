@@ -5,6 +5,8 @@ import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper"
 import * as socketio from "socket.io";
 import { LogService } from "./LogService";
 import { ServerService } from "./ServerService";
+import nodeCleanup from "node-cleanup";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 
 export class AdminService {
     public run = async () => {
@@ -19,13 +21,7 @@ export class AdminService {
             cors: { origin: "*" },
         });
 
-        global.omnihive.adminServer.on("disconnect", (socket: socketio.Socket) => {
-            logService.write(OmniHiveLogLevel.Info, `Admin client disconnected from ${socket.handshake.address} ...`);
-        });
-
         global.omnihive.adminServer.on("connection", (socket: socketio.Socket) => {
-            logService.write(OmniHiveLogLevel.Info, `New admin client connected from ${socket.handshake.address} ...`);
-
             socket.on("register-request", (request: { adminPassword: string }) => {
                 if (
                     !request ||
@@ -46,11 +42,6 @@ export class AdminService {
 
                     return;
                 }
-
-                logService.write(
-                    OmniHiveLogLevel.Info,
-                    `Admin client register success from ${socket.handshake.address}...`
-                );
 
                 socket.emit("register-response", {
                     requestComplete: true,
@@ -121,6 +112,15 @@ export class AdminService {
 
             const serverService: ServerService = new ServerService();
             serverService.run(true);
+        });
+
+        nodeCleanup(() => {
+            global.omnihive.adminServer.emit("status-response", {
+                requestComplete: true,
+                requestError: "",
+                serverStatus: ServerStatus.Offline,
+                serverError: undefined,
+            });
         });
 
         logService.write(

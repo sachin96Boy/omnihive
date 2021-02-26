@@ -979,6 +979,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node-cleanup@npm:2.1.1":
+  version: 2.1.1
+  resolution: "@types/node-cleanup@npm:2.1.1"
+  checksum: 19648e9f768bf8b762de720e8abdc33aad3d3095eec28e12b63cf7e52cbbc846143823ee88e6b6495fac605810cf9ecabaf3ef4582124eea182aeaa31b279d77
+  languageName: node
+  linkType: hard
+
 "@types/node-fetch@npm:2.5.7":
   version: 2.5.7
   resolution: "@types/node-fetch@npm:2.5.7"
@@ -7002,6 +7009,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"node-cleanup@npm:2.1.2":
+  version: 2.1.2
+  resolution: "node-cleanup@npm:2.1.2"
+  checksum: 696b6f832d6d32a21ac76a7198f57aae268580badff89aa0f7c3d8e2fdc10805b3c216d578644bd7bc8c2b97dccbf3103afddd00f7edb1176ff59f4538cf7b2e
+  languageName: node
+  linkType: hard
+
 "node-fetch@npm:^2.1.2, node-fetch@npm:^2.2.0, node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.1":
   version: 2.6.1
   resolution: "node-fetch@npm:2.6.1"
@@ -7305,6 +7319,7 @@ fsevents@~2.3.1:
     "@types/figlet": 1.2.1
     "@types/fs-extra": 9.0.6
     "@types/inquirer": 7.3.1
+    "@types/node-cleanup": 2.1.1
     "@types/swagger-ui-express": 4.1.2
     "@withonevision/omnihive-core": "workspace:*"
     "@withonevision/omnihive-worker-date-dayjs": "workspace:*"
@@ -7330,12 +7345,12 @@ fsevents@~2.3.1:
     graphql: 15.5.0
     helmet: 4.4.1
     inquirer: 7.3.3
+    node-cleanup: 2.1.2
     nodemon: 2.0.7
     pug: 3.0.0
     read-pkg-up: 7.0.1
     serialize-error: 8.0.1
     socket.io: 3.1.1
-    socket.io-client: 3.1.1
     swagger-ui-express: 4.1.6
     ts-node: 9.1.1
     typescript: 4.1.3
@@ -8959,21 +8974,6 @@ fsevents@~2.3.1:
     parseuri: 0.0.6
     socket.io-parser: ~4.0.4
   checksum: 943cfd1b656d6c81cc0879eccfbf0b1f399a50cf55657e2f6d9075b80075c3ccc1544d92d3a2ac5639a73e6a804e75bdb414d0781137987861c0cda91dea8b63
-  languageName: node
-  linkType: hard
-
-"socket.io-client@npm:3.1.1":
-  version: 3.1.1
-  resolution: "socket.io-client@npm:3.1.1"
-  dependencies:
-    "@types/component-emitter": ^1.2.10
-    backo2: ~1.0.2
-    component-emitter: ~1.3.0
-    debug: ~4.3.1
-    engine.io-client: ~4.1.0
-    parseuri: 0.0.6
-    socket.io-parser: ~4.0.4
-  checksum: a4461301ef4f89e3992f984215733aaac45a7871589261497baab66a5a97000b2128d48239d0cef455267e18dddcaf0ebc67aef200b7d196ca00d00b1f6d803c
   languageName: node
   linkType: hard
 

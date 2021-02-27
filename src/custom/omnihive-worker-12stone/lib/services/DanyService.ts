@@ -1,5 +1,5 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { WorkerService } from "@withonevision/omnihive-core/services/WorkerService";
+import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 
 export default class DanyService {
     private static singleton: DanyService;
@@ -16,11 +16,11 @@ export default class DanyService {
     public rootUrl: string = "";
 
     public getMetaData = (workerName: string) => {
-        const graphWorkers = WorkerService.getSingleton().getWorkersByType(HiveWorkerType.GraphEndpointFunction);
+        const graphWorkers = CoreServiceFactory.workerService.getWorkersByType(HiveWorkerType.GraphEndpointFunction);
 
         const metadata = graphWorkers.find((worker: any) => worker.name === workerName)?.metadata;
 
-        DanyService.getSingleton().apiKey = metadata.apiKey;
-        DanyService.getSingleton().rootUrl = metadata.rootUrl;
+        DanyService.singleton.apiKey = metadata.apiKey;
+        DanyService.singleton.rootUrl = metadata.rootUrl;
     };
 }

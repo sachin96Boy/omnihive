@@ -22,6 +22,33 @@ export class AdminService {
         });
 
         global.omnihive.adminServer.on("connection", (socket: socketio.Socket) => {
+            socket.on("refresh-request", (request: { adminPassword: string; refresh?: boolean }) => {
+                if (
+                    !request ||
+                    !request.adminPassword ||
+                    StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
+                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword ||
+                    !request.refresh
+                ) {
+                    socket.emit("refresh-response", {
+                        requestComplete: false,
+                        requestError: "Invalid Password",
+                        refresh: false,
+                    });
+
+                    return;
+                }
+
+                const serverService: ServerService = new ServerService();
+                serverService.run(true);
+
+                socket.emit("refresh-response", {
+                    requestComplete: true,
+                    requestError: "",
+                    refresh: true,
+                });
+            });
+
             socket.on("register-request", (request: { adminPassword: string }) => {
                 if (
                     !request ||
@@ -99,23 +126,8 @@ export class AdminService {
             });
         });
 
-        global.omnihive.adminServer.on("refresh-request", (request: { adminPassword: string; refresh?: boolean }) => {
-            if (
-                !request ||
-                !request.adminPassword ||
-                StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
-                request.adminPassword !== global.omnihive.serverSettings.config.adminPassword ||
-                !request.refresh
-            ) {
-                return;
-            }
-
-            const serverService: ServerService = new ServerService();
-            serverService.run(true);
-        });
-
         nodeCleanup(() => {
-            global.omnihive.adminServer.emit("status-response", {
+            global.omnihive.adminServer.sockets.emit("status-response", {
                 requestComplete: true,
                 requestError: "",
                 serverStatus: ServerStatus.Offline,

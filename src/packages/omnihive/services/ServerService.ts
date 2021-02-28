@@ -139,7 +139,7 @@ export class ServerService {
             );
         });
 
-        global.omnihive.adminServer.emit("status-response", {
+        global.omnihive.adminServer.sockets.emit("status-response", {
             requestComplete: true,
             requestError: "",
             serverStatus: global.omnihive.serverStatus,

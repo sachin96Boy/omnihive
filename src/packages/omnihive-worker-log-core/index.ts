@@ -34,6 +34,8 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             consoleOnlyLogging = true;
         }
 
+        global.omnihive.adminServer.sockets.emit("log-response", { logLevel, logString: formattedLogString });
+
         if (consoleOnlyLogging) {
             this.chalkConsole(logLevel, formattedLogString);
             return;

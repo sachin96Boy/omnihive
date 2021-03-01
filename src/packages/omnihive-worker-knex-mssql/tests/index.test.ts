@@ -1,43 +1,40 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
-import { TestConfigSettings } from "@withonevision/omnihive-core/models/TestConfigSettings";
 import { assert } from "chai";
 import { serializeError } from "serialize-error";
 import MssqlDatabaseWorker from "..";
+import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
+import { TestService } from "../../../tests/services/TestService";
 import packageJson from "../package.json";
 
 let settings: TestConfigSettings;
+let worker: MssqlDatabaseWorker = new MssqlDatabaseWorker();
+const testService: TestService = new TestService();
 
 describe("mssql database worker tests", function () {
     before(function () {
-        const config: TestConfigSettings | undefined = NodeServiceFactory.testService.getTestConfig(packageJson.name);
+        const config: TestConfigSettings | undefined = testService.getTestConfig(packageJson.name);
 
         if (!config) {
             this.skip();
         }
 
-        CoreServiceFactory.workerService.clearWorkers();
+        testService.clearWorkers();
         settings = config;
     });
 
-    let worker: MssqlDatabaseWorker = new MssqlDatabaseWorker();
-
-    const init = async function (testingConfigs: any): Promise<void> {
+    const init = async function (testingConfigs: HiveWorker[]): Promise<void> {
         try {
-            await AwaitHelper.execute(CoreServiceFactory.workerService.initWorkers(testingConfigs));
-            const newWorker = CoreServiceFactory.workerService.registeredWorkers.find(
-                (x) => x[0].package === packageJson.name
-            );
+            await AwaitHelper.execute(testService.initWorkers(testingConfigs));
+            const newWorker = testService.registeredWorkers.find((x) => x[0].package === packageJson.name);
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];
             }
         } catch (err) {
-            throw new Error(err.message);
+            throw new Error("init failure: " + serializeError(JSON.stringify(err)));
         }
     };
 
@@ -47,7 +44,7 @@ describe("mssql database worker tests", function () {
 
     describe("Init Functions", function () {
         beforeEach(async function () {
-            CoreServiceFactory.workerService.clearWorkers();
+            testService.clearWorkers();
         });
 
         it("test valid init", async function () {

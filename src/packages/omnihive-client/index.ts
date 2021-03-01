@@ -1,17 +1,18 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
+import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSetterBase";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
-export class OmniHiveClient {
+export class OmniHiveClient extends WorkerSetterBase {
     private static singleton: OmniHiveClient;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
+    private constructor() {
+        super();
+    }
 
     public static getSingleton = (): OmniHiveClient => {
         if (!OmniHiveClient.singleton) {
@@ -25,8 +26,9 @@ export class OmniHiveClient {
         return new OmniHiveClient();
     };
 
-    public init = async (settings: ServerSettings): Promise<void> => {
-        await CoreServiceFactory.workerService.initWorkers(settings.workers);
+    public init = async (serverSettings: ServerSettings): Promise<void> => {
+        this.serverSettings = serverSettings;
+        this.initWorkers(serverSettings.workers);
     };
 
     public restClient = async (url: string, method: RestMethod, headers?: any, data?: any): Promise<any> => {
@@ -119,35 +121,20 @@ export class OmniHiveClient {
         return graphCall;
     };
 
-    public runCustomSql = async (
-        url: string,
-        sql: string,
-        dbWorkerName: string,
-        encryptionWorkerName?: string
-    ): Promise<any> => {
+    public runCustomSql = async (url: string, sql: string, encryptionWorkerName?: string): Promise<any> => {
         let encryptionWorker: IEncryptionWorker | undefined = undefined;
 
         if (encryptionWorkerName) {
-            encryptionWorker = await CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(
+            encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(
                 HiveWorkerType.Encryption,
                 encryptionWorkerName
             );
         } else {
-            encryptionWorker = await CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(
-                HiveWorkerType.Encryption
-            );
+            encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
         }
 
         if (!encryptionWorker) {
             throw new Error("No encryption worker found.  An encryption worker is required for custom SQL");
-        }
-
-        const dbWorker: IDatabaseWorker | undefined = await CoreServiceFactory.workerService.getWorker<
-            IDatabaseWorker | undefined
-        >(HiveWorkerType.Database, dbWorkerName);
-
-        if (!dbWorker) {
-            throw new Error("No database worker with the given name found.");
         }
 
         const target: string = `customSql`;

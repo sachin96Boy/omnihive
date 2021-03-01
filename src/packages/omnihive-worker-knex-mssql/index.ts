@@ -1,6 +1,5 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
@@ -25,7 +24,6 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: sql.config;
     private metadata!: MssqlDatabaseWorkerMetadata;
-    private logWorker: ILogWorker | undefined = undefined;
 
     constructor() {
         super();
@@ -63,22 +61,9 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         }
     }
 
-    public async afterInit(): Promise<void> {
-        try {
-            this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-                CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-            );
-
-            if (!this.logWorker) {
-                throw new Error("Log Worker Not Defined.  Database Worker Will Not Function Without Log Worker.");
-            }
-        } catch (err) {
-            throw new Error("MSSQL Dependencies Error => " + JSON.stringify(serializeError(err)));
-        }
-    }
-
     public executeQuery = async (query: string): Promise<any[][]> => {
-        this.logWorker?.write(OmniHiveLogLevel.Info, query);
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
+        logWorker?.write(OmniHiveLogLevel.Info, query);
 
         const poolRequest = this.connectionPool.request();
         const result = await AwaitHelper.execute<any>(poolRequest.query(query));

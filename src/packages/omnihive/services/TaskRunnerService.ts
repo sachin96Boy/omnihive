@@ -1,44 +1,26 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
+/// <reference path="../../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
-import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
-import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
+import fse from "fs-extra";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
+import { AppService } from "./AppService";
+import { LogService } from "./LogService";
 
 export class TaskRunnerService {
-    public run = async (settings: ServerSettings, worker: string, args: string): Promise<void> => {
+    public run = async (worker: string, args: string): Promise<void> => {
         // Run basic app service
         const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
-        await NodeServiceFactory.appService.initCore(pkgJson, settings);
+        const appService: AppService = new AppService();
 
-        const fileSystemWorker:
-            | IFileSystemWorker
-            | undefined = await CoreServiceFactory.workerService.getWorker<IFileSystemWorker>(
-            HiveWorkerType.FileSystem
-        );
-
-        if (!fileSystemWorker && args && !StringHelper.isNullOrWhiteSpace(args)) {
-            throw new Error("FileSystem Worker Not Found...Cannot Read Args");
-        }
-
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
-
-        if (!logWorker) {
-            throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
-        }
+        await appService.initOmniHiveApp(pkgJson);
 
         // Get TaskWorker
 
-        const taskWorker: RegisteredHiveWorker | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
+        const taskWorker: RegisteredHiveWorker | undefined = global.omnihive.registeredWorkers.find(
             (rw: RegisteredHiveWorker) =>
                 rw.name === worker && rw.enabled === true && rw.type === HiveWorkerType.TaskFunction
         );
@@ -58,9 +40,7 @@ export class TaskRunnerService {
 
         if (args && args !== "") {
             try {
-                if (fileSystemWorker) {
-                    workerArgs = JSON.parse(fileSystemWorker.readFile(args));
-                }
+                workerArgs = JSON.parse(fse.readFileSync(args, { encoding: "utf8" }));
             } catch (err) {
                 this.logError(worker, err);
             }
@@ -82,20 +62,13 @@ export class TaskRunnerService {
     };
 
     private logError = async (workerName: string, err: Error) => {
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
+        const logService: LogService = new LogService();
 
-        if (!logWorker) {
-            throw new Error("Core Log Worker Not Found.  Task Runner needs the core log worker ohreqLogWorker");
-        }
-
-        console.log(err);
-        logWorker.write(
+        logService.write(
             OmniHiveLogLevel.Error,
             `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`
         );
+
         throw new Error(`Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`);
     };
 }

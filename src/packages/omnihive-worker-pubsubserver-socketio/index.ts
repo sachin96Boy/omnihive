@@ -25,7 +25,7 @@ export default class SocketIoPubSubServerWorker extends HiveWorkerBase implement
         this.ioServer = new socketio.Server();
         this.ioServer.listen(metadata.port);
 
-        this.ioServer.once("connection", (socket: socketio.Socket) => {
+        this.ioServer.on("connection", (socket: socketio.Socket) => {
             socket.on("join-room", (room: string) => {
                 socket.join(room);
             });

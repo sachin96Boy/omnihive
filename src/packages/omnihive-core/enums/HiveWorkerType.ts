@@ -9,7 +9,6 @@ export enum HiveWorkerType {
     FileSystem = "fileSystem",
     GraphBuilder = "graphBuilder",
     GraphEndpointFunction = "graphEndpointFunction",
-    HiveAccount = "hiveAccount",
     Log = "log",
     PubSubServer = "pubSubServer",
     PubSubClient = "pubSubClient",

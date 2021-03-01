@@ -1,4 +1,4 @@
-import { HiveWorker } from "./HiveWorker";
+import { HiveWorker } from "../../packages/omnihive-core/models/HiveWorker";
 
 export class TestConfigSettings {
     public package: string = "";

@@ -2,8 +2,7 @@
     "config": {
         "adminPassword": "XXX",
         "adminPortNumber": 7205,
-        "serverGroupName": "XXX",
-        "rootUrl": "http://localhost:3001",
+        "rootUrl": "http://localhost",
         "webPortNumber": 3001
     },
     "constants": {

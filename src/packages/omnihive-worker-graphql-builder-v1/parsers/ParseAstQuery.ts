@@ -9,8 +9,10 @@ import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDataba
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { ConverterSqlInfo } from "@withonevision/omnihive-core/models/ConverterSqlInfo";
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import {
     FieldNode,
@@ -48,8 +50,7 @@ export class ParseAstQuery {
     public parse = async (
         workerName: string,
         resolveInfo: GraphQLResolveInfo,
-        cacheSetting: string,
-        cacheTime: string
+        omniHiveContext: GraphContext
     ): Promise<any> => {
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
@@ -78,6 +79,22 @@ export class ParseAstQuery {
             );
         }
 
+        const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
+            HiveWorkerType.Token
+        );
+
+        if (
+            tokenWorker &&
+            omniHiveContext &&
+            omniHiveContext.access &&
+            !StringHelper.isNullOrWhiteSpace(omniHiveContext.access)
+        ) {
+            const verifyToken: boolean = await AwaitHelper.execute<boolean>(tokenWorker.verify(omniHiveContext.access));
+            if (verifyToken === false) {
+                throw new Error("Access token is invalid or expired.");
+            }
+        }
+
         this.cacheWorker = global.omnihive.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache);
         this.dateWorker = global.omnihive.getWorker<IDateWorker | undefined>(HiveWorkerType.Date);
         this.databaseWorker = databaseWorker;
@@ -89,19 +106,29 @@ export class ParseAstQuery {
         let cacheSeconds = -1;
 
         if (this.cacheWorker) {
-            if (cacheTime) {
+            if (omniHiveContext && omniHiveContext.cacheSeconds) {
                 try {
-                    cacheSeconds = +cacheTime;
+                    cacheSeconds = +omniHiveContext.cacheSeconds;
                 } catch {
                     cacheSeconds = -1;
                 }
             }
 
-            if (!StringHelper.isNullOrWhiteSpace(cacheSetting) && cacheSetting !== "none") {
+            if (
+                omniHiveContext &&
+                omniHiveContext.cache &&
+                !StringHelper.isNullOrWhiteSpace(omniHiveContext.cache) &&
+                omniHiveContext.cache !== "none"
+            ) {
                 cacheKey = this.encryptionWorker.base64Encode(workerName + "||||" + converterInfo.sql);
             }
 
-            if (!StringHelper.isNullOrWhiteSpace(cacheSetting) && cacheSetting === "cache") {
+            if (
+                omniHiveContext &&
+                omniHiveContext.cache &&
+                !StringHelper.isNullOrWhiteSpace(omniHiveContext.cache) &&
+                omniHiveContext.cache === "cache"
+            ) {
                 const keyExists: boolean = await this.cacheWorker.exists(cacheKey);
 
                 if (keyExists) {
@@ -116,7 +143,7 @@ export class ParseAstQuery {
                             return JSON.parse(cacheResults);
                         }
                     } catch {
-                        cacheSetting = "cacheRefresh";
+                        omniHiveContext.cache = "cacheRefresh";
                     }
                 }
             }
@@ -126,7 +153,12 @@ export class ParseAstQuery {
         const treeResults: any = this.getGraphFromData(dataResults[0], converterInfo.hydrationDefinition);
 
         if (this.cacheWorker) {
-            if (!StringHelper.isNullOrWhiteSpace(cacheSetting) && cacheSetting !== "none") {
+            if (
+                omniHiveContext &&
+                omniHiveContext.cache &&
+                !StringHelper.isNullOrWhiteSpace(omniHiveContext.cache) &&
+                omniHiveContext.cache !== "none"
+            ) {
                 logWorker.write(OmniHiveLogLevel.Info, `(Written to Cache) => ${workerName} => ${converterInfo.sql}`);
                 this.cacheWorker.set(cacheKey, JSON.stringify(treeResults), cacheSeconds);
             }

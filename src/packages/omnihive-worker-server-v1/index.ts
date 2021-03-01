@@ -290,13 +290,13 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? true,
                             introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? true,
                             context: async ({ req }) => {
-                                const tokens = {
+                                const omnihive = {
                                     access: req.headers.ohaccess || ``,
                                     auth: req.headers.authorization || ``,
                                     cache: req.headers.ohcache || ``,
                                     cacheSeconds: req.headers.ohcacheseconds,
                                 };
-                                return { tokens };
+                                return { omnihive };
                             },
                         };
 
@@ -346,13 +346,13 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? true,
                     introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? true,
                     context: async ({ req }) => {
-                        const tokens = {
+                        const omnihive = {
                             access: req.headers.ohaccess || ``,
                             auth: req.headers.authorization || ``,
                             cache: req.headers.ohcache || ``,
                             cacheSeconds: req.headers.ohcacheseconds,
                         };
-                        return { tokens };
+                        return { omnihive };
                     },
                 };
 

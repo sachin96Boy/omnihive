@@ -12,6 +12,8 @@ export class LogService {
     public write = async (logLevel: OmniHiveLogLevel, logString: string): Promise<void> => {
         let featureWorker: IFeatureWorker | undefined = undefined;
         let consoleOnlyLogging: boolean = true;
+        const timestamp: string = dayjs().format("YYYY-MM-DD HH:mm:ss");
+        const osName: string = os.hostname();
 
         try {
             featureWorker = global.omnihive.getWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature);
@@ -19,20 +21,21 @@ export class LogService {
             featureWorker = undefined;
         }
 
-        const formattedLogString = `(${dayjs().format(
-            "YYYY-MM-DD HH:mm:ss"
-        )}) OmniHive Server ${os.hostname()} => ${logString}`;
-
         try {
             (await featureWorker?.get<boolean>("consoleOnlyLogging")) ?? true;
         } catch {
             consoleOnlyLogging = true;
         }
 
-        global.omnihive.adminServer.sockets.emit("log-response", { logLevel, logString: formattedLogString });
+        global.omnihive.adminServer.sockets.emit("log-response", {
+            logLevel,
+            timestamp,
+            osName,
+            logString,
+        });
 
         if (consoleOnlyLogging) {
-            this.chalkConsole(logLevel, formattedLogString);
+            this.chalkConsole(logLevel, osName, timestamp, logString);
             return;
         }
 
@@ -44,29 +47,28 @@ export class LogService {
 
         logWorkers.forEach((value: RegisteredHiveWorker) => {
             try {
-                (value.instance as ILogWorker).write(logLevel, formattedLogString);
+                (value.instance as ILogWorker).write(logLevel, logString);
             } catch (e) {
                 this.chalkConsole(
                     OmniHiveLogLevel.Error,
+                    osName,
+                    timestamp,
                     `Skipping logging for ${value.name} due to error: ${serializeError(e)}`
                 );
             }
         });
     };
 
-    private chalkConsole = (logLevel: OmniHiveLogLevel, logString: string) => {
+    private chalkConsole = (logLevel: OmniHiveLogLevel, osName: string, timestamp: string, logString: string) => {
         switch (logLevel) {
-            case OmniHiveLogLevel.Info:
-                console.log(`${chalk.blueBright("info:")} ${logString}`);
-                break;
             case OmniHiveLogLevel.Warn:
-                console.log(chalk.yellow(`warn: ${logString}`));
+                console.log(chalk.yellow(`warn: ${timestamp} ${osName} ${logString}`));
                 break;
             case OmniHiveLogLevel.Error:
-                console.log(chalk.red(`error: ${logString}`));
+                console.log(chalk.red(`error: ${timestamp} ${osName} ${logString}`));
                 break;
             default:
-                console.log(logString);
+                console.log(`${chalk.blueBright("info:")} ${chalk.magenta(`${timestamp} ${osName}`)} ${logString}`);
                 break;
         }
     };

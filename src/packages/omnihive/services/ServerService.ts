@@ -35,7 +35,7 @@ export class ServerService {
             await AwaitHelper.execute<void>(this.changeServerStatus(ServerStatus.Rebuilding));
 
             // Check for server reset and re-poll settings in case they have changed
-            if (serverReset && serverReset === true) {
+            if (serverReset === true) {
                 const config = new Conf();
                 const latestConf: string | undefined = config.get<string>("latest-settings") as string;
 

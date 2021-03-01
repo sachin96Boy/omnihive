@@ -554,7 +554,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
         builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
         builder.appendLine(
-            `\t\t\t\t\tvar dbResponse = await AwaitHelper.execute(graphParser.parseCustomSql("${databaseWorker.config.name}", args.encryptedSql));`
+            `\t\t\t\t\tvar dbResponse = await AwaitHelper.execute(graphParser.parseCustomSql("${databaseWorker.config.name}", args.encryptedSql, context.omnihive));`
         );
         builder.appendLine(`\t\t\t\t\treturn { recordset: dbResponse };`);
         builder.appendLine(`\t\t\t\t},`);
@@ -585,7 +585,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
             builder.appendLine(
-                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.tokens.cache, context.tokens.cacheSeconds));`
+                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.omnihive));`
             );
             builder.appendLine(`\t\t\t\t}`);
             builder.appendLine(`\t\t\t},`);
@@ -607,7 +607,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
             builder.appendLine(
-                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.tokens.cache, context.tokens.cacheSeconds));`
+                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.omnihive));`
             );
             builder.appendLine(`\t\t\t\t}`);
             builder.appendLine(`\t\t\t},`);
@@ -683,7 +683,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                             lifecycleWorker.worker.name
                         }("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${pluralize.plural(
                             tableSchema[0].tableNameCamelCase
-                        )}, customDmlArgs);`
+                        )}, customDmlArgs, context.omnihive);`
                     );
                 });
             }
@@ -720,7 +720,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                                 databaseWorker.config.name
                             }", "${tableSchema[0].tableName}", ${pluralize.plural(
                                 tableSchema[0].tableNameCamelCase
-                            )}, customDmlArgs);`
+                            )}, customDmlArgs, context.omnihive);`
                         );
                     } else {
                         builder.appendLine(
@@ -728,7 +728,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                                 lifecycleWorker.worker.name
                             }("${databaseWorker.config.name}", "${tableSchema[0].tableName}", ${pluralize.plural(
                                 tableSchema[0].tableNameCamelCase
-                            )}, customDmlArgs);`
+                            )}, customDmlArgs, context.omnihive);`
                         );
                     }
                 });
@@ -738,7 +738,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                         databaseWorker.config.name
                     }", "${tableSchema[0].tableName}", ${pluralize.plural(
                         tableSchema[0].tableNameCamelCase
-                    )}, customDmlArgs));`
+                    )}, customDmlArgs, context.omnihive));`
                 );
             }
 
@@ -769,7 +769,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             if (afterInsertArray.length > 0) {
                 _.orderBy(afterInsertArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
                     builder.appendLine(
-                        `\t\t\t\t\t\t{insertResponse, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", insertResponse, customDmlArgs);`
+                        `\t\t\t\t\t\t{insertResponse, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", insertResponse, customDmlArgs, context.omnihive);`
                     );
                 });
             }
@@ -832,7 +832,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             if (beforeUpdateArray.length > 0) {
                 _.orderBy(beforeUpdateArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
                     builder.appendLine(
-                        `\t\t\t\t\t\t{updateObject, whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`
+                        `\t\t\t\t\t\t{updateObject, whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs, context.omnihive);`
                     );
                 });
             }
@@ -864,17 +864,17 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 _.orderBy(beforeUpdateArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker, index) => {
                     if (index === insteadOfUpdateArray.length - 1) {
                         builder.appendLine(
-                            `\t\t\t\t\t\tvar updateCount = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`
+                            `\t\t\t\t\t\tvar updateCount = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs, context.omnihive);`
                         );
                     } else {
                         builder.appendLine(
-                            `\t\t\t\t\t\t{updateObject, whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs);`
+                            `\t\t\t\t\t\t{updateObject, whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs, context.omnihive);`
                         );
                     }
                 });
             } else {
                 builder.appendLine(
-                    `\t\t\t\t\t\tvar updateCount = await AwaitHelper.execute(graphParser.parseUpdate("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs));`
+                    `\t\t\t\t\t\tvar updateCount = await AwaitHelper.execute(graphParser.parseUpdate("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateObject, whereObject, customDmlArgs, context.omnihive));`
                 );
             }
 
@@ -904,7 +904,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             if (afterUpdateArray.length > 0) {
                 _.orderBy(afterUpdateArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
                     builder.appendLine(
-                        `\t\t\t\t\t\t{updateCount, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateCount, customDmlArgs);`
+                        `\t\t\t\t\t\t{updateCount, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", updateCount, customDmlArgs, context.omnihive);`
                     );
                 });
             }
@@ -962,7 +962,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             if (beforeDeleteArray.length > 0) {
                 _.orderBy(beforeDeleteArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
                     builder.appendLine(
-                        `\t\t\t\t\t\t{whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`
+                        `\t\t\t\t\t\t{whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs, context.omnihive);`
                     );
                 });
             }
@@ -994,17 +994,17 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 _.orderBy(insteadOfDeleteArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker, index) => {
                     if (index === insteadOfDeleteArray.length - 1) {
                         builder.appendLine(
-                            `\t\t\t\t\t\tvar deleteCount = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`
+                            `\t\t\t\t\t\tvar deleteCount = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs, context.omnihive);`
                         );
                     } else {
                         builder.appendLine(
-                            `\t\t\t\t\t\t{whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs);`
+                            `\t\t\t\t\t\t{whereObject, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs, context.omnihive);`
                         );
                     }
                 });
             } else {
                 builder.appendLine(
-                    `\t\t\t\t\t\tvar deleteCount = await AwaitHelper.execute(graphParser.parseDelete("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs));`
+                    `\t\t\t\t\t\tvar deleteCount = await AwaitHelper.execute(graphParser.parseDelete("${databaseWorker.config.name}", "${tableSchema[0].tableName}", whereObject, customDmlArgs, context.omnihive));`
                 );
             }
 
@@ -1034,7 +1034,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             if (afterDeleteArray.length > 0) {
                 _.orderBy(afterDeleteArray, ["lifecycleOrder"], ["asc"]).forEach((lifecycleWorker) => {
                     builder.appendLine(
-                        `\t\t\t\t\t{deleteCount, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", deleteCount, customDmlArgs);`
+                        `\t\t\t\t\t{deleteCount, customDmlArgs} = ${lifecycleWorker.worker.name}("${databaseWorker.config.name}", "${tableSchema[0].tableName}", deleteCount, customDmlArgs, context.omnihive);`
                     );
                 });
             }
@@ -1118,7 +1118,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
             builder.appendLine(
-                `\t\t\t\t\tvar dbResponses = await AwaitHelper.execute(graphParser.parseStoredProcedure("${databaseWorker.config.name}", resolveInfo));`
+                `\t\t\t\t\tvar dbResponses = await AwaitHelper.execute(graphParser.parseStoredProcedure("${databaseWorker.config.name}", resolveInfo, context.omnihive));`
             );
             builder.appendLine(`\t\t\t\t\tfor (const item of dbResponses) {`);
             builder.appendLine(`\t\t\t\t\t\t\tdbResponses[item.procName] = item.results;`);

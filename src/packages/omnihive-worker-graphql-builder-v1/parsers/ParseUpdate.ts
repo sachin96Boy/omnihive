@@ -1,8 +1,12 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import knex, { QueryBuilder } from "knex";
 
@@ -12,7 +16,8 @@ export class ParseUpdate {
         tableName: string,
         updateObject: any,
         whereObject: any,
-        _customDmlArgs: any
+        _customDmlArgs: any,
+        omniHiveContext: GraphContext
     ): Promise<number> => {
         if (!whereObject || Object.keys(whereObject).length === 0) {
             throw new Error("Update cannot have no where objects/clause.  That is too destructive.");
@@ -31,6 +36,22 @@ export class ParseUpdate {
             throw new Error(
                 "Database Worker Not Defined.  This graph converter will not work without a Database worker."
             );
+        }
+
+        const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
+            HiveWorkerType.Token
+        );
+
+        if (
+            tokenWorker &&
+            omniHiveContext &&
+            omniHiveContext.access &&
+            !StringHelper.isNullOrWhiteSpace(omniHiveContext.access)
+        ) {
+            const verifyToken: boolean = await AwaitHelper.execute<boolean>(tokenWorker.verify(omniHiveContext.access));
+            if (verifyToken === false) {
+                throw new Error("Access token is invalid or expired.");
+            }
         }
 
         const schema: ConnectionSchema | undefined = global.omnihive.registeredSchemas.find(

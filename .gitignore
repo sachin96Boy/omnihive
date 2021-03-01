@@ -46,4 +46,4 @@ yarn-error.log*
 !/src/custom/README.md
 
 #custom types
-!**/globals.omnihive.*.d.ts
+!**/globals.omnihive.d.ts

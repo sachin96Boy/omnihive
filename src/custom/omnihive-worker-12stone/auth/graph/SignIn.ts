@@ -18,7 +18,7 @@ export default class SignIn extends HiveWorkerBase implements IGraphEndpointWork
             }
 
             // Get Metadata
-            DanyService.getSingleton().getMetaData("SignIn");
+            DanyService.getSingleton().setMetaData(this.config.metadata);
 
             // Sanitize arguments
             const trueArgs: any = {};

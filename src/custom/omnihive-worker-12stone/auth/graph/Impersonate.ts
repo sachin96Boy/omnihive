@@ -9,7 +9,7 @@ export default class Impersonate extends HiveWorkerBase implements IGraphEndpoin
     public execute = async (customArgs: any): Promise<any> => {
         try {
             // Get Metadata
-            DanyService.getSingleton().getMetaData("Impersonate");
+            DanyService.getSingleton().setMetaData(this.config.metadata);
 
             const impersonateArgs = {
                 UserId: customArgs.UserId,

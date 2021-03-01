@@ -1,6 +1,6 @@
+/// <reference path="../../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
@@ -17,8 +17,9 @@ export class ParseInsert {
             throw new Error("Insert cannot have a zero column count.");
         }
 
-        const databaseWorker: IDatabaseWorker | undefined = await AwaitHelper.execute<IDatabaseWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName)
+        const databaseWorker: IDatabaseWorker | undefined = global.omnihive.getWorker<IDatabaseWorker | undefined>(
+            HiveWorkerType.Database,
+            workerName
         );
 
         if (!databaseWorker) {
@@ -27,7 +28,9 @@ export class ParseInsert {
             );
         }
 
-        const schema: ConnectionSchema | undefined = CoreServiceFactory.connectionService.getSchema(workerName);
+        const schema: ConnectionSchema | undefined = global.omnihive.registeredSchemas.find(
+            (value: ConnectionSchema) => value.workerName === workerName
+        );
         let tableSchema: TableSchema[] = [];
 
         if (schema) {

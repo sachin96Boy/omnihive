@@ -24,7 +24,6 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "@withonevision/omnihive-core-node": "workspace:*",
         "apollo-server": "2.19.2",
         "apollo-server-express": "2.19.2",
         "change-case": "4.1.2",

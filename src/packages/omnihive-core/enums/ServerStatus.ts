@@ -1,6 +1,6 @@
 export enum ServerStatus {
     Admin = "admin",
-    Mixed = "mixed",
+    Error = "error",
     Offline = "offline",
     Online = "online",
     Rebuilding = "rebuilding",

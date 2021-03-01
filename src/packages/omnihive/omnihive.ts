@@ -1,6 +1,6 @@
 #!/usr/bin/env node
+/// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
@@ -13,16 +13,19 @@ import fse from "fs-extra";
 import inquirer from "inquirer";
 import path from "path";
 import yargs from "yargs";
+import { GlobalObject } from "./models/GlobalObject";
+import { AdminService } from "./services/AdminService";
 import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
 
 const init = async () => {
+    global.omnihive = new GlobalObject();
+
     const config = new Conf();
     const latestConf: string | undefined = config.get<string>("latest-settings") as string;
     const newAdminPassword = crypto.randomBytes(32).toString("hex");
-    const newServerGroupName = crypto.randomBytes(8).toString("hex");
 
-    CoreServiceFactory.configurationService.ohDirName = __dirname;
+    global.omnihive.ohDirName = __dirname;
 
     if (!process.env.omnihive_settings) {
         dotenv.config();
@@ -58,7 +61,7 @@ const init = async () => {
                     alias: "d",
                     type: "boolean",
                     demandOption: false,
-                    default: false,
+                    default: true,
                     description: "Set given settings as the default on the next run",
                 })
                 .check((args) => {
@@ -161,12 +164,6 @@ const init = async () => {
                 default: newAdminPassword,
             },
             {
-                type: "input",
-                name: "serverGroup",
-                message: "What is your preferred server group name?",
-                default: newServerGroupName,
-            },
-            {
                 type: "number",
                 name: "webPort",
                 message: "What port number do you want for the web server?",
@@ -181,8 +178,8 @@ const init = async () => {
             {
                 type: "input",
                 name: "rootUrl",
-                message: "What is your root URL with the port?",
-                default: "http://localhost:3001",
+                message: "What is your root URL (without the port)?",
+                default: "http://localhost",
                 validate: (value) => {
                     try {
                         const url = new URL(value);
@@ -209,17 +206,13 @@ const init = async () => {
         const settings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
             ServerSettings,
             JSON.parse(
-                fse.readFileSync(
-                    path.join(CoreServiceFactory.configurationService.ohDirName, `templates`, `default_config.json`),
-                    {
-                        encoding: "utf8",
-                    }
-                )
+                fse.readFileSync(path.join(global.omnihive.ohDirName, `templates`, `default_config.json`), {
+                    encoding: "utf8",
+                })
             )
         );
 
         settings.config.adminPassword = answers.adminPassword as string;
-        settings.config.serverGroupName = answers.serverGroup as string;
         settings.config.adminPortNumber = answers.adminPort as number;
         settings.config.webPortNumber = answers.webPort as number;
 
@@ -291,22 +284,28 @@ const init = async () => {
         serverSettings.config.adminPortNumber = args.argv.adminPort as number;
     }
 
+    global.omnihive.serverSettings = serverSettings;
+
     switch (args.argv._[0]) {
         case "taskRunner":
             const taskRunnerService: TaskRunnerService = new TaskRunnerService();
-            await taskRunnerService.run(serverSettings, args.argv.worker as string, args.argv.args as string);
+            await taskRunnerService.run(args.argv.worker as string, args.argv.args as string);
             break;
         case "init":
         case "server":
         default:
             if (args.argv._[0] === "init") {
                 console.log(
-                    chalk.yellow(`New Server Starting => Admin Password: ${serverSettings.config.adminPassword}`)
+                    chalk.yellow(
+                        `New Server Starting => Admin Password: ${global.omnihive.serverSettings.config.adminPassword}`
+                    )
                 );
                 console.log();
             }
+            const adminService: AdminService = new AdminService();
             const serverService: ServerService = new ServerService();
-            await serverService.run(serverSettings);
+            await adminService.run();
+            await serverService.run();
             break;
     }
 };

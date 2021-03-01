@@ -1,20 +1,12 @@
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { TestConfigSettings } from "@withonevision/omnihive-core/models/TestConfigSettings";
-import { TestSettings } from "@withonevision/omnihive-core/models/TestSettings";
+import { ObjectHelper } from "../../packages/omnihive-core/helpers/ObjectHelper";
+import { TestConfigSettings } from "../models/TestConfigSettings";
+import { TestSettings } from "../models/TestSettings";
+import { WorkerSetterBase } from "../../packages/omnihive-core/models/WorkerSetterBase";
 import fse from "fs-extra";
 
-export class TestService {
-    private static singleton: TestService;
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
-
-    public static getSingleton = (): TestService => {
-        if (!TestService.singleton) {
-            TestService.singleton = new TestService();
-        }
-
-        return TestService.singleton;
+export class TestService extends WorkerSetterBase {
+    public clearWorkers = (): void => {
+        this.registeredWorkers = [];
     };
 
     public getConstants = (): { [key: string]: string }[] | undefined => {

@@ -40,3 +40,6 @@ yarn-error.log*
 
 #settings
 /settings
+
+#custom types
+!**/globals.omnihive.*.d.ts

@@ -29,7 +29,6 @@
     },
     "devDependencies": {
         "@types/cross-storage": "0.8.29",
-        "@withonevision/omnihive-core-node": "workspace:*",
         "chai": "4.2.0",
         "typescript": "4.1.3"
     }

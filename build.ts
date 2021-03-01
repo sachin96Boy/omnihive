@@ -127,14 +127,6 @@ const build = async (): Promise<void> => {
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
-    directories
-        .filter((value: string) => value === "omnihive-core-node")
-        .forEach((value: string) => {
-            console.log(chalk.yellow(`Building ${value}...`));
-            execSpawn("yarn run build", `./src/packages/${value}`);
-            console.log(chalk.greenBright(`Done building ${value}...`));
-        });
-
     console.log(chalk.blue("Done building core libraries..."));
     console.log();
 
@@ -357,14 +349,6 @@ const build = async (): Promise<void> => {
 
         directories
             .filter((value: string) => value === "omnihive-core")
-            .forEach((value: string) => {
-                console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", `./dist/packages/${value}`);
-                console.log(chalk.greenBright(`Done publishing ${value}...`));
-            });
-
-        directories
-            .filter((value: string) => value === "omnihive-core-node")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
                 execSpawn("npm publish --access public", `./dist/packages/${value}`);

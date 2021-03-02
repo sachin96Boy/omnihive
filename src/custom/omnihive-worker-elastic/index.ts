@@ -52,7 +52,9 @@ export default class ElasticWorker extends HiveWorkerBase {
         limit: number = 100
     ) {
         try {
-            if (this.client) {
+            const indexExists = await this.validateIndex(index, true);
+
+            if (this.client && indexExists) {
                 return (
                     await this.client?.search({
                         index: index,
@@ -72,6 +74,8 @@ export default class ElasticWorker extends HiveWorkerBase {
                         },
                     })
                 ).body;
+            } else if (!indexExists) {
+                throw new Error("Index does not exist");
             } else {
                 throw new Error("Elastic Client not initialized");
             }
@@ -83,15 +87,17 @@ export default class ElasticWorker extends HiveWorkerBase {
     public async create(index: string, idFieldName: string, data: any) {
         try {
             if (this.client) {
-                await this.validateIndex(index);
+                const indexExists = await this.validateIndex(index);
 
-                await this.client?.index({
-                    index: index,
-                    id: data[idFieldName].toString(),
-                    op_type: "create",
-                    refresh: true,
-                    body: data,
-                });
+                if (indexExists) {
+                    await this.client?.index({
+                        index: index,
+                        id: data[idFieldName].toString(),
+                        op_type: "create",
+                        refresh: true,
+                        body: data,
+                    });
+                }
             } else {
                 throw new Error("Elastic Client not initialized");
             }
@@ -103,17 +109,18 @@ export default class ElasticWorker extends HiveWorkerBase {
     public async update(index: string, id: string, data: any, upsert?: boolean) {
         try {
             if (this.client) {
-                await this.validateIndex(index);
-                await this.fixDateMappings(index, data);
+                const indexExists = await this.validateIndex(index);
 
-                await this.client?.update({
-                    index: index,
-                    id: id,
-                    body: {
-                        doc: data,
-                        doc_as_upsert: upsert,
-                    },
-                });
+                if (indexExists) {
+                    await this.client?.update({
+                        index: index,
+                        id: id,
+                        body: {
+                            doc: data,
+                            doc_as_upsert: upsert,
+                        },
+                    });
+                }
             } else {
                 throw new Error("Elastic Client not initialized");
             }
@@ -124,7 +131,9 @@ export default class ElasticWorker extends HiveWorkerBase {
 
     public async bulkUpdate(index: string, idObject: { name: string; values: string[] }, data: any) {
         try {
-            if (this.client) {
+            const indexExists = await this.validateIndex(index, true);
+
+            if (this.client && indexExists) {
                 const updateQuery: { [key: string]: string[] } = {};
                 updateQuery[idObject.name] = idObject.values;
 
@@ -144,6 +153,8 @@ export default class ElasticWorker extends HiveWorkerBase {
                         },
                     },
                 });
+            } else if (!indexExists) {
+                return;
             } else {
                 throw new Error("Elastic Client not initialized");
             }
@@ -154,12 +165,16 @@ export default class ElasticWorker extends HiveWorkerBase {
 
     public async delete(index: string, id: string) {
         try {
-            if (this.client) {
+            const indexExists = await this.validateIndex(index, true);
+
+            if (this.client && indexExists) {
                 await this.client?.delete({
                     index: index,
                     id: id,
                     refresh: true,
                 });
+            } else if (!indexExists) {
+                return;
             } else {
                 throw new Error("Elastic Client not initialized");
             }
@@ -170,7 +185,9 @@ export default class ElasticWorker extends HiveWorkerBase {
 
     public async removeUnused(index: string, fieldName: string, usedKeys: string[]) {
         try {
-            if (this.client) {
+            const indexExists = await this.validateIndex(index, true);
+
+            if (this.client && indexExists) {
                 const deleteObject: any = {};
                 deleteObject[fieldName] = usedKeys;
 
@@ -188,6 +205,8 @@ export default class ElasticWorker extends HiveWorkerBase {
                         },
                     },
                 });
+            } else if (!indexExists) {
+                return;
             } else {
                 throw new Error("Elastic Client not initialized");
             }
@@ -199,6 +218,8 @@ export default class ElasticWorker extends HiveWorkerBase {
     public async upsert(index: string, idName: string, idList: string[], data: any[]) {
         try {
             if (this.client) {
+                await this.validateIndex(index);
+
                 for (const id of idList) {
                     const idData: any = data.find((x: any) => x[idName].toString() === id);
 
@@ -213,14 +234,17 @@ export default class ElasticWorker extends HiveWorkerBase {
         }
     }
 
-    public async validateIndex(index: string) {
+    public async validateIndex(index: string, noCreate: boolean = false) {
         try {
             if (this.client) {
                 const indexExists: boolean = (await this.client.indices.exists({ index: index })).body;
 
-                if (!indexExists) {
+                if (!indexExists && !noCreate) {
                     await this.client?.indices.create({ index: index });
+                    return true;
                 }
+
+                return indexExists;
             } else {
                 throw new Error("Elastic Client not initialized");
             }
@@ -231,8 +255,12 @@ export default class ElasticWorker extends HiveWorkerBase {
 
     public async deleteIndex(index: string) {
         try {
-            if (this.client) {
+            const indexExists = await this.validateIndex(index, true);
+
+            if (this.client && indexExists) {
                 this.client.indices.delete({ index: index });
+            } else if (!indexExists) {
+                return;
             } else {
                 throw new Error("Elastic Client not initialized");
             }
@@ -241,16 +269,20 @@ export default class ElasticWorker extends HiveWorkerBase {
         }
     }
 
-    private async fixDateMappings(index: string, data: any) {
+    public async fixDateMappings(index: string, data: any) {
         try {
             if (this.client) {
                 const dateMappings: { [key: string]: { type: string; format: string } } = {};
+
                 for (const key in data) {
+                    const mappings = await this.client.indices.getMapping({ index: index });
+
                     if (
                         data[key] &&
                         typeof data[key] === "string" &&
                         data[key].search(/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/g) >=
-                            0
+                            0 &&
+                        mappings.body[index].mappings.properties[key].format !== "yyyy-MM-dd'T'HH:mm:ss.SSSz"
                     ) {
                         dateMappings[key] = {
                             type: "date",

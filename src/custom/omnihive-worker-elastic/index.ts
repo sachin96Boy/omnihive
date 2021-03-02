@@ -5,7 +5,7 @@ import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { serializeError } from "serialize-error";
 
-type ElasticSearchFieldModel = {
+export type ElasticSearchFieldModel = {
     name: string;
     weight: number;
 };
@@ -19,6 +19,10 @@ export class ElasticWorkerMetadata {
 export default class ElasticWorker extends HiveWorkerBase {
     public worker?: IHiveWorker;
     public client?: Client;
+
+    constructor() {
+        super();
+    }
 
     public async init(config: HiveWorker) {
         try {

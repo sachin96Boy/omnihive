@@ -61,7 +61,7 @@ const init = async () => {
                     alias: "w",
                     type: "string",
                     demandOption: false,
-                    description: "Web Root URL",
+                    description: "Web Root URL (with port number if necessary)",
                 })
                 .check((args) => {
                     if (args.settings) {
@@ -182,7 +182,7 @@ const init = async () => {
                 type: "input",
                 name: "webRootUrl",
                 message: "What is your root URL (with port if necessary)?",
-                default: "http://localhost",
+                default: "http://localhost:3001",
                 validate: (value) => {
                     try {
                         const url = new URL(value);

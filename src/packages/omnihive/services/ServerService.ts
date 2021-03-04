@@ -279,7 +279,7 @@ export class ServerService {
 
         app.get(`${adminRoot}/api-docs/swagger.json`, async (_req: express.Request, res: express.Response) => {
             res.setHeader("Content-Type", "application/json");
-            return res.status(200).json(swaggerDefinition.definitions);
+            return res.status(200).json(swaggerDefinition);
         });
 
         app.use(`${adminRoot}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
@@ -288,7 +288,7 @@ export class ServerService {
             path: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/api-docs`,
             type: RegisteredUrlType.Swagger,
             metadata: {
-                swaggerDefinitionUrl: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/api-docs/swagger.json`,
+                swaggerJsonUrl: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/api-docs/swagger.json`,
             },
         });
 

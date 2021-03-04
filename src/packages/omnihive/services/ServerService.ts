@@ -185,7 +185,7 @@ export class ServerService {
             });
         });
 
-        app.get("/admin/*", (_req, res) => {
+        app.get(`${adminRoot}/web/*`, (_req, res) => {
             return res.status(200).render("reactAdmin", {
                 rootUrl: global.omnihive.serverSettings.config.webRootUrl,
             });
@@ -203,7 +203,7 @@ export class ServerService {
             openapi: "3.0.0",
             servers: [
                 {
-                    url: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}`,
+                    url: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/rest`,
                 },
             ],
             paths: {},
@@ -263,6 +263,7 @@ export class ServerService {
                 global.omnihive.registeredUrls.push({
                     path: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/rest/${workerMetaData.urlRoute}`,
                     type: RegisteredUrlType.RestFunction,
+                    metadata: {},
                 });
 
                 const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
@@ -276,11 +277,19 @@ export class ServerService {
                 }
             });
 
+        app.get(`${adminRoot}/api-docs/swagger.json`, async (_req: express.Request, res: express.Response) => {
+            res.setHeader("Content-Type", "application/json");
+            return res.status(200).json(swaggerDefinition.definitions);
+        });
+
         app.use(`${adminRoot}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
 
         global.omnihive.registeredUrls.push({
             path: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/api-docs`,
             type: RegisteredUrlType.Swagger,
+            metadata: {
+                swaggerDefinitionUrl: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/api-docs/swagger.json`,
+            },
         });
 
         return app;

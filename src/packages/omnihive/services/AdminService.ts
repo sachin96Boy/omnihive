@@ -22,6 +22,29 @@ export class AdminService {
         });
 
         global.omnihive.adminServer.on("connection", (socket: socketio.Socket) => {
+            socket.on("config-request", (request: { adminPassword: string }) => {
+                if (
+                    !request ||
+                    !request.adminPassword ||
+                    StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
+                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                ) {
+                    socket.emit("config-response", {
+                        requestComplete: false,
+                        requestError: "Invalid Password",
+                        config: {},
+                    });
+
+                    return;
+                }
+
+                socket.emit("config-response", {
+                    requestComplete: true,
+                    requestError: "",
+                    config: global.omnihive.serverSettings,
+                });
+            });
+
             socket.on("refresh-request", (request: { adminPassword: string; refresh?: boolean }) => {
                 if (
                     !request ||

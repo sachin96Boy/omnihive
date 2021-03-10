@@ -1,0 +1,14 @@
+# Ignore Miscellaneous
+nodemon.*.json
+
+# Make sure templates are included
+!templates/
+
+# TS
+!*.d.ts
+!*.d.ts.map
+!*.js.map
+!*.map
+
+#Web
+!app/

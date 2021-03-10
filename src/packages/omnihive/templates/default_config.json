@@ -1,0 +1,21 @@
+{
+    "config": {
+        "adminPassword": "XXX",
+        "adminPortNumber": 7205,
+        "nodePortNumber": 3001,
+        "webRootUrl": "http://localhost:3001"
+    },
+    "constants": {
+        "ohEncryptionKey": "XXX",
+        "ohTokenAudience": "XXX",
+        "ohTokenSecret": "XXX"
+    },
+    "features": {
+        "consoleOnlyLogging": true,
+        "graphIntrospection": false,
+        "graphPlayground": true,
+        "graphTracing": false,
+        "swagger": true
+    },
+    "workers": []
+}

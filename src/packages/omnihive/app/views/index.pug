@@ -1,0 +1,36 @@
+include mixins.pug
+doctype html
+html
+    head
+        +head(rootUrl)
+        script.
+            var status = "#{status}";
+            var error = !{JSON.stringify(error)};
+            var registeredUrls = !{JSON.stringify(registeredUrls)};
+
+            console.log(`OH STATUS: ${status}`);
+
+            if (!error || error === "" || error === "{}") {
+                console.log(`OH ERROR: NONE`);
+            } else {
+                console.log(`OH ERROR: ${error}`);
+            }
+
+            console.log(`OH REGISTERED URLS:`);
+            console.log(registeredUrls);
+    body
+        div(class="outer")
+            div(class="container")
+                div(class="content")
+                    a(href=rootUrl)
+                        img(
+                            alt="OmniHive Logo"
+                            src="https://res.cloudinary.com/drmwm8u2c/image/upload/c_scale,w_150/v1557346251/branding/logos/omnihive-bee-white.png"
+                        )
+                div(class="content")
+                    span(class="header-text") OMNIHIVE SERVER
+                    br
+                    span(class="header-text-orange") STATUS: #{status.toUpperCase()}
+                    br
+                    br
+                    span(class="notice-text") See console log for further information

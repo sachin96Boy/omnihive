@@ -1,0 +1,11 @@
+{
+  "extends": "@istanbuljs/nyc-config-typescript",
+  "all": true,
+  "check-coverage": true,
+  "exclude": [
+    "**/.yarn/**",
+    "**/node_modules/**",
+    "**/test/**",
+    "**/dist/**"
+  ]
+}

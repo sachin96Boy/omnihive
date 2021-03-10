@@ -1,0 +1,6 @@
+{
+    "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git"],
+    "watch": ["../../**/*.ts"],
+    "exec": "DOTENV_CONFIG_PATH=\"../../../settings/.env\" yarn node --inspect=127.0.0.1:9228 -r dotenv/config -r ts-node/register ./omnihive.ts server",
+    "ext": "ts,json,css,pug,html"
+}

@@ -21,7 +21,7 @@ import { TaskRunnerService } from "./services/TaskRunnerService";
 const init = async () => {
     global.omnihive = new GlobalObject();
 
-    const config = new Conf();
+    const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
     const latestConf: string | undefined = config.get<string>("latest-settings") as string;
     const newAdminPassword = crypto.randomBytes(32).toString("hex");
 

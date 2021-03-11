@@ -7,9 +7,10 @@ import { LogService } from "./LogService";
 import { ServerService } from "./ServerService";
 import nodeCleanup from "node-cleanup";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { ServerSettings } from "src/packages/omnihive-core/models/ServerSettings";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import Conf from "conf";
 import fse from "fs-extra";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 
 export class AdminService {
     public run = async () => {
@@ -41,10 +42,23 @@ export class AdminService {
                     return;
                 }
 
+                const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
+                const latestConf: string | undefined = config.get<string>("latest-settings") as string;
+                let serverSettings: ServerSettings = new ServerSettings();
+
+                try {
+                    serverSettings = ObjectHelper.createStrict<ServerSettings>(
+                        ServerSettings,
+                        JSON.parse(fse.readFileSync(latestConf, { encoding: "utf8" }))
+                    );
+                } catch {
+                    serverSettings = global.omnihive.serverSettings;
+                }
+
                 socket.emit("config-response", {
                     requestComplete: true,
                     requestError: "",
-                    config: global.omnihive.serverSettings,
+                    config: serverSettings,
                 });
             });
 
@@ -65,9 +79,10 @@ export class AdminService {
                 }
 
                 try {
-                    const config = new Conf();
+                    const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
                     const latestConf: string | undefined = config.get<string>("latest-settings") as string;
                     const settings: ServerSettings = request.config as ServerSettings;
+
                     fse.writeFileSync(latestConf, JSON.stringify(settings));
 
                     socket.emit("config-save-response", {

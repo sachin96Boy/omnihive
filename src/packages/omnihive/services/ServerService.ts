@@ -36,7 +36,7 @@ export class ServerService {
 
             // Check for server reset and re-poll settings in case they have changed
             if (serverReset === true) {
-                const config = new Conf();
+                const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
                 const latestConf: string | undefined = config.get<string>("latest-settings") as string;
 
                 global.omnihive.serverSettings = ObjectHelper.createStrict<ServerSettings>(

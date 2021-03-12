@@ -55,7 +55,7 @@ export class AppService {
                                 let metaValue: string = defaultWorker.metadata[metaKey] as string;
 
                                 metaValue = metaValue.substr(2, metaValue.length - 3);
-                                const envValue: string | undefined =
+                                const envValue: unknown | undefined =
                                     global.omnihive.serverSettings.constants[metaValue];
 
                                 if (envValue) {

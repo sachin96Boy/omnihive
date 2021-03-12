@@ -8,7 +8,7 @@ import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWork
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import knex, { QueryBuilder } from "knex";
+import { Knex } from "knex";
 
 export class ParseDelete {
     public parse = async (
@@ -59,7 +59,7 @@ export class ParseDelete {
         }
         tableSchema = tableSchema.filter((tableSchema: TableSchema) => tableSchema.tableName === tableName);
 
-        const queryBuilder: QueryBuilder = (databaseWorker.connection as knex).queryBuilder();
+        const queryBuilder: Knex.QueryBuilder = (databaseWorker.connection as Knex).queryBuilder();
         queryBuilder.from(tableName);
 
         Object.keys(whereObject).forEach((key: string, index: number) => {

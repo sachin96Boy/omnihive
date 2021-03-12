@@ -11,7 +11,7 @@ import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBa
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import knex from "knex";
+import knex, { Knex } from "knex";
 import sql from "mssql";
 import { serializeError } from "serialize-error";
 
@@ -20,7 +20,7 @@ export class MssqlDatabaseWorkerMetadata extends HiveWorkerMetadataDatabase {
 }
 
 export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
-    public connection!: knex;
+    public connection!: Knex;
     private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: sql.config;
     private metadata!: MssqlDatabaseWorkerMetadata;
@@ -52,7 +52,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             this.connectionPool = new sql.ConnectionPool(this.sqlConfig);
             await AwaitHelper.execute<sql.ConnectionPool>(this.connectionPool.connect());
 
-            const connectionOptions: knex.Config = { connection: {}, pool: { min: 0, max: 150 } };
+            const connectionOptions: Knex.Config = { connection: {}, pool: { min: 0, max: 150 } };
             connectionOptions.client = "mssql";
             connectionOptions.connection = this.sqlConfig;
             this.connection = knex(connectionOptions);

@@ -30,6 +30,6 @@
     "devDependencies": {
         "@types/cross-storage": "0.8.29",
         "chai": "4.3.3",
-        "typescript": "4.2.2"
+        "typescript": "4.2.3"
     }
 }

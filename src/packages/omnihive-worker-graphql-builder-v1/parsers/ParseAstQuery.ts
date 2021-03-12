@@ -24,7 +24,7 @@ import {
     GraphQLResolveInfo,
     SelectionNode,
 } from "graphql";
-import knex from "knex";
+import { Knex } from "knex";
 import _ from "lodash";
 import { WhereMode } from "../enum/WhereModes";
 import { GraphHelper } from "../helpers/GraphHelper";
@@ -37,8 +37,8 @@ export class ParseAstQuery {
     private cacheWorker!: ICacheWorker | undefined;
     private dateWorker!: IDateWorker | undefined;
     private parentPath!: GraphQLField<any, any>;
-    private knex!: knex;
-    private query!: knex.QueryBuilder;
+    private knex!: Knex;
+    private query!: Knex.QueryBuilder;
     private currentTableIndex: number = 0;
     private currentFieldIndex: number = 0;
     private tables: ConverterDatabaseTable[] = [];
@@ -201,7 +201,7 @@ export class ParseAstQuery {
         const graphReturnType: GraphQLObjectType = (resolveInfo.returnType as GraphQLList<GraphQLObjectType>).ofType;
         const graphParentType: GraphQLObjectType = (this.parentPath.type as GraphQLList<GraphQLObjectType>).ofType;
 
-        this.knex = this.databaseWorker.connection as knex;
+        this.knex = this.databaseWorker.connection as Knex;
         this.query = this.knex.queryBuilder();
 
         // Build the root table

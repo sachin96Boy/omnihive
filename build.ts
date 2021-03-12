@@ -275,7 +275,7 @@ const build = async (): Promise<void> => {
 
                     if (!currentVersion || currentVersion === "") {
                         console.log(chalk.red("SemVer is incorrect"));
-                        process.exit();
+                        process.exit(1);
                     }
 
                     version.dev = currentVersion;
@@ -285,14 +285,14 @@ const build = async (): Promise<void> => {
 
                     if (!currentVersion || currentVersion === "") {
                         console.log(chalk.red("SemVer is incorrect"));
-                        process.exit();
+                        process.exit(1);
                     }
 
                     version.beta = currentVersion;
                     break;
                 default:
                     console.log(chalk.red("Must have dev or beta channel with prerelease"));
-                    process.exit();
+                    process.exit(1);
             }
             break;
         case "major":
@@ -300,7 +300,7 @@ const build = async (): Promise<void> => {
 
             if (!currentVersion || currentVersion === "") {
                 console.log(chalk.red("SemVer is incorrect"));
-                process.exit();
+                process.exit(1);
             }
 
             version.main = currentVersion;
@@ -312,7 +312,7 @@ const build = async (): Promise<void> => {
 
             if (!currentVersion || currentVersion === "") {
                 console.log(chalk.red("SemVer is incorrect"));
-                process.exit();
+                process.exit(1);
             }
 
             version.main = currentVersion;
@@ -324,7 +324,7 @@ const build = async (): Promise<void> => {
 
             if (!currentVersion || currentVersion === "") {
                 console.log(chalk.red("SemVer is incorrect"));
-                process.exit();
+                process.exit(1);
             }
 
             version.main = currentVersion;
@@ -463,7 +463,7 @@ const execSpawn = (commandString: string, cwd: string): string => {
 
     if (execSpawn.status !== 0) {
         console.log(chalk.red(execSpawn.stdout.toString().trim()));
-        process.exit();
+        process.exit(1);
     }
 
     const execOut = execSpawn.stdout.toString().trim();

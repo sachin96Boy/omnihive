@@ -79,7 +79,7 @@ const build = async (): Promise<void> => {
             default: false,
         })
         .check((args) => {
-            if (args.channel !== currentBranch) {
+            if (args.publish === true && args.channel !== currentBranch) {
                 throw new Error(
                     "Your selected channel and your current git branch do not match.  Please choose a different channel or switch branches in git."
                 );
@@ -366,11 +366,15 @@ const build = async (): Promise<void> => {
     console.log(chalk.greenBright("Done updating version metadata..."));
 
     // Tag Github branch with version
-    console.log(chalk.yellow("Tagging GitHub..."));
+    if (!args.argv.publish as boolean) {
+        console.log(chalk.redBright("Publish not specified...skipping Git tagging"));
+    } else {
+        console.log(chalk.yellow("Tagging GitHub..."));
 
-    execSpawn(`git tag ${currentVersion}`, ".");
+        execSpawn(`git tag ${currentVersion}`, ".");
 
-    console.log(chalk.greenBright("Done tagging GitHub..."));
+        console.log(chalk.greenBright("Done tagging GitHub..."));
+    }
 
     // Finish version maintenance
     console.log(chalk.blue("Done with version maintenance..."));
@@ -378,7 +382,7 @@ const build = async (): Promise<void> => {
 
     // Check for publish flag and start publish if there
     if (!args.argv.publish as boolean) {
-        console.log(chalk.redBright("Publish not specified...skipping"));
+        console.log(chalk.redBright("Publish not specified...skipping npm publish"));
     } else {
         // Publish core libraries
         console.log(chalk.blue("Publishing core libraries..."));
@@ -458,8 +462,7 @@ const execSpawn = (commandString: string, cwd: string): string => {
     });
 
     if (execSpawn.status !== 0) {
-        const execError: Error = new Error(execSpawn.stderr.toString().trim());
-        console.log(chalk.red(execError));
+        console.log(chalk.red(execSpawn.stderr.toString().trim()));
         process.exit();
     }
 

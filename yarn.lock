@@ -1231,13 +1231,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/semver@npm:7.3.4":
-  version: 7.3.4
-  resolution: "@types/semver@npm:7.3.4"
-  checksum: 7e8588aa55ecb344eda6954674b83a3c568d97d478e70e4617bd3ab22902590ac416ccf2cea48b58fb2f0fbd80f9ad1896332c9b3c3189ffd24e4350ff22094a
-  languageName: node
-  linkType: hard
-
 "@types/serve-static@npm:*":
   version: 1.13.9
   resolution: "@types/serve-static@npm:1.13.9"
@@ -3587,7 +3580,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3":
+"cross-env@npm:7.0.3":
+  version: 7.0.3
+  resolution: "cross-env@npm:7.0.3"
+  dependencies:
+    cross-spawn: ^7.0.1
+  bin:
+    cross-env: src/bin/cross-env.js
+    cross-env-shell: src/bin/cross-env-shell.js
+  checksum: af4fa4dab3ddf6c25ed5e0c95ef53ea363aceb41741e22b7eae83a12cc10cb2416e3aba29c95f2f2c3a1aa918d3444fe92fab318a8ba761e8d52ae88388496cc
+  languageName: node
+  linkType: hard
+
+"cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3":
   version: 7.0.3
   resolution: "cross-spawn@npm:7.0.3"
   dependencies:
@@ -4006,13 +4011,6 @@ __metadata:
   dependencies:
     is-obj: ^2.0.0
   checksum: 06793b868079d70bffce4f0ac7e32055778723cc90b6e0bb12a2dff157298e693fb9ac7733556e4bb2d54de9d670a0b6a67610295cb1119a204fb7e340fafe54
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:8.2.0":
-  version: 8.2.0
-  resolution: "dotenv@npm:8.2.0"
-  checksum: 16cb89cbd7b98b053899b8aba8c5044c8fb61a2db8a81fe70360b75035fce5fed53bd7a34d772be717d0880c0321122a4c09423f518025e1b52d96791521b1a7
   languageName: node
   linkType: hard
 
@@ -7487,9 +7485,9 @@ fsevents@~2.3.1:
     concurrently: 6.0.0
     conf: 9.0.2
     cors: 2.8.5
+    cross-env: 7.0.3
     css-loader: 5.1.2
     dayjs: 1.10.4
-    dotenv: 8.2.0
     express: 4.17.1
     figlet: 1.5.0
     fs-extra: 9.1.0
@@ -8861,21 +8859,19 @@ fsevents@~2.3.1:
   version: 0.0.0-use.local
   resolution: "root@workspace:."
   dependencies:
-    "@elastic/elasticsearch": 7.11.0
     "@istanbuljs/nyc-config-typescript": 1.0.1
     "@types/chai": 4.2.15
     "@types/figlet": 1.2.1
     "@types/fs-extra": 9.0.8
     "@types/mocha": 8.2.1
     "@types/node": 14.14.34
-    "@types/semver": 7.3.4
     "@types/yargs": 16.0.0
     "@typescript-eslint/eslint-plugin": 4.17.0
     "@typescript-eslint/parser": 4.17.0
     chai: 4.3.3
     chalk: 4.1.0
+    cross-env: 7.0.3
     dayjs: 1.10.4
-    dotenv: 8.2.0
     eslint: 7.21.0
     eslint-config-prettier: 8.1.0
     eslint-plugin-prettier: 3.3.1
@@ -8887,7 +8883,6 @@ fsevents@~2.3.1:
     prettier: 2.2.1
     read-pkg-up: 7.0.1
     replace-in-file: 6.2.0
-    semver: 7.3.4
     serialize-error: 8.0.1
     source-map-support: 0.5.19
     ts-node: 9.1.1
@@ -8996,7 +8991,16 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"semver@npm:7.3.4, semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.4":
+"semver@npm:^6.0.0, semver@npm:^6.2.0, semver@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "semver@npm:6.3.0"
+  bin:
+    semver: ./bin/semver.js
+  checksum: f0d155c06a67cc7e500c92d929339f1c6efd4ce9fe398aee6acc00a2333489cca0f5b4e76ee7292beba237fcca4b5a3d4a6153471f105f56299801bdab37289f
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.4":
   version: 7.3.4
   resolution: "semver@npm:7.3.4"
   dependencies:
@@ -9004,15 +9008,6 @@ fsevents@~2.3.1:
   bin:
     semver: bin/semver.js
   checksum: f2c7f9aeb976d1484b2f39aa7afc8332a1d21fd32ca4a6fbf650e1423455ebf3e7029f6e2e7ba0cd71935b85942521f1ec25b6cc2c031b953c8ca4ff2d7a823d
-  languageName: node
-  linkType: hard
-
-"semver@npm:^6.0.0, semver@npm:^6.2.0, semver@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "semver@npm:6.3.0"
-  bin:
-    semver: ./bin/semver.js
-  checksum: f0d155c06a67cc7e500c92d929339f1c6efd4ce9fe398aee6acc00a2333489cca0f5b4e76ee7292beba237fcca4b5a3d4a6153471f105f56299801bdab37289f
   languageName: node
   linkType: hard
 

@@ -1,106 +1,36 @@
 import chalk from "chalk";
 import childProcess from "child_process";
+import dayjs from "dayjs";
 import figlet from "figlet";
 import fse from "fs-extra";
 import path from "path";
-import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
-import semver from "semver";
-import yargs from "yargs";
-import { Client } from "@elastic/elasticsearch";
 import readPkgUp from "read-pkg-up";
+import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import writePkg from "write-pkg";
-import dayjs from "dayjs";
-
-// Elastic version record
-type Version = {
-    main: string;
-    beta: string;
-    dev: string;
-};
+import yargs from "yargs";
 
 const orangeHex: string = "#FFC022#";
 
 const build = async (): Promise<void> => {
     const startTime: dayjs.Dayjs = dayjs();
 
-    // Check if Elastic settings are available and get versions
-    if (
-        !process.env.omnihive_build_elastic_cloudId ||
-        !process.env.omnihive_build_elastic_cloudPassword ||
-        !process.env.omnihive_build_elastic_cloudUser
-    ) {
-        throw new Error("There are no elastic settings so the build cannot continue.");
+    // Check version
+    if (!process.env.omnihive_version) {
+        throw new Error("There is no version given");
     }
 
-    const elasticClient = new Client({
-        cloud: {
-            id: process.env.omnihive_build_elastic_cloudId,
-        },
-        auth: {
-            username: process.env.omnihive_build_elastic_cloudUser,
-            password: process.env.omnihive_build_elastic_cloudPassword,
-        },
-    });
-
-    const versionDoc = await elasticClient.get({ index: "master-version", id: "1" });
-    const version: Version = versionDoc.body._source as Version;
-
-    // Get the current git branch
-    const currentBranch: string = execSpawn("git branch --show-current", ".");
+    const buildVersion: string = process.env.omnihive_version as string;
 
     // Handle args
     const args = yargs(process.argv.slice(2));
 
-    args
-        .help(false)
-        .version(false)
-        .strict()
-        .option("channel", {
-            alias: "c",
-            type: "string",
-            demandOption: true,
-            description: "Name of the channel you wish to build",
-            choices: ["dev", "beta", "main"],
-            default: "dev",
-        })
-        .option("type", {
-            alias: "t",
-            type: "string",
-            demandOption: false,
-            description: "Release type (major, minor, patch, prerelease)",
-            choices: ["major", "minor", "patch", "prerelease"],
-            default: "prerelease",
-        })
-        .option("publish", {
-            alias: "p",
-            type: "boolean",
-            demandCommand: false,
-            description: "Publish to NPM",
-            default: false,
-        })
-        .check((args) => {
-            if (args.publish === true && args.channel !== currentBranch) {
-                throw new Error(
-                    "Your selected channel and your current git branch do not match.  Please choose a different channel or switch branches in git."
-                );
-            }
-
-            if (args.channel === "main" && args.type === "prerelease") {
-                throw new Error(
-                    "You cannot specify the main channel and specify prerelease.  Prerelease is for dev and beta channels only."
-                );
-            }
-
-            if (
-                (args.channel === "dev" || args.channel === "beta") &&
-                (args.type === "major" || args.type === "minor" || args.type === "patch")
-            ) {
-                throw new Error(
-                    "You cannot specify a prerelease type and specify the main channel.  Prerelease is the only option for the dev or beta channel."
-                );
-            }
-            return true;
-        }).argv;
+    args.help(false).version(false).strict().option("publish", {
+        alias: "p",
+        type: "boolean",
+        demandCommand: false,
+        description: "Publish to NPM",
+        default: false,
+    }).argv;
 
     // Header
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
@@ -262,79 +192,6 @@ const build = async (): Promise<void> => {
     // Handle version maintenance
     console.log(chalk.blue("Version maintenance..."));
 
-    // SemVer Updates
-    console.log(chalk.yellow("Getting semver..."));
-
-    let currentVersion: string | null = null;
-
-    switch (args.argv.type) {
-        case "prerelease":
-            switch (args.argv.channel) {
-                case "dev":
-                    currentVersion = semver.inc(version.dev, "prerelease", false, "dev") ?? "";
-
-                    if (!currentVersion || currentVersion === "") {
-                        console.log(chalk.red("SemVer is incorrect"));
-                        process.exit(1);
-                    }
-
-                    version.dev = currentVersion;
-                    break;
-                case "beta":
-                    currentVersion = semver.inc(version.beta, "prerelease", false, "beta") ?? "";
-
-                    if (!currentVersion || currentVersion === "") {
-                        console.log(chalk.red("SemVer is incorrect"));
-                        process.exit(1);
-                    }
-
-                    version.beta = currentVersion;
-                    break;
-                default:
-                    console.log(chalk.red("Must have dev or beta channel with prerelease"));
-                    process.exit(1);
-            }
-            break;
-        case "major":
-            currentVersion = semver.inc(version.main, "major") ?? "";
-
-            if (!currentVersion || currentVersion === "") {
-                console.log(chalk.red("SemVer is incorrect"));
-                process.exit(1);
-            }
-
-            version.main = currentVersion;
-            version.beta = semver.inc(currentVersion, "prerelease", false, "beta") ?? "";
-            version.dev = semver.inc(currentVersion, "prerelease", false, "dev") ?? "";
-            break;
-        case "minor":
-            currentVersion = semver.inc(version.main, "minor") ?? "";
-
-            if (!currentVersion || currentVersion === "") {
-                console.log(chalk.red("SemVer is incorrect"));
-                process.exit(1);
-            }
-
-            version.main = currentVersion;
-            version.beta = semver.inc(currentVersion, "prerelease", false, "beta") ?? "";
-            version.dev = semver.inc(currentVersion, "prerelease", false, "dev") ?? "";
-            break;
-        case "patch":
-            currentVersion = semver.inc(version.main, "patch") ?? "";
-
-            if (!currentVersion || currentVersion === "") {
-                console.log(chalk.red("SemVer is incorrect"));
-                process.exit(1);
-            }
-
-            version.main = currentVersion;
-            version.beta = semver.inc(currentVersion, "prerelease", false, "beta") ?? "";
-            version.dev = semver.inc(currentVersion, "prerelease", false, "dev") ?? "";
-            break;
-    }
-
-    console.log(chalk.greenBright(`Done getting semver ${currentVersion}...`));
-
     // Patch package.json with SemVer
     console.log(chalk.yellow("Patching package.json files..."));
 
@@ -342,7 +199,7 @@ const build = async (): Promise<void> => {
         allowEmptyPaths: true,
         files: [path.join(`dist`, `packages`, `**`, `package.json`), path.join(`dist`, `custom`, `**`, `package.json`)],
         from: /workspace:\*/g,
-        to: `${currentVersion}`,
+        to: `${buildVersion}`,
     };
 
     await replaceInFile.replaceInFile(replaceWorkspaceOptions);
@@ -351,19 +208,12 @@ const build = async (): Promise<void> => {
         allowEmptyPaths: true,
         files: [path.join(`dist`, `packages`, `**`, `package.json`), path.join(`dist`, `custom`, `**`, `package.json`)],
         from: /"version": "0.0.1"/g,
-        to: `"version": "${currentVersion}"`,
+        to: `"version": "${buildVersion}"`,
     };
 
     await replaceInFile.replaceInFile(replaceVersionOptions);
 
     console.log(chalk.greenBright("Done patching package.json files..."));
-
-    // Upate Elastic with new version
-    console.log(chalk.yellow("Updating version metadata..."));
-
-    await elasticClient.update({ index: "master-version", id: "1", body: { doc: version } });
-
-    console.log(chalk.greenBright("Done updating version metadata..."));
 
     // Tag Github branch with version
     if (!args.argv.publish as boolean) {
@@ -371,7 +221,7 @@ const build = async (): Promise<void> => {
     } else {
         console.log(chalk.yellow("Tagging GitHub..."));
 
-        execSpawn(`git tag ${currentVersion}`, ".");
+        execSpawn(`git tag ${buildVersion}`, ".");
 
         console.log(chalk.greenBright("Done tagging GitHub..."));
     }

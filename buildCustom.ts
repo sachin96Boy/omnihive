@@ -79,6 +79,7 @@ const build = async (): Promise<void> => {
             path.join(`.`, `src`, `custom`, `${value}`, `package.json`),
             path.join(`.`, `dist`, `custom`, `${value}`, `package.json`)
         );
+        execSpawn("npm pack", path.join(`.`, `dist`, `custom`, `${value}`));
         console.log(chalk.greenBright(`Done building ${value}...`));
     });
 
@@ -109,7 +110,7 @@ const build = async (): Promise<void> => {
     if (!args.argv.publish as boolean) {
         console.log(chalk.redBright("Publish not specified...skipping npm publish"));
     } else {
-        let publishString: string = "yarn npm publish";
+        let publishString: string = "npm publish";
 
         if (args.argv.publishAccess) {
             publishString = `${publishString} --access ${args.argv.publishAccess as string}`;

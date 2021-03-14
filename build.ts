@@ -79,6 +79,7 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+            execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -97,6 +98,7 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+            execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -115,6 +117,7 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+            execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -127,6 +130,7 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+            execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 
@@ -234,7 +238,7 @@ const build = async (): Promise<void> => {
     if (!args.argv.publish as boolean) {
         console.log(chalk.redBright("Publish not specified...skipping npm publish"));
     } else {
-        let publishString: string = "yarn npm publish";
+        let publishString: string = "npm publish";
 
         if (args.argv.publishAccess) {
             publishString = `${publishString} --access ${args.argv.publishAccess as string}`;

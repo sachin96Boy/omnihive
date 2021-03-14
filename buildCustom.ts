@@ -45,11 +45,6 @@ const build = async (): Promise<void> => {
             type: "string",
             demandCommand: false,
             description: "Tag to use when publishing",
-        })
-        .check((args) => {
-            if ((args.publishAccess || args.publishTag) && !args.publish) {
-                throw new Error("If you provide an access or tag for publishing please specify the publish flag");
-            }
         }).argv;
 
     // Handle version number

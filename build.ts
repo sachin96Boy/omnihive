@@ -49,11 +49,6 @@ const build = async (): Promise<void> => {
             demandCommand: false,
             default: "latest",
             description: "Tag to use when publishing",
-        })
-        .check((args) => {
-            if ((args.publishAccess || args.publishTag) && !args.publish) {
-                throw new Error("If you provide an access or tag for publishing please specify the publish flag");
-            }
         }).argv;
 
     // Header

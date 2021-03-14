@@ -14,23 +14,47 @@ const orangeHex: string = "#FFC022#";
 const build = async (): Promise<void> => {
     const startTime: dayjs.Dayjs = dayjs();
 
-    // Check version
-    if (!process.env.omnihive_version) {
-        throw new Error("There is no version given");
-    }
-
-    const buildVersion: string = process.env.omnihive_version as string;
-
     // Handle args
     const args = yargs(process.argv.slice(2));
 
-    args.help(false).version(false).strict().option("publish", {
-        alias: "p",
-        type: "boolean",
-        demandCommand: false,
-        description: "Publish to NPM",
-        default: false,
-    }).argv;
+    args
+        .help(false)
+        .version(false)
+        .strict()
+        .option("version", {
+            alias: "v",
+            type: "string",
+            demandCommand: true,
+            description: "Version number to build",
+            default: "99.99.99",
+        })
+        .option("publish", {
+            alias: "p",
+            type: "boolean",
+            demandCommand: false,
+            description: "Publish to NPM",
+            default: false,
+        })
+        .option("publishAccess", {
+            alias: "pa",
+            type: "string",
+            demandCommand: false,
+            description: "Access to use when publishing to NPM",
+            default: "public",
+            choices: ["public", "restricted"],
+        })
+        .option("publishTag", {
+            alias: "pt",
+            type: "string",
+            demandCommand: false,
+            default: "latest",
+            description: "Tag to use when publishing",
+        })
+        .check((args) => {
+            if ((args.publishAccess || args.publishTag) && !args.publish) {
+                throw new Error("If you provide an access or tag for publishing please specify the publish flag");
+            }
+        }).argv;
 
     // Header
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
@@ -46,9 +70,6 @@ const build = async (): Promise<void> => {
     const directories: string[] = fse
         .readdirSync(path.join(`.`, `src`, `packages`))
         .filter((f) => fse.statSync(path.join(`.`, `src`, `packages`, f)).isDirectory());
-    const customDirectories: string[] = fse
-        .readdirSync(path.join(`.`, `src`, `custom`))
-        .filter((f) => fse.statSync(path.join(`.`, `src`, `custom`, f)).isDirectory());
 
     // Build core libraries
     console.log();
@@ -63,6 +84,7 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+            execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -81,26 +103,11 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+            execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
     console.log(chalk.blue("Done building workers..."));
-    console.log();
-
-    // Build custom workers
-    console.log(chalk.blue("Building custom workers..."));
-
-    customDirectories.forEach((value: string) => {
-        console.log(chalk.yellow(`Building ${value}...`));
-        execSpawn("yarn run build", path.join(`.`, `src`, `custom`, `${value}`));
-        fse.copySync(
-            path.join(`.`, `src`, `custom`, `${value}`, `package.json`),
-            path.join(`.`, `dist`, `custom`, `${value}`, `package.json`)
-        );
-        console.log(chalk.greenBright(`Done building ${value}...`));
-    });
-
-    console.log(chalk.blue("Done building custom workers..."));
     console.log();
 
     // Build client and server
@@ -115,6 +122,7 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+            execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -127,6 +135,7 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+            execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 
@@ -197,18 +206,18 @@ const build = async (): Promise<void> => {
 
     const replaceWorkspaceOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
-        files: [path.join(`dist`, `packages`, `**`, `package.json`), path.join(`dist`, `custom`, `**`, `package.json`)],
+        files: [path.join(`dist`, `packages`, `**`, `package.json`)],
         from: /workspace:\*/g,
-        to: `${buildVersion}`,
+        to: `${args.argv.version}`,
     };
 
     await replaceInFile.replaceInFile(replaceWorkspaceOptions);
 
     const replaceVersionOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
-        files: [path.join(`dist`, `packages`, `**`, `package.json`), path.join(`dist`, `custom`, `**`, `package.json`)],
+        files: [path.join(`dist`, `packages`, `**`, `package.json`)],
         from: /"version": "0.0.1"/g,
-        to: `"version": "${buildVersion}"`,
+        to: `"version": "${args.argv.version}"`,
     };
 
     await replaceInFile.replaceInFile(replaceVersionOptions);
@@ -221,7 +230,7 @@ const build = async (): Promise<void> => {
     } else {
         console.log(chalk.yellow("Tagging GitHub..."));
 
-        execSpawn(`git tag ${buildVersion}`, ".");
+        execSpawn(`git tag ${args.argv.version}`, ".");
 
         console.log(chalk.greenBright("Done tagging GitHub..."));
     }
@@ -234,6 +243,18 @@ const build = async (): Promise<void> => {
     if (!args.argv.publish as boolean) {
         console.log(chalk.redBright("Publish not specified...skipping npm publish"));
     } else {
+        let publishString: string = "yarn npm publish";
+
+        if (args.argv.publishAccess) {
+            publishString = `${publishString} --access ${args.argv.publishAccess as string}`;
+        } else {
+            publishString = `${publishString} --access public`;
+        }
+
+        if (args.argv.publishTag) {
+            publishString = `${publishString} --tag ${args.argv.publishTag as string}`;
+        }
+
         // Publish core libraries
         console.log(chalk.blue("Publishing core libraries..."));
 
@@ -261,15 +282,6 @@ const build = async (): Promise<void> => {
 
         console.log(chalk.blue("Done publishing workers..."));
         console.log();
-
-        // Publish custom workers
-        console.log(chalk.blue("Publishing custom workers..."));
-
-        customDirectories.forEach((value: string) => {
-            console.log(chalk.yellow(`Publishing ${value}...`));
-            execSpawn("npm publish --access public", path.join(`.`, `dist`, `custom`, `${value}`));
-            console.log(chalk.greenBright(`Done publishing ${value}...`));
-        });
 
         // Publish client and server
         console.log(chalk.blue("Publishing client and server..."));

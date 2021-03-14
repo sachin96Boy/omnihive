@@ -10,8 +10,8 @@
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build:debug": "cross-env omnihive_version=\"99.99.99.99\" yarn node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build.ts",
-        "build:publish": "yarn node -r ts-node/register ./build.ts -p",
+        "build:debug": "yarn node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build.ts",
+        "build": "yarn node -r ts-node/register ./build.ts",
         "cli:debug": "cd src/packages/omnihive && yarn run cli:debug",
         "cli:taskRunner:debug": "cd src/packages/omnihive && yarn run cli:taskRunner:debug",
         "doctor": "yarn dlx @yarnpkg/doctor",

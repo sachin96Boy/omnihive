@@ -1,17 +1,19 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
+import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSetterBase";
+import { QueryCacheType } from "@withonevision/omnihive-core/enums/QueryCacheType";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
-export class OmniHiveClient {
+export class OmniHiveClient extends WorkerSetterBase {
     private static singleton: OmniHiveClient;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
+    private constructor() {
+        super();
+    }
 
     public static getSingleton = (): OmniHiveClient => {
         if (!OmniHiveClient.singleton) {
@@ -21,12 +23,97 @@ export class OmniHiveClient {
         return OmniHiveClient.singleton;
     };
 
+    public accessToken: string = "";
+    public authToken: string = "";
+
     public static getNew = (): OmniHiveClient => {
         return new OmniHiveClient();
     };
 
-    public init = async (settings: ServerSettings): Promise<void> => {
-        await CoreServiceFactory.workerService.initWorkers(settings.workers);
+    public init = async (serverSettings?: ServerSettings): Promise<void> => {
+        if (!serverSettings) {
+            return;
+        }
+
+        this.serverSettings = serverSettings;
+        this.initWorkers(serverSettings.workers);
+    };
+
+    public graphClient = async (
+        graphUrl: string,
+        query: string,
+        cacheType?: QueryCacheType,
+        cacheExpireInSeconds?: number,
+        headers?: any
+    ): Promise<any> => {
+        const graphCall: Promise<any> = new Promise<any>((resolve, reject) => {
+            const config: any = {};
+
+            if (!headers) {
+                config.headers = {};
+            } else if (Object.keys(headers).length > 0) {
+                config.headers = headers;
+            }
+
+            if (this.accessToken !== "") {
+                headers["ohaccess"] = this.accessToken;
+            }
+
+            if (this.authToken !== "") {
+                headers["authorization"] = "BEARER " + this.authToken;
+            }
+
+            if (!(cacheType === null || cacheType === undefined)) {
+                switch (cacheType) {
+                    case QueryCacheType.None:
+                        config.headers["ohcache"] = "none";
+                        break;
+                    case QueryCacheType.FromCache:
+                        config.headers["ohcache"] = "cache";
+                        break;
+                    case QueryCacheType.FromCacheForceRefresh:
+                        config.headers["ohcache"] = "cacheRefresh";
+                        break;
+                }
+            } else {
+                config.headers["ohcache"] = "none";
+            }
+
+            if (!(cacheExpireInSeconds === null || cacheExpireInSeconds === undefined)) {
+                try {
+                    const cacheTimeNumber: number = +cacheExpireInSeconds;
+                    config.headers["ohcacheseconds"] = cacheTimeNumber;
+                } catch {
+                    config.headers["ohcacheseconds"] = -1;
+                }
+            } else {
+                config.headers["ohcacheseconds"] = -1;
+            }
+
+            config.headers["Content-Type"] = "application/json";
+            const dataObject: any = { query };
+
+            axios
+                .post(graphUrl, JSON.stringify(dataObject), config as Object)
+                .then((response) => {
+                    if (response.data.errors != null && response.data.errors.length > 0) {
+                        const errorString: StringBuilder = new StringBuilder();
+
+                        response.data.errors.forEach((err: any) => {
+                            errorString.appendLine(err.message);
+                        });
+
+                        throw new Error(errorString.outputString());
+                    }
+
+                    resolve(response.data.data);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        });
+
+        return graphCall;
     };
 
     public restClient = async (url: string, method: RestMethod, headers?: any, data?: any): Promise<any> => {
@@ -35,6 +122,14 @@ export class OmniHiveClient {
 
             if (headers == null) {
                 headers = {};
+            }
+
+            if (this.accessToken !== "") {
+                headers["ohaccess"] = this.accessToken;
+            }
+
+            if (this.authToken !== "") {
+                headers["authorization"] = "BEARER " + this.authToken;
             }
 
             if (Object.keys(headers).length > 0) {
@@ -83,73 +178,20 @@ export class OmniHiveClient {
         });
     };
 
-    public graphClient = async (graphUrl: string, query: string, headers?: any): Promise<any> => {
-        const graphCall: Promise<any> = new Promise<any>((resolve, reject) => {
-            const config: any = {};
-
-            if (headers == null) {
-                config.headers = {};
-            }
-
-            if (Object.keys(headers).length > 0) {
-                config.headers = headers;
-            }
-
-            config.headers["Content-Type"] = "application/json";
-            const dataObject: any = { query };
-
-            axios
-                .post(graphUrl, JSON.stringify(dataObject), config as Object)
-                .then((response) => {
-                    if (response.data.errors != null && response.data.errors.length > 0) {
-                        const errorString: StringBuilder = new StringBuilder();
-
-                        response.data.errors.forEach((err: any) => {
-                            errorString.appendLine(err.message);
-                        });
-
-                        throw new Error(errorString.outputString());
-                    }
-
-                    resolve(response.data.data);
-                })
-                .catch((error) => {
-                    reject(error);
-                });
-        });
-
-        return graphCall;
-    };
-
-    public runCustomSql = async (
-        url: string,
-        sql: string,
-        dbWorkerName: string,
-        encryptionWorkerName?: string
-    ): Promise<any> => {
+    public runCustomSql = async (url: string, sql: string, encryptionWorkerName?: string): Promise<any> => {
         let encryptionWorker: IEncryptionWorker | undefined = undefined;
 
         if (encryptionWorkerName) {
-            encryptionWorker = await CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(
+            encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(
                 HiveWorkerType.Encryption,
                 encryptionWorkerName
             );
         } else {
-            encryptionWorker = await CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(
-                HiveWorkerType.Encryption
-            );
+            encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
         }
 
         if (!encryptionWorker) {
             throw new Error("No encryption worker found.  An encryption worker is required for custom SQL");
-        }
-
-        const dbWorker: IDatabaseWorker | undefined = await CoreServiceFactory.workerService.getWorker<
-            IDatabaseWorker | undefined
-        >(HiveWorkerType.Database, dbWorkerName);
-
-        if (!dbWorker) {
-            throw new Error("No database worker with the given name found.");
         }
 
         const target: string = `customSql`;
@@ -167,5 +209,13 @@ export class OmniHiveClient {
 
         const results: any = await this.graphClient(url, query);
         return results[target][0].recordset;
+    };
+
+    public setAccessToken = (token: string) => {
+        this.accessToken = token;
+    };
+
+    public setAuthToken = (token: string) => {
+        this.authToken = token;
     };
 }

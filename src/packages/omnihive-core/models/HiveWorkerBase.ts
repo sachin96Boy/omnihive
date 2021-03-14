@@ -1,13 +1,12 @@
 import { ObjectHelper } from "../helpers/ObjectHelper";
 import { IHiveWorker } from "../interfaces/IHiveWorker";
 import { HiveWorker } from "./HiveWorker";
+import { ServerSettings } from "./ServerSettings";
+import { WorkerGetterBase } from "./WorkerGetterBase";
 
-export abstract class HiveWorkerBase implements IHiveWorker {
+export abstract class HiveWorkerBase extends WorkerGetterBase implements IHiveWorker {
     public config!: HiveWorker;
-
-    public async afterInit(): Promise<void> {
-        return;
-    }
+    public serverSettings!: ServerSettings;
 
     public async init(config: HiveWorker): Promise<void> {
         if (!config || Object.keys(config).length <= 0) {

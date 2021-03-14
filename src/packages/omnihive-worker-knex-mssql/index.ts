@@ -1,17 +1,17 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import knex from "knex";
+import knex, { Knex } from "knex";
 import sql from "mssql";
 import { serializeError } from "serialize-error";
 
@@ -20,11 +20,10 @@ export class MssqlDatabaseWorkerMetadata extends HiveWorkerMetadataDatabase {
 }
 
 export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
-    public connection!: knex;
+    public connection!: Knex;
     private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: sql.config;
     private metadata!: MssqlDatabaseWorkerMetadata;
-    private logWorker: ILogWorker | undefined = undefined;
 
     constructor() {
         super();
@@ -53,7 +52,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             this.connectionPool = new sql.ConnectionPool(this.sqlConfig);
             await AwaitHelper.execute<sql.ConnectionPool>(this.connectionPool.connect());
 
-            const connectionOptions: knex.Config = { connection: {}, pool: { min: 0, max: 150 } };
+            const connectionOptions: Knex.Config = { connection: {}, pool: { min: 0, max: 150 } };
             connectionOptions.client = "mssql";
             connectionOptions.connection = this.sqlConfig;
             this.connection = knex(connectionOptions);
@@ -62,22 +61,9 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         }
     }
 
-    public async afterInit(): Promise<void> {
-        try {
-            this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-                CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-            );
-
-            if (!this.logWorker) {
-                throw new Error("Log Worker Not Defined.  Database Worker Will Not Function Without Log Worker.");
-            }
-        } catch (err) {
-            throw new Error("MSSQL Dependencies Error => " + JSON.stringify(serializeError(err)));
-        }
-    }
-
     public executeQuery = async (query: string): Promise<any[][]> => {
-        this.logWorker?.write(OmniHiveLogLevel.Info, query);
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
+        logWorker?.write(OmniHiveLogLevel.Info, query);
 
         const poolRequest = this.connectionPool.request();
         const result = await AwaitHelper.execute<any>(poolRequest.query(query));
@@ -109,8 +95,9 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         return this.executeQuery(builder.outputString());
     };
 
-    public getSchema = async (): Promise<{ tables: TableSchema[]; storedProcs: StoredProcSchema[] }> => {
-        const result: { tables: TableSchema[]; storedProcs: StoredProcSchema[] } = {
+    public getSchema = async (): Promise<ConnectionSchema> => {
+        const result: ConnectionSchema = {
+            workerName: this.config.name,
             tables: [],
             storedProcs: [],
         };

@@ -1,6 +1,5 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
@@ -36,7 +35,6 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
     private features: LaunchDarklyFeature[] = [];
     private user!: LDUser;
     private project!: string;
-    private logWorker: ILogWorker | undefined = undefined;
 
     constructor() {
         super();
@@ -72,25 +70,17 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
         }
     }
 
-    public async afterInit(): Promise<void> {
-        this.logWorker = await AwaitHelper.execute<ILogWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
-        );
-
-        if (!this.logWorker) {
-            throw new Error("Log Worker Not Defined.  Feature worker Will Not Function Without Log Worker.");
-        }
-    }
-
     public get = async <T extends unknown>(name: string, defaultValue?: unknown): Promise<T | undefined> => {
         if (!name || name.length <= 0) {
             throw new Error("No feature name given.");
         }
 
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
+
         const feature: LaunchDarklyFeature[] = this.features.filter((ff: LaunchDarklyFeature) => ff.name === name);
 
         if (feature.length > 0) {
-            this.logWorker?.write(
+            logWorker?.write(
                 OmniHiveLogLevel.Info,
                 `Feature Evaluated => Project: ${this.project} => Flag: ${name} => Value: ${feature[0].value as string}`
             );
@@ -109,7 +99,7 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
 
         this.client?.instance?.on(`update:${name}`, () => {
             this.client?.instance?.variation(name, this.user, defaultValue).then((newValue) => {
-                this.logWorker?.write(
+                logWorker?.write(
                     OmniHiveLogLevel.Info,
                     `Feature Changed => Project: ${this.project} => Flag: ${name} => New Value: ${newValue as string}`
                 );
@@ -126,7 +116,7 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
             });
         });
 
-        this.logWorker?.write(
+        logWorker?.write(
             OmniHiveLogLevel.Info,
             `Feature Evaluated and Listening => Project: ${this.project} => Flag: ${name} => Value: ${value as string}`
         );

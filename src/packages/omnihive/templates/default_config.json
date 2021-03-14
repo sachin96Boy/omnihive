@@ -2,9 +2,8 @@
     "config": {
         "adminPassword": "XXX",
         "adminPortNumber": 7205,
-        "serverGroupName": "XXX",
-        "rootUrl": "http://localhost:3001",
-        "webPortNumber": 3001
+        "nodePortNumber": 3001,
+        "webRootUrl": "http://localhost:3001"
     },
     "constants": {
         "ohEncryptionKey": "XXX",

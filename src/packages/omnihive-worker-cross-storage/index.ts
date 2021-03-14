@@ -5,7 +5,6 @@ import { IStorageWorker } from "@withonevision/omnihive-core/interfaces/IStorage
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { CrossStorageClient, CrossStorageClientOptions } from "cross-storage";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 export class CrossStorageStorageWorkerMetadata {
     public hubLocation: string = "";
     public keyPrefix: string = "";
@@ -13,7 +12,6 @@ export class CrossStorageStorageWorkerMetadata {
 
 export default class CrossStorageWorker extends HiveWorkerBase implements IStorageWorker {
     private storageClient: CrossStorageClient | undefined = undefined;
-    private encryptionWorker: IEncryptionWorker | undefined = undefined;
     private metadata!: CrossStorageStorageWorkerMetadata;
 
     constructor() {
@@ -32,22 +30,18 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
         this.storageClient = storage;
     }
 
-    public async afterInit(): Promise<void> {
-        this.encryptionWorker = await AwaitHelper.execute<IEncryptionWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption)
-        );
-
-        if (!this.encryptionWorker) {
-            throw new Error(
-                "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
-            );
-        }
-    }
-
     public exists = (key: string): Promise<boolean> => {
         const promise: Promise<boolean> = new Promise<boolean>((resolve, _reject) => {
             if (!this.storageClient) {
                 throw new Error("Client store has not been initialized.  Please call initialize first");
+            }
+
+            const encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
+
+            if (!encryptionWorker) {
+                throw new Error(
+                    "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
+                );
             }
 
             this.storageClient
@@ -71,18 +65,14 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
     };
 
     public get = <T extends unknown>(key: string): Promise<T | undefined> => {
-        if (!this.encryptionWorker) {
-            throw new Error(
-                "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
-            );
-        }
-
         const promise: Promise<T | undefined> = new Promise<T | undefined>((resolve, _reject) => {
             if (!this.storageClient) {
                 throw new Error("Client store has not been initialized.  Please call initialize first");
             }
 
-            if (!this.encryptionWorker) {
+            const encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
+
+            if (!encryptionWorker) {
                 throw new Error(
                     "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
                 );
@@ -95,23 +85,11 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
                         throw new Error("Client store has not been initialized.  Please call initialize first");
                     }
 
-                    if (!this.encryptionWorker) {
-                        throw new Error(
-                            "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
-                        );
-                    }
-
                     this.storageClient
                         .get(`${this.metadata.keyPrefix}::${key}`)
                         .then((res: string) => {
-                            if (!this.encryptionWorker) {
-                                throw new Error(
-                                    "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
-                                );
-                            }
-
                             // Get the value and decrypt it
-                            const decrypted: string = this.encryptionWorker.symmetricDecrypt(res);
+                            const decrypted: string = encryptionWorker.symmetricDecrypt(res);
 
                             // Return the value
                             resolve(JSON.parse(decrypted));
@@ -158,7 +136,9 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
                 throw new Error("Client store has not been initialized.  Please call initialize first");
             }
 
-            if (!this.encryptionWorker) {
+            const encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
+
+            if (!encryptionWorker) {
                 throw new Error(
                     "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
                 );
@@ -171,18 +151,12 @@ export default class CrossStorageWorker extends HiveWorkerBase implements IStora
                         throw new Error("Client store has not been initialized.  Please call initialize first");
                     }
 
-                    if (!this.encryptionWorker) {
-                        throw new Error(
-                            "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
-                        );
-                    }
-
                     // Stringify the value and encrypt it
                     const json: string = JSON.stringify(model);
                     let encrypted: string = "";
 
                     if (json !== "") {
-                        encrypted = this.encryptionWorker.symmetricEncrypt(json);
+                        encrypted = encryptionWorker.symmetricEncrypt(json);
                     }
 
                     // Set the item

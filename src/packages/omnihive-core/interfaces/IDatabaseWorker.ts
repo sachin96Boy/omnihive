@@ -1,5 +1,5 @@
+import { ConnectionSchema } from "../models/ConnectionSchema";
 import { StoredProcSchema } from "../models/StoredProcSchema";
-import { TableSchema } from "../models/TableSchema";
 import { IHiveWorker } from "./IHiveWorker";
 
 export interface IDatabaseWorker extends IHiveWorker {
@@ -9,5 +9,5 @@ export interface IDatabaseWorker extends IHiveWorker {
         storedProcSchema: StoredProcSchema,
         args: { name: string; value: any; isString: boolean }[]
     ) => Promise<any[][]>;
-    getSchema: () => Promise<{ tables: TableSchema[]; storedProcs: StoredProcSchema[] }>;
+    getSchema: () => Promise<ConnectionSchema>;
 }

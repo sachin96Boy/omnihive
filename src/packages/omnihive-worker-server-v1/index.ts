@@ -1,8 +1,9 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
+/// <reference path="../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
@@ -20,8 +21,8 @@ import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { HiveWorkerMetadataServer } from "@withonevision/omnihive-core/models/HiveWorkerMetadataServer";
-import { OmniHiveConstants } from "@withonevision/omnihive-core/models/OmniHiveConstants";
-import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
@@ -29,6 +30,11 @@ import express from "express";
 import requireFromString from "require-from-string";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
+
+type BuilderDatabaseWorker = {
+    registeredWorker: RegisteredHiveWorker;
+    builderName: string;
+};
 
 export default class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
     private metadata!: HiveWorkerMetadataServer;
@@ -38,79 +44,63 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
     }
 
     public async init(config: HiveWorker): Promise<void> {
+        await AwaitHelper.execute<void>(super.init(config));
+
         try {
-            await AwaitHelper.execute<void>(super.init(config));
             this.metadata = this.checkObjectStructure<HiveWorkerMetadataServer>(
                 HiveWorkerMetadataServer,
                 config.metadata
             );
         } catch (err) {
-            throw new Error("Redis Init Error => " + JSON.stringify(serializeError(err)));
+            throw new Error("Server Init Error => " + JSON.stringify(serializeError(err)));
         }
     }
 
-    public buildServer = async (): Promise<void> => {
-        const logWorker: ILogWorker | undefined = await CoreServiceFactory.workerService.getWorker<ILogWorker>(
-            HiveWorkerType.Log,
-            "ohreqLogWorker"
-        );
-
-        if (!logWorker) {
-            throw new Error("Core Log Worker Not Found.  Server needs the core log worker ohreqLogWorker");
-        }
-
-        const featureWorker:
-            | IFeatureWorker
-            | undefined = await CoreServiceFactory.workerService.getWorker<IFeatureWorker>(HiveWorkerType.Feature);
+    public buildServer = async (app: express.Express): Promise<express.Express> => {
+        const featureWorker: IFeatureWorker | undefined = this.getWorker<IFeatureWorker>(HiveWorkerType.Feature);
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         try {
-            // Start setting up server
-            const app = await NodeServiceFactory.appService.getCleanAppServer();
-
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Schema Folder Reset`);
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Written`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Being Loaded`);
 
             // Get build workers
-            const buildWorkers: [HiveWorker, any][] = [];
+            const buildWorkers: RegisteredHiveWorker[] = [];
 
-            CoreServiceFactory.workerService.registeredWorkers.forEach((worker: [HiveWorker, any]) => {
+            this.registeredWorkers.forEach((worker: RegisteredHiveWorker) => {
                 if (
-                    worker[0].type === HiveWorkerType.GraphBuilder &&
-                    worker[0].enabled &&
-                    (this.metadata.buildWorkers.includes("*") || this.metadata.buildWorkers.includes(worker[0].name))
+                    worker.type === HiveWorkerType.GraphBuilder &&
+                    worker.enabled &&
+                    (this.metadata.buildWorkers.includes("*") || this.metadata.buildWorkers.includes(worker.name))
                 ) {
                     buildWorkers.push(worker);
                 }
             });
 
             // Get db workers
-            const dbWorkers: [HiveWorker, any, string][] = [];
+            const dbWorkers: BuilderDatabaseWorker[] = [];
 
-            buildWorkers.forEach((worker: [HiveWorker, any]) => {
-                const buildWorkerMetadata: HiveWorkerMetadataGraphBuilder = worker[0]
-                    .metadata as HiveWorkerMetadataGraphBuilder;
+            buildWorkers.forEach((worker: RegisteredHiveWorker) => {
+                const buildWorkerMetadata: HiveWorkerMetadataGraphBuilder = worker.metadata as HiveWorkerMetadataGraphBuilder;
 
                 if (buildWorkerMetadata.dbWorkers.includes("*")) {
-                    CoreServiceFactory.workerService.registeredWorkers
+                    this.registeredWorkers
                         .filter(
-                            (worker: [HiveWorker, any]) =>
-                                worker[0].type === HiveWorkerType.Database && worker[0].enabled === true
+                            (worker: RegisteredHiveWorker) =>
+                                worker.type === HiveWorkerType.Database && worker.enabled === true
                         )
-                        .forEach((dbWorker: [HiveWorker, any]) => {
-                            dbWorkers.push([dbWorker[0], dbWorker[1], worker[0].name]);
+                        .forEach((dbWorker: RegisteredHiveWorker) => {
+                            dbWorkers.push({ registeredWorker: dbWorker, builderName: worker.name });
                         });
                 } else {
                     buildWorkerMetadata.dbWorkers.forEach((value: string) => {
-                        const dbWorker:
-                            | [HiveWorker, any]
-                            | undefined = CoreServiceFactory.workerService.registeredWorkers.find(
-                            (worker: [HiveWorker, any]) =>
-                                worker[0].name === value &&
-                                worker[0].type === HiveWorkerType.Database &&
-                                worker[0].enabled === true
+                        const dbWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
+                            (worker: RegisteredHiveWorker) =>
+                                worker.name === value &&
+                                worker.type === HiveWorkerType.Database &&
+                                worker.enabled === true
                         );
                         if (dbWorker) {
-                            dbWorkers.push([dbWorker[0], dbWorker[1], worker[0].name]);
+                            dbWorkers.push({ registeredWorker: dbWorker, builderName: worker.name });
                         }
                     });
                 }
@@ -119,15 +109,11 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             // Write database schemas
 
             for (const worker of dbWorkers) {
-                logWorker.write(OmniHiveLogLevel.Info, `Retrieving ${worker[0].name} Schema`);
+                logWorker?.write(OmniHiveLogLevel.Info, `Retrieving ${worker.registeredWorker.name} Schema`);
 
-                const result: {
-                    tables: TableSchema[];
-                    storedProcs: StoredProcSchema[];
-                } = await AwaitHelper.execute<{
-                    tables: TableSchema[];
-                    storedProcs: StoredProcSchema[];
-                }>((worker[1] as IDatabaseWorker).getSchema());
+                const result: ConnectionSchema = await AwaitHelper.execute<ConnectionSchema>(
+                    (worker.registeredWorker.instance as IDatabaseWorker).getSchema()
+                );
 
                 result.tables.forEach((schema: TableSchema) => {
                     schema.tableNameCamelCase = camelCase(schema.tableName);
@@ -161,42 +147,42 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     schema.columnNameEntity = columnWorkingName.toString();
                 });
 
-                CoreServiceFactory.connectionService.registeredSchemas.push({
-                    workerName: worker[0].name,
+                global.omnihive.registeredSchemas.push({
+                    workerName: worker.registeredWorker.name,
                     tables: result.tables,
                     storedProcs: result.storedProcs,
                 });
             }
 
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Completed`);
-            logWorker.write(OmniHiveLogLevel.Info, `Writing Graph Generation Files`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Connection Schemas Completed`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Writing Graph Generation Files`);
 
             // Get all build workers and write out their graph schema
             const dbWorkerModules: { workerName: string; dbModule: any }[] = [];
 
             for (const builder of buildWorkers) {
-                const buildWorker: IGraphBuildWorker = builder[1] as IGraphBuildWorker;
+                const buildWorker: IGraphBuildWorker = builder.instance as IGraphBuildWorker;
 
                 for (const dbWorker of dbWorkers.filter(
-                    (worker: [HiveWorker, any, string]) => worker[2] === buildWorker.config.name
+                    (worker: BuilderDatabaseWorker) => worker.builderName === buildWorker.config.name
                 )) {
-                    const databaseWorker: IDatabaseWorker = dbWorker[1] as IDatabaseWorker;
-                    const schema: ConnectionSchema | undefined = CoreServiceFactory.connectionService.getSchema(
-                        dbWorker[0].name
+                    const databaseWorker: IDatabaseWorker = dbWorker.registeredWorker.instance as IDatabaseWorker;
+                    const schema: ConnectionSchema | undefined = global.omnihive.registeredSchemas.find(
+                        (value: ConnectionSchema) => value.workerName === dbWorker.registeredWorker.name
                     );
 
                     const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
                     const dbWorkerModule = requireFromString(fileString);
-                    dbWorkerModules.push({ workerName: dbWorker[0].name, dbModule: dbWorkerModule });
+                    dbWorkerModules.push({ workerName: dbWorker.registeredWorker.name, dbModule: dbWorkerModule });
                 }
             }
 
             // Build custom graph workers
             let graphEndpointModule: any | undefined = undefined;
 
-            const customGraphWorkers: [HiveWorker, any][] = CoreServiceFactory.workerService.registeredWorkers.filter(
-                (worker: [HiveWorker, any]) =>
-                    worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true
+            const customGraphWorkers: RegisteredHiveWorker[] = this.registeredWorkers.filter(
+                (worker: RegisteredHiveWorker) =>
+                    worker.type === HiveWorkerType.GraphEndpointFunction && worker.enabled === true
             );
             if (customGraphWorkers.length > 0) {
                 const builder: StringBuilder = new StringBuilder();
@@ -212,21 +198,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     `var { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`
                 );
                 builder.appendLine(
-                    `var { ITokenWorker } = require("@withonevision/omnihive-core/interfaces/ITokenWorker");`
-                );
-                builder.appendLine(
                     `var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`
-                );
-                builder.appendLine(
-                    `var { NodeServiceFactory } = require("@withonevision/omnihive-core-node/factories/NodeServiceFactory");`
-                );
-                builder.appendLine(
-                    `var { CoreServiceFactory } = require("@withonevision/omnihive-core/factories/CoreServiceFactory");`
                 );
                 builder.appendLine();
 
-                customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
-                    builder.appendLine(`var ${worker[0].name} = require("${worker[0].importPath}");`);
+                customGraphWorkers.forEach((worker: RegisteredHiveWorker) => {
+                    builder.appendLine(`var ${worker.name} = require("${worker.importPath}");`);
                 });
 
                 // Build main graph schema
@@ -239,14 +216,16 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 // Loop through graph endpoints
 
-                customGraphWorkers.forEach((worker: [HiveWorker, any]) => {
-                    builder.appendLine(`\t\t\t${worker[0].name}: {`);
+                customGraphWorkers.forEach((worker: RegisteredHiveWorker) => {
+                    builder.appendLine(`\t\t\t${worker.name}: {`);
                     builder.appendLine(`\t\t\t\ttype: GraphQLJSONObject,`);
                     builder.appendLine(`\t\t\t\targs: {`);
                     builder.appendLine(`\t\t\t\t\tcustomArgs: { type: GraphQLJSONObject },`);
                     builder.appendLine(`\t\t\t\t},`);
                     builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
-                    builder.appendLine(`\t\t\t\t\tvar customFunctionInstance = new ${worker[0].name}.default();`);
+                    builder.appendLine(
+                        `\t\t\t\t\tvar customFunctionInstance = global.omnihive.registeredWorkers.find((worker) => worker.name === "${worker.name}").instance;`
+                    );
                     builder.appendLine(
                         `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(customFunctionInstance.execute(args.customArgs));`
                     );
@@ -262,36 +241,36 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 graphEndpointModule = requireFromString(builder.outputString());
             }
 
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Generation Files Completed`);
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Schema Build Completed Successfully`);
-            logWorker.write(OmniHiveLogLevel.Info, `Booting Up Graph Server`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Generation Files Completed`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Schema Build Completed Successfully`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Booting Up Graph Server`);
 
             // Register graph builder databases
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registering`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registering`);
 
             for (const builder of buildWorkers) {
-                const builderMeta = builder[0].metadata as HiveWorkerMetadataGraphBuilder;
+                const builderMeta = builder.metadata as HiveWorkerMetadataGraphBuilder;
 
                 const builderDbWorkers = dbWorkers.filter(
-                    (worker: [HiveWorker, any, string]) => builder[0].name === worker[2]
+                    (worker: BuilderDatabaseWorker) => builder.name === worker.builderName
                 );
 
                 if (builderDbWorkers.length > 0) {
                     for (const databaseWorker of builderDbWorkers) {
-                        const dbWorkerMeta = databaseWorker[0].metadata as HiveWorkerMetadataDatabase;
+                        const dbWorkerMeta = databaseWorker.registeredWorker.metadata as HiveWorkerMetadataDatabase;
                         let graphDatabaseSchema: any;
 
                         const databaseDynamicModule: any = dbWorkerModules.filter(
-                            (value) => value.workerName === databaseWorker[0].name
+                            (value) => value.workerName === databaseWorker.registeredWorker.name
                         )[0].dbModule;
                         const databaseQuerySchema: any = databaseDynamicModule.FederatedGraphQuerySchema;
 
                         // eslint-disable-next-line prefer-const
                         graphDatabaseSchema = databaseQuerySchema;
 
-                        logWorker.write(
+                        logWorker?.write(
                             OmniHiveLogLevel.Info,
-                            `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Query Schema Merged`
+                            `Graph Progress => ${builder.name} => ${databaseWorker.registeredWorker.name} Query Schema Merged`
                         );
 
                         const procSchema: any = databaseDynamicModule.FederatedGraphStoredProcSchema;
@@ -300,9 +279,9 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             graphDatabaseSchema = mergeSchemas({ schemas: [graphDatabaseSchema, procSchema] });
                         }
 
-                        logWorker.write(
+                        logWorker?.write(
                             OmniHiveLogLevel.Info,
-                            `Graph Progress => ${builder[0].name} => ${databaseWorker[0].name} Stored Proc Schema Merged`
+                            `Graph Progress => ${builder.name} => ${databaseWorker.registeredWorker.name} Stored Proc Schema Merged`
                         );
 
                         const graphDatabaseConfig: ApolloServerExpressConfig = {
@@ -310,19 +289,19 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? true,
                             introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? true,
                             context: async ({ req }) => {
-                                const tokens = {
+                                const omnihive = {
                                     access: req.headers.ohaccess || ``,
                                     auth: req.headers.authorization || ``,
                                     cache: req.headers.ohcache || ``,
                                     cacheSeconds: req.headers.ohcacheseconds,
                                 };
-                                return { tokens };
+                                return { omnihive };
                             },
                         };
 
                         if ((await featureWorker?.get<boolean>("graphPlayground")) ?? true) {
                             graphDatabaseConfig.playground = {
-                                endpoint: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/graphql/database${builderMeta.graphUrl}/${dbWorkerMeta.graphEndpoint}`,
+                                endpoint: `${global.omnihive.serverSettings.config.webRootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
                             };
                         } else {
                             graphDatabaseConfig.playground = false;
@@ -331,21 +310,27 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         const graphDatabaseServer: ApolloServer = new ApolloServer(graphDatabaseConfig);
                         graphDatabaseServer.applyMiddleware({
                             app,
-                            path: `/graphql/database${builderMeta.graphUrl}/${dbWorkerMeta.graphEndpoint}`,
+                            path: `/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
+                        });
+
+                        global.omnihive.registeredUrls.push({
+                            path: `${global.omnihive.serverSettings.config.webRootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
+                            type: RegisteredUrlType.GraphDatabase,
+                            metadata: {},
                         });
                     }
                 }
             }
 
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registered`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Database Graph Endpoint Registered`);
 
             // Register custom graph apollo server
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Graph Endpoint Registering`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Graph Endpoint Registering`);
 
             if (
-                CoreServiceFactory.workerService.registeredWorkers.some(
-                    (worker: [HiveWorker, any]) =>
-                        worker[0].type === HiveWorkerType.GraphEndpointFunction && worker[0].enabled === true
+                this.registeredWorkers.some(
+                    (worker: RegisteredHiveWorker) =>
+                        worker.type === HiveWorkerType.GraphEndpointFunction && worker.enabled === true
                 ) &&
                 graphEndpointModule
             ) {
@@ -357,36 +342,45 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? true,
                     introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? true,
                     context: async ({ req }) => {
-                        const tokens = {
+                        const omnihive = {
                             access: req.headers.ohaccess || ``,
                             auth: req.headers.authorization || ``,
                             cache: req.headers.ohcache || ``,
                             cacheSeconds: req.headers.ohcacheseconds,
                         };
-                        return { tokens };
+                        return { omnihive };
                     },
                 };
 
                 if ((await featureWorker?.get<boolean>("graphPlayground")) ?? true) {
                     graphFunctionConfig.playground = {
-                        endpoint: `${CoreServiceFactory.configurationService.settings.config.rootUrl}/graphql/custom`,
+                        endpoint: `${global.omnihive.serverSettings.config.webRootUrl}/${this.metadata.urlRoute}/custom/graphql`,
                     };
                 } else {
                     graphFunctionConfig.playground = false;
                 }
 
                 const graphFunctionServer: ApolloServer = new ApolloServer(graphFunctionConfig);
-                graphFunctionServer.applyMiddleware({ app, path: `/graphql/custom` });
+                graphFunctionServer.applyMiddleware({
+                    app,
+                    path: `/${this.metadata.urlRoute}/custom/graphql`,
+                });
+
+                global.omnihive.registeredUrls.push({
+                    path: `${global.omnihive.serverSettings.config.webRootUrl}/${this.metadata.urlRoute}/custom/graphql`,
+                    type: RegisteredUrlType.GraphFunction,
+                    metadata: {},
+                });
             }
 
-            logWorker.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Endpoint Registered`);
-            logWorker.write(OmniHiveLogLevel.Info, `REST Server Generation Started`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Graph Progress => Custom Functions Endpoint Registered`);
+            logWorker?.write(OmniHiveLogLevel.Info, `REST Server Generation Started`);
 
             // Register "custom" REST endpoints
             if (
-                CoreServiceFactory.workerService.registeredWorkers.some(
-                    (worker: [HiveWorker, any]) =>
-                        worker[0].type === HiveWorkerType.RestEndpointFunction && worker[0].enabled === true
+                this.registeredWorkers.some(
+                    (worker: RegisteredHiveWorker) =>
+                        worker.type === HiveWorkerType.RestEndpointFunction && worker.enabled === true
                 )
             ) {
                 const swaggerDefinition: swaggerUi.JsonObject = {
@@ -400,115 +394,111 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     openapi: "3.0.0",
                     servers: [
                         {
-                            url: `${CoreServiceFactory.configurationService.settings.config.rootUrl}${OmniHiveConstants.CUSTOM_REST_ROOT}`,
+                            url: `${global.omnihive.serverSettings.config.webRootUrl}/${this.metadata.urlRoute}/custom/rest`,
                         },
                     ],
                 };
 
-                CoreServiceFactory.workerService.registeredWorkers
-                    .filter(
-                        (w: [HiveWorker, any]) =>
-                            w[0].type === HiveWorkerType.RestEndpointFunction && w[0].enabled === true
-                    )
-                    .forEach((w: [HiveWorker, any]) => {
-                        let workerMetaData: HiveWorkerMetadataRestFunction;
+                const restWorkers = this.registeredWorkers.filter(
+                    (rw: RegisteredHiveWorker) =>
+                        rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === false
+                );
 
-                        try {
-                            workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
-                                HiveWorkerMetadataRestFunction,
-                                w[0].metadata
-                            );
-                        } catch (e) {
-                            logWorker?.write(
-                                OmniHiveLogLevel.Error,
-                                `Cannot register custom REST worker ${w[0].name}.  MetaData is incorrect.`
-                            );
+                restWorkers.forEach((rw: RegisteredHiveWorker) => {
+                    let workerMetaData: HiveWorkerMetadataRestFunction;
 
-                            return;
-                        }
-
-                        if (workerMetaData.isSystem) {
-                            return;
-                        }
-
-                        const workerInstance: IRestEndpointWorker = w[1] as IRestEndpointWorker;
-
-                        app[workerMetaData.restMethod](
-                            `${OmniHiveConstants.SYSTEM_REST_ROOT}${workerMetaData.methodUrl}`,
-                            async (req: express.Request, res: express.Response) => {
-                                res.setHeader("Content-Type", "application/json");
-
-                                try {
-                                    const workerResponse: [{} | undefined, number] = await workerInstance.execute(
-                                        req.headers,
-                                        `${req.protocol}://${req.get("host")}${req.originalUrl}`,
-                                        req.body
-                                    );
-
-                                    if (workerResponse[0]) {
-                                        res.status(workerResponse[1]).json(w[0]);
-                                    } else {
-                                        res.status(workerResponse[1]).send(true);
-                                    }
-                                } catch (e) {
-                                    return res.status(500).render("500", {
-                                        rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                                        error: serializeError(e),
-                                    });
-                                }
-                            }
+                    try {
+                        workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
+                            HiveWorkerMetadataRestFunction,
+                            rw.metadata
+                        );
+                    } catch (e) {
+                        logWorker?.write(
+                            OmniHiveLogLevel.Error,
+                            `Cannot register custom REST worker ${rw.name}.  MetaData is incorrect.`
                         );
 
-                        const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
+                        return;
+                    }
 
-                        if (workerSwagger) {
-                            swaggerDefinition.paths = { ...swaggerDefinition.paths, ...workerSwagger.paths };
-                            swaggerDefinition.definitions = {
-                                ...swaggerDefinition.definitions,
-                                ...workerSwagger.definitions,
-                            };
+                    const workerInstance: IRestEndpointWorker = rw.instance as IRestEndpointWorker;
+
+                    app[workerMetaData.restMethod](
+                        `/${this.metadata.urlRoute}/custom/rest/${workerMetaData.urlRoute}`,
+                        async (req: express.Request, res: express.Response) => {
+                            res.setHeader("Content-Type", "application/json");
+
+                            try {
+                                const workerResponse: RestEndpointExecuteResponse = await workerInstance.execute(
+                                    req.headers,
+                                    `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+                                    req.body
+                                );
+
+                                if (workerResponse.response) {
+                                    res.status(workerResponse.status).json(workerResponse.response);
+                                } else {
+                                    res.status(workerResponse.status).send(true);
+                                }
+                            } catch (e) {
+                                return res.status(500).render("500", {
+                                    rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                                    error: serializeError(e),
+                                });
+                            }
                         }
+                    );
+
+                    global.omnihive.registeredUrls.push({
+                        path: `${global.omnihive.serverSettings.config.webRootUrl}/${this.metadata.urlRoute}/custom/rest/${workerMetaData.urlRoute}`,
+                        type: RegisteredUrlType.RestFunction,
+                        metadata: {},
                     });
 
-                if ((await featureWorker?.get<boolean>("swagger")) ?? true) {
+                    const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
+
+                    if (workerSwagger) {
+                        swaggerDefinition.paths = { ...swaggerDefinition.paths, ...workerSwagger.paths };
+                        swaggerDefinition.definitions = {
+                            ...swaggerDefinition.definitions,
+                            ...workerSwagger.definitions,
+                        };
+                    }
+                });
+
+                if (((await featureWorker?.get<boolean>("swagger")) ?? true) && restWorkers.length > 0) {
+                    app.get(
+                        `/${this.metadata.urlRoute}/custom/rest/api-docs/swagger.json`,
+                        async (_req: express.Request, res: express.Response) => {
+                            res.setHeader("Content-Type", "application/json");
+                            return res.status(200).json(swaggerDefinition);
+                        }
+                    );
+
                     app.use(
-                        `${OmniHiveConstants.CUSTOM_REST_ROOT}/api-docs`,
+                        `/${this.metadata.urlRoute}/custom/rest/api-docs`,
                         swaggerUi.serve,
                         swaggerUi.setup(swaggerDefinition)
                     );
+
+                    global.omnihive.registeredUrls.push({
+                        path: `${global.omnihive.serverSettings.config.webRootUrl}/${this.metadata.urlRoute}/custom/rest/api-docs`,
+                        type: RegisteredUrlType.Swagger,
+                        metadata: {
+                            swaggerJsonUrl: `${global.omnihive.serverSettings.config.webRootUrl}/${this.metadata.urlRoute}/custom/rest/api-docs/swagger.json`,
+                        },
+                    });
                 }
             }
 
-            logWorker.write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
-            NodeServiceFactory.appService.serverStatus = ServerStatus.Online;
+            logWorker?.write(OmniHiveLogLevel.Info, `REST Server Generation Completed`);
+            global.omnihive.serverStatus = ServerStatus.Online;
+            logWorker?.write(OmniHiveLogLevel.Info, `New Server Built`);
 
-            app.get("/", (_req, res) => {
-                res.status(200).render("index", {
-                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                    status: NodeServiceFactory.appService.serverStatus,
-                    error: NodeServiceFactory.appService.serverError,
-                });
-            });
-
-            app.use((_req, res) => {
-                return res
-                    .status(404)
-                    .render("404", { rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl });
-            });
-
-            app.use((err: any, _req: any, res: any, _next: any) => {
-                return res.status(500).render("500", {
-                    rootUrl: CoreServiceFactory.configurationService.settings.config.rootUrl,
-                    error: serializeError(err),
-                });
-            });
-
-            logWorker.write(OmniHiveLogLevel.Info, `New Server Built`);
-
-            // Rebuild server
-            NodeServiceFactory.appService.appServer = app;
+            // Return app
+            return app;
         } catch (err) {
-            logWorker.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
+            logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
             throw new Error(err);
         }
     };

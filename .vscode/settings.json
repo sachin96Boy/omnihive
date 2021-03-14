@@ -5,6 +5,9 @@
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     "[typescriptreact]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
@@ -35,6 +38,6 @@
         "autoUpdateTime": 2000,
         "showDebugTestStatus": true
     },
-    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": false
 }

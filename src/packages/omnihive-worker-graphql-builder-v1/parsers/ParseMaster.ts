@@ -1,3 +1,4 @@
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { GraphQLResolveInfo } from "graphql";
 import { ParseAstQuery } from "./ParseAstQuery";
 import { ParseCustomSql } from "./ParseCustomSql";
@@ -10,44 +11,50 @@ export class ParseMaster {
     public parseAstQuery = async (
         workerName: string,
         resolveInfo: GraphQLResolveInfo,
-        cacheSetting: string,
-        cacheTime: string
+        omniHiveContext: GraphContext
     ): Promise<any> => {
         const parser: ParseAstQuery = new ParseAstQuery();
-        return await parser.parse(workerName, resolveInfo, cacheSetting, cacheTime);
+        return await parser.parse(workerName, resolveInfo, omniHiveContext);
     };
 
-    public parseCustomSql = async (workerName: string, encryptedSql: string): Promise<any[][]> => {
+    public parseCustomSql = async (
+        workerName: string,
+        encryptedSql: string,
+        omniHiveContext: GraphContext
+    ): Promise<any[][]> => {
         const parser: ParseCustomSql = new ParseCustomSql();
-        return await parser.parse(workerName, encryptedSql);
+        return await parser.parse(workerName, encryptedSql, omniHiveContext);
     };
 
     public parseDelete = async (
         workerName: string,
         tableName: string,
         whereObject: any,
-        customDmlArgs: any
+        customDmlArgs: any,
+        omniHiveContext: GraphContext
     ): Promise<number> => {
         const parser: ParseDelete = new ParseDelete();
-        return await parser.parse(workerName, tableName, whereObject, customDmlArgs);
+        return await parser.parse(workerName, tableName, whereObject, customDmlArgs, omniHiveContext);
     };
 
     public parseInsert = async (
         workerName: string,
         tableName: string,
         insertObjects: any[],
-        customDmlArgs: any
+        customDmlArgs: any,
+        omniHiveContext: GraphContext
     ): Promise<any[]> => {
         const parser: ParseInsert = new ParseInsert();
-        return await parser.parse(workerName, tableName, insertObjects, customDmlArgs);
+        return await parser.parse(workerName, tableName, insertObjects, customDmlArgs, omniHiveContext);
     };
 
     public parseStoredProcedure = async (
         workerName: string,
-        resolveInfo: GraphQLResolveInfo
+        resolveInfo: GraphQLResolveInfo,
+        omniHiveContext: GraphContext
     ): Promise<{ procName: string; results: any[][] }[]> => {
         const parser: ParseStoredProcedure = new ParseStoredProcedure();
-        return await parser.parse(workerName, resolveInfo);
+        return await parser.parse(workerName, resolveInfo, omniHiveContext);
     };
 
     public parseUpdate = async (
@@ -55,9 +62,10 @@ export class ParseMaster {
         tableName: string,
         updateObject: any,
         whereObject: any,
-        customDmlArgs: any
+        customDmlArgs: any,
+        omniHiveContext: GraphContext
     ): Promise<number> => {
         const parser: ParseUpdate = new ParseUpdate();
-        return await parser.parse(workerName, tableName, updateObject, whereObject, customDmlArgs);
+        return await parser.parse(workerName, tableName, updateObject, whereObject, customDmlArgs, omniHiveContext);
     };
 }

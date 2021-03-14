@@ -1,72 +1,81 @@
+/// <reference path="../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
+import { serializeError } from "serialize-error";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
-    public logEntryNumber: number = 0;
-    public featureWorker!: IFeatureWorker | undefined;
-
-    public async afterInit(): Promise<void> {
-        this.featureWorker = await AwaitHelper.execute<IFeatureWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature)
-        );
-
-        if (!this.featureWorker) {
-            throw new Error("Feature Worker Not Defined.  Log worker Will Not Function Without Feature Worker.");
-        }
+    constructor() {
+        super();
     }
 
     public write = async (logLevel: OmniHiveLogLevel, logString: string): Promise<void> => {
-        const formattedLogString = `(${dayjs().format(
-            "YYYY-MM-DD HH:mm:ss"
-        )}) OmniHive Server ${os.hostname()} => ${logString}`;
+        let featureWorker: IFeatureWorker | undefined = undefined;
+        let consoleOnlyLogging: boolean = true;
+        const timestamp: string = dayjs().format("YYYY-MM-DD HH:mm:ss");
+        const osName: string = os.hostname();
 
-        const consoleOnlyLogging: boolean = (await this.featureWorker?.get<boolean>("consoleOnlyLogging")) ?? false;
+        try {
+            featureWorker = global.omnihive.getWorker<IFeatureWorker | undefined>(HiveWorkerType.Feature);
+        } catch {
+            featureWorker = undefined;
+        }
+
+        try {
+            (await featureWorker?.get<boolean>("consoleOnlyLogging")) ?? true;
+        } catch {
+            consoleOnlyLogging = true;
+        }
+
+        global.omnihive.adminServer.sockets.emit("log-response", {
+            logLevel,
+            timestamp,
+            osName,
+            logString,
+        });
 
         if (consoleOnlyLogging) {
-            this.chalkConsole(logLevel, formattedLogString);
+            this.chalkConsole(logLevel, osName, timestamp, logString);
             return;
         }
 
-        const logWorker: ILogWorker | undefined = await AwaitHelper.execute<ILogWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ILogWorker | undefined>(HiveWorkerType.Log)
+        const logWorkers: RegisteredHiveWorker[] = global.omnihive.registeredWorkers.filter(
+            (value: RegisteredHiveWorker) => {
+                return value.enabled === true && value.type === HiveWorkerType.Log && value.name !== "ohreqLogWorker";
+            }
         );
 
-        if (logWorker) {
-            logWorker.write(logLevel, logString);
-        }
-
-        if (!logWorker || (logWorker && logWorker.config.package !== "@withonevision/omnihive-worker-log-console")) {
-            this.chalkConsole(logLevel, formattedLogString);
-        }
-
-        if (this.logEntryNumber > 100000) {
-            this.logEntryNumber = 0;
-        }
-
-        this.logEntryNumber++;
+        logWorkers.forEach((value: RegisteredHiveWorker) => {
+            try {
+                (value.instance as ILogWorker).write(logLevel, logString);
+            } catch (e) {
+                this.chalkConsole(
+                    OmniHiveLogLevel.Error,
+                    osName,
+                    timestamp,
+                    `Skipping logging for ${value.name} due to error: ${serializeError(e)}`
+                );
+            }
+        });
     };
 
-    private chalkConsole = (logLevel: OmniHiveLogLevel, logString: string) => {
+    private chalkConsole = (logLevel: OmniHiveLogLevel, osName: string, timestamp: string, logString: string) => {
         switch (logLevel) {
-            case OmniHiveLogLevel.Info:
-                console.log(`${chalk.blueBright("info:")} ${logString}`);
-                break;
             case OmniHiveLogLevel.Warn:
-                console.log(`${chalk.yellow("warn:")} ${logString}`);
+                console.log(chalk.yellow(`warn: ${timestamp} ${osName} ${logString}`));
                 break;
             case OmniHiveLogLevel.Error:
-                console.log(`${chalk.red("error:")} ${logString}`);
+                console.log(chalk.red(`error: ${timestamp} ${osName} ${logString}`));
                 break;
             default:
-                console.log(logString);
+                console.log(`${chalk.blueBright("info:")} ${chalk.magenta(`${timestamp} ${osName}`)} ${logString}`);
                 break;
         }
     };

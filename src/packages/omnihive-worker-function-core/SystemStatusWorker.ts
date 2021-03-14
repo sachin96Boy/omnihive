@@ -1,10 +1,8 @@
-import { NodeServiceFactory } from "@withonevision/omnihive-core-node/factories/NodeServiceFactory";
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { CoreServiceFactory } from "@withonevision/omnihive-core/factories/CoreServiceFactory";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+/// <reference path="../../types/globals.omnihive.d.ts" />
+
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
-import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 
@@ -13,34 +11,19 @@ class SystemStatusRequest {
 }
 
 export default class SystemStatusWorker extends HiveWorkerBase implements IRestEndpointWorker {
-    private tokenWorker!: ITokenWorker;
-
     constructor() {
         super();
     }
 
-    public execute = async (headers: any, _url: string, body: any): Promise<[{} | undefined, number]> => {
-        const tokenWorker: ITokenWorker | undefined = await AwaitHelper.execute<ITokenWorker | undefined>(
-            CoreServiceFactory.workerService.getWorker<ITokenWorker>(HiveWorkerType.Token)
-        );
-
-        if (!tokenWorker) {
-            throw new Error("Token Worker cannot be found");
-        }
-
-        this.tokenWorker = tokenWorker;
-
+    public execute = async (_headers: any, _url: string, body: any): Promise<RestEndpointExecuteResponse> => {
         try {
-            this.checkRequest(headers, body);
-            const accessToken: string | undefined = headers.ohAccess?.toString();
-            const verified: boolean = await AwaitHelper.execute<boolean>(this.tokenWorker.verify(accessToken ?? ""));
-
-            if (!verified) {
-                throw new Error("Invalid Access Token");
-            }
-            return [NodeServiceFactory.appService.serverStatus, 200];
+            this.checkRequest(body);
+            return {
+                response: { status: global.omnihive.serverStatus, error: global.omnihive.serverError },
+                status: 200,
+            };
         } catch (e) {
-            return [{ error: serializeError(e) }, 400];
+            return { response: { error: serializeError(e) }, status: 400 };
         }
     };
 
@@ -75,16 +58,6 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
                                 name: "System",
                             },
                         ],
-                        parameters: [
-                            {
-                                in: "header",
-                                name: "ohaccess",
-                                required: true,
-                                schema: {
-                                    type: "string",
-                                },
-                            },
-                        ],
                         requestBody: {
                             required: true,
                             content: {
@@ -97,7 +70,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
                         },
                         responses: {
                             "200": {
-                                description: "OmniHive Check Settings Response",
+                                description: "OmniHive Status Response",
                                 content: {
                                     "application/json": {
                                         schema: {
@@ -113,8 +86,8 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
         };
     };
 
-    private checkRequest = (headers: any, body: any | undefined) => {
-        if (!headers || !body) {
+    private checkRequest = (body: any | undefined) => {
+        if (!body) {
             throw new Error("Request Denied");
         }
 
@@ -123,15 +96,11 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             body
         );
 
-        if (!headers.ohaccess) {
-            throw new Error(`Request Denied`);
-        }
-
         if (!paramsStructured.adminPassword || paramsStructured.adminPassword === "") {
             throw new Error(`Request Denied`);
         }
 
-        if (paramsStructured.adminPassword !== CoreServiceFactory.configurationService.settings.config.adminPassword) {
+        if (paramsStructured.adminPassword !== this.serverSettings.config.adminPassword) {
             throw new Error(`Request Denied`);
         }
     };

@@ -253,7 +253,7 @@ const build = async (): Promise<void> => {
             .filter((value: string) => value === "omnihive-core")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", path.join(`.`, `dist`, `packages`, `${value}`));
+                execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${value}`));
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 
@@ -267,7 +267,7 @@ const build = async (): Promise<void> => {
             .filter((value: string) => value.startsWith("omnihive-worker"))
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", path.join(`.`, `dist`, `packages`, `${value}`));
+                execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${value}`));
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 
@@ -281,7 +281,7 @@ const build = async (): Promise<void> => {
             .filter((value: string) => value === "omnihive-client")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", path.join(`.`, `dist`, `packages`, `${value}`));
+                execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${value}`));
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 
@@ -289,7 +289,7 @@ const build = async (): Promise<void> => {
             .filter((value: string) => value === "omnihive")
             .forEach((value: string) => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
-                execSpawn("npm publish --access public", path.join(`.`, `dist`, `packages`, `${value}`));
+                execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${value}`));
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 

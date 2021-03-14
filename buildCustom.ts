@@ -109,9 +109,21 @@ const build = async (): Promise<void> => {
     if (!args.argv.publish as boolean) {
         console.log(chalk.redBright("Publish not specified...skipping npm publish"));
     } else {
+        let publishString: string = "yarn npm publish";
+
+        if (args.argv.publishAccess) {
+            publishString = `${publishString} --access ${args.argv.publishAccess as string}`;
+        } else {
+            publishString = `${publishString} --access public`;
+        }
+
+        if (args.argv.publishTag) {
+            publishString = `${publishString} --tag ${args.argv.publishTag as string}`;
+        }
+
         customDirectories.forEach((value: string) => {
             console.log(chalk.yellow(`Publishing ${value}...`));
-            execSpawn("npm publish --access public", path.join(`.`, `dist`, `custom`, `${value}`));
+            execSpawn(publishString, path.join(`.`, `dist`, `custom`, `${value}`));
             console.log(chalk.greenBright(`Done publishing ${value}...`));
         });
     }

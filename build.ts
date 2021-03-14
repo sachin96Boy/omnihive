@@ -79,7 +79,6 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
-            execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -98,7 +97,6 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
-            execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -117,7 +115,6 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
-            execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -130,7 +127,6 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
-            execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 

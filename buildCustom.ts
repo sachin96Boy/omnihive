@@ -79,7 +79,6 @@ const build = async (): Promise<void> => {
             path.join(`.`, `src`, `custom`, `${value}`, `package.json`),
             path.join(`.`, `dist`, `custom`, `${value}`, `package.json`)
         );
-        execSpawn("yarn pack", path.join(`.`, `dist`, `packages`, `${value}`));
         console.log(chalk.greenBright(`Done building ${value}...`));
     });
 

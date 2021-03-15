@@ -135,7 +135,7 @@ export class AppService {
             } else {
                 logService.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Custom Package(s)`);
                 const removeCommand = new StringBuilder();
-                removeCommand.append("yarn remove ");
+                removeCommand.append("npm uninstall ");
 
                 packagesToRemove.forEach((packageName: string, index: number) => {
                     logService.write(OmniHiveLogLevel.Info, `Removing ${packageName} As a Custom Package(s)`);
@@ -182,7 +182,7 @@ export class AppService {
             } else {
                 logService.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Custom Package(s)`);
                 const addCommand = new StringBuilder();
-                addCommand.append("yarn add ");
+                addCommand.append("npm install ");
 
                 packagesToAdd.forEach((packageName: string, index: number) => {
                     logService.write(OmniHiveLogLevel.Info, `Adding ${packageName} As a Custom Package(s)`);

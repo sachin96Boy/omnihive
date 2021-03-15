@@ -79,7 +79,7 @@ const build = async (): Promise<void> => {
             default: false,
         })
         .option("publishAccess", {
-            alias: "a",
+            alias: "pa",
             type: "string",
             demandCommand: false,
             description: "Access to use when publishing to NPM",
@@ -87,7 +87,7 @@ const build = async (): Promise<void> => {
             choices: ["public", "restricted"],
         })
         .option("publishTag", {
-            alias: "t",
+            alias: "pt",
             type: "string",
             demandCommand: false,
             default: "latest",

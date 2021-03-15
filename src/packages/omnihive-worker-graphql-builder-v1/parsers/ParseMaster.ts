@@ -45,7 +45,34 @@ export class ParseMaster {
         omniHiveContext: GraphContext
     ): Promise<any[]> => {
         const parser: ParseInsert = new ParseInsert();
-        return await parser.parse(workerName, tableName, insertObjects, customDmlArgs, omniHiveContext);
+        const results = await parser.parse(workerName, tableName, insertObjects, customDmlArgs, omniHiveContext);
+
+        const schema: ConnectionSchema | undefined = global.omnihive.registeredSchemas.find(
+            (value: ConnectionSchema) => value.workerName === workerName
+        );
+        let tableSchema: TableSchema[] = [];
+
+        if (schema) {
+            tableSchema = schema.tables;
+        }
+        tableSchema = tableSchema.filter((tableSchema: TableSchema) => tableSchema.tableName === tableName);
+
+        for (let i = 0; i < results.length; i++) {
+            const convertedResults: any = {};
+            Object.keys(results[i]).forEach((x) => {
+                const column = tableSchema.find((y) => y.columnNameDatabase === x);
+
+                if (column) {
+                    convertedResults[column.columnNameEntity] = results[i][x];
+                } else {
+                    convertedResults[x] = results[i][x];
+                }
+            });
+
+            results[i] = convertedResults;
+        }
+
+        return results;
     };
 
     public parseStoredProcedure = async (

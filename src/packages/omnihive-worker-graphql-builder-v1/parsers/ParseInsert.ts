@@ -62,7 +62,6 @@ export class ParseInsert {
         const queryBuilder: Knex.QueryBuilder = (databaseWorker.connection as Knex).queryBuilder();
 
         const insertDbObjects: any[] = [];
-        const insertDbColumnList: string[] = [];
 
         insertObjects.forEach((insertObject: any) => {
             const insertDbObject: any = {};
@@ -83,15 +82,11 @@ export class ParseInsert {
                 }
 
                 insertDbObject[columnSchema.columnNameDatabase] = insertObject[key];
-
-                if (!insertDbColumnList.some((value: string) => value === columnSchema?.columnNameDatabase)) {
-                    insertDbColumnList.push(columnSchema.columnNameDatabase);
-                }
             });
 
             insertDbObjects.push(insertDbObject);
         });
 
-        return queryBuilder.insert(insertDbObjects, insertDbColumnList).into(tableName);
+        return queryBuilder.insert(insertDbObjects, "*", { includeTriggerModifications: true }).into(tableName);
     };
 }

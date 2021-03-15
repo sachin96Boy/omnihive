@@ -79,7 +79,6 @@ const build = async (): Promise<void> => {
             path.join(`.`, `src`, `custom`, `${value}`, `package.json`),
             path.join(`.`, `dist`, `custom`, `${value}`, `package.json`)
         );
-        execSpawn("npm pack", path.join(`.`, `dist`, `custom`, `${value}`));
         console.log(chalk.greenBright(`Done building ${value}...`));
     });
 
@@ -125,6 +124,7 @@ const build = async (): Promise<void> => {
         customDirectories.forEach((value: string) => {
             console.log(chalk.yellow(`Publishing ${value}...`));
             execSpawn(publishString, path.join(`.`, `dist`, `custom`, `${value}`));
+            execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${value}`));
             console.log(chalk.greenBright(`Done publishing ${value}...`));
         });
     }

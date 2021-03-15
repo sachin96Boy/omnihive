@@ -1,5 +1,7 @@
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { GraphQLResolveInfo } from "graphql";
+import { ConnectionSchema } from "src/packages/omnihive-core/models/ConnectionSchema";
+import { TableSchema } from "src/packages/omnihive-core/models/TableSchema";
 import { ParseAstQuery } from "./ParseAstQuery";
 import { ParseCustomSql } from "./ParseCustomSql";
 import { ParseDelete } from "./ParseDelete";

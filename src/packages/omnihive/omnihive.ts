@@ -7,7 +7,6 @@ import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettin
 import chalk from "chalk";
 import Conf from "conf";
 import crypto from "crypto";
-import dotenv from "dotenv";
 import figlet from "figlet";
 import fse from "fs-extra";
 import inquirer from "inquirer";
@@ -20,16 +19,11 @@ import { TaskRunnerService } from "./services/TaskRunnerService";
 
 const init = async () => {
     global.omnihive = new GlobalObject();
-
-    const config = new Conf();
-    const latestConf: string | undefined = config.get<string>("latest-settings") as string;
-    const newAdminPassword = crypto.randomBytes(32).toString("hex");
-
     global.omnihive.ohDirName = __dirname;
 
-    if (!process.env.omnihive_settings) {
-        dotenv.config();
-    }
+    const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
+    const latestConf: string | undefined = config.get<string>("latest-settings") as string;
+    const newAdminPassword = crypto.randomBytes(32).toString("hex");
 
     const args = yargs(process.argv.slice(2));
 

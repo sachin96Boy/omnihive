@@ -117,11 +117,22 @@ export class ServerService {
             const app: express.Express = await this.getCleanAppServer();
 
             app.get("/", (_req, res) => {
-                res.setHeader("Content-Type", "application/json");
                 return res.status(200).render("index", {
                     rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: global.omnihive.serverError,
+                });
+            });
+
+            app.use((_req, res) => {
+                return res.status(404).render("404", { rootUrl: global.omnihive.serverSettings.config.webRootUrl });
+            });
+
+            app.use((err: any, _req: any, res: any, _next: any) => {
+                return res.status(500).render("500", {
+                    rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    error: serializeError(err),
                 });
             });
 

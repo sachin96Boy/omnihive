@@ -13,7 +13,7 @@ export class TestService extends WorkerSetterBase {
         this.registeredWorkers = [];
     };
 
-    public getConstants = (): { [key: string]: unknown }[] | undefined => {
+    public getConstants = (): any | undefined => {
         try {
             if (!process.env.omnihive_test_settings) {
                 return undefined;

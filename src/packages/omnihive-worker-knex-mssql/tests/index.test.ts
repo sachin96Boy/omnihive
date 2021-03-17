@@ -28,7 +28,7 @@ describe("mssql database worker tests", function () {
     const init = async function (testingConfigs: HiveWorker[]): Promise<void> {
         try {
             await AwaitHelper.execute(testService.initWorkers(testingConfigs));
-            const newWorker = testService.registeredWorkers.find((x) => x[0].package === packageJson.name);
+            const newWorker: any = testService.registeredWorkers.find((x: any) => x[0].package === packageJson.name);
 
             if (newWorker && newWorker[1]) {
                 worker = newWorker[1];

@@ -42,7 +42,9 @@ export class AdminService {
         global.omnihive.adminServer.on("connection", (ws: WebSocket) => {
             (ws as ExtendedWebSocket).isAlive = true;
 
-            ws.on("pong", this.heartbeat);
+            ws.on("pong", (ws: WebSocket) => {
+                this.heartbeat(ws);
+            });
 
             ws.on("message", (message: string) => {
                 if (!this.checkWsMessage("config-request", message)) {

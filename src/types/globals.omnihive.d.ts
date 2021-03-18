@@ -6,18 +6,20 @@ import { ConnectionSchema } from "@withonevision/omnihive-core/models/Connection
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
-import * as socketio from "socket.io";
+import WebSocket from "ws";
 
 declare global {
     declare namespace NodeJS {
         interface Global {
             omnihive: {
-                adminServer: socketio.Server;
+                adminServer: WebSocket.Server;
+                adminServerTimer: NodeJS.Timer;
                 appServer: express.Express | undefined;
                 getWorker: <T extends IHiveWorker | undefined>(type: string, name?: string) => T | undefined;
                 initWorkers: (configs: HiveWorker[]) => Promise<void>;
+                instanceName: string;
                 ohDirName: string;
-                pushWorker: (hiveWorker: HiveWorker, runAfterInit: boolean = true) => Promise<void>;
+                pushWorker: (hiveWorker: HiveWorker, isBoot: boolean = false, isCore: boolean = false) => Promise<void>;
                 registeredSchemas: ConnectionSchema[];
                 registeredUrls: RegisteredUrl[];
                 registeredWorkers: RegisteredHiveWorker[];

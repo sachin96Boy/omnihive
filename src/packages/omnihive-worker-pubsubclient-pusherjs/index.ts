@@ -32,6 +32,11 @@ export default class PusherJsPubSubClientWorker extends HiveWorkerBase implement
         await AwaitHelper.execute<void>(this.connect());
     }
 
+    public emit = async (eventName: string, message: any): Promise<void> => {
+        this.pusher.send_event(eventName, message);
+        return;
+    };
+
     public getListeners = (): PubSubListener[] => {
         return this.listeners;
     };

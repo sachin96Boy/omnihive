@@ -15,6 +15,16 @@ describe("StringBuilder Tests", function () {
         }
     });
 
+    it("new string builder - no args", function () {
+        try {
+            const builder = new StringBuilder();
+
+            assert.equal(builder.outputString(), "");
+        } catch (err) {
+            throw new Error(JSON.stringify(serializeError(err)));
+        }
+    });
+
     it("append", function () {
         try {
             const builder = new StringBuilder(testString);

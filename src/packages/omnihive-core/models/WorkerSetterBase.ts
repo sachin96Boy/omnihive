@@ -50,7 +50,12 @@ export abstract class WorkerSetterBase extends WorkerGetterBase {
         const newWorkerInstance: any = new newWorker.default();
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 
-        const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };
+        const registeredWorker: RegisteredHiveWorker = {
+            ...hiveWorker,
+            instance: newWorkerInstance,
+            isBoot: false,
+            isCore: false,
+        };
         this.registeredWorkers.push(registeredWorker);
     }
 }

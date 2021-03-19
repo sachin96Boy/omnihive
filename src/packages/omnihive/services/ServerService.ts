@@ -6,6 +6,7 @@ import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/Registered
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
 import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
@@ -23,12 +24,16 @@ import path from "path";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
+import { AdminService } from "./AdminService";
 import { AppService } from "./AppService";
-import { LogService } from "./LogService";
 
 export class ServerService {
     public run = async (serverReset: boolean = false): Promise<void> => {
         const appService: AppService = new AppService();
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
 
         try {
             // Set server to rebuilding first
@@ -37,7 +42,9 @@ export class ServerService {
             // Check for server reset and re-poll settings in case they have changed
             if (serverReset === true) {
                 const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
-                const latestConf: string | undefined = config.get<string>("latest-settings") as string;
+                const latestConf: string | undefined = config.get<string>(
+                    `latest-settings-${global.omnihive.instanceName}`
+                ) as string;
 
                 global.omnihive.serverSettings = ObjectHelper.createStrict<ServerSettings>(
                     ServerSettings,
@@ -46,7 +53,6 @@ export class ServerService {
             }
 
             const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
-            const logService: LogService = new LogService();
 
             await appService.initOmniHiveApp(pkgJson);
 
@@ -63,7 +69,7 @@ export class ServerService {
                         (server.instance as IServerWorker).buildServer(app)
                     );
                 } catch (e) {
-                    logService.write(
+                    logWorker?.write(
                         OmniHiveLogLevel.Error,
                         `Skipping server worker ${server.name} due to error: ${serializeError(e)}`
                     );
@@ -95,15 +101,19 @@ export class ServerService {
         } catch (err) {
             // Problem...spin up admin server
             await this.changeServerStatus(ServerStatus.Admin, err);
-            const logService: LogService = new LogService();
-            logService.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
+            logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
         }
     };
 
     public changeServerStatus = async (serverStatus: ServerStatus, error?: Error): Promise<void> => {
-        const logService: LogService = new LogService();
+        const adminService: AdminService = new AdminService();
 
-        logService.write(OmniHiveLogLevel.Info, `Server Change Handler Started`);
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
+
+        logWorker?.write(OmniHiveLogLevel.Info, `Server Change Handler Started`);
 
         global.omnihive.serverStatus = serverStatus;
 
@@ -117,11 +127,22 @@ export class ServerService {
             const app: express.Express = await this.getCleanAppServer();
 
             app.get("/", (_req, res) => {
-                res.setHeader("Content-Type", "application/json");
                 return res.status(200).render("index", {
                     rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: global.omnihive.serverError,
+                });
+            });
+
+            app.use((_req, res) => {
+                return res.status(404).render("404", { rootUrl: global.omnihive.serverSettings.config.webRootUrl });
+            });
+
+            app.use((err: any, _req: any, res: any, _next: any) => {
+                return res.status(500).render("500", {
+                    rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    error: serializeError(err),
                 });
             });
 
@@ -133,24 +154,25 @@ export class ServerService {
         global.omnihive.webServer = server;
 
         global.omnihive.webServer?.listen(global.omnihive.serverSettings.config.nodePortNumber, () => {
-            logService.write(
+            logWorker?.write(
                 OmniHiveLogLevel.Info,
                 `New Server Listening on process ${process.pid} using port ${global.omnihive.serverSettings.config.nodePortNumber}`
             );
         });
 
-        global.omnihive.adminServer.sockets.emit("status-response", {
-            requestComplete: true,
-            requestError: "",
+        adminService.sendToAllClients<{ serverStatus: ServerStatus; serverError: any | undefined }>("status-response", {
             serverStatus: global.omnihive.serverStatus,
             serverError: global.omnihive.serverError,
         });
 
-        logService.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
+        logWorker?.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
     };
 
     public getCleanAppServer = async (): Promise<express.Express> => {
-        const logService: LogService = new LogService();
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
 
         const adminRoot: string = `/ohAdmin`;
 
@@ -213,7 +235,7 @@ export class ServerService {
         global.omnihive.registeredWorkers
             .filter(
                 (rw: RegisteredHiveWorker) =>
-                    rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === true
+                    rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.isCore === true
             )
             .forEach((rw: RegisteredHiveWorker) => {
                 let workerMetaData: HiveWorkerMetadataRestFunction;
@@ -224,7 +246,7 @@ export class ServerService {
                         rw.metadata
                     );
                 } catch (e) {
-                    logService?.write(
+                    logWorker?.write(
                         OmniHiveLogLevel.Error,
                         `Cannot register system REST worker ${rw.name}.  MetaData is incorrect.`
                     );

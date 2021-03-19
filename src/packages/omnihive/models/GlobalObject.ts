@@ -12,11 +12,13 @@ import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSett
 import express from "express";
 import { Server } from "http";
 import path from "path";
-import * as socketio from "socket.io";
+import WebSocket from "ws";
 
 export class GlobalObject extends WorkerSetterBase {
-    public adminServer: socketio.Server = new socketio.Server();
+    public adminServer!: WebSocket.Server;
+    public adminServerTimer!: NodeJS.Timer;
     public appServer: express.Express | undefined = undefined;
+    public instanceName: string = "default";
     public ohDirName: string = "";
     public registeredSchemas: ConnectionSchema[] = [];
     public registeredUrls: RegisteredUrl[] = [];
@@ -24,7 +26,7 @@ export class GlobalObject extends WorkerSetterBase {
     public serverStatus: ServerStatus = ServerStatus.Unknown;
     public webServer: Server | undefined = undefined;
 
-    public async pushWorker(hiveWorker: HiveWorker): Promise<void> {
+    public async pushWorker(hiveWorker: HiveWorker, isBoot: boolean = false, isCore: boolean = false): Promise<void> {
         if (!hiveWorker.enabled) {
             return;
         }
@@ -53,7 +55,7 @@ export class GlobalObject extends WorkerSetterBase {
         const newWorkerInstance: any = new newWorker.default();
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 
-        const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };
+        const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance, isCore, isBoot };
         this.registeredWorkers.push(registeredWorker);
     }
 }

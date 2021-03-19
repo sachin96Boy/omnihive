@@ -13,7 +13,7 @@ export class TestService extends WorkerSetterBase {
         this.registeredWorkers = [];
     };
 
-    public getConstants = (): { [key: string]: unknown }[] | undefined => {
+    public getConstants = (): any | undefined => {
         try {
             if (!process.env.omnihive_test_settings) {
                 return undefined;
@@ -70,7 +70,12 @@ export class TestService extends WorkerSetterBase {
         const newWorkerInstance: any = new newWorker.default();
         await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 
-        const registeredWorker: RegisteredHiveWorker = { ...hiveWorker, instance: newWorkerInstance };
+        const registeredWorker: RegisteredHiveWorker = {
+            ...hiveWorker,
+            instance: newWorkerInstance,
+            isBoot: false,
+            isCore: false,
+        };
         this.registeredWorkers.push(registeredWorker);
     }
 }

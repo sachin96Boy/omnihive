@@ -39,14 +39,6 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
         });
     }
 
-    public getListeners = (): PubSubListener[] => {
-        return this.listeners;
-    };
-
-    public getJoinedChannels = (): string[] => {
-        return this.rooms;
-    };
-
     public addListener = (channelName: string, eventName: string, callback?: Function): void => {
         this.checkConnection();
 
@@ -69,6 +61,20 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
         } catch (err) {
             throw new Error("PubSub Add Listener Error => " + JSON.stringify(serializeError(err)));
         }
+    };
+
+    public emit = async (eventName: string, message: any): Promise<void> => {
+        this.checkConnection();
+        this.ioClient.emit(eventName, message);
+        return;
+    };
+
+    public getJoinedChannels = (): string[] => {
+        return this.rooms;
+    };
+
+    public getListeners = (): PubSubListener[] => {
+        return this.listeners;
     };
 
     public removeListener = (channelName: string, eventName: string): void => {

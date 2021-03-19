@@ -5,11 +5,16 @@ import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilde
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import childProcess from "child_process";
 import readPkgUp from "read-pkg-up";
-import { LogService } from "./LogService";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 
 export class AppService {
     public initOmniHiveApp = async (packageJson: readPkgUp.NormalizedReadResult | undefined) => {
-        const logService: LogService = new LogService();
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
 
         // Load Core Workers
         if (
@@ -21,13 +26,17 @@ export class AppService {
             const coreWorkers: HiveWorker[] = packageJson.packageJson.omniHive.coreWorkers as HiveWorker[];
 
             for (const coreWorker of coreWorkers) {
-                await global.omnihive.pushWorker(coreWorker);
-                global.omnihive.serverSettings.workers.push(coreWorker);
+                if (
+                    !global.omnihive.registeredWorkers.some((rw: RegisteredHiveWorker) => rw.name === coreWorker.name)
+                ) {
+                    await global.omnihive.pushWorker(coreWorker, false, true);
+                    global.omnihive.serverSettings.workers.push(coreWorker);
+                }
             }
         }
 
         // Load Workers
-        logService.write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
+        logWorker?.write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
 
         // Load Default Workers
         if (
@@ -62,7 +71,7 @@ export class AppService {
                                     defaultWorker.metadata[metaKey] = envValue;
                                 } else {
                                     registerWorker = false;
-                                    logService.write(
+                                    logWorker?.write(
                                         OmniHiveLogLevel.Warn,
                                         `Cannot register ${defaultWorker.name}...missing ${metaKey} in constants`
                                     );
@@ -78,7 +87,7 @@ export class AppService {
             });
         }
 
-        logService.write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
+        logWorker?.write(OmniHiveLogLevel.Info, `Working on hive worker packages...`);
 
         if (
             packageJson &&
@@ -131,14 +140,14 @@ export class AppService {
             }
 
             if (packagesToRemove.length === 0) {
-                logService.write(OmniHiveLogLevel.Info, `No Custom Packages to Uninstall...Moving On`);
+                logWorker?.write(OmniHiveLogLevel.Info, `No Custom Packages to Uninstall...Moving On`);
             } else {
-                logService.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Custom Package(s)`);
+                logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Custom Package(s)`);
                 const removeCommand = new StringBuilder();
                 removeCommand.append("yarn remove ");
 
                 packagesToRemove.forEach((packageName: string, index: number) => {
-                    logService.write(OmniHiveLogLevel.Info, `Removing ${packageName} As a Custom Package(s)`);
+                    logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packageName} As a Custom Package(s)`);
                     removeCommand.append(packageName);
 
                     if (index < packagesToRemove.length - 1) {
@@ -154,7 +163,7 @@ export class AppService {
 
                 if (removeSpawn.status !== 0) {
                     const removeError: Error = new Error(removeSpawn.stderr.toString().trim());
-                    console.log(removeError);
+                    logWorker?.write(OmniHiveLogLevel.Error, removeSpawn.stderr.toString().trim());
                     throw removeError;
                 }
             }
@@ -178,14 +187,14 @@ export class AppService {
             }
 
             if (packagesToAdd.length === 0) {
-                logService.write(OmniHiveLogLevel.Info, `No Custom Packages to Add...Moving On`);
+                logWorker?.write(OmniHiveLogLevel.Info, `No Custom Packages to Add...Moving On`);
             } else {
-                logService.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Custom Package(s)`);
+                logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Custom Package(s)`);
                 const addCommand = new StringBuilder();
                 addCommand.append("yarn add ");
 
                 packagesToAdd.forEach((packageName: string, index: number) => {
-                    logService.write(OmniHiveLogLevel.Info, `Adding ${packageName} As a Custom Package(s)`);
+                    logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packageName} As a Custom Package(s)`);
                     addCommand.append(packageName);
 
                     if (index < packagesToAdd.length - 1) {
@@ -201,17 +210,17 @@ export class AppService {
 
                 if (addSpawn.status !== 0) {
                     const addError: Error = new Error(addSpawn.stderr.toString().trim());
-                    console.log(addError);
+                    logWorker?.write(OmniHiveLogLevel.Error, addSpawn.stderr.toString().trim());
                     throw addError;
                 }
             }
         }
 
-        logService.write(OmniHiveLogLevel.Info, "Custom packages complete");
+        logWorker?.write(OmniHiveLogLevel.Info, "Custom packages complete");
 
         // Register hive workers
-        logService.write(OmniHiveLogLevel.Info, "Working on hive workers...");
+        logWorker?.write(OmniHiveLogLevel.Info, "Working on hive workers...");
         await global.omnihive.initWorkers(global.omnihive.serverSettings.workers);
-        logService.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
+        logWorker?.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
     };
 }

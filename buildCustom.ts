@@ -33,7 +33,7 @@ const build = async (): Promise<void> => {
             default: false,
         })
         .option("publishAccess", {
-            alias: "a",
+            alias: "pa",
             type: "string",
             demandCommand: false,
             description: "Access to use when publishing to NPM",
@@ -41,7 +41,7 @@ const build = async (): Promise<void> => {
             choices: ["public", "restricted"],
         })
         .option("publishTag", {
-            alias: "t",
+            alias: "pt",
             type: "string",
             demandCommand: false,
             description: "Tag to use when publishing",
@@ -124,7 +124,7 @@ const build = async (): Promise<void> => {
         customDirectories.forEach((value: string) => {
             console.log(chalk.yellow(`Publishing ${value}...`));
             execSpawn(publishString, path.join(`.`, `dist`, `custom`, `${value}`));
-            execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${value}`));
+            execSpawn("npm pack", path.join(`.`, `dist`, `custom`, `${value}`));
             console.log(chalk.greenBright(`Done publishing ${value}...`));
         });
     }

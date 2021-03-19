@@ -401,7 +401,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 const restWorkers = this.registeredWorkers.filter(
                     (rw: RegisteredHiveWorker) =>
-                        rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === false
+                        rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.isCore === false
                 );
 
                 restWorkers.forEach((rw: RegisteredHiveWorker) => {

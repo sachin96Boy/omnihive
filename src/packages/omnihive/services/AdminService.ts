@@ -92,21 +92,21 @@ export class AdminService {
                     !request ||
                     !request.adminPassword ||
                     StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
-                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword ||
+                    !request.data?.config
                 ) {
                     this.sendErrorToSingleClient(ws, "config-save-response", new Error("Invalid Password"));
                     return;
                 }
 
                 try {
+                    const settings: ServerSettings = request.data?.config as ServerSettings;
                     const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
                     const latestConf: string | undefined = config.get<string>(
                         `latest-settings-${global.omnihive.instanceName}`
                     ) as string;
-                    const settings: ServerSettings = request.data.config as ServerSettings;
 
                     fse.writeFileSync(latestConf, JSON.stringify(settings));
-
                     this.sendToSingleClient<{ verified: boolean }>(ws, "config-save-response", { verified: true });
                 } catch (e) {
                     this.sendErrorToSingleClient(ws, "config-save-response", e);
@@ -126,7 +126,7 @@ export class AdminService {
                     !request.adminPassword ||
                     StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
                     request.adminPassword !== global.omnihive.serverSettings.config.adminPassword ||
-                    !request.data.refresh
+                    !request.data?.refresh
                 ) {
                     this.sendErrorToSingleClient(ws, "refresh-response", new Error("Invalid Password"));
                     return;

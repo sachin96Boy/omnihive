@@ -23,15 +23,11 @@ describe("cache (node) worker tests", function () {
     });
 
     const init = async function (): Promise<void> {
-        try {
-            await AwaitHelper.execute(testService.initWorkers(settings.workers));
-            const newWorker: any = testService.registeredWorkers.find((x: any) => x[0].package === packageJson.name);
+        await AwaitHelper.execute(testService.initWorkers(settings.workers));
+        const newWorker: any = testService.registeredWorkers.find((x: any) => x.package === packageJson.name);
 
-            if (newWorker && newWorker[1]) {
-                worker = newWorker[1];
-            }
-        } catch (err) {
-            throw new Error("init failure: " + serializeError(JSON.stringify(err)));
+        if (newWorker && newWorker.instance) {
+            worker = newWorker.instance;
         }
     };
 

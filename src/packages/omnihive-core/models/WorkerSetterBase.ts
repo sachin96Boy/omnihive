@@ -7,6 +7,10 @@ import { ServerSettings } from "./ServerSettings";
 import { WorkerGetterBase } from "./WorkerGetterBase";
 
 export abstract class WorkerSetterBase extends WorkerGetterBase {
+    constructor() {
+        super();
+    }
+
     public serverSettings: ServerSettings = new ServerSettings();
 
     public async initWorkers(configs: HiveWorker[]): Promise<void> {

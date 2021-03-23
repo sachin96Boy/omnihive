@@ -214,8 +214,4 @@ export class OmniHiveClient extends WorkerSetterBase {
     public setAccessToken = (token: string) => {
         this.accessToken = token;
     };
-
-    public setAuthToken = (token: string) => {
-        this.authToken = token;
-    };
 }

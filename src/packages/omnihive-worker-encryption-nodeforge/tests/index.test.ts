@@ -43,29 +43,29 @@ describe("encryption worker tests", function () {
         });
 
         it("base64 - encrypt", function () {
-            const result = worker.base64Encode(testService.getConstants()["encryptionMessage"]);
-            assert.equal(result, testService.getConstants()["base64Encrypted"]);
+            const result = worker.base64Encode(settings.constants["encryptionMessage"]);
+            assert.equal(result, settings.constants["base64Encrypted"]);
         });
 
         it("base64 - decrypt", function () {
-            const result = worker.base64Decode(testService.getConstants()["base64Encrypted"]);
-            assert.equal(result, testService.getConstants()["encryptionMessage"]);
+            const result = worker.base64Decode(settings.constants["base64Encrypted"]);
+            assert.equal(result, settings.constants["encryptionMessage"]);
         });
 
         it("symmetric - encrypt", function () {
-            const encryptString = testService.getConstants()["encryptionMessage"];
+            const encryptString = settings.constants["encryptionMessage"];
             const encrypted = worker.symmetricEncrypt(encryptString);
             const result = worker.symmetricDecrypt(encrypted);
 
             assert.notEqual(encrypted, encryptString);
-            assert.notEqual(encrypted, testService.getConstants()["symetricEncrypted"]);
+            assert.notEqual(encrypted, settings.constants["symetricEncrypted"]);
             assert.equal(result, encryptString);
         });
 
         it("symmetric - decrypt", function () {
-            const testString = testService.getConstants()["symetricEncrypted"];
+            const testString = settings.constants["symetricEncrypted"];
             const result = worker.symmetricDecrypt(testString);
-            assert.equal(result, testService.getConstants()["encryptionMessage"]);
+            assert.equal(result, settings.constants["encryptionMessage"]);
         });
 
         it("symmetric - decrypt - invalid - format", function () {
@@ -79,7 +79,7 @@ describe("encryption worker tests", function () {
 
         it("symmetric - decrypt - empty - iv", function () {
             try {
-                worker.symmetricDecrypt(testService.getConstants()["encryptionInvalidIvLength"]);
+                worker.symmetricDecrypt(settings.constants["encryptionInvalidIvLength"]);
                 assert.fail("Failed Test");
             } catch (err) {
                 assert.equal(err.message, "Secure message symmetric iv not in the correct format");
@@ -88,7 +88,7 @@ describe("encryption worker tests", function () {
 
         it("symmetric - decrypt - invalid - iv", function () {
             try {
-                worker.symmetricDecrypt(testService.getConstants()["encryptionInvalidIv"]);
+                worker.symmetricDecrypt(settings.constants["encryptionInvalidIv"]);
                 assert.fail("Failed Test");
             } catch (err) {
                 assert.equal(err.message, "Secure message symmetric iv not in the correct format");
@@ -97,7 +97,7 @@ describe("encryption worker tests", function () {
 
         it("symmetric - decrypt - invalid - data packet", function () {
             try {
-                worker.symmetricDecrypt(testService.getConstants()["encryptionInvalidDataPacket"]);
+                worker.symmetricDecrypt(settings.constants["encryptionInvalidDataPacket"]);
                 assert.fail("Failed Test");
             } catch (err) {
                 assert.equal(err.message, "Secure message data packet not in the correct format");
@@ -110,7 +110,7 @@ describe("encryption worker tests", function () {
                     "Invalid Data Key Format that is too long. Invalid Data Key Format that is too long. Invalid Data Key Format that is too long.";
                 worker.init(worker.config);
 
-                worker.symmetricDecrypt(testService.getConstants()["symetricEncrypted"]);
+                worker.symmetricDecrypt(settings.constants["symetricEncrypted"]);
                 assert.fail("Failed Test");
             } catch (err) {
                 assert.equal(err.message, "Secure message symmetric key not in the correct format");

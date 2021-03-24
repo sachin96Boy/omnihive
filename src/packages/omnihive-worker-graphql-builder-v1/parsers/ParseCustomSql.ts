@@ -39,8 +39,11 @@ export class ParseCustomSql {
             HiveWorkerType.Token
         );
 
-        if (!tokenWorker) {
-            throw new Error("[ohAccessError] Token Worker Not Defined.  This creates an insecure API.");
+        if (
+            tokenWorker &&
+            (!omniHiveContext || !omniHiveContext.access || StringHelper.isNullOrWhiteSpace(omniHiveContext.access))
+        ) {
+            throw new Error("[ohAccessError] Access token is invalid or expired.");
         }
 
         if (

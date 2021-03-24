@@ -1,6 +1,5 @@
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { assert } from "chai";
-import { serializeError } from "serialize-error";
 import LaunchDarklyNodeFeatureWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
 import { TestService } from "../../../tests/services/TestService";
@@ -22,18 +21,24 @@ describe("feature worker tests", function () {
         settings = config;
     });
 
+    after(function () {
+        if (worker.isConnected()) {
+            worker.disconnect();
+        }
+    });
+
+    beforeEach(async function () {
+        if (!worker.isConnected()) {
+            await init();
+        }
+    });
+
     const init = async function (): Promise<void> {
-        const testService: TestService = new TestService();
+        await AwaitHelper.execute(testService.initWorkers(settings.workers));
+        const newWorker: any = testService.registeredWorkers.find((x: any) => x.package === packageJson.name);
 
-        try {
-            await AwaitHelper.execute(testService.initWorkers(settings.workers));
-            const newWorker = testService.registeredWorkers.find((x) => x[0].package === packageJson.name);
-
-            if (newWorker && newWorker[1]) {
-                worker = newWorker[1];
-            }
-        } catch (err) {
-            throw new Error("init failure: " + serializeError(JSON.stringify(err)));
+        if (newWorker && newWorker.instance) {
+            worker = newWorker.instance;
         }
     };
 
@@ -57,6 +62,15 @@ describe("feature worker tests", function () {
             } catch (err) {
                 assert.equal(err.message, "No feature name given.");
             }
+        });
+
+        it("isConnected", function () {
+            assert.isTrue(worker.isConnected());
+        });
+
+        it("Disconnect", async function () {
+            await worker.disconnect();
+            assert.isFalse(worker.isConnected());
         });
     });
 });

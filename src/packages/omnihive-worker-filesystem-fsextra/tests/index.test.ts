@@ -1,7 +1,6 @@
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { assert } from "chai";
 import path from "path";
-import { serializeError } from "serialize-error";
 import FileSystemWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
 import { TestService } from "../../../tests/services/TestService";
@@ -24,15 +23,11 @@ describe("file system worker tests", function () {
     });
 
     const init = async function (): Promise<void> {
-        try {
-            await AwaitHelper.execute(testService.initWorkers(settings.workers));
-            const newWorker = testService.registeredWorkers.find((x) => x[0].package === packageJson.name);
+        await AwaitHelper.execute(testService.initWorkers(settings.workers));
+        const newWorker: any = testService.registeredWorkers.find((x: any) => x.package === packageJson.name);
 
-            if (newWorker && newWorker[1]) {
-                worker = newWorker[1];
-            }
-        } catch (err) {
-            throw new Error("init failure: " + serializeError(JSON.stringify(err)));
+        if (newWorker && newWorker.instance) {
+            worker = newWorker.instance;
         }
     };
 
@@ -101,13 +96,9 @@ describe("file system worker tests", function () {
         });
 
         it("Ensure folder exists", function () {
-            try {
-                worker.ensureFolderExists(testFolderPath);
-                const result: boolean = worker.pathExists(testFolderPath);
-                assert.isTrue(result);
-            } catch (err) {
-                throw new Error("Ensure Folder Exists Error => " + JSON.stringify(serializeError(err)));
-            }
+            worker.ensureFolderExists(testFolderPath);
+            const result: boolean = worker.pathExists(testFolderPath);
+            assert.isTrue(result);
         });
 
         it("Remove file", function () {

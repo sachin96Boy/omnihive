@@ -65,6 +65,8 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
                 featureClient.ready = true;
                 this.client = featureClient;
             });
+
+            await featureClient.instance.waitForInitialization();
         } catch (err) {
             throw new Error("Launch Darkly Init Error => " + JSON.stringify(serializeError(err)));
         }
@@ -122,5 +124,21 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
         );
 
         return value as T;
+    };
+
+    public isConnected = () => {
+        if (this.client) {
+            return this.client.ready;
+        }
+
+        return false;
+    };
+
+    public disconnect = async () => {
+        if (this.client) {
+            await this.client.instance.flush();
+            this.client.instance.close();
+            this.client.ready = false;
+        }
     };
 }

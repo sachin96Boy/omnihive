@@ -286,8 +286,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                         const graphDatabaseConfig: ApolloServerExpressConfig = {
                             schema: graphDatabaseSchema,
-                            tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? true,
-                            introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? true,
+                            tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? false,
+                            introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? false,
                             context: async ({ req }) => {
                                 const omnihive = {
                                     access: req.headers.ohaccess || ``,
@@ -339,8 +339,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 const graphFunctionConfig: ApolloServerExpressConfig = {
                     schema: graphFunctionSchema,
-                    tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? true,
-                    introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? true,
+                    tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? false,
+                    introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? false,
                     context: async ({ req }) => {
                         const omnihive = {
                             access: req.headers.ohaccess || ``,
@@ -401,7 +401,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 const restWorkers = this.registeredWorkers.filter(
                     (rw: RegisteredHiveWorker) =>
-                        rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.core === false
+                        rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled === true && rw.isCore === false
                 );
 
                 restWorkers.forEach((rw: RegisteredHiveWorker) => {

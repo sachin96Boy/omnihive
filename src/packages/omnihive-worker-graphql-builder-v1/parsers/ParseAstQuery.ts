@@ -8,6 +8,7 @@ import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWork
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
@@ -79,11 +80,30 @@ export class ParseAstQuery {
             );
         }
 
+        const featureWorker: IFeatureWorker | undefined = global.omnihive.getWorker<IFeatureWorker | undefined>(
+            HiveWorkerType.Feature
+        );
+
+        const disableSecurity: boolean = (await featureWorker?.get<boolean>("disableSecurity", false)) ?? false;
+
         const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
             HiveWorkerType.Token
         );
 
+        if (disableSecurity && !tokenWorker) {
+            throw new Error("[ohAccessError] No token worker defined.");
+        }
+
         if (
+            disableSecurity &&
+            tokenWorker &&
+            (!omniHiveContext || !omniHiveContext.access || StringHelper.isNullOrWhiteSpace(omniHiveContext.access))
+        ) {
+            throw new Error("[ohAccessError] Access token is invalid or expired.");
+        }
+
+        if (
+            disableSecurity &&
             tokenWorker &&
             omniHiveContext &&
             omniHiveContext.access &&
@@ -91,7 +111,7 @@ export class ParseAstQuery {
         ) {
             const verifyToken: boolean = await AwaitHelper.execute<boolean>(tokenWorker.verify(omniHiveContext.access));
             if (verifyToken === false) {
-                throw new Error("Access token is invalid or expired.");
+                throw new Error("[ohAccessError] Access token is invalid or expired.");
             }
         }
 

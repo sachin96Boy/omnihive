@@ -2,13 +2,12 @@
 
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import chalk from "chalk";
 import fse from "fs-extra";
 import readPkgUp from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AppService } from "./AppService";
-import { LogService } from "./LogService";
 
 export class TaskRunnerService {
     public run = async (worker: string, args: string): Promise<void> => {
@@ -57,14 +56,16 @@ export class TaskRunnerService {
             this.logError(worker, err);
         }
 
-        console.log(chalk.greenBright("Done with task runner..."));
         process.exit();
     };
 
     private logError = async (workerName: string, err: Error) => {
-        const logService: LogService = new LogService();
+        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
+            HiveWorkerType.Log,
+            "ohreqLogWorker"
+        );
 
-        logService.write(
+        logWorker?.write(
             OmniHiveLogLevel.Error,
             `Task Runner => ${workerName} => Error => ${JSON.stringify(serializeError(err))}`
         );

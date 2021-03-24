@@ -10,6 +10,7 @@ import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
 import { serializeError } from "serialize-error";
+import { AdminEventResponse } from "@withonevision/omnihive-core/models/AdminEventResponse";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
     constructor() {
@@ -34,11 +35,20 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             consoleOnlyLogging = true;
         }
 
-        global.omnihive.adminServer.sockets.emit("log-response", {
-            logLevel,
-            timestamp,
-            osName,
-            logString,
+        let adminEvent: AdminEventResponse = {
+            event: "log-response",
+            data: {
+                logLevel,
+                timestamp,
+                osName,
+                logString,
+            },
+            requestComplete: true,
+            requestError: undefined,
+        };
+
+        global.omnihive.adminServer.clients.forEach((ws) => {
+            ws.send(JSON.stringify(adminEvent));
         });
 
         if (consoleOnlyLogging) {

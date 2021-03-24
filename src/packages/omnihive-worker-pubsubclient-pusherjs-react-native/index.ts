@@ -4,10 +4,12 @@ import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
 import Pusher, { Channel } from "pusher-js/react-native";
+import { serializeError } from "serialize-error";
 
 export class PusherJsReactNativePubSubClientWorkerMetadata {
     public key: string = "";
     public cluster: string = "";
+    public maxRetries: number = 5;
 }
 
 export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBase implements IPubSubClientWorker {
@@ -25,10 +27,15 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
         await AwaitHelper.execute<void>(super.init(config));
         this.metadata = this.checkObjectStructure<PusherJsReactNativePubSubClientWorkerMetadata>(
             PusherJsReactNativePubSubClientWorkerMetadata,
-            this.config.metadata
+            config.metadata
         );
         await AwaitHelper.execute<void>(this.connect());
     }
+
+    public emit = async (eventName: string, message: any): Promise<void> => {
+        this.pusher.send_event(eventName, message);
+        return;
+    };
 
     public getListeners = (): PubSubListener[] => {
         return this.listeners;
@@ -47,41 +54,63 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
     public addListener = (channelName: string, eventName: string, callback?: Function): void => {
         this.checkConnection();
 
-        if (!this.channels.some((channel: Channel) => channel.name === channelName)) {
-            this.joinChannel(channelName);
+        try {
+            if (!this.channels.some((channel: Channel) => channel.name === channelName)) {
+                this.joinChannel(channelName);
+            }
+
+            this.removeListener(channelName, eventName);
+
+            this.channels
+                .filter((channel: Channel) => channel.name === channelName)[0]
+                .bind(eventName, (data: any) => {
+                    if (callback && typeof callback === "function") {
+                        callback(data);
+                    }
+                });
+
+            this.listeners.push({ channelName, eventName, callback });
+        } catch (err) {
+            throw new Error("PubSub Add Listener Error => " + JSON.stringify(serializeError(err)));
         }
-
-        this.removeListener(channelName, eventName);
-
-        this.channels
-            .filter((channel: Channel) => channel.name === channelName)[0]
-            .bind(eventName, (data: any) => {
-                if (callback && typeof callback === "function") {
-                    callback(data);
-                }
-            });
-
-        this.listeners.push({ channelName, eventName, callback });
     };
 
     public removeListener = (channelName: string, eventName: string): void => {
         this.checkConnection();
 
-        if (
-            this.listeners.some(
-                (listener: PubSubListener) => listener.channelName == channelName && listener.eventName === eventName
-            )
-        ) {
-            this.listeners = this.listeners.filter(
-                (listener: PubSubListener) => listener.channelName == channelName && listener.eventName !== eventName
-            );
-            this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind(eventName);
+        try {
+            if (
+                this.listeners.some(
+                    (listener: PubSubListener) =>
+                        listener.channelName == channelName && listener.eventName === eventName
+                )
+            ) {
+                this.listeners = this.listeners.filter(
+                    (listener: PubSubListener) =>
+                        listener.channelName == channelName && listener.eventName !== eventName
+                );
+                this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind(eventName);
+            }
+        } catch (err) {
+            throw new Error("PubSub Remove Listener Error => " + JSON.stringify(serializeError(err)));
         }
     };
 
-    public connect = async (): Promise<void> => {
-        this.pusher = new Pusher(this.metadata.key, { cluster: this.metadata.cluster });
-        this.connected = true;
+    public connect = async (retry: number = 0): Promise<void> => {
+        try {
+            if (this.connected) {
+                return;
+            }
+
+            this.pusher = new Pusher(this.metadata.key, { cluster: this.metadata.cluster });
+            this.connected = true;
+        } catch (err) {
+            if (retry <= this.metadata.maxRetries) {
+                this.connect(retry++);
+            } else {
+                throw new Error("The maximum amount of retries to connect has been reached.");
+            }
+        }
     };
 
     public disconnect = (): void => {
@@ -89,22 +118,28 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
             throw new Error("Pusher is not instantiated.");
         }
 
-        this.checkConnection();
+        try {
+            this.checkConnection(false);
 
-        this.listeners.filter((listener: PubSubListener) => {
-            this.removeListener(listener.channelName, listener.eventName);
-        });
+            if (this.connected) {
+                this.listeners.filter((listener: PubSubListener) => {
+                    this.removeListener(listener.channelName, listener.eventName);
+                });
 
-        this.listeners = [];
+                this.listeners = [];
 
-        this.getJoinedChannels().forEach((channel: string) => {
-            this.leaveChannel(channel);
-        });
+                this.getJoinedChannels().forEach((channel: string) => {
+                    this.leaveChannel(channel);
+                });
 
-        this.channels = [];
+                this.channels = [];
 
-        this.pusher.disconnect();
-        this.connected = false;
+                this.pusher.disconnect();
+                this.connected = false;
+            }
+        } catch (err) {
+            throw new Error("PubSub Disconnect Error => " + JSON.stringify(serializeError(err)));
+        }
     };
 
     public joinChannel = (channelName: string): void => {
@@ -114,8 +149,12 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
 
         this.checkConnection();
 
-        if (!this.channels.some((channel: Channel) => channel.name === channelName)) {
-            this.channels.push(this.pusher.subscribe(channelName));
+        try {
+            if (!this.channels.some((channel: Channel) => channel.name === channelName)) {
+                this.channels.push(this.pusher.subscribe(channelName));
+            }
+        } catch (err) {
+            throw new Error("PubSub Join Channel Error => " + JSON.stringify(serializeError(err)));
         }
     };
 
@@ -126,16 +165,28 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
 
         this.checkConnection();
 
-        if (this.channels.some((channel: Channel) => channel.name === channelName)) {
-            this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind_all();
-            this.channels = this.channels.filter((channel: Channel) => channel.name !== channelName);
-            this.pusher.unsubscribe(channelName);
+        try {
+            if (this.channels.some((channel: Channel) => channel.name === channelName)) {
+                this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind_all();
+                this.channels = this.channels.filter((channel: Channel) => channel.name !== channelName);
+                this.pusher.unsubscribe(channelName);
+            }
+        } catch (err) {
+            throw new Error("PubSub Leave Channel Error => " + JSON.stringify(serializeError(err)));
         }
     };
 
-    private checkConnection = (): boolean => {
-        if (!this.connected) {
-            throw new Error("Please call 'connect' before performing any pubsub actions");
+    private checkConnection = (autoConnect: boolean = true): boolean => {
+        if (!this.connected && autoConnect) {
+            try {
+                this.connect();
+
+                return true;
+            } catch (err) {
+                throw new Error(err.message);
+            }
+        } else if (!this.connected && !autoConnect) {
+            return false;
         } else {
             return true;
         }

@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import chalk from "chalk";
 import Conf from "conf";
@@ -10,7 +13,9 @@ import crypto from "crypto";
 import figlet from "figlet";
 import fse from "fs-extra";
 import inquirer from "inquirer";
+import nodeCleanup from "node-cleanup";
 import path from "path";
+import readPkgUp from "read-pkg-up";
 import yargs from "yargs";
 import { GlobalObject } from "./models/GlobalObject";
 import { AdminService } from "./services/AdminService";
@@ -18,13 +23,6 @@ import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
 
 const init = async () => {
-    global.omnihive = new GlobalObject();
-    global.omnihive.ohDirName = __dirname;
-
-    const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
-    const latestConf: string | undefined = config.get<string>("latest-settings") as string;
-    const newAdminPassword = crypto.randomBytes(32).toString("hex");
-
     const args = yargs(process.argv.slice(2));
 
     args
@@ -33,6 +31,14 @@ const init = async () => {
         .strict()
         .command(["*", "server"], "Server Runner", (args) => {
             return args
+                .option("instanceName", {
+                    alias: "i",
+                    type: "string",
+                    demandOption: true,
+                    default: "default",
+                    description:
+                        "Name of the instance you would like to run (can be any name you like and will be used for settings retrieval on restart)",
+                })
                 .option("settings", {
                     alias: "s",
                     type: "string",
@@ -108,6 +114,12 @@ const init = async () => {
                     description: "Full path to JSON args file",
                 })
                 .check((args) => {
+                    const instanceRegex: RegExp = /^[a-zA-Z0-9-_]+$/;
+
+                    if (!instanceRegex.test(args.instanceName)) {
+                        throw new Error("Instance name can only be alphanumeric, dashes, and underscores.");
+                    }
+
                     if (args.settings) {
                         try {
                             ObjectHelper.createStrict<ServerSettings>(
@@ -124,6 +136,30 @@ const init = async () => {
                 });
         })
         .command("init", "Init a new instance of OmniHive").argv;
+
+    global.omnihive = new GlobalObject();
+    global.omnihive.ohDirName = __dirname;
+    global.omnihive.instanceName = args.argv.instanceName as string;
+
+    const pkgJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp();
+
+    // Load Boot Workers
+    if (pkgJson && pkgJson.packageJson && pkgJson.packageJson.omniHive && pkgJson.packageJson.omniHive.bootWorkers) {
+        const bootWorkers: HiveWorker[] = pkgJson.packageJson.omniHive.bootWorkers as HiveWorker[];
+
+        for (const bootWorker of bootWorkers) {
+            if (!global.omnihive.registeredWorkers.some((rw: RegisteredHiveWorker) => rw.name === bootWorker.name)) {
+                await global.omnihive.pushWorker(bootWorker, true, false);
+                global.omnihive.serverSettings.workers.push(bootWorker);
+            }
+        }
+    }
+
+    const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
+    const latestConf: string | undefined = config.get<string>(
+        `latest-settings-${global.omnihive.instanceName}`
+    ) as string;
+    const newAdminPassword = crypto.randomBytes(32).toString("hex");
 
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
@@ -213,7 +249,7 @@ const init = async () => {
 
         fse.writeFileSync(answers.path as string, JSON.stringify(settings));
         config.clear();
-        config.set<string>("latest-settings", answers.path as string);
+        config.set<string>(`latest-settings-${global.omnihive.instanceName}`, answers.path as string);
 
         console.log(chalk.green("OmniHive Server init complete!  Booting the server now..."));
         console.log();
@@ -224,7 +260,7 @@ const init = async () => {
 
         if (args.argv.settings && !StringHelper.isNullOrWhiteSpace(args.argv.settings as string)) {
             config.clear();
-            config.set<string>("latest-settings", args.argv.settings as string);
+            config.set<string>(`latest-settings-${global.omnihive.instanceName}`, args.argv.settings as string);
             finalSettings = args.argv.settings as string;
             continueSettingsSearch = false;
         }
@@ -235,7 +271,10 @@ const init = async () => {
             !StringHelper.isNullOrWhiteSpace(process.env.omnihive_settings)
         ) {
             config.clear();
-            config.set<string>("latest-settings", process.env.omnihive_settings as string);
+            config.set<string>(
+                `latest-settings-${global.omnihive.instanceName}`,
+                process.env.omnihive_settings as string
+            );
             finalSettings = process.env.omnihive_settings as string;
             continueSettingsSearch = false;
         }
@@ -295,6 +334,7 @@ const init = async () => {
                 );
                 console.log();
             }
+
             const adminService: AdminService = new AdminService();
             await adminService.run();
 
@@ -302,6 +342,16 @@ const init = async () => {
             await serverService.run();
             break;
     }
+
+    nodeCleanup(() => {
+        const adminService: AdminService = new AdminService();
+        adminService.sendToAllClients<{ serverStatus: ServerStatus; serverError: any | undefined }>("status-response", {
+            serverStatus: ServerStatus.Offline,
+            serverError: undefined,
+        });
+    });
+
+    process.on("SIGUSR2", () => process.kill(process.pid, "SIGHUP"));
 };
 
 init();

@@ -20,6 +20,7 @@
         "With One Vision"
     ],
     "main": "./omnihive.js",
+    "types": "./omnihive.d.ts",
     "bin": "./omnihive.js",
     "scripts": {
         "build": "concurrently \"yarn run build:package\" \"yarn run build:app\"",
@@ -61,10 +62,9 @@
         "react-dom": "17.0.1",
         "read-pkg-up": "7.0.1",
         "serialize-error": "8.0.1",
-        "socket.io": "4.0.0",
-        "socket.io-client": "4.0.0",
         "swagger-ui-express": "4.1.6",
         "tailwindcss": "2.0.3",
+        "ws": "7.4.4",
         "yargs": "16.2.0"
     },
     "devDependencies": {
@@ -79,6 +79,7 @@
         "@types/react": "17.0.3",
         "@types/react-dom": "17.0.2",
         "@types/swagger-ui-express": "4.1.2",
+        "@types/ws": "7.4.0",
         "chai": "4.3.3",
         "concurrently": "6.0.0",
         "cross-env": "7.0.3",
@@ -118,12 +119,23 @@
             "react-dom": "17.0.1",
             "read-pkg-up": "7.0.1",
             "serialize-error": "8.0.1",
-            "socket.io": "4.0.0",
-            "socket.io-client": "4.0.0",
             "swagger-ui-express": "4.1.6",
             "tailwindcss": "2.0.3",
+            "ws": "7.4.4",
             "yargs": "16.2.0"
         },
+        "bootWorkers": [
+            {
+                "name": "ohreqLogWorker",
+                "type": "log",
+                "package": "@withonevision/omnihive-worker-log-core",
+                "version": "",
+                "importPath": "@withonevision/omnihive-worker-log-core/index",
+                "default": false,
+                "enabled": true,
+                "metadata": {}
+            }
+        ],
         "coreWorkers": [
             {
                 "name": "ohreqFeatureWorker",
@@ -131,7 +143,6 @@
                 "package": "@withonevision/omnihive-worker-feature-local",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-feature-local/index",
-                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {}
@@ -142,18 +153,6 @@
                 "package": "@withonevision/omnihive-worker-filesystem-fsextra",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
-                "core": true,
-                "default": false,
-                "enabled": true,
-                "metadata": {}
-            },
-            {
-                "name": "ohreqLogWorker",
-                "type": "log",
-                "package": "@withonevision/omnihive-worker-log-core",
-                "version": "workspace:*",
-                "importPath": "@withonevision/omnihive-worker-log-core/index",
-                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {}
@@ -164,12 +163,11 @@
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-function-core/SystemAccessTokenWorker",
-                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {
                     "restMethod": "post",
-                    "urlRoute": "accessToken"
+                    "urlRoute": "token"
                 }
             },
             {
@@ -178,7 +176,6 @@
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-function-core/SystemRegisterWorker",
-                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {
@@ -192,7 +189,6 @@
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-function-core/SystemRefreshWorker",
-                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {
@@ -206,7 +202,6 @@
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-function-core/SystemStatusWorker",
-                "core": true,
                 "default": false,
                 "enabled": true,
                 "metadata": {

@@ -1002,7 +1002,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:4.14.168":
+"@types/lodash.isequal@npm:4.5.5":
+  version: 4.5.5
+  resolution: "@types/lodash.isequal@npm:4.5.5"
+  dependencies:
+    "@types/lodash": "*"
+  checksum: 141df617686010657bb3e46b21facce2dd15b771fdfebd9df2f3d6fd3603d6336b64da4027257402c640f71b65d91eca9305b53d282cf604bcbb88e662034aad
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:*, @types/lodash@npm:4.14.168":
   version: 4.14.168
   resolution: "@types/lodash@npm:4.14.168"
   checksum: 9a4e25f89fc035b9f0388f1f7be85e5eff49f9e6db0d93432c9a89fce0916f8a89db4e8290415f7ea02de6b00d3573826378dcb655b7b2d20530a6e8d6dd6fd0
@@ -1100,9 +1109,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:>=10.0.0":
-  version: 14.14.31
-  resolution: "@types/node@npm:14.14.31"
-  checksum: 635dc8a0898a923621e02ca179e17baa39fdfa44f0096fcc1b7046c9b32317e74a99956a7b45ca0e8069874f51f4e7873a418239a318a4b6e7936f6510ac5992
+  version: 14.14.35
+  resolution: "@types/node@npm:14.14.35"
+  checksum: 0f6320bf5370d1ff82105fb7f26aa0658499c97d3ec78561e65b65724280244f281602541182b63470d2c8a98db22fbb4f91409c5c7c97da8c3bb8f97fbc5dbc
   languageName: node
   linkType: hard
 
@@ -1292,7 +1301,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ws@npm:^7.0.0":
+"@types/ws@npm:7.4.0, @types/ws@npm:^7.0.0":
   version: 7.4.0
   resolution: "@types/ws@npm:7.4.0"
   dependencies:
@@ -1737,10 +1746,12 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-function-core@workspace:src/packages/omnihive-worker-function-core"
   dependencies:
     "@types/express": 4.17.11
+    "@types/lodash.isequal": 4.5.5
     "@types/swagger-ui-express": 4.1.2
     "@withonevision/omnihive-core": "workspace:*"
     chai: 4.3.3
     express: 4.17.1
+    lodash.isequal: 4.5.0
     serialize-error: 8.0.1
     swagger-ui-express: 4.1.6
     typescript: 4.2.3
@@ -6617,6 +6628,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"lodash.isequal@npm:4.5.0":
+  version: 4.5.0
+  resolution: "lodash.isequal@npm:4.5.0"
+  checksum: 5b47e094641c18a915497343894c66f7da6aebb9aaa2a3fcc5643455aaf29d19df60ebbed664c8374fb959c8b4ce96810ee6becd8a71ac58c6c2ca8d29762947
+  languageName: node
+  linkType: hard
+
 "lodash.isinteger@npm:^4.0.4":
   version: 4.0.4
   resolution: "lodash.isinteger@npm:4.0.4"
@@ -7474,6 +7492,7 @@ fsevents@~2.3.1:
     "@types/react": 17.0.3
     "@types/react-dom": 17.0.2
     "@types/swagger-ui-express": 4.1.2
+    "@types/ws": 7.4.0
     "@withonevision/omnihive-core": "workspace:*"
     "@withonevision/omnihive-worker-date-dayjs": "workspace:*"
     "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*"
@@ -7510,8 +7529,6 @@ fsevents@~2.3.1:
     react-dom: 17.0.1
     read-pkg-up: 7.0.1
     serialize-error: 8.0.1
-    socket.io: 4.0.0
-    socket.io-client: 4.0.0
     style-loader: 2.0.0
     swagger-ui-express: 4.1.6
     tailwindcss: 2.0.3
@@ -7520,6 +7537,7 @@ fsevents@~2.3.1:
     typescript: 4.2.3
     webpack: 5.25.0
     webpack-cli: 4.5.0
+    ws: 7.4.4
     yargs: 16.2.0
   bin:
     omnihive: ./omnihive.js
@@ -10762,6 +10780,21 @@ typescript@4.2.3:
   languageName: node
   linkType: hard
 
+"ws@npm:7.4.4, ws@npm:~7.4.2":
+  version: 7.4.4
+  resolution: "ws@npm:7.4.4"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ^5.0.2
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: ad08761ed753cdd3f7172e9a9efc7d74e7e196623cace2380e5f74ff0abd16196e03223bd4148a34278dcbc653ee3841994635419281cbf303b3f22c589e2ec4
+  languageName: node
+  linkType: hard
+
 "ws@npm:^5.2.0":
   version: 5.2.2
   resolution: "ws@npm:5.2.2"
@@ -10777,21 +10810,6 @@ typescript@4.2.3:
   dependencies:
     async-limiter: ~1.0.0
   checksum: 35d32b09e28f799f04708c3a7bd9eff469ae63e60543d7e18335f28689228a42ee21210f48de680aad6e5317df76b5b1183d1a1ea4b4d14cb6e0943528f40e76
-  languageName: node
-  linkType: hard
-
-"ws@npm:~7.4.2":
-  version: 7.4.4
-  resolution: "ws@npm:7.4.4"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ^5.0.2
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: ad08761ed753cdd3f7172e9a9efc7d74e7e196623cace2380e5f74ff0abd16196e03223bd4148a34278dcbc653ee3841994635419281cbf303b3f22c589e2ec4
   languageName: node
   linkType: hard
 

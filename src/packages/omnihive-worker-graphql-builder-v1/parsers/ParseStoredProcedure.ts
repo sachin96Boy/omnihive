@@ -4,6 +4,7 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeatureWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
@@ -27,11 +28,22 @@ export class ParseStoredProcedure {
             );
         }
 
+        const featureWorker: IFeatureWorker | undefined = global.omnihive.getWorker<IFeatureWorker | undefined>(
+            HiveWorkerType.Feature
+        );
+
+        const disableSecurity: boolean = (await featureWorker?.get<boolean>("disableSecurity", false)) ?? false;
+
         const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
             HiveWorkerType.Token
         );
 
+        if (disableSecurity && !tokenWorker) {
+            throw new Error("[ohAccessError] No token worker defined.");
+        }
+
         if (
+            disableSecurity &&
             tokenWorker &&
             (!omniHiveContext || !omniHiveContext.access || StringHelper.isNullOrWhiteSpace(omniHiveContext.access))
         ) {
@@ -39,6 +51,7 @@ export class ParseStoredProcedure {
         }
 
         if (
+            disableSecurity &&
             tokenWorker &&
             omniHiveContext &&
             omniHiveContext.access &&

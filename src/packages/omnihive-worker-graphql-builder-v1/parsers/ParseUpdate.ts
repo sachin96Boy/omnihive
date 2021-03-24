@@ -44,6 +44,13 @@ export class ParseUpdate {
 
         if (
             tokenWorker &&
+            (!omniHiveContext || !omniHiveContext.access || StringHelper.isNullOrWhiteSpace(omniHiveContext.access))
+        ) {
+            throw new Error("[ohAccessError] Access token is invalid or expired.");
+        }
+
+        if (
+            tokenWorker &&
             omniHiveContext &&
             omniHiveContext.access &&
             !StringHelper.isNullOrWhiteSpace(omniHiveContext.access)

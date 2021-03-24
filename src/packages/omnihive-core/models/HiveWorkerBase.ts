@@ -5,6 +5,10 @@ import { ServerSettings } from "./ServerSettings";
 import { WorkerGetterBase } from "./WorkerGetterBase";
 
 export abstract class HiveWorkerBase extends WorkerGetterBase implements IHiveWorker {
+    constructor() {
+        super();
+    }
+
     public config!: HiveWorker;
     public serverSettings!: ServerSettings;
 

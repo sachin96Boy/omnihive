@@ -1,11 +1,13 @@
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { QueryCacheType } from "@withonevision/omnihive-core/enums/QueryCacheType";
 import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSetterBase";
-import { QueryCacheType } from "@withonevision/omnihive-core/enums/QueryCacheType";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 export class OmniHiveClient extends WorkerSetterBase {
     private static singleton: OmniHiveClient;
@@ -25,6 +27,7 @@ export class OmniHiveClient extends WorkerSetterBase {
 
     public accessToken: string = "";
     public authToken: string = "";
+    public tokenWorker: ITokenWorker | undefined = undefined;
 
     public static getNew = (): OmniHiveClient => {
         return new OmniHiveClient();
@@ -36,7 +39,9 @@ export class OmniHiveClient extends WorkerSetterBase {
         }
 
         this.serverSettings = serverSettings;
-        this.initWorkers(serverSettings.workers);
+        await this.initWorkers(serverSettings.workers);
+
+        this.tokenWorker = this.getWorker<ITokenWorker | undefined>(HiveWorkerType.Token);
     };
 
     public graphClient = async (
@@ -109,7 +114,25 @@ export class OmniHiveClient extends WorkerSetterBase {
                     resolve(response.data.data);
                 })
                 .catch((error) => {
-                    reject(error);
+                    if (error.message.includes("[ohAccessError]") && this.tokenWorker) {
+                        this.tokenWorker
+                            .get()
+                            .then((token: string) => {
+                                this.accessToken = token;
+                                this.graphClient(graphUrl, query, cacheType, cacheExpireInSeconds, headers)
+                                    .then((value: any) => {
+                                        resolve(value);
+                                    })
+                                    .catch((error) => {
+                                        reject(error);
+                                    });
+                            })
+                            .catch((err) => {
+                                reject(err);
+                            });
+                    } else {
+                        reject(error);
+                    }
                 });
         });
 
@@ -172,8 +195,26 @@ export class OmniHiveClient extends WorkerSetterBase {
 
                     resolve(response.data);
                 })
-                .catch((reason: any) => {
-                    reject(reason);
+                .catch((error) => {
+                    if (error.message.includes("[ohAccessError]") && this.tokenWorker) {
+                        this.tokenWorker
+                            .get()
+                            .then((token: string) => {
+                                this.accessToken = token;
+                                this.restClient(url, method, headers, data)
+                                    .then((value: any) => {
+                                        resolve(value);
+                                    })
+                                    .catch((error) => {
+                                        reject(error);
+                                    });
+                            })
+                            .catch((error) => {
+                                reject(error);
+                            });
+                    } else {
+                        reject(error);
+                    }
                 });
         });
     };
@@ -217,5 +258,9 @@ export class OmniHiveClient extends WorkerSetterBase {
 
     public setAuthToken = (token: string) => {
         this.authToken = token;
+    };
+
+    public setTokenWorker = (worker: ITokenWorker) => {
+        this.tokenWorker = worker;
     };
 }

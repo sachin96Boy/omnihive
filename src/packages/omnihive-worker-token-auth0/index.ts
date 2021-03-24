@@ -41,7 +41,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         });
     }
 
-    public get = async (_payload?: object): Promise<string> => {
+    public get = async (): Promise<string> => {
         try {
             if (this.token !== "" && !this.expired(this.token)) {
                 return this.token;
@@ -55,7 +55,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
             this.token = `${this.metadata.clientId}||${this.token}`;
             return this.token;
         } catch (err) {
-            throw new Error(`Get Token Error => ${JSON.stringify(serializeError(err))}`);
+            throw new Error(`[ohAccessError] Get Token Error => ${JSON.stringify(serializeError(err))}`);
         }
     };
 
@@ -68,12 +68,12 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
             const decoded: any = jwtDecode(token);
 
             if (decoded.azp !== clientId || decoded.exp === "undefined" || currentTimestamp > decoded.exp) {
-                throw new Error("Access token is either the wrong client or expired");
+                throw new Error("[ohAccessError] Access token is either the wrong client or expired");
             }
 
             return true;
         } catch {
-            throw new Error("Access token is either the wrong client or expired");
+            throw new Error("[ohAccessError] Access token is either the wrong client or expired");
         }
     };
 
@@ -83,7 +83,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         }
 
         if (StringHelper.isNullOrWhiteSpace(token)) {
-            throw new Error("No access token was given");
+            throw new Error("[ohAccessError] No access token was given");
         }
 
         const clientId = token.split("||")[0];
@@ -104,11 +104,11 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
                 axios.get(`https://${this.metadata.domain}/.well-known/jwks.json`)
             );
         } catch (e) {
-            throw new Error("JWKS Url Not Responding");
+            throw new Error("[ohAccessError] JWKS Url Not Responding");
         }
 
         if (jwks.status !== 200) {
-            throw new Error("Unknown validation error");
+            throw new Error("[ohAccessError] Unknown validation error");
         }
 
         const keys: any = jwks.data.keys;
@@ -133,7 +133,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         try {
             jwkKey = await AwaitHelper.execute<jose.JWK.Key>(jose.JWK.asKey(keys[keyIndex]));
         } catch (e) {
-            throw new Error("Invalid key");
+            throw new Error("[ohAccessError] Invalid key");
         }
 
         // verify the signature
@@ -144,7 +144,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
                 jose.JWS.createVerify(jwkKey).verify(token)
             );
         } catch (e) {
-            throw new Error("Signature verification failed");
+            throw new Error("[ohAccessError] Signature verification failed");
         }
 
         // now we can use the claims
@@ -154,12 +154,12 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
         const currentTimestamp = Math.floor(new Date().valueOf() / 1000);
 
         if (currentTimestamp > claims.exp) {
-            throw new Error("Token expired");
+            throw new Error("[ohAccessError] Token expired");
         }
 
         // and the client ID the token was issued to
         if (claims.azp !== clientId) {
-            throw new Error("No audience granted");
+            throw new Error("[ohAccessError] No audience granted");
         }
 
         return true;

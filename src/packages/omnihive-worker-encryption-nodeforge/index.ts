@@ -40,6 +40,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
         let iv: string;
         let data: string | forge.util.ByteStringBuffer | ArrayBuffer | forge.util.ArrayBufferView;
         let decodedKey: string | forge.util.ByteStringBuffer;
+        let decipher: forge.cipher.BlockCipher;
 
         // Validate message format
         if (!message || message.length <= 0 || message.indexOf(":") < 0) {
@@ -48,30 +49,42 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
 
         const messageParts: any[] | string[] = message.split(":");
 
-        // TODO: Validate error conditions. Decode64 does not throw errors
-        try {
-            iv = forge.util.decode64(messageParts[0]);
-        } catch (e) {
-            throw new Error("Secure message symmetric iv not in the correct format");
+        let uint8 = forge.util.binary.base64.decode(messageParts[0]);
+        iv = "";
+
+        for (var i = 0; i < uint8.byteLength; i++) {
+            iv += String.fromCharCode(uint8[i]);
         }
 
-        // TODO: Validate error conditions. Decode64 does not throw errors
         try {
-            data = forge.util.decode64(messageParts[1]);
+            let uint8 = forge.util.binary.base64.decode(messageParts[1]);
+            data = "";
+
+            for (var i = 0; i < uint8.byteLength; i++) {
+                data += String.fromCharCode(uint8[i]);
+            }
+
+            if (!data) {
+                throw new Error("Secure message data packet not in the correct format");
+            }
         } catch (e) {
             throw new Error("Secure message data packet not in the correct format");
         }
 
-        // TODO: Validate error conditions. Decode64 does not throw errors
         try {
-            decodedKey = forge.util.decode64(this.metadata.encryptionKey);
+            decodedKey = forge.util.createBuffer(forge.util.binary.base64.decode(this.metadata.encryptionKey));
+            decipher = forge.cipher.createDecipher("AES-CBC", decodedKey);
         } catch (e) {
             throw new Error("Secure message symmetric key not in the correct format");
         }
 
         // Create and execute decipher
-        const decipher = forge.cipher.createDecipher("AES-CBC", decodedKey);
-        decipher.start({ iv });
+        try {
+            decipher.start({ iv });
+        } catch (err) {
+            throw new Error("Secure message symmetric iv not in the correct format");
+        }
+
         decipher.update(forge.util.createBuffer(data));
         decipher.finish();
 
@@ -87,6 +100,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
 
         // Create and execute cipher
         const cipher = forge.cipher.createCipher("AES-CBC", forge.util.decode64(this.metadata.encryptionKey));
+
         cipher.start({ iv });
         cipher.update(forge.util.createBuffer(message));
         cipher.finish();

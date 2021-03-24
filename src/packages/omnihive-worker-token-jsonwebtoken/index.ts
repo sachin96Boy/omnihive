@@ -42,20 +42,16 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
         this.tokenSecret = metadata.tokenSecret;
     }
 
-    public get = async (payload?: object): Promise<string> => {
+    public get = async (): Promise<string> => {
         try {
             if (this.token !== "" && !this.expired(this.token)) {
                 return this.token;
             }
 
-            if (!payload) {
-                payload = { accessOnly: true };
-            }
-
-            this.token = jwt.sign(payload, this.tokenSecret);
+            this.token = jwt.sign({ omnihiveAccess: true }, this.tokenSecret);
             return this.token;
         } catch (err) {
-            throw new Error(`Get Token Error => ${JSON.stringify(serializeError(err))}`);
+            throw new Error(`[ohAccessError] Get Token Error => ${JSON.stringify(serializeError(err))}`);
         }
     };
 

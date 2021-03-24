@@ -29,8 +29,37 @@ export class AppService {
                 if (
                     !global.omnihive.registeredWorkers.some((rw: RegisteredHiveWorker) => rw.name === coreWorker.name)
                 ) {
+                    // let registerWorker: boolean = true;
+
+                    // Object.keys(coreWorker.metadata).forEach((metaKey: string) => {
+                    //     if (typeof coreWorker.metadata[metaKey] === "string") {
+                    //         if (
+                    //             (coreWorker.metadata[metaKey] as string).startsWith("${") &&
+                    //             (coreWorker.metadata[metaKey] as string).endsWith("}")
+                    //         ) {
+                    //             let metaValue: string = coreWorker.metadata[metaKey] as string;
+
+                    //             metaValue = metaValue.substr(2, metaValue.length - 3);
+                    //             const envValue: unknown | undefined =
+                    //                 global.omnihive.serverSettings.constants[metaValue];
+
+                    //             if (envValue) {
+                    //                 coreWorker.metadata[metaKey] = envValue;
+                    //             } else {
+                    //                 registerWorker = false;
+                    //                 logWorker?.write(
+                    //                     OmniHiveLogLevel.Warn,
+                    //                     `Cannot register ${coreWorker.name}...missing ${metaKey} in constants`
+                    //                 );
+                    //             }
+                    //         }
+                    //     }
+                    // });
+
+                    // if (registerWorker) {
                     await global.omnihive.pushWorker(coreWorker, false, true);
                     global.omnihive.serverSettings.workers.push(coreWorker);
+                    // }
                 }
             }
         }
@@ -53,36 +82,36 @@ export class AppService {
                         (hiveWorker: HiveWorker) => hiveWorker.type === defaultWorker.type
                     )
                 ) {
-                    let registerWorker: boolean = true;
+                    // let registerWorker: boolean = true;
 
-                    Object.keys(defaultWorker.metadata).forEach((metaKey: string) => {
-                        if (typeof defaultWorker.metadata[metaKey] === "string") {
-                            if (
-                                (defaultWorker.metadata[metaKey] as string).startsWith("${") &&
-                                (defaultWorker.metadata[metaKey] as string).endsWith("}")
-                            ) {
-                                let metaValue: string = defaultWorker.metadata[metaKey] as string;
+                    // Object.keys(defaultWorker.metadata).forEach((metaKey: string) => {
+                    //     if (typeof defaultWorker.metadata[metaKey] === "string") {
+                    //         if (
+                    //             (defaultWorker.metadata[metaKey] as string).startsWith("${") &&
+                    //             (defaultWorker.metadata[metaKey] as string).endsWith("}")
+                    //         ) {
+                    //             let metaValue: string = defaultWorker.metadata[metaKey] as string;
 
-                                metaValue = metaValue.substr(2, metaValue.length - 3);
-                                const envValue: unknown | undefined =
-                                    global.omnihive.serverSettings.constants[metaValue];
+                    //             metaValue = metaValue.substr(2, metaValue.length - 3);
+                    //             const envValue: unknown | undefined =
+                    //                 global.omnihive.serverSettings.constants[metaValue];
 
-                                if (envValue) {
-                                    defaultWorker.metadata[metaKey] = envValue;
-                                } else {
-                                    registerWorker = false;
-                                    logWorker?.write(
-                                        OmniHiveLogLevel.Warn,
-                                        `Cannot register ${defaultWorker.name}...missing ${metaKey} in constants`
-                                    );
-                                }
-                            }
-                        }
-                    });
+                    //             if (envValue) {
+                    //                 defaultWorker.metadata[metaKey] = envValue;
+                    //             } else {
+                    //                 registerWorker = false;
+                    //                 logWorker?.write(
+                    //                     OmniHiveLogLevel.Warn,
+                    //                     `Cannot register ${defaultWorker.name}...missing ${metaKey} in constants`
+                    //                 );
+                    //             }
+                    //         }
+                    //     }
+                    // });
 
-                    if (registerWorker) {
-                        global.omnihive.serverSettings.workers.push(defaultWorker);
-                    }
+                    // if (registerWorker) {
+                    global.omnihive.serverSettings.workers.push(defaultWorker);
+                    // }
                 }
             });
         }

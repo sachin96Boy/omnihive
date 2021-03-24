@@ -64,11 +64,11 @@ export class OmniHiveClient extends WorkerSetterBase {
             }
 
             if (this.accessToken !== "") {
-                headers["ohaccess"] = this.accessToken;
+                config.headers["ohaccess"] = this.accessToken;
             }
 
             if (this.authToken !== "") {
-                headers["authorization"] = "BEARER " + this.authToken;
+                config.headers["authorization"] = "BEARER " + this.authToken;
             }
 
             if (!(cacheType === null || cacheType === undefined)) {
@@ -150,11 +150,11 @@ export class OmniHiveClient extends WorkerSetterBase {
             }
 
             if (this.accessToken !== "") {
-                headers["ohaccess"] = this.accessToken;
+                config.headers["ohaccess"] = this.accessToken;
             }
 
             if (this.authToken !== "") {
-                headers["authorization"] = "BEARER " + this.authToken;
+                config.headers["authorization"] = "BEARER " + this.authToken;
             }
 
             if (Object.keys(headers).length > 0) {
@@ -292,7 +292,7 @@ export class OmniHiveClient extends WorkerSetterBase {
                             throw new Error(errorString.outputString());
                         }
 
-                        resolve(response.data);
+                        resolve(response);
                     })
                     .catch((error) => {
                         reject(error);

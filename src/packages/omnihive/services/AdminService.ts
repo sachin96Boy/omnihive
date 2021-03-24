@@ -78,7 +78,7 @@ export class AdminService {
                     serverSettings = global.omnihive.serverSettings;
                 }
 
-                this.sendToSingleClient<ServerSettings>(ws, "config-response", serverSettings);
+                this.sendToSingleClient<{ config: ServerSettings }>(ws, "config-response", { config: serverSettings });
             });
 
             ws.on("message", (message: string) => {

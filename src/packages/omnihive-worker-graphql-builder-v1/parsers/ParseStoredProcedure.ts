@@ -38,12 +38,12 @@ export class ParseStoredProcedure {
             HiveWorkerType.Token
         );
 
-        if (disableSecurity && !tokenWorker) {
+        if (!disableSecurity && !tokenWorker) {
             throw new Error("[ohAccessError] No token worker defined.");
         }
 
         if (
-            disableSecurity &&
+            !disableSecurity &&
             tokenWorker &&
             (!omniHiveContext || !omniHiveContext.access || StringHelper.isNullOrWhiteSpace(omniHiveContext.access))
         ) {
@@ -51,7 +51,7 @@ export class ParseStoredProcedure {
         }
 
         if (
-            disableSecurity &&
+            !disableSecurity &&
             tokenWorker &&
             omniHiveContext &&
             omniHiveContext.access &&

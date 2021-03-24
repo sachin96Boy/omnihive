@@ -99,11 +99,11 @@ export default class SystemRegisterWorker extends HiveWorkerBase implements IRes
         }
 
         if (!headers.ohAccess) {
-            throw new Error("Token Invalid");
+            throw new Error("[ohAccessError] Token Invalid");
         }
 
         if (!this.tokenWorker?.verify(headers.ohAccess)) {
-            throw new Error("Token Invalid");
+            throw new Error("[ohAccessError] Token Invalid");
         }
 
         const bodyStructured: SystemRegisterRequest = this.checkObjectStructure<SystemRegisterRequest>(

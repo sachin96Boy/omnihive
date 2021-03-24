@@ -32,7 +32,7 @@ export class ParseStoredProcedure {
         );
 
         if (!tokenWorker) {
-            throw new Error("Token Worker Not Defined.  This creates an insecure API.");
+            throw new Error("[ohAccessError] Token Worker Not Defined.  This creates an insecure API.");
         }
 
         if (

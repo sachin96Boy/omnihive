@@ -84,7 +84,7 @@ export class ParseAstQuery {
         );
 
         if (!tokenWorker) {
-            throw new Error("Token Worker Not Defined.  This creates an insecure API.");
+            throw new Error("[ohAccessError] Token Worker Not Defined.  This creates an insecure API.");
         }
 
         if (
@@ -95,7 +95,7 @@ export class ParseAstQuery {
         ) {
             const verifyToken: boolean = await AwaitHelper.execute<boolean>(tokenWorker.verify(omniHiveContext.access));
             if (verifyToken === false) {
-                throw new Error("Access token is invalid or expired.");
+                throw new Error("[ohAccessError] Access token is invalid or expired.");
             }
         }
 

@@ -114,11 +114,11 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
         }
 
         if (!headers.ohAccess) {
-            throw new Error("Token Invalid");
+            throw new Error("[ohAccessError] Token Invalid");
         }
 
         if (!this.tokenWorker?.verify(headers.ohAccess)) {
-            throw new Error("Token Invalid");
+            throw new Error("[ohAccessError] Token Invalid");
         }
 
         const bodyStructured: SystemStatusRequest = this.checkObjectStructure<SystemStatusRequest>(

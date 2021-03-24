@@ -123,8 +123,8 @@ export class OmniHiveClient extends WorkerSetterBase {
                                     .then((value: any) => {
                                         resolve(value);
                                     })
-                                    .catch((err) => {
-                                        reject(err);
+                                    .catch((error) => {
+                                        reject(error);
                                     });
                             })
                             .catch((err) => {
@@ -205,12 +205,12 @@ export class OmniHiveClient extends WorkerSetterBase {
                                     .then((value: any) => {
                                         resolve(value);
                                     })
-                                    .catch((err) => {
-                                        reject(err);
+                                    .catch((error) => {
+                                        reject(error);
                                     });
                             })
-                            .catch((err) => {
-                                reject(err);
+                            .catch((error) => {
+                                reject(error);
                             });
                     } else {
                         reject(error);

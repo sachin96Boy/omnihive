@@ -56,7 +56,7 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
     };
 
     public expired = async (token: string): Promise<boolean> => {
-        return this.verify(token);
+        return !(await this.verify(token));
     };
 
     public verify = async (accessToken: string): Promise<boolean> => {

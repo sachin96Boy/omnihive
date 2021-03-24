@@ -42,6 +42,10 @@ export class ParseUpdate {
             HiveWorkerType.Token
         );
 
+        if (!tokenWorker) {
+            throw new Error("Token Worker Not Defined.  This creates an insecure API.");
+        }
+
         if (
             tokenWorker &&
             omniHiveContext &&

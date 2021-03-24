@@ -6,7 +6,7 @@ import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import { ClientSettings } from "@withonevision/omnihive-core/models/ClientSettings";
 import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSetterBase";
 
 export class OmniHiveClient extends WorkerSetterBase {
@@ -27,21 +27,24 @@ export class OmniHiveClient extends WorkerSetterBase {
 
     public accessToken: string = "";
     public authToken: string = "";
-    public tokenWorker: ITokenWorker | undefined = undefined;
+    private clientSettings: ClientSettings | undefined = undefined;
 
     public static getNew = (): OmniHiveClient => {
         return new OmniHiveClient();
     };
 
-    public init = async (serverSettings?: ServerSettings): Promise<void> => {
-        if (!serverSettings) {
-            return;
+    public init = async (clientSettings: ClientSettings): Promise<void> => {
+        this.clientSettings = clientSettings;
+
+        if (clientSettings && clientSettings.workers && clientSettings.workers.length > 0) {
+            await this.initWorkers(clientSettings.workers);
+
+            const tokenWorker = this.getWorker<ITokenWorker | undefined>(HiveWorkerType.Token);
+
+            if (tokenWorker) {
+                this.clientSettings.tokenMetadata = tokenWorker.config.metadata;
+            }
         }
-
-        this.serverSettings = serverSettings;
-        await this.initWorkers(serverSettings.workers);
-
-        this.tokenWorker = this.getWorker<ITokenWorker | undefined>(HiveWorkerType.Token);
     };
 
     public graphClient = async (
@@ -114,21 +117,20 @@ export class OmniHiveClient extends WorkerSetterBase {
                     resolve(response.data.data);
                 })
                 .catch((error) => {
-                    if (error.message.includes("[ohAccessError]") && this.tokenWorker) {
-                        this.tokenWorker
-                            .get()
-                            .then((token: string) => {
-                                this.accessToken = token;
+                    if (error.message.includes("[ohAccessError]")) {
+                        this.getNewToken()
+                            .then((newToken: string | undefined) => {
+                                if (!newToken) {
+                                    throw new Error("[ohAccessError] Could not retrieve token");
+                                }
+
+                                this.accessToken = newToken;
                                 this.graphClient(graphUrl, query, cacheType, cacheExpireInSeconds, headers)
-                                    .then((value: any) => {
-                                        resolve(value);
-                                    })
-                                    .catch((error) => {
-                                        reject(error);
-                                    });
+                                    .then((value) => resolve(value))
+                                    .catch((error) => reject(error));
                             })
-                            .catch((err) => {
-                                reject(err);
+                            .catch((error) => {
+                                reject(error);
                             });
                     } else {
                         reject(error);
@@ -196,18 +198,17 @@ export class OmniHiveClient extends WorkerSetterBase {
                     resolve(response.data);
                 })
                 .catch((error) => {
-                    if (error.message.includes("[ohAccessError]") && this.tokenWorker) {
-                        this.tokenWorker
-                            .get()
-                            .then((token: string) => {
-                                this.accessToken = token;
+                    if (error.message.includes("[ohAccessError]")) {
+                        this.getNewToken()
+                            .then((newToken: string | undefined) => {
+                                if (!newToken) {
+                                    throw new Error("[ohAccessError] Could not retrieve token");
+                                }
+
+                                this.accessToken = newToken;
                                 this.restClient(url, method, headers, data)
-                                    .then((value: any) => {
-                                        resolve(value);
-                                    })
-                                    .catch((error) => {
-                                        reject(error);
-                                    });
+                                    .then((value) => resolve(value))
+                                    .catch((error) => reject(error));
                             })
                             .catch((error) => {
                                 reject(error);
@@ -260,7 +261,54 @@ export class OmniHiveClient extends WorkerSetterBase {
         this.authToken = token;
     };
 
-    public setTokenWorker = (worker: ITokenWorker) => {
-        this.tokenWorker = worker;
+    private getNewToken = async (): Promise<string> => {
+        const tokenWorker = this.getWorker<ITokenWorker | undefined>(HiveWorkerType.Token);
+        let newToken: string = "";
+
+        if (tokenWorker) {
+            try {
+                newToken = await tokenWorker.get();
+                return newToken;
+            } catch (e) {
+                throw new Error("[ohAccessError] Could not retrieve token");
+            }
+        }
+
+        if (this.clientSettings?.tokenMetadata) {
+            const restPromise = new Promise<AxiosResponse<{ token: string }>>((resolve, reject) => {
+                const config: AxiosRequestConfig = { url: `${this.clientSettings?.rootUrl}/ohAdmin/rest/token` };
+                config.data = this.clientSettings?.tokenMetadata;
+                config.method = "POST";
+
+                axios(config)
+                    .then((response: AxiosResponse) => {
+                        if (response.data.errors != null && response.data.errors.length > 0) {
+                            const errorString: StringBuilder = new StringBuilder();
+
+                            response.data.errors.forEach((err: any) => {
+                                errorString.appendLine(err.message);
+                            });
+
+                            throw new Error(errorString.outputString());
+                        }
+
+                        resolve(response.data);
+                    })
+                    .catch((error) => {
+                        reject(error);
+                    });
+            });
+
+            const restReturn: AxiosResponse<{ token: string }> = await restPromise;
+
+            if (restReturn.status !== 200) {
+                throw new Error("[ohAccessError] Could not retrieve token");
+            }
+
+            newToken = restReturn.data.token;
+            return newToken;
+        }
+
+        throw new Error("[ohAccessError] Could not retrieve token");
     };
 }

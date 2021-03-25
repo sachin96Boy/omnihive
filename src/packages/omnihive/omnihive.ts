@@ -245,6 +245,8 @@ const init = async () => {
 
         settings.constants.ohEncryptionKey = crypto.randomBytes(16).toString("hex");
         settings.constants.ohTokenAudience = crypto.randomBytes(32).toString("hex");
+        settings.constants.ohTokenExpiresIn = "30m";
+        settings.constants.ohTokenHashAlgorithm = "sha1";
         settings.constants.ohTokenSecret = crypto.randomBytes(32).toString("hex");
 
         fse.writeFileSync(answers.path as string, JSON.stringify(settings));

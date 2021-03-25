@@ -276,6 +276,8 @@
                 "metadata": {
                     "audience": "${ohTokenAudience}",
                     "tokenSecret": "${ohTokenSecret}",
+                    "expiresIn": "${ohTokenExpiresIn}",
+                    "hashAlgorithm": "${ohTokenHashAlgorithm}",
                     "verifyOn": false
                 }
             }

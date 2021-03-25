@@ -53,36 +53,7 @@ export class AppService {
                         (hiveWorker: HiveWorker) => hiveWorker.type === defaultWorker.type
                     )
                 ) {
-                    let registerWorker: boolean = true;
-
-                    Object.keys(defaultWorker.metadata).forEach((metaKey: string) => {
-                        if (typeof defaultWorker.metadata[metaKey] === "string") {
-                            if (
-                                (defaultWorker.metadata[metaKey] as string).startsWith("${") &&
-                                (defaultWorker.metadata[metaKey] as string).endsWith("}")
-                            ) {
-                                let metaValue: string = defaultWorker.metadata[metaKey] as string;
-
-                                metaValue = metaValue.substr(2, metaValue.length - 3);
-                                const envValue: unknown | undefined =
-                                    global.omnihive.serverSettings.constants[metaValue];
-
-                                if (envValue) {
-                                    defaultWorker.metadata[metaKey] = envValue;
-                                } else {
-                                    registerWorker = false;
-                                    logWorker?.write(
-                                        OmniHiveLogLevel.Warn,
-                                        `Cannot register ${defaultWorker.name}...missing ${metaKey} in constants`
-                                    );
-                                }
-                            }
-                        }
-                    });
-
-                    if (registerWorker) {
-                        global.omnihive.serverSettings.workers.push(defaultWorker);
-                    }
+                    global.omnihive.serverSettings.workers.push(defaultWorker);
                 }
             });
         }

@@ -158,6 +158,19 @@
                 "metadata": {}
             },
             {
+                "name": "ohreqRestSystemAccessToken",
+                "type": "restEndpointFunction",
+                "package": "@withonevision/omnihive-worker-function-core",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-function-core/SystemAccessTokenWorker",
+                "default": false,
+                "enabled": true,
+                "metadata": {
+                    "restMethod": "post",
+                    "urlRoute": "token"
+                }
+            },
+            {
                 "name": "ohreqRestSystemRegister",
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",

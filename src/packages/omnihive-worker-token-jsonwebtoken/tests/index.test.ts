@@ -92,7 +92,7 @@ describe("token worker tests", function () {
                 await verifyStartState();
                 const expired = await worker.expired(token);
 
-                assert.isTrue(expired);
+                assert.isFalse(expired);
             } catch (err) {
                 throw new Error("check expired token error: " + JSON.stringify(serializeError(err)));
             }
@@ -100,25 +100,23 @@ describe("token worker tests", function () {
 
         it("Check Expired Token - Expired Token", async function () {
             try {
-                await verifyStartState();
                 const tempToken = "blah";
 
                 const expired = await worker.expired(tempToken);
 
-                assert.isFalse(expired);
+                assert.isTrue(expired);
             } catch (err) {
-                assert.equal(err.message, "[ohAccessError] Access token is either the wrong client or expired");
+                assert.isFalse(true);
             }
         });
 
         it("Check Expired Token - Invalid Token", async function () {
             try {
-                await verifyStartState();
                 const tempToken = "";
 
                 const expired = await worker.expired(tempToken);
 
-                assert.isFalse(expired);
+                assert.isTrue(expired);
             } catch (err) {
                 assert.equal(err.message, "[ohAccessError] Access token is either the wrong client or expired");
             }
@@ -136,19 +134,19 @@ describe("token worker tests", function () {
 
         it("Verify Token - null token", async function () {
             try {
-                await AwaitHelper.execute<boolean>(worker.verify(""));
+                const invalid = await AwaitHelper.execute<boolean>(worker.verify(""));
 
-                assert.fail("Expected an error");
+                assert.isFalse(invalid);
             } catch (err) {
                 assert.equal(err.message, "No access token was given");
             }
         });
 
-        it("Verify Token - null token", async function () {
+        it("Verify Token - single space token", async function () {
             try {
-                await AwaitHelper.execute<boolean>(worker.verify(" "));
+                const invalid = await AwaitHelper.execute<boolean>(worker.verify(" "));
 
-                assert.fail("Expected an error");
+                assert.isFalse(invalid);
             } catch (err) {
                 assert.equal(err.message, "No access token was given");
             }
@@ -156,9 +154,9 @@ describe("token worker tests", function () {
 
         it("Verify Token - expired token", async function () {
             try {
-                await AwaitHelper.execute<boolean>(worker.verify("blah"));
+                const expired = await AwaitHelper.execute<boolean>(worker.verify("blah"));
 
-                assert.fail("Expected an error");
+                assert.isFalse(expired);
             } catch (err) {
                 assert.equal(err.message, "Signature verification failed");
             }
@@ -166,9 +164,11 @@ describe("token worker tests", function () {
 
         it("Verify Token - mismatching client", async function () {
             try {
-                await AwaitHelper.execute<boolean>(worker.verify(""));
+                worker.config.metadata.audience = "";
+                await AwaitHelper.execute(worker.init(worker.config));
+                const invalid = await AwaitHelper.execute<boolean>(worker.verify(""));
 
-                assert.fail("Expected an error");
+                assert.isFalse(invalid);
             } catch (err) {
                 assert.equal(err.message, "Signature verification failed");
                 //"No audience granted");
@@ -177,7 +177,7 @@ describe("token worker tests", function () {
 
         it("Verify Token - verify turned off", async function () {
             try {
-                worker.config.metadata.verifyOn = "false";
+                worker.config.metadata.verifyOn = false;
                 await AwaitHelper.execute(worker.init(worker.config));
                 const results = await AwaitHelper.execute<boolean>(worker.verify(""));
 

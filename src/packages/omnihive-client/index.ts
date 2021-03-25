@@ -278,7 +278,7 @@ export class OmniHiveClient extends WorkerSetterBase {
         if (this.clientSettings?.tokenMetadata) {
             const restPromise = new Promise<AxiosResponse<{ token: string }>>((resolve, reject) => {
                 const config: AxiosRequestConfig = { url: `${this.clientSettings?.rootUrl}/ohAdmin/rest/token` };
-                config.data = { generator: objectHash(this.clientSettings?.tokenMetadata, { algorithm: "sha256" }) };
+                config.data = { generator: objectHash(this.clientSettings?.tokenMetadata, { algorithm: "sha1" }) };
                 config.method = "POST";
 
                 axios(config)

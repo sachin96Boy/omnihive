@@ -91,7 +91,9 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
             throw new Error("A token worker cannot be found");
         }
 
-        const hashedConfigMetadata = objectHash(this.tokenWorker.config.metadata, { algorithm: "sha1" });
+        const hashedConfigMetadata = objectHash(this.tokenWorker.config.metadata, {
+            algorithm: this.tokenWorker.config.metadata.hashAlgorithm,
+        });
 
         if (!isEqual(hashedConfigMetadata, body.generator)) {
             throw new Error("Token cannot be generated");

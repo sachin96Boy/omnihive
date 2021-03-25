@@ -692,6 +692,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sinonjs/commons@npm:^1.6.0, @sinonjs/commons@npm:^1.7.0, @sinonjs/commons@npm:^1.8.1":
+  version: 1.8.2
+  resolution: "@sinonjs/commons@npm:1.8.2"
+  dependencies:
+    type-detect: 4.0.8
+  checksum: b7eb499e3537a487160fcc42e65b9ad8c7d70ee4a1bbebacdbe28149e01b2da501912df2fbf06c81eac51de8c0ad10eaae573b31932ee747c9f1949fee30c20d
+  languageName: node
+  linkType: hard
+
+"@sinonjs/fake-timers@npm:^6.0.0, @sinonjs/fake-timers@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "@sinonjs/fake-timers@npm:6.0.1"
+  dependencies:
+    "@sinonjs/commons": ^1.7.0
+  checksum: 64458b908773638dda08b555a00e6fbbbc679735348291dc1b7f437ada2f60242537fdc48e4ee82d2573d86984ec87e755b66a96c0ed9ebf0f46b4c6687ccde2
+  languageName: node
+  linkType: hard
+
+"@sinonjs/samsam@npm:^5.3.1":
+  version: 5.3.1
+  resolution: "@sinonjs/samsam@npm:5.3.1"
+  dependencies:
+    "@sinonjs/commons": ^1.6.0
+    lodash.get: ^4.4.2
+    type-detect: ^4.0.8
+  checksum: 0277cd0b71146efed3d243edddc98362adcc25c13e0067b91500fd990792194be64b0ace6f4ba9f98cdec60ee46749e24aad44b46193cfa73096c5ef309b00a1
+  languageName: node
+  linkType: hard
+
+"@sinonjs/text-encoding@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "@sinonjs/text-encoding@npm:0.7.1"
+  checksum: fbc2abff23dce7f8842a64c61a4183a9300b03b8b4f03dc2739c8172fd3e401ed8f28fb1c5aac85b3cc0935f69bdb9823dd864a2e22110626751ff855879a76a
+  languageName: node
+  linkType: hard
+
 "@szmarczak/http-timer@npm:^1.1.2":
   version: 1.1.2
   resolution: "@szmarczak/http-timer@npm:1.1.2"
@@ -843,7 +879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express-serve-static-core@npm:*, @types/express-serve-static-core@npm:4.17.18, @types/express-serve-static-core@npm:^4.17.18":
+"@types/express-serve-static-core@npm:4.17.18, @types/express-serve-static-core@npm:^4.17.18":
   version: 4.17.18
   resolution: "@types/express-serve-static-core@npm:4.17.18"
   dependencies:
@@ -872,18 +908,6 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: 2818120a0fd8b7982215864929cdc6cd14942dd44849f93054fe2a90b4233dff67aadc34c73b5937922a02c688b0263d00a4807aa2e59307ac859a1458d73669
-  languageName: node
-  linkType: hard
-
-"@types/express@npm:4.17.7":
-  version: 4.17.7
-  resolution: "@types/express@npm:4.17.7"
-  dependencies:
-    "@types/body-parser": "*"
-    "@types/express-serve-static-core": "*"
-    "@types/qs": "*"
-    "@types/serve-static": "*"
-  checksum: 99b795c60e7368b575794574c35d0ffd0d119c52bc681af6beda2fee70aada78e8aef07fc0db3b88f594d5d935847de4187561d2456760eeb4fde5d10dbb3780
   languageName: node
   linkType: hard
 
@@ -1264,6 +1288,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/sinon@npm:^9.0.11":
+  version: 9.0.11
+  resolution: "@types/sinon@npm:9.0.11"
+  dependencies:
+    "@types/sinonjs__fake-timers": "*"
+  checksum: c84ccbd5ac05d8eb45151a9c0790cf9b9fc78bdfc2f3feecb8866dab530bed82301ba0340cfb73de7148f08a40c9c1b1b7a920e4c9efd79195b60a52ab3e577d
+  languageName: node
+  linkType: hard
+
+"@types/sinonjs__fake-timers@npm:*":
+  version: 6.0.2
+  resolution: "@types/sinonjs__fake-timers@npm:6.0.2"
+  checksum: 1dd1b391904c2a2972318b753026f615784c14a827c12ba21f67707ca6565f3cea195790a1c64178f2208e330eec4ab9c78823c99019384b9a01b02cc6987071
+  languageName: node
+  linkType: hard
+
 "@types/swagger-ui-express@npm:4.1.2":
   version: 4.1.2
   resolution: "@types/swagger-ui-express@npm:4.1.2"
@@ -1641,6 +1681,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@withonevision/omnihive-core@npm:4.5.3-dev.5":
+  version: 4.5.3-dev.5
+  resolution: "@withonevision/omnihive-core@npm:4.5.3-dev.5"
+  dependencies:
+    graphql: 15.5.0
+    serialize-error: 8.0.1
+  checksum: 7ae0ea3ae66e9749d1d6759e1635cf79cb66e3f63ea201a67ae44709f0a53fc2ca0e9e6fc8ae0f625f05f859c4fdac5fdc4e9d3f4e12d68c5689f66f1af606e8
+  languageName: node
+  linkType: hard
+
 "@withonevision/omnihive-core@workspace:*, @withonevision/omnihive-core@workspace:src/packages/omnihive-core":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-core@workspace:src/packages/omnihive-core"
@@ -1677,7 +1727,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-date-dayjs@workspace:*, @withonevision/omnihive-worker-date-dayjs@workspace:src/packages/omnihive-worker-date-dayjs":
+"@withonevision/omnihive-worker-date-dayjs@npm:4.5.3-dev.5":
+  version: 4.5.3-dev.5
+  resolution: "@withonevision/omnihive-worker-date-dayjs@npm:4.5.3-dev.5"
+  dependencies:
+    "@withonevision/omnihive-core": 4.5.3-dev.5
+    dayjs: 1.10.4
+    serialize-error: 8.0.1
+  checksum: a859b0b05684710a743c45f176c510068f2563fa1bd95d068d4ece70dfdc866e83ef91bdbec4dfeea004d959dc413597d367502c2c923339bbc54dd3e427ca60
+  languageName: node
+  linkType: hard
+
+"@withonevision/omnihive-worker-date-dayjs@workspace:src/packages/omnihive-worker-date-dayjs":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-date-dayjs@workspace:src/packages/omnihive-worker-date-dayjs"
   dependencies:
@@ -1786,7 +1847,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-knex-mssql@workspace:*, @withonevision/omnihive-worker-knex-mssql@workspace:src/packages/omnihive-worker-knex-mssql":
+"@withonevision/omnihive-worker-knex-mssql@npm:4.5.3-dev.5":
+  version: 4.5.3-dev.5
+  resolution: "@withonevision/omnihive-worker-knex-mssql@npm:4.5.3-dev.5"
+  dependencies:
+    "@withonevision/omnihive-core": 4.5.3-dev.5
+    knex: 0.95.2
+    mssql: 6.3.1
+    serialize-error: 8.0.1
+    tedious: 11.0.5
+  checksum: b676eafd1312d5458ee77b452dcc907c2b7442f6b7cd9f213a799ae8498d70a439b23d86751aee98e2d9c503259fae2decad9641024235704903007aeb609bb0
+  languageName: node
+  linkType: hard
+
+"@withonevision/omnihive-worker-knex-mssql@workspace:src/packages/omnihive-worker-knex-mssql":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-knex-mssql@workspace:src/packages/omnihive-worker-knex-mssql"
   dependencies:
@@ -1905,8 +1979,8 @@ __metadata:
     "@types/require-from-string": 1.2.0
     "@types/swagger-ui-express": 4.1.2
     "@withonevision/omnihive-core": "workspace:*"
-    apollo-server: 2.21.1
-    apollo-server-express: 2.21.1
+    apollo-server: 2.21.2
+    apollo-server-express: 2.21.2
     chai: 4.3.3
     change-case: 4.1.2
     express: 4.17.1
@@ -2325,9 +2399,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server-core@npm:^2.21.1":
-  version: 2.21.1
-  resolution: "apollo-server-core@npm:2.21.1"
+"apollo-server-core@npm:^2.21.2":
+  version: 2.21.2
+  resolution: "apollo-server-core@npm:2.21.2"
   dependencies:
     "@apollographql/apollo-tools": ^0.4.3
     "@apollographql/graphql-playground-html": 1.6.27
@@ -2356,7 +2430,7 @@ __metadata:
     ws: ^6.0.0
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
-  checksum: 44e62ee0d42421416378abdb97092ea4d106394d381f98677d5df03fcd33ed61beb053fc5a4c3c5b4c47ab300b74834fdccae3c0ce45429a853b634abe373d62
+  checksum: b7be2fd9e8b2ab31a4fa7024b98ea741ebb6cf514ef10d6ad47c0690aff8d6c2729384485ac129a9672d7f2abe83c229edf8cb520cb217e903a97f614771e5dd
   languageName: node
   linkType: hard
 
@@ -2379,18 +2453,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server-express@npm:2.21.1, apollo-server-express@npm:^2.21.1":
-  version: 2.21.1
-  resolution: "apollo-server-express@npm:2.21.1"
+"apollo-server-express@npm:2.21.2, apollo-server-express@npm:^2.21.2":
+  version: 2.21.2
+  resolution: "apollo-server-express@npm:2.21.2"
   dependencies:
     "@apollographql/graphql-playground-html": 1.6.27
     "@types/accepts": ^1.3.5
     "@types/body-parser": 1.19.0
     "@types/cors": 2.8.8
-    "@types/express": 4.17.7
+    "@types/express": 4.17.11
     "@types/express-serve-static-core": 4.17.18
     accepts: ^1.3.5
-    apollo-server-core: ^2.21.1
+    apollo-server-core: ^2.21.2
     apollo-server-types: ^0.6.3
     body-parser: ^1.18.3
     cors: ^2.8.4
@@ -2402,7 +2476,7 @@ __metadata:
     type-is: ^1.6.16
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
-  checksum: 40807b034e8f09592fcf9591baa19c0cafa2c7fa4b6d63686f152a9a6827a6c49e0206a3fc8624e32b4efb0655ffbb66ca3122d6e592a5d2960d09a20dd75f4c
+  checksum: fa07969288a2881980b3f492560a7af33944e37ce98867e75125e059658fd70b3267de07c750dd7ba501d5b06dd78ac86fe255c4663170df71871cb7f06ed0b2
   languageName: node
   linkType: hard
 
@@ -2430,19 +2504,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server@npm:2.21.1":
-  version: 2.21.1
-  resolution: "apollo-server@npm:2.21.1"
+"apollo-server@npm:2.21.2":
+  version: 2.21.2
+  resolution: "apollo-server@npm:2.21.2"
   dependencies:
-    apollo-server-core: ^2.21.1
-    apollo-server-express: ^2.21.1
+    apollo-server-core: ^2.21.2
+    apollo-server-express: ^2.21.2
     express: ^4.0.0
     graphql-subscriptions: ^1.0.0
     graphql-tools: ^4.0.8
     stoppable: ^1.1.0
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
-  checksum: 626c762f31c5e28fb1bede0667758b3883868c2c6e46d1501e26997863580ce2c0ba58aa788d329e0713cbd5d51da4475c2ad426cb61ceb9ba9a6c3eb939f277
+  checksum: 0f37d8b93bdaae2d195885d8a653b1f710db288e1fe5c9b7e8e3698348d4bf54db1c1f718a22abbdebc2d36e11f2bc16d228be8d665fcaa387e41b92c596e94e
   languageName: node
   linkType: hard
 
@@ -3974,7 +4048,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"diff@npm:^4.0.1":
+"diff@npm:^4.0.1, diff@npm:^4.0.2":
   version: 4.0.2
   resolution: "diff@npm:4.0.2"
   checksum: 81b5cd7ddde6f0ba2a532d434cfdca365aedd6cc62bb133e851e66e071d40382a30924a07c1034bd3d5a2e332146f64514b73c06fe2ebc0490a67f0c98da79fb
@@ -6357,6 +6431,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"just-extend@npm:^4.0.2":
+  version: 4.1.1
+  resolution: "just-extend@npm:4.1.1"
+  checksum: 9dec0ba527809ca813f98dea1e54e60f6901ebdad475aa2a6c487c9873c81d71c783feebacd1ad472309c07413201c3af2ea5abd68f0b0333b5162f474565ad7
+  languageName: node
+  linkType: hard
+
 "jwa@npm:^1.4.1":
   version: 1.4.1
   resolution: "jwa@npm:1.4.1"
@@ -7164,6 +7245,19 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"nise@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "nise@npm:4.1.0"
+  dependencies:
+    "@sinonjs/commons": ^1.7.0
+    "@sinonjs/fake-timers": ^6.0.0
+    "@sinonjs/text-encoding": ^0.7.1
+    just-extend: ^4.0.2
+    path-to-regexp: ^1.7.0
+  checksum: 87b37725d9e0e6dc951caa40685f8726d028ac48ca87e71773cbb705e2736e084cc3087530a92b9ebe87163212ee477d37318875984b1093f79bae600ce6d7c4
+  languageName: node
+  linkType: hard
+
 "no-case@npm:^3.0.4":
   version: 3.0.4
   resolution: "no-case@npm:3.0.4"
@@ -7505,13 +7599,13 @@ fsevents@~2.3.1:
     "@types/swagger-ui-express": 4.1.2
     "@types/ws": 7.4.0
     "@withonevision/omnihive-core": "workspace:*"
-    "@withonevision/omnihive-worker-date-dayjs": "workspace:*"
+    "@withonevision/omnihive-worker-date-dayjs": 4.5.3-dev.5
     "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*"
     "@withonevision/omnihive-worker-feature-local": "workspace:*"
     "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*"
     "@withonevision/omnihive-worker-function-core": "workspace:*"
     "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*"
-    "@withonevision/omnihive-worker-knex-mssql": "workspace:*"
+    "@withonevision/omnihive-worker-knex-mssql": 4.5.3-dev.5
     "@withonevision/omnihive-worker-log-core": "workspace:*"
     "@withonevision/omnihive-worker-server-v1": "workspace:*"
     "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*"
@@ -7908,6 +8002,15 @@ fsevents@~2.3.1:
   version: 0.1.7
   resolution: "path-to-regexp@npm:0.1.7"
   checksum: 342fdb0ca48415d6eccdbe6d4180fd0fa4786ccc96ab3f74fcdf7acfc99e075af25e6077c8086c341dcfb4f5f84401ecd21e6cd7b24e0c3b556fb7ffb2570da7
+  languageName: node
+  linkType: hard
+
+"path-to-regexp@npm:^1.7.0":
+  version: 1.8.0
+  resolution: "path-to-regexp@npm:1.8.0"
+  dependencies:
+    isarray: 0.0.1
+  checksum: 4c0d9aaf3fc55db0b2d9aab379856acbf4e437f2252bbc2a178aec9f707c8457f8084ea6243a80e0b37c8c1c20d23e918cd43e772a7e71142a8ad67af699686b
   languageName: node
   linkType: hard
 
@@ -8903,6 +9006,7 @@ fsevents@~2.3.1:
     "@types/mocha": 8.2.1
     "@types/node": 14.14.34
     "@types/semver": 7.3.4
+    "@types/sinon": ^9.0.11
     "@types/yargs": 16.0.0
     "@typescript-eslint/eslint-plugin": 4.17.0
     "@typescript-eslint/parser": 4.17.0
@@ -8923,6 +9027,7 @@ fsevents@~2.3.1:
     replace-in-file: 6.2.0
     semver: 7.3.4
     serialize-error: 8.0.1
+    sinon: ^10.0.0
     source-map-support: 0.5.19
     ts-node: 9.1.1
     typescript: 4.2.3
@@ -9192,6 +9297,20 @@ fsevents@~2.3.1:
   dependencies:
     is-arrayish: ^0.3.1
   checksum: a5a2c1c86cea94f42ab843508e7c68b5bbfd15acb08056d600ac2e9c7f7c41bc417e71160ea3034a5411d3cce186c801f7a56badfb3a854906ce163120318875
+  languageName: node
+  linkType: hard
+
+"sinon@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "sinon@npm:10.0.0"
+  dependencies:
+    "@sinonjs/commons": ^1.8.1
+    "@sinonjs/fake-timers": ^6.0.1
+    "@sinonjs/samsam": ^5.3.1
+    diff: ^4.0.2
+    nise: ^4.1.0
+    supports-color: ^7.1.0
+  checksum: 75996724f971b015956b34b331fe2ed1af313404b7d44985468f8145e1eed3a8400a94c117857b550f79ad86be69349621ae07e06331c3b7ea9063b34687f540
   languageName: node
   linkType: hard
 
@@ -10186,7 +10305,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"type-detect@npm:^4.0.0, type-detect@npm:^4.0.5":
+"type-detect@npm:4.0.8, type-detect@npm:^4.0.0, type-detect@npm:^4.0.5, type-detect@npm:^4.0.8":
   version: 4.0.8
   resolution: "type-detect@npm:4.0.8"
   checksum: e01dc6ac9098192a7859fb86c7b4073709a4e13a5cc02c54d54412378bb099563fda7a7a85640f33e3a7c2e8189182eb1511f263e67f402b2d63fe81afdde785

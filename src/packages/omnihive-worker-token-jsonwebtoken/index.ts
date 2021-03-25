@@ -9,12 +9,12 @@ import { v4 as uuidv4 } from "uuid";
 export class JsonWebTokenWorkerMetadata {
     public tokenSecret: string = "";
     public audience: string = "";
+    public expiresIn: number | string = "";
     public verifyOn: boolean = true;
 }
 
 export default class JsonWebTokenWorker extends HiveWorkerBase implements ITokenWorker {
-    private tokenSecret: string = "";
-    private audience: string = "";
+    private metadata!: JsonWebTokenWorkerMetadata;
     private token: string = "";
 
     constructor() {
@@ -23,30 +23,36 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
 
     public async init(config: HiveWorker): Promise<void> {
         await AwaitHelper.execute<void>(super.init(config));
-        let metadata: JsonWebTokenWorkerMetadata;
 
         try {
-            metadata = this.checkObjectStructure<JsonWebTokenWorkerMetadata>(
+            this.metadata = this.checkObjectStructure<JsonWebTokenWorkerMetadata>(
                 JsonWebTokenWorkerMetadata,
                 config.metadata
             );
         } catch {
-            metadata = {
+            this.metadata = {
                 audience: uuidv4(),
+                expiresIn: "30m",
                 tokenSecret: nanoid(64),
                 verifyOn: true,
             };
         }
-
-        this.tokenSecret = metadata.tokenSecret;
     }
 
-    public get = async (): Promise<string> => {
+    public get = async (payload?: any): Promise<string> => {
+        let jwtPayload;
+
+        if (payload) {
+            jwtPayload = payload;
+        } else {
+            jwtPayload = { omnihiveAccess: true };
+        }
+
         if (this.token !== "" && !this.expired(this.token)) {
             return this.token;
         }
 
-        this.token = jwt.sign({ omnihiveAccess: true }, this.tokenSecret);
+        this.token = jwt.sign(jwtPayload, this.metadata.tokenSecret, { expiresIn: this.metadata.expiresIn });
         return this.token;
     };
 
@@ -60,7 +66,7 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
         }
 
         try {
-            const decoded = jwt.verify(accessToken, this.tokenSecret, { audience: this.audience });
+            const decoded = jwt.verify(accessToken, this.metadata.tokenSecret, { audience: this.metadata.audience });
 
             if (decoded) {
                 return true;

@@ -7,6 +7,7 @@ import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 import isEqual from "lodash.isequal";
+import objectHash from "object-hash";
 
 export default class SystemAccessTokenWorker extends HiveWorkerBase implements IRestEndpointWorker {
     private tokenWorker!: ITokenWorker;
@@ -34,6 +35,16 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
 
     public getSwaggerDefinition = (): swaggerUi.JsonObject | undefined => {
         return {
+            definitions: {
+                SystemAccessTokenParameters: {
+                    required: ["generator"],
+                    properties: {
+                        generator: {
+                            type: "string",
+                        },
+                    },
+                },
+            },
             paths: {
                 "/token": {
                     post: {
@@ -48,7 +59,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
                             content: {
                                 "application/json": {
                                     schema: {
-                                        type: "object",
+                                        $ref: "#/definitions/SystemAccessTokenParameters",
                                     },
                                 },
                             },
@@ -72,7 +83,7 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
     };
 
     private checkRequest = (body: any | undefined) => {
-        if (!body) {
+        if (!body || !body.generator) {
             throw new Error("Request must have parameters");
         }
 
@@ -80,7 +91,9 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
             throw new Error("A token worker cannot be found");
         }
 
-        if (!isEqual(body, this.tokenWorker.config.metadata)) {
+        const hashedConfigMetadata = objectHash(this.tokenWorker.config.metadata, { algorithm: "sha256" });
+
+        if (!isEqual(hashedConfigMetadata, body.generator)) {
             throw new Error("Token cannot be generated");
         }
     };

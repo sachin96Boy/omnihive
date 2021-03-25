@@ -8,6 +8,7 @@ import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncr
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { ClientSettings } from "@withonevision/omnihive-core/models/ClientSettings";
 import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSetterBase";
+import objectHash from "object-hash";
 
 export class OmniHiveClient extends WorkerSetterBase {
     private static singleton: OmniHiveClient;
@@ -277,7 +278,7 @@ export class OmniHiveClient extends WorkerSetterBase {
         if (this.clientSettings?.tokenMetadata) {
             const restPromise = new Promise<AxiosResponse<{ token: string }>>((resolve, reject) => {
                 const config: AxiosRequestConfig = { url: `${this.clientSettings?.rootUrl}/ohAdmin/rest/token` };
-                config.data = this.clientSettings?.tokenMetadata;
+                config.data = { generator: objectHash(this.clientSettings?.tokenMetadata, { algorithm: "sha256" }) };
                 config.method = "POST";
 
                 axios(config)

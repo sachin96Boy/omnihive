@@ -1143,6 +1143,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/object-hash@npm:1.3.4":
+  version: 1.3.4
+  resolution: "@types/object-hash@npm:1.3.4"
+  checksum: 2ae12c7b341bcefb8f5e163527ab6afb911b3fdcdb2aeacac3231b13d5d5ddd4f75bde48268dd01727bac3488222b629808b20b6650364d011bb3c6692dd38e2
+  languageName: node
+  linkType: hard
+
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.0
   resolution: "@types/parse-json@npm:4.0.0"
@@ -1621,11 +1628,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-client@workspace:src/packages/omnihive-client"
   dependencies:
+    "@types/object-hash": 1.3.4
     "@withonevision/omnihive-core": "workspace:*"
     axios: 0.21.1
     chai: 4.3.3
     graphql: 15.5.0
     nodemon: 2.0.7
+    object-hash: 2.1.1
     serialize-error: 8.0.1
     ts-node: 9.1.1
     typescript: 4.2.3
@@ -1747,11 +1756,13 @@ __metadata:
   dependencies:
     "@types/express": 4.17.11
     "@types/lodash.isequal": 4.5.5
+    "@types/object-hash": 1.3.4
     "@types/swagger-ui-express": 4.1.2
     "@withonevision/omnihive-core": "workspace:*"
     chai: 4.3.3
     express: 4.17.1
     lodash.isequal: 4.5.0
+    object-hash: 2.1.1
     serialize-error: 8.0.1
     swagger-ui-express: 4.1.6
     typescript: 4.2.3
@@ -7426,7 +7437,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"object-hash@npm:^2.1.1":
+"object-hash@npm:2.1.1, object-hash@npm:^2.1.1":
   version: 2.1.1
   resolution: "object-hash@npm:2.1.1"
   checksum: fe49a0864cba7ac4055c604295692ae75f5f4d22ba929aaaa987469809d17ab030d1111e8f0d425a070fa4a78b8021b55260e26e98b66b59e0f7be2bd9069fb8

@@ -118,7 +118,7 @@ describe("token worker tests", function () {
 
                 assert.isTrue(expired);
             } catch (err) {
-                assert.equal(err.message, "Access token is either the wrong client or expired");
+                assert.equal(err.message, "[ohAccessError] Access token is either the wrong client or expired");
             }
         });
 

@@ -10,6 +10,7 @@ export class JsonWebTokenWorkerMetadata {
     public tokenSecret: string = "";
     public audience: string = "";
     public expiresIn: number | string = "";
+    public hashAlgorithm: string = "";
     public verifyOn: boolean = true;
 }
 
@@ -33,20 +34,15 @@ export default class JsonWebTokenWorker extends HiveWorkerBase implements IToken
             this.metadata = {
                 audience: uuidv4(),
                 expiresIn: "30m",
+                hashAlgorithm: "sha1",
                 tokenSecret: nanoid(64),
                 verifyOn: true,
             };
         }
     }
 
-    public get = async (payload?: any): Promise<string> => {
-        let jwtPayload;
-
-        if (payload) {
-            jwtPayload = payload;
-        } else {
-            jwtPayload = { omnihiveAccess: true };
-        }
+    public get = async (): Promise<string> => {
+        const jwtPayload = { omnihiveAccess: true, aud: this.metadata.audience };
 
         if (this.token !== "" && !this.expired(this.token)) {
             return this.token;

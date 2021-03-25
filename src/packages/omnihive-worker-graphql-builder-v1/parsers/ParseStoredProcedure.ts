@@ -59,7 +59,7 @@ export class ParseStoredProcedure {
         ) {
             const verifyToken: boolean = await AwaitHelper.execute<boolean>(tokenWorker.verify(omniHiveContext.access));
             if (verifyToken === false) {
-                throw new Error("Access token is invalid or expired.");
+                throw new Error("[ohAccessError] Access token is invalid or expired.");
             }
         }
 

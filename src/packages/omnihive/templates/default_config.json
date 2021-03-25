@@ -8,6 +8,8 @@
     "constants": {
         "ohEncryptionKey": "XXX",
         "ohTokenAudience": "XXX",
+        "ohTokenExpiresIn": "XXX",
+        "ohTokenHashAlgorithm": "XXX",
         "ohTokenSecret": "XXX"
     },
     "features": {

@@ -1,9 +1,10 @@
+import "jsdom-global/register";
+
 import { expect } from "chai";
 import CrossStorageWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
 import { TestService } from "../../../tests/services/TestService";
 import packageJson from "../package.json";
-import "jsdom-global/register";
 import { WorkerGetterBase } from "@withonevision/omnihive-core/models/WorkerGetterBase";
 import sinon from "sinon";
 import { CrossStorageClient } from "cross-storage";
@@ -77,6 +78,39 @@ describe("cross storage worker tests", () => {
         it("get - no encryption worker", async () => {
             try {
                 await worker.get("ping");
+                throw new Error("Method expected to fail, but didn't");
+            } catch (err) {
+                expect(err)
+                    .to.be.an("error")
+                    .with.property(
+                        "message",
+                        "Encryption Worker Not Defined.  Cross-Storage Will Not Function Without Encryption Worker."
+                    );
+            }
+        });
+        it("remove - not initialized", async () => {
+            try {
+                await uninitializedWorker.remove("ping");
+                throw new Error("Method expected to fail, but didn't");
+            } catch (err) {
+                expect(err)
+                    .to.be.an("error")
+                    .with.property("message", "Client store has not been initialized.  Please call initialize first");
+            }
+        });
+        it("set - not initialized", async () => {
+            try {
+                await uninitializedWorker.set("ping", "pong");
+                throw new Error("Method expected to fail, but didn't");
+            } catch (err) {
+                expect(err)
+                    .to.be.an("error")
+                    .with.property("message", "Client store has not been initialized.  Please call initialize first");
+            }
+        });
+        it("set - no encryption worker", async () => {
+            try {
+                await worker.set("ping", "pong");
                 throw new Error("Method expected to fail, but didn't");
             } catch (err) {
                 expect(err)

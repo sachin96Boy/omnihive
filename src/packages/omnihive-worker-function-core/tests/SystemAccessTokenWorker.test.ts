@@ -24,7 +24,7 @@ describe("system access token worker tests", () => {
     describe("worker functions", () => {
         it("execute - no token worker", async () => {
             try {
-                await worker.execute("", "", "");
+                await worker.execute(undefined, "", undefined);
                 throw new Error("Method expected to fail, but didn't");
             } catch (err) {
                 expect(err).to.be.an("error").with.property("message", "Token Worker cannot be found");
@@ -33,21 +33,21 @@ describe("system access token worker tests", () => {
         it("execute - no parameters", async () => {
             sinon.stub(tokenWorker, "get").resolves("mockToken");
             sinon.stub(WorkerGetterBase.prototype, "getWorker").returns(tokenWorker);
-            const result = await worker.execute("", "", "");
+            const result = await worker.execute(undefined, "", undefined);
             expect(result.status).to.eq(400);
-            expect(result.response).to.have.key("error");
+            expect(result.response).to.have.nested.property("error.message", "Request must have parameters");
         });
         it("execute - no match", async () => {
             sinon.stub(tokenWorker, "get").resolves("mockToken");
             sinon.stub(WorkerGetterBase.prototype, "getWorker").returns(tokenWorker);
-            const result = await worker.execute("", "", { generator: "mockGenerator" });
+            const result = await worker.execute(undefined, "", { generator: "mockGenerator" });
             expect(result.status).to.eq(400);
-            expect(result.response).to.have.key("error");
+            expect(result.response).to.have.nested.property("error.message", "Token cannot be generated");
         });
         it("execute", async () => {
             sinon.stub(tokenWorker, "get").resolves("mockToken");
             sinon.stub(WorkerGetterBase.prototype, "getWorker").returns(tokenWorker);
-            const result = await worker.execute("", "", {
+            const result = await worker.execute(undefined, "", {
                 generator: objectHash(config.metadata, { algorithm: config.metadata.hashAlgorithm }),
             });
             expect(result.status).to.eq(200);

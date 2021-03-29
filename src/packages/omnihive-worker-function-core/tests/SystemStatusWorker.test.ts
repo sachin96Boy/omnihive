@@ -46,6 +46,7 @@ describe("system access token worker tests", () => {
             serverStatus: ServerStatus.Online!,
             serverSettings: undefined!,
             webServer: undefined!,
+            commandLineArgs: undefined!,
         };
     });
     afterEach(() => {
@@ -68,6 +69,7 @@ describe("system access token worker tests", () => {
             serverStatus: undefined!,
             serverSettings: undefined!,
             webServer: undefined!,
+            commandLineArgs: undefined!,
         };
     });
     describe("worker functions", () => {

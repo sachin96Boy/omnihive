@@ -30,6 +30,7 @@ describe("default log worker tests", () => {
             serverStatus: undefined!,
             serverSettings: undefined!,
             webServer: undefined!,
+            commandLineArgs: undefined!,
         };
     });
     afterEach(() => {
@@ -54,6 +55,7 @@ describe("default log worker tests", () => {
             serverStatus: undefined!,
             serverSettings: undefined!,
             webServer: undefined!,
+            commandLineArgs: undefined!,
         };
     });
     describe("worker functions", () => {

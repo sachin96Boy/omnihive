@@ -7,6 +7,7 @@ import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/Regist
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
 import WebSocket from "ws";
+import { CommandLineArguments } from "src/packages/omnihive/models/CommandLingArguments";
 
 declare global {
     declare namespace NodeJS {
@@ -15,6 +16,7 @@ declare global {
                 adminServer: WebSocket.Server;
                 adminServerTimer: NodeJS.Timer;
                 appServer: express.Express | undefined;
+                commandLineArgs: CommandLineArguments;
                 getWorker: <T extends IHiveWorker | undefined>(type: string, name?: string) => T | undefined;
                 initWorkers: (configs: HiveWorker[]) => Promise<void>;
                 instanceName: string;

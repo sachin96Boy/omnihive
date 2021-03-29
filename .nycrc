@@ -5,7 +5,7 @@
   "exclude": [
     "**/.yarn/**",
     "**/node_modules/**",
-    "**/test/**",
+    "**/tests/**",
     "**/dist/**"
   ]
 }

@@ -29,6 +29,7 @@ import { AppService } from "./AppService";
 
 export class ServerService {
     public run = async (serverReset: boolean = false): Promise<void> => {
+        const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
         const appService: AppService = new AppService();
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
@@ -41,7 +42,6 @@ export class ServerService {
 
             // Check for server reset and re-poll settings in case they have changed
             if (serverReset === true) {
-                const config = new Conf({ projectName: "omnihive", configName: "omnihive" });
                 const latestConf: string | undefined = config.get<string>(
                     `latest-settings-${global.omnihive.instanceName}`
                 ) as string;

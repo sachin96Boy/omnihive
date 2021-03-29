@@ -51,6 +51,25 @@ describe("system access token worker tests", () => {
     afterEach(() => {
         sinon.restore();
     });
+    after(() => {
+        global.omnihive = {
+            adminServer: undefined!,
+            adminServerTimer: undefined!,
+            appServer: undefined!,
+            getWorker: undefined!,
+            initWorkers: undefined!,
+            instanceName: undefined!,
+            ohDirName: undefined!,
+            pushWorker: undefined!,
+            registeredSchemas: undefined!,
+            registeredWorkers: undefined!,
+            registeredUrls: undefined!,
+            serverError: undefined!,
+            serverStatus: undefined!,
+            serverSettings: undefined!,
+            webServer: undefined!,
+        };
+    });
     describe("worker functions", () => {
         it("execute - no token worker", async () => {
             try {

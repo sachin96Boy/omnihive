@@ -6,6 +6,7 @@ import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { AdminEvent } from "@withonevision/omnihive-core/models/AdminEvent";
 import { AdminEventResponse } from "@withonevision/omnihive-core/models/AdminEventResponse";
 import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
@@ -82,6 +83,49 @@ export class AdminService {
             });
 
             ws.on("message", (message: string) => {
+                if (!this.checkWsMessage("access-token-request", message)) {
+                    return;
+                }
+
+                const request: AdminEvent<{ serverLabel: string }> = JSON.parse(message);
+
+                if (!request.data) {
+                    this.sendErrorToSingleClient(ws, "access-token-response", new Error("No Server Label Given"));
+                    return;
+                }
+
+                const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
+                    HiveWorkerType.Token
+                );
+
+                if (!tokenWorker) {
+                    this.sendToSingleClient<{ hasWorker: boolean; token: string }>(ws, "access-token-response", {
+                        hasWorker: false,
+                        token: "",
+                    });
+
+                    return;
+                }
+
+                tokenWorker.get().then((token: string) => {
+                    if (!request.data) {
+                        this.sendErrorToSingleClient(ws, "access-token-response", new Error("No Server Label Given"));
+                        return;
+                    }
+
+                    this.sendToSingleClient<{ serverLabel: string; hasWorker: boolean; token: string }>(
+                        ws,
+                        "access-token-response",
+                        {
+                            hasWorker: true,
+                            token,
+                            serverLabel: request.data.serverLabel,
+                        }
+                    );
+                });
+            });
+
+            ws.on("message", (message: string) => {
                 if (!this.checkWsMessage("config-save-request", message)) {
                     return;
                 }
@@ -106,7 +150,7 @@ export class AdminService {
                         `latest-settings-${global.omnihive.instanceName}`
                     ) as string;
 
-                    fse.writeFileSync(latestConf, JSON.stringify(settings));
+                    fse.writeFileSync(latestConf, JSON.stringify(settings, null, `\t`));
                     this.sendToSingleClient<{ verified: boolean }>(ws, "config-save-response", { verified: true });
                 } catch (e) {
                     this.sendErrorToSingleClient(ws, "config-save-response", e);

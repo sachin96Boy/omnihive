@@ -286,8 +286,6 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                         const graphDatabaseConfig: ApolloServerExpressConfig = {
                             schema: graphDatabaseSchema,
-                            tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? false,
-                            introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? false,
                             context: async ({ req }) => {
                                 const omnihive = {
                                     access: req.headers.ohaccess || ``,
@@ -298,6 +296,14 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                                 return { omnihive };
                             },
                         };
+
+                        if ((await featureWorker?.get<boolean>("graphIntrospection")) ?? false) {
+                            graphDatabaseConfig.introspection = true;
+                        }
+
+                        if ((await featureWorker?.get<boolean>("graphTracing")) ?? false) {
+                            graphDatabaseConfig.tracing = true;
+                        }
 
                         if ((await featureWorker?.get<boolean>("graphPlayground")) ?? true) {
                             graphDatabaseConfig.playground = {
@@ -339,8 +345,6 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 const graphFunctionConfig: ApolloServerExpressConfig = {
                     schema: graphFunctionSchema,
-                    tracing: (await featureWorker?.get<boolean>("graphTracing")) ?? false,
-                    introspection: (await featureWorker?.get<boolean>("graphIntrospection")) ?? false,
                     context: async ({ req }) => {
                         const omnihive = {
                             access: req.headers.ohaccess || ``,
@@ -351,6 +355,14 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         return { omnihive };
                     },
                 };
+
+                if ((await featureWorker?.get<boolean>("graphTracing")) ?? false) {
+                    graphFunctionConfig.tracing = true;
+                }
+
+                if ((await featureWorker?.get<boolean>("graphIntrospection")) ?? false) {
+                    graphFunctionConfig.introspection = true;
+                }
 
                 if ((await featureWorker?.get<boolean>("graphPlayground")) ?? true) {
                     graphFunctionConfig.playground = {

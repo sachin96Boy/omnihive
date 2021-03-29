@@ -16,11 +16,13 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import WebSocket from "ws";
+import { CommandLineArguments } from "./CommandLingArguments";
 
 export class GlobalObject extends WorkerSetterBase {
     public adminServer!: WebSocket.Server;
     public adminServerTimer!: NodeJS.Timer;
     public appServer: express.Express | undefined = undefined;
+    public commandLineArgs: CommandLineArguments = new CommandLineArguments();
     public instanceName: string = "default";
     public ohDirName: string = "";
     public registeredSchemas: ConnectionSchema[] = [];

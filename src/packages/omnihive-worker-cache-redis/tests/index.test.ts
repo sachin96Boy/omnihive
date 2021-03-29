@@ -1,144 +1,67 @@
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { assert } from "chai";
-import { serializeError } from "serialize-error";
-import RedisCacheWorker from "..";
+import { expect } from "chai";
+import CacheRedisWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
 import { TestService } from "../../../tests/services/TestService";
 import packageJson from "../package.json";
+import sinon from "sinon";
+import ioredis from "ioredis";
 
-let settings: TestConfigSettings;
-let worker: RedisCacheWorker = new RedisCacheWorker();
-const testService: TestService = new TestService();
+const testService = new TestService();
+const {
+    workers: [config],
+} = <TestConfigSettings>testService.getTestConfig(packageJson.name);
+const worker = new CacheRedisWorker();
 
-describe("cache (redis) worker tests", function () {
-    before(function () {
-        const config: TestConfigSettings | undefined = testService.getTestConfig(packageJson.name);
-
-        if (!config) {
-            this.skip();
-        }
-
-        testService.clearWorkers();
-        settings = config;
+describe("cache (redis) worker tests", () => {
+    afterEach(() => {
+        sinon.restore();
     });
-
-    const init = async function (): Promise<void> {
-        await AwaitHelper.execute(testService.initWorkers(settings.workers));
-        const newWorker: any = testService.registeredWorkers.find((x: any) => x.package === packageJson.name);
-
-        if (newWorker && newWorker.instance) {
-            worker = newWorker.instance;
-        }
-    };
-
-    describe("Init functions", function () {
-        it("test init", async function () {
-            const result = await init();
-            assert.isUndefined(result);
+    describe("init functions", () => {
+        it("test init", async () => {
+            const stubConnect = sinon.stub(ioredis.prototype, "connect").returns(Promise.resolve());
+            await worker.init(config);
+            expect(stubConnect.calledOnce).to.be.true;
+            expect(worker.config).to.be.an("object");
+        });
+        it("test init - invalid connection string", async () => {
+            const stubConnect = sinon.stub(ioredis.prototype, "connect").throws();
+            try {
+                await worker.init(config);
+                throw new Error("Method expected to fail, but didn't");
+            } catch (err) {
+                expect(err).to.be.an("error");
+            }
+            expect(stubConnect.calledOnce).to.be.true;
         });
     });
-
-    describe("Worker Functions", function () {
-        const cacheKey: string = "mocha cache test";
-        const cacheValue: string = "Test caching value";
-        const cacheTimeout: number = 5000;
-
-        before(async function () {
-            await init();
+    describe("worker functions", () => {
+        it("does not exist", async () => {
+            const stubRedisExists = sinon.stub(ioredis.prototype, "exists").returns(Promise.resolve(1));
+            const exists = await worker.exists("ping");
+            expect(exists).to.be.true;
+            expect(stubRedisExists.calledOnce).to.be.true;
+            stubRedisExists.reset();
         });
-
-        beforeEach(async function () {
-            const exists = await AwaitHelper.execute<boolean>(worker.exists(cacheKey));
-
-            if (exists) {
-                await AwaitHelper.execute<boolean>(worker.remove(cacheKey));
-            }
+        it("set/get cache", async () => {
+            const stubSet = sinon.stub(ioredis.prototype, "set");
+            const stubGet = sinon.stub(ioredis.prototype, "get").returns(Promise.resolve("pong"));
+            await worker.set("ping", "pong", 5000);
+            const result = await worker.get("ping");
+            expect(stubSet.calledOnce).to.be.true;
+            expect(stubGet.calledOnce).to.be.true;
+            expect(result).to.eq("pong");
         });
-
-        const setCacheFile = async function (): Promise<boolean> {
-            try {
-                const exists = await AwaitHelper.execute<boolean>(worker.exists(cacheKey));
-
-                if (exists) {
-                    await AwaitHelper.execute<boolean>(worker.remove(cacheKey));
-                }
-
-                return await AwaitHelper.execute<boolean>(worker.set(cacheKey, cacheValue, cacheTimeout));
-            } catch (err) {
-                throw new Error("Set Cache File Error => " + JSON.stringify(serializeError(err)));
-            }
-        };
-
-        it("does not exist", async function () {
-            try {
-                const result = await AwaitHelper.execute<boolean>(worker.exists(cacheKey));
-                assert.isFalse(result);
-            } catch (err) {
-                throw new Error("Does Not Exist Error => " + JSON.stringify(serializeError(err)));
-            }
+        it("get nonexistent cache", async () => {
+            const stubGet = sinon.stub(ioredis.prototype, "get").returns(Promise.resolve(null));
+            const result = await worker.get("ping");
+            expect(stubGet.calledOnce).to.be.true;
+            expect(result).to.eq(undefined);
         });
-
-        it("set cache", async function () {
-            try {
-                await AwaitHelper.execute<boolean>(setCacheFile());
-                const getValue = await AwaitHelper.execute<string | undefined>(worker.get(cacheKey));
-
-                assert.equal(getValue, cacheValue);
-            } catch (err) {
-                throw new Error("Set Cache Error => " + JSON.stringify(serializeError(err)));
-            }
-        });
-
-        it("does exist", async function () {
-            const setComplete = await AwaitHelper.execute<boolean>(setCacheFile());
-
-            if (setComplete) {
-                try {
-                    const exists = await AwaitHelper.execute<boolean>(worker.exists(cacheKey));
-                    assert.isTrue(exists);
-                } catch (err) {
-                    throw new Error("Does Exist Error => " + JSON.stringify(serializeError(err)));
-                }
-            } else {
-                assert.fail("Does Exist Error => Failed to set cache.");
-            }
-        });
-
-        it("get cache", async function () {
-            const cacheSet = await AwaitHelper.execute<boolean>(setCacheFile());
-
-            if (cacheSet) {
-                try {
-                    const results = await AwaitHelper.execute<string | undefined>(worker.get(cacheKey));
-                    assert.equal(results, cacheValue);
-                } catch (err) {
-                    throw new Error("Get Cache Error => " + JSON.stringify(serializeError(err)));
-                }
-            } else {
-                throw new Error("Get Cache Error => Failed to set cache.");
-            }
-        });
-
-        it("get non-existant cache", async function () {
-            try {
-                const result = await AwaitHelper.execute<string | undefined>(worker.get("Missing Cache Key"));
-                assert.isUndefined(result);
-            } catch (err) {
-                ``;
-                throw new Error("Get Non-Existant Cache Error => " + JSON.stringify(serializeError(err)));
-            }
-        });
-
-        it("remove cache", async function () {
-            const cacheSet = await AwaitHelper.execute<boolean>(setCacheFile());
-
-            if (cacheSet) {
-                const result = await AwaitHelper.execute<boolean>(worker.remove(cacheKey));
-
-                assert.isTrue(result);
-            } else {
-                throw new Error("Remove Cache Error => Failed to set cache");
-            }
+        it("delete cache", async () => {
+            const stubDel = sinon.stub(ioredis.prototype, "del").returns(Promise.resolve());
+            const result = await worker.remove("ping");
+            expect(stubDel.calledOnce).to.be.true;
+            expect(result).to.be.true;
         });
     });
 });

@@ -6,5 +6,5 @@ export class HiveWorker {
     public importPath: string = "";
     public default: boolean = true;
     public enabled: boolean = true;
-    public metadata: any | undefined = undefined;
+    public metadata: any = {};
 }

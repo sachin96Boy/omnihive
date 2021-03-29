@@ -3,7 +3,7 @@ import { TestService } from "../../../tests/services/TestService";
 import packageJson from "../package.json";
 import { OmniHiveClient } from "../index";
 import { assert } from "chai";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
+import { ClientSettings } from "@withonevision/omnihive-core/models/ClientSettings";
 
 let settings: TestConfigSettings;
 const testService: TestService = new TestService();
@@ -30,23 +30,18 @@ describe("client tests", function () {
         });
 
         it("init", async function () {
-            const serverSettings: ServerSettings = {
-                config: {
-                    adminPortNumber: 7000,
-                    adminPassword: "Testing Things for now",
-                    nodePortNumber: 3001,
-                    webRootUrl: "platformtest.omnihive.io",
+            const clientSettings: ClientSettings = {
+                rootUrl: testService.serverSettings.config.webRootUrl,
+                tokenMetadata: {
+                    audience: testService.getConstants()["ohTokenAudience"],
+                    secret: testService.getConstants()["ohTokenSecret"],
+                    expires: testService.getConstants()["ohTokenExpiresIn"],
+                    hashAlgorithm: testService.getConstants()["ohTokenHashAlgorithm"],
+                    verify: true,
                 },
-                constants: {},
-                features: {},
-                workers: settings.workers,
             };
 
-            assert.doesNotThrow(async () => await OmniHiveClient.getSingleton().init(serverSettings));
-        });
-
-        it("init - no settings", async function () {
-            assert.doesNotThrow(async () => await OmniHiveClient.getSingleton().init());
+            assert.doesNotThrow(async () => await OmniHiveClient.getSingleton().init(clientSettings));
         });
     });
 

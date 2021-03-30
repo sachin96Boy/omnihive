@@ -16,7 +16,7 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import WebSocket from "ws";
-import { CommandLineArguments } from "./CommandLingArguments";
+import { CommandLineArguments } from "./CommandLineArguments";
 
 export class GlobalObject extends WorkerSetterBase {
     public adminServer!: WebSocket.Server;

@@ -7,7 +7,7 @@ import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/Regist
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
 import WebSocket from "ws";
-import { CommandLineArguments } from "src/packages/omnihive/models/CommandLingArguments";
+import { CommandLineArguments } from "src/packages/omnihive/models/CommandLineArguments";
 
 declare global {
     declare namespace NodeJS {

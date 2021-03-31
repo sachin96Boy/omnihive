@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { assert } from "chai";
 import CacheRedisWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
 import { TestService } from "../../../tests/services/TestService";
@@ -20,26 +20,26 @@ describe("cache (redis) worker tests", () => {
         it("test init", async () => {
             const stubConnect = sinon.stub(ioredis.prototype, "connect").returns(Promise.resolve());
             await worker.init(config);
-            expect(stubConnect.calledOnce).to.be.true;
-            expect(worker.config).to.be.an("object");
+            assert.equal(stubConnect.calledOnce, true);
+            assert.isObject(worker.config);
         });
         it("test init - invalid connection string", async () => {
             const stubConnect = sinon.stub(ioredis.prototype, "connect").throws();
             try {
                 await worker.init(config);
-                throw new Error("Method expected to fail, but didn't");
+                assert.fail("Method expected to fail, but didn't");
             } catch (err) {
-                expect(err).to.be.an("error");
+                assert.typeOf(err, "Error");
             }
-            expect(stubConnect.calledOnce).to.be.true;
+            assert.equal(stubConnect.calledOnce, true);
         });
     });
     describe("worker functions", () => {
         it("does not exist", async () => {
             const stubRedisExists = sinon.stub(ioredis.prototype, "exists").returns(Promise.resolve(1));
-            const exists = await worker.exists("ping");
-            expect(exists).to.be.true;
-            expect(stubRedisExists.calledOnce).to.be.true;
+            const result = await worker.exists("ping");
+            assert.equal(result, true);
+            assert.equal(stubRedisExists.calledOnce, true);
             stubRedisExists.reset();
         });
         it("set/get cache", async () => {
@@ -47,21 +47,21 @@ describe("cache (redis) worker tests", () => {
             const stubGet = sinon.stub(ioredis.prototype, "get").returns(Promise.resolve("pong"));
             await worker.set("ping", "pong", 5000);
             const result = await worker.get("ping");
-            expect(stubSet.calledOnce).to.be.true;
-            expect(stubGet.calledOnce).to.be.true;
-            expect(result).to.eq("pong");
+            assert.equal(stubSet.calledOnce, true);
+            assert.equal(stubGet.calledOnce, true);
+            assert.equal(result, "pong");
         });
         it("get nonexistent cache", async () => {
             const stubGet = sinon.stub(ioredis.prototype, "get").returns(Promise.resolve(null));
             const result = await worker.get("ping");
-            expect(stubGet.calledOnce).to.be.true;
-            expect(result).to.eq(undefined);
+            assert.equal(stubGet.calledOnce, true);
+            assert.equal(result, undefined);
         });
         it("delete cache", async () => {
             const stubDel = sinon.stub(ioredis.prototype, "del").returns(Promise.resolve());
             const result = await worker.remove("ping");
-            expect(stubDel.calledOnce).to.be.true;
-            expect(result).to.be.true;
+            assert.equal(stubDel.calledOnce, true);
+            assert.equal(result, true);
         });
     });
 });

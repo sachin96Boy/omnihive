@@ -1,5 +1,5 @@
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import { expect } from "chai";
+import { assert } from "chai";
 import LocalFeatureWorker from "..";
 
 const mockServerSettings: ServerSettings = {
@@ -21,23 +21,23 @@ describe("local feature worker tests", () => {
     describe("worker functions", () => {
         it("get", async () => {
             const result = await worker.get("mockFeature");
-            expect(result).to.eq("mockFeatureValue");
+            assert.equal(result, "mockFeatureValue");
         });
         it("get - no name", async () => {
             try {
                 await worker.get("");
-                throw new Error("Method expected to fail, but didn't");
+                assert.fail("Method expected to fail, but didn't");
             } catch (err) {
-                expect(err).to.be.an("error").with.property("message", "No feature name given.");
+                assert.equal(err.message, "No feature name given.");
             }
         });
         it("get - default value", async () => {
             const result = await worker.get("nonexistentFeature", "defaultValue");
-            expect(result).to.eq("defaultValue");
+            assert.equal(result, "defaultValue");
         });
         it("get - does not exist", async () => {
             const result = await worker.get("nonexistentFeature");
-            expect(result).to.be.undefined;
+            assert.equal(result, undefined);
         });
     });
 });

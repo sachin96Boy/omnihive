@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { assert } from "chai";
 import CacheNodeCacheWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
 import { TestService } from "../../../tests/services/TestService";
@@ -18,7 +18,7 @@ describe("cache (node) worker tests", () => {
     describe("init functions", () => {
         it("test init", async () => {
             await worker.init(config);
-            expect(worker.config).to.be.an("object");
+            assert.isObject(worker.config);
         });
     });
     describe("worker functions", () => {
@@ -28,22 +28,22 @@ describe("cache (node) worker tests", () => {
         });
         it("does not exist", async () => {
             const result = await worker.exists(mockKey);
-            expect(result).to.equal(false);
+            assert.equal(result, false);
         });
         it("set/get cache", async () => {
             await worker.set(mockKey, mockValue, mockTimeout);
             const result = await worker.get(mockKey);
-            expect(result).to.equal(mockValue);
+            assert.equal(result, mockValue);
         });
         it("get nonexistant cache", async () => {
             const result = await worker.get(mockKey);
-            expect(result).to.equal(undefined);
+            assert.equal(result, undefined);
         });
         it("delete cache", async () => {
             await worker.set(mockKey, mockValue, mockTimeout);
             await worker.remove(mockKey);
             const result = await worker.exists(mockKey);
-            expect(result).to.equal(false);
+            assert.equal(result, false);
         });
     });
 });

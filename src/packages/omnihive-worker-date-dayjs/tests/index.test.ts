@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { assert } from "chai";
 import dayjs from "dayjs";
 import DayJsDateWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
@@ -17,37 +17,39 @@ describe("date worker tests", () => {
     describe("init functions", () => {
         it("test init", async () => {
             await worker.init(config);
-            expect(worker.config).to.be.an("object");
+            assert.isObject(worker.config);
         });
     });
     describe("worker functions", () => {
         it("convert between timezones", () => {
             const result = worker.convertDateBetweenTimezones(mockDate, "Asia/Tokyo", "America/New_York");
             const diff = dayjs(result).diff(mockDate, "hour");
-            expect(diff).to.equal(14);
+            assert.equal(diff, 14);
         });
         it("convert between timezones - invalid from", () => {
-            expect(() => worker.convertDateBetweenTimezones(mockDate, "Bad timezone", "America/New_York")).to.throw(
+            assert.throws(
+                () => worker.convertDateBetweenTimezones(mockDate, "Bad timezone", "America/New_York"),
                 /Could not convert timezones/
             );
         });
         it("convert between timezones - invalid to", () => {
-            expect(() => worker.convertDateBetweenTimezones(mockDate, "Asia/Tokyo", "Bad timezone")).to.throw(
+            assert.throws(
+                () => worker.convertDateBetweenTimezones(mockDate, "Asia/Tokyo", "Bad timezone"),
                 /Could not convert timezones/
             );
         });
         it("convert between timezones - no from timezone", () => {
             const result = worker.convertDateBetweenTimezones(mockDate, "Asia/Tokyo");
             const diff = dayjs(result).diff(mockDate, "hour");
-            expect(diff).to.equal(14);
+            assert.equal(diff, 14);
         });
         it("format date", () => {
             const dateString = worker.getFormattedDateString(mockDate, "MM/DD/YYYY hh:mma");
-            expect(dateString).to.equal("01/01/2020 12:00am");
+            assert.equal(dateString, "01/01/2020 12:00am");
         });
         it("format date - no format specified", () => {
             const dateString = worker.getFormattedDateString(mockDate);
-            expect(dateString).to.equal("2020-01-01T00:00:00");
+            assert.equal(dateString, "2020-01-01T00:00:00");
         });
     });
 });

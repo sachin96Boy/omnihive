@@ -221,7 +221,7 @@ const build = async (): Promise<void> => {
     //Copy over miscellaneous files (npmignore, pug, etc.)
     console.log(chalk.yellow("Copying miscellaneous OmniHive files..."));
 
-    const miscFiles = [".npmignore", `postcss.config.js`, `tailwind.config.js`];
+    const miscFiles = [".npmignore"];
 
     miscFiles.forEach((value: string) => {
         fse.copyFileSync(

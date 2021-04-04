@@ -23,14 +23,10 @@
     "types": "./omnihive.d.ts",
     "bin": "./omnihive.js",
     "scripts": {
-        "build": "concurrently \"yarn run build:package\" \"yarn run build:app\"",
-        "build:app": "NODE_ENV=production yarn run webpack --mode production",
-        "build:package": "tsc",
+        "build": "tsc",
         "cli:debug": "nodemon --no-stdin --config ./nodemon.cli.json",
         "cli:taskRunner:debug": "nodemon --no-stdin --config ./nodemon.taskRunner.json",
-        "server:debug": "concurrently \"yarn run watch:react\" \"yarn run watch:node\"",
-        "watch:react": "webpack --watch --mode development",
-        "watch:node": "nodemon --no-stdin --config ./nodemon.server.json"
+        "server:debug": "nodemon --no-stdin --config ./nodemon.server.json"
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
@@ -44,7 +40,6 @@
         "@withonevision/omnihive-worker-log-core": "workspace:*",
         "@withonevision/omnihive-worker-server-v1": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",
-        "autoprefixer": "10.2.5",
         "body-parser": "1.19.0",
         "chalk": "4.1.0",
         "conf": "9.0.2",
@@ -58,12 +53,9 @@
         "inquirer": "8.0.0",
         "node-cleanup": "2.1.2",
         "pug": "3.0.2",
-        "react": "17.0.1",
-        "react-dom": "17.0.1",
         "read-pkg-up": "7.0.1",
         "serialize-error": "8.0.1",
         "swagger-ui-express": "4.1.6",
-        "tailwindcss": "2.0.3",
         "ws": "7.4.4",
         "yargs": "16.2.0"
     },
@@ -76,23 +68,13 @@
         "@types/inquirer": "7.3.1",
         "@types/node": "14.14.34",
         "@types/node-cleanup": "2.1.1",
-        "@types/react": "17.0.3",
-        "@types/react-dom": "17.0.2",
         "@types/swagger-ui-express": "4.1.2",
         "@types/ws": "7.4.0",
         "chai": "4.3.3",
-        "concurrently": "6.0.0",
         "cross-env": "7.0.3",
-        "css-loader": "5.1.2",
         "nodemon": "2.0.7",
-        "postcss": "8.2.8",
-        "postcss-loader": "5.2.0",
-        "style-loader": "2.0.0",
-        "ts-loader": "8.0.18",
         "ts-node": "9.1.1",
-        "typescript": "4.2.3",
-        "webpack": "5.25.0",
-        "webpack-cli": "4.5.0"
+        "typescript": "4.2.3"
     },
     "omniHive": {
         "coreDependencies": {
@@ -101,7 +83,6 @@
             "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
             "@withonevision/omnihive-worker-function-core": "workspace:*",
             "@withonevision/omnihive-worker-log-core": "workspace:*",
-            "autoprefixer": "10.2.5",
             "body-parser": "1.19.0",
             "chalk": "4.1.0",
             "conf": "9.0.2",
@@ -115,12 +96,9 @@
             "inquirer": "8.0.0",
             "node-cleanup": "2.1.2",
             "pug": "3.0.2",
-            "react": "17.0.1",
-            "react-dom": "17.0.1",
             "read-pkg-up": "7.0.1",
             "serialize-error": "8.0.1",
             "swagger-ui-express": "4.1.6",
-            "tailwindcss": "2.0.3",
             "ws": "7.4.4",
             "yargs": "16.2.0"
         },

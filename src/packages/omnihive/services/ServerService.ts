@@ -92,6 +92,8 @@ export class ServerService {
             app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
                     rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    registeredUrls: global.omnihive.registeredUrls,
+                    status: global.omnihive.serverStatus,
                     error: serializeError(err),
                 });
             });
@@ -142,6 +144,8 @@ export class ServerService {
             app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
                     rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    registeredUrls: global.omnihive.registeredUrls,
+                    status: global.omnihive.serverStatus,
                     error: serializeError(err),
                 });
             });
@@ -200,18 +204,6 @@ export class ServerService {
         app.set("view engine", "pug");
         app.set("views", path.join(global.omnihive.ohDirName, `app`, `views`));
         app.use("/public", express.static(path.join(global.omnihive.ohDirName, `app`, `public`)));
-
-        app.get(`${adminRoot}/web`, (_req, res) => {
-            return res.status(200).render("reactAdmin", {
-                rootUrl: global.omnihive.serverSettings.config.webRootUrl,
-            });
-        });
-
-        app.get(`${adminRoot}/web/*`, (_req, res) => {
-            return res.status(200).render("reactAdmin", {
-                rootUrl: global.omnihive.serverSettings.config.webRootUrl,
-            });
-        });
 
         // Register system REST endpoints
 

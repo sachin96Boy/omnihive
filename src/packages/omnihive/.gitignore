@@ -1,7 +1,3 @@
 #Web
-!postcss.config.js
-!tailwind.config.js
-!webpack.config.js
-!**css.d.ts
-
 !app/**
+app/**/.DS_Store

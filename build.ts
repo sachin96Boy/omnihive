@@ -395,11 +395,6 @@ const build = async (): Promise<void> => {
     if (!args.argv.publish as boolean) {
         console.log(chalk.redBright("Publish not specified...skipping npm publish"));
     } else {
-        // Tag Github branch with version
-        console.log(chalk.yellow("Tagging GitHub..."));
-        execSpawn(`git tag ${currentVersion}`, "./");
-        console.log(chalk.greenBright("Done tagging GitHub..."));
-
         let publishString: string = "npm publish";
 
         if (args.argv.publishAccess) {

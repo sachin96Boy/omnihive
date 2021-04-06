@@ -8,6 +8,7 @@ import path from "path";
 import readPkgUp from "read-pkg-up";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import semver from "semver";
+import tar from "tar";
 import writePkg from "write-pkg";
 import yargs from "yargs";
 
@@ -60,21 +61,21 @@ const build = async (): Promise<void> => {
         .option("publish", {
             alias: "p",
             type: "boolean",
-            demandCommand: false,
-            description: "Publish to NPM",
+            demandOption: false,
+            description: "Publish to NPM and GitHub",
             default: false,
         })
         .option("publishAccess", {
             alias: "pa",
             type: "string",
-            demandCommand: false,
+            demandOption: false,
             description: "Access to use when publishing to NPM",
             choices: ["public", "restricted"],
         })
         .option("publishTag", {
             alias: "pt",
             type: "string",
-            demandCommand: false,
+            demandOption: false,
             description: "Tag to use when publishing",
         })
         .check((args) => {
@@ -167,6 +168,7 @@ const build = async (): Promise<void> => {
                 path.join(`.`, `src`, `packages`, `${value}`, `package.json`),
                 path.join(`.`, `dist`, `packages`, `${value}`, `package.json`)
             );
+
             console.log(chalk.greenBright(`Done building ${value}...`));
         });
 
@@ -395,11 +397,6 @@ const build = async (): Promise<void> => {
     if (!args.argv.publish as boolean) {
         console.log(chalk.redBright("Publish not specified...skipping npm publish"));
     } else {
-        // Tag Github branch with version
-        console.log(chalk.yellow("Tagging GitHub..."));
-        execSpawn(`git tag ${currentVersion}`, "./");
-        console.log(chalk.greenBright("Done tagging GitHub..."));
-
         let publishString: string = "npm publish";
 
         if (args.argv.publishAccess) {
@@ -460,6 +457,14 @@ const build = async (): Promise<void> => {
                 console.log(chalk.yellow(`Publishing ${value}...`));
                 execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${value}`));
                 execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${value}`));
+                tar.create(
+                    {
+                        cwd: path.join(`.`, `dist`, `packages`, `${value}`),
+                        file: `${value}-${currentVersion}.tgz`,
+                        gzip: true,
+                    },
+                    ["*"]
+                );
                 console.log(chalk.greenBright(`Done publishing ${value}...`));
             });
 

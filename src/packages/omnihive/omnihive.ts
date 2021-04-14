@@ -168,6 +168,7 @@ const init = async () => {
         for (const bootWorker of bootWorkers) {
             if (!global.omnihive.registeredWorkers.some((rw: RegisteredHiveWorker) => rw.name === bootWorker.name)) {
                 await global.omnihive.pushWorker(bootWorker, true, false);
+                global.omnihive.bootWorkerNames.push(bootWorker.name);
                 global.omnihive.serverSettings.workers.push(bootWorker);
             }
         }

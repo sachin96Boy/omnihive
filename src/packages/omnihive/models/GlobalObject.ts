@@ -22,6 +22,7 @@ export class GlobalObject extends WorkerSetterBase {
     public adminServer!: WebSocket.Server;
     public adminServerTimer!: NodeJS.Timer;
     public appServer: express.Express | undefined = undefined;
+    public bootWorkerNames: string[] = [];
     public commandLineArgs: CommandLineArguments = new CommandLineArguments();
     public instanceName: string = "default";
     public ohDirName: string = "";

@@ -16,6 +16,20 @@ export class AppService {
             "ohreqLogWorker"
         );
 
+        // Cleanup Reset
+        global.omnihive.registeredSchemas = [];
+        global.omnihive.registeredUrls = [];
+
+        const prunedHiveWorkers: RegisteredHiveWorker[] = [];
+
+        global.omnihive.registeredWorkers.forEach((worker: RegisteredHiveWorker) => {
+            if (global.omnihive.bootWorkerNames.includes(worker.name)) {
+                prunedHiveWorkers.push(worker);
+            }
+        });
+
+        global.omnihive.registeredWorkers = prunedHiveWorkers;
+
         // Load Core Workers
         if (
             packageJson &&

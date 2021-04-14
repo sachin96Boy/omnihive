@@ -12,7 +12,6 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "editor.formatOnSave": true,
-    "prettier.packageManager": "yarn",
     "mocha.requires": ["ts-node/register"],
     "mocha.files.glob": "packages/**/tests/**/*.ts",
     "mocha.runTestsOnSave": "true",

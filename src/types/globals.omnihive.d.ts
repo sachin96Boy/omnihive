@@ -16,6 +16,7 @@ declare global {
                 adminServer: WebSocket.Server;
                 adminServerTimer: NodeJS.Timer;
                 appServer: express.Express | undefined;
+                bootWorkerNames: string[];
                 commandLineArgs: CommandLineArguments;
                 getWorker: <T extends IHiveWorker | undefined>(type: string, name?: string) => T | undefined;
                 initWorkers: (configs: HiveWorker[]) => Promise<void>;

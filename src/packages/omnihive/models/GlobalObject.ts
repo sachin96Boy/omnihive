@@ -17,6 +17,7 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLog
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import WebSocket from "ws";
 import { CommandLineArguments } from "./CommandLineArguments";
+import importFresh from "import-fresh";
 
 export class GlobalObject extends WorkerSetterBase {
     public adminServer!: WebSocket.Server;
@@ -86,7 +87,7 @@ export class GlobalObject extends WorkerSetterBase {
         });
 
         if (registerWorker) {
-            const newWorker: any = await AwaitHelper.execute<any>(import(hiveWorker.importPath));
+            const newWorker: any = importFresh(hiveWorker.importPath);
             const newWorkerInstance: any = new newWorker.default();
             await AwaitHelper.execute<void>((newWorkerInstance as IHiveWorker).init(hiveWorker));
 

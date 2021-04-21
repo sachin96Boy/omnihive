@@ -43,8 +43,22 @@ export class AdminService {
         global.omnihive.adminServer.on("connection", (ws: WebSocket) => {
             (ws as ExtendedWebSocket).isAlive = true;
 
-            ws.on("pong", (ws: WebSocket) => {
-                this.heartbeat(ws);
+            ws.on("message", (message: string) => {
+                if (!this.checkWsMessage("heartbeat-request", message)) {
+                    return;
+                }
+
+                (ws as ExtendedWebSocket).isAlive = true;
+
+                this.sendToSingleClient<{ alive: boolean }>(ws, "heartbeat-reponse", { alive: true });
+            });
+
+            ws.on("message", (message: string) => {
+                if (!this.checkWsMessage("heartbeat-response", message)) {
+                    return;
+                }
+
+                (ws as ExtendedWebSocket).isAlive = true;
             });
 
             ws.on("message", (message: string) => {
@@ -264,7 +278,7 @@ export class AdminService {
                 }
 
                 (ws as ExtendedWebSocket).isAlive = false;
-                ws.ping(this.noop);
+                this.sendToSingleClient(ws, "heartbeat-request");
             });
         }, 20000);
 
@@ -304,12 +318,6 @@ export class AdminService {
             return false;
         }
     };
-
-    private heartbeat = (ws: WebSocket) => {
-        (ws as ExtendedWebSocket).isAlive = true;
-    };
-
-    private noop = (): void => {};
 
     private sendErrorToSingleClient = (ws: WebSocket, event: string, error: string) => {
         ws.send(

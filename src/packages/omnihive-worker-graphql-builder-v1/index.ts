@@ -555,7 +555,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         builder.appendLine(
             `\t\t\t\t\tvar dbResponse = await AwaitHelper.execute(graphParser.parseCustomSql("${databaseWorker.config.name}", args.encryptedSql, context.omnihive));`
         );
-        builder.appendLine(`\t\t\t\t\treturn { recordset: dbResponse };`);
+        builder.appendLine(`\t\t\t\t\treturn [{ recordset: dbResponse }];`);
         builder.appendLine(`\t\t\t\t},`);
         builder.appendLine(`\t\t\t},`);
 

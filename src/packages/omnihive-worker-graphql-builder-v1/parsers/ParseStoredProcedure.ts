@@ -32,11 +32,16 @@ export class ParseStoredProcedure {
             HiveWorkerType.Feature
         );
 
-        const disableSecurity: boolean = (await featureWorker?.get<boolean>("disableSecurity", false)) ?? false;
-
         const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
             HiveWorkerType.Token
         );
+
+        let disableSecurity = false;
+
+        if (featureWorker) {
+            disableSecurity =
+                (await AwaitHelper.execute(featureWorker?.get<boolean>("disableSecurity", false))) ?? false;
+        }
 
         if (!disableSecurity && !tokenWorker) {
             throw new Error("[ohAccessError] No token worker defined.");
@@ -57,7 +62,7 @@ export class ParseStoredProcedure {
             omniHiveContext.access &&
             !StringHelper.isNullOrWhiteSpace(omniHiveContext.access)
         ) {
-            const verifyToken: boolean = await AwaitHelper.execute<boolean>(tokenWorker.verify(omniHiveContext.access));
+            const verifyToken: boolean = await AwaitHelper.execute(tokenWorker.verify(omniHiveContext.access));
             if (verifyToken === false) {
                 throw new Error("[ohAccessError] Access token is invalid or expired.");
             }
@@ -106,7 +111,7 @@ export class ParseStoredProcedure {
 
                 response.push({
                     procName: proc.storedProcName,
-                    results: await AwaitHelper.execute<any[][]>(databaseWorker.executeStoredProcedure(proc, procArgs)),
+                    results: await AwaitHelper.execute(databaseWorker.executeStoredProcedure(proc, procArgs)),
                 });
             }
         }

@@ -11,6 +11,7 @@ import semver from "semver";
 import tar from "tar";
 import writePkg from "write-pkg";
 import yargs from "yargs";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 
 // Elastic version record
 type Version = {
@@ -130,7 +131,7 @@ const build = async (): Promise<void> => {
             },
         });
 
-        const versionDoc = await elasticClient.get({ index: "master-version", id: "1" });
+        const versionDoc = await AwaitHelper.execute(elasticClient.get({ index: "master-version", id: "1" }));
         version = versionDoc.body._source as Version;
     } else {
         version = {
@@ -246,9 +247,11 @@ const build = async (): Promise<void> => {
     //Remove non-core packages from package.json in server
     console.log(chalk.yellow("Removing non-core packages from OmniHive package.json..."));
 
-    const packageJson: readPkgUp.NormalizedReadResult | undefined = await readPkgUp({
-        cwd: path.join(`.`, `dist`, `packages`, `omnihive`),
-    });
+    const packageJson: readPkgUp.NormalizedReadResult | undefined = await AwaitHelper.execute(
+        readPkgUp({
+            cwd: path.join(`.`, `dist`, `packages`, `omnihive`),
+        })
+    );
 
     const corePackages: any = packageJson?.packageJson.omniHive.coreDependencies;
     const loadedPackages: any = packageJson?.packageJson.dependencies;
@@ -271,7 +274,7 @@ const build = async (): Promise<void> => {
     }
 
     if (packageJson && packageJson.packageJson) {
-        await writePkg(path.join(`.`, `dist`, `packages`, `omnihive`), packageJson.packageJson);
+        await AwaitHelper.execute(writePkg(path.join(`.`, `dist`, `packages`, `omnihive`), packageJson.packageJson));
     }
 
     console.log(chalk.greenBright("Done removing non-core packages from OmniHive package.json..."));
@@ -369,7 +372,7 @@ const build = async (): Promise<void> => {
         to: `${currentVersion}`,
     };
 
-    await replaceInFile.replaceInFile(replaceWorkspaceOptions);
+    await AwaitHelper.execute(replaceInFile.replaceInFile(replaceWorkspaceOptions));
 
     const replaceVersionOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
@@ -378,14 +381,14 @@ const build = async (): Promise<void> => {
         to: `"version": "${currentVersion}"`,
     };
 
-    await replaceInFile.replaceInFile(replaceVersionOptions);
+    await AwaitHelper.execute(replaceInFile.replaceInFile(replaceVersionOptions));
 
     console.log(chalk.greenBright("Done patching package.json files..."));
 
     // Upate Elastic with new version
     console.log(chalk.yellow("Updating version metadata..."));
     if (!args.argv.version && elasticClient) {
-        await elasticClient.update({ index: "master-version", id: "1", body: { doc: version } });
+        await AwaitHelper.execute(elasticClient.update({ index: "master-version", id: "1", body: { doc: version } }));
     }
     console.log(chalk.greenBright("Done updating version metadata..."));
 

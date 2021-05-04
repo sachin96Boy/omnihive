@@ -84,11 +84,16 @@ export class ParseAstQuery {
             HiveWorkerType.Feature
         );
 
-        const disableSecurity: boolean = (await featureWorker?.get<boolean>("disableSecurity", false)) ?? false;
-
         const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
             HiveWorkerType.Token
         );
+
+        let disableSecurity = false;
+
+        if (featureWorker) {
+            disableSecurity =
+                (await AwaitHelper.execute(featureWorker?.get<boolean>("disableSecurity", false))) ?? false;
+        }
 
         if (!disableSecurity && !tokenWorker) {
             throw new Error("[ohAccessError] No token worker defined.");
@@ -109,7 +114,7 @@ export class ParseAstQuery {
             omniHiveContext.access &&
             !StringHelper.isNullOrWhiteSpace(omniHiveContext.access)
         ) {
-            const verifyToken: boolean = await AwaitHelper.execute<boolean>(tokenWorker.verify(omniHiveContext.access));
+            const verifyToken: boolean = await AwaitHelper.execute(tokenWorker.verify(omniHiveContext.access));
             if (verifyToken === false) {
                 throw new Error("[ohAccessError] Access token is invalid or expired.");
             }
@@ -120,7 +125,7 @@ export class ParseAstQuery {
         this.databaseWorker = databaseWorker;
         this.encryptionWorker = encryptionWorker;
 
-        const converterInfo: ConverterSqlInfo = await this.getSqlFromGraph(resolveInfo);
+        const converterInfo: ConverterSqlInfo = await AwaitHelper.execute(this.getSqlFromGraph(resolveInfo));
 
         let cacheKey: string = "";
         let cacheSeconds = -1;
@@ -149,14 +154,14 @@ export class ParseAstQuery {
                 !StringHelper.isNullOrWhiteSpace(omniHiveContext.cache) &&
                 omniHiveContext.cache === "cache"
             ) {
-                const keyExists: boolean = await this.cacheWorker.exists(cacheKey);
+                const keyExists: boolean = await AwaitHelper.execute(this.cacheWorker.exists(cacheKey));
 
                 if (keyExists) {
                     logWorker.write(
                         OmniHiveLogLevel.Info,
                         `(Retrieved from Cache) => ${workerName} => ${converterInfo.sql}`
                     );
-                    const cacheResults: string | undefined = await this.cacheWorker.get(cacheKey);
+                    const cacheResults: string | undefined = await AwaitHelper.execute(this.cacheWorker.get(cacheKey));
 
                     try {
                         if (cacheResults && !StringHelper.isNullOrWhiteSpace(cacheResults)) {
@@ -169,7 +174,7 @@ export class ParseAstQuery {
             }
         }
 
-        const dataResults: any[][] = await AwaitHelper.execute<any[][]>(databaseWorker.executeQuery(converterInfo.sql));
+        const dataResults: any[][] = await AwaitHelper.execute(databaseWorker.executeQuery(converterInfo.sql));
         const treeResults: any = this.getGraphFromData(dataResults[0], converterInfo.hydrationDefinition);
 
         if (this.cacheWorker) {

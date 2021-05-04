@@ -6,6 +6,7 @@ import fse from "fs-extra";
 import path from "path";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import yargs from "yargs";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 
 const orangeHex: string = "#FFC022#";
 
@@ -92,7 +93,7 @@ const build = async (): Promise<void> => {
         to: `${buildNumber}`,
     };
 
-    await replaceInFile.replaceInFile(replaceWorkspaceOptions);
+    await AwaitHelper.execute(replaceInFile.replaceInFile(replaceWorkspaceOptions));
 
     const replaceVersionOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
@@ -101,7 +102,7 @@ const build = async (): Promise<void> => {
         to: `"version": "${buildNumber}"`,
     };
 
-    await replaceInFile.replaceInFile(replaceVersionOptions);
+    await AwaitHelper.execute(replaceInFile.replaceInFile(replaceVersionOptions));
 
     console.log(chalk.greenBright("Done patching package.json files..."));
 

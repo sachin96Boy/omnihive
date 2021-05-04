@@ -31,7 +31,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
 
     public async init(config: HiveWorker): Promise<void> {
         try {
-            await AwaitHelper.execute<void>(super.init(config));
+            await AwaitHelper.execute(super.init(config));
             this.metadata = this.checkObjectStructure<MssqlDatabaseWorkerMetadata>(
                 MssqlDatabaseWorkerMetadata,
                 config.metadata
@@ -50,7 +50,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             };
 
             this.connectionPool = new sql.ConnectionPool(this.sqlConfig);
-            await AwaitHelper.execute<sql.ConnectionPool>(this.connectionPool.connect());
+            await AwaitHelper.execute(this.connectionPool.connect());
 
             const connectionOptions: Knex.Config = { connection: {}, pool: { min: 0, max: 150 } };
             connectionOptions.client = "mssql";
@@ -66,7 +66,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         logWorker?.write(OmniHiveLogLevel.Info, query);
 
         const poolRequest = this.connectionPool.request();
-        const result = await AwaitHelper.execute<any>(poolRequest.query(query));
+        const result = await AwaitHelper.execute(poolRequest.query(query));
         return result.recordsets;
     };
 
@@ -102,10 +102,8 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             storedProcs: [],
         };
 
-        const tableResult = await AwaitHelper.execute<any[][]>(this.executeQuery("exec oh_get_schema"));
-        const storedProcResult = await AwaitHelper.execute<any[][]>(
-            this.executeQuery("exec oh_get_stored_proc_schema")
-        );
+        const tableResult = await AwaitHelper.execute(this.executeQuery("exec oh_get_schema"));
+        const storedProcResult = await AwaitHelper.execute(this.executeQuery("exec oh_get_stored_proc_schema"));
 
         result.tables = ObjectHelper.createArray(TableSchema, tableResult[0]);
         result.storedProcs = ObjectHelper.createArray(StoredProcSchema, storedProcResult[0]);

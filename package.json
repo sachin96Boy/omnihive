@@ -10,13 +10,12 @@
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build:debug": "yarn node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build.ts -v 0.99.9",
-        "build": "yarn node -r ts-node/register ./build.ts",
+        "build:debug": "yarn node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./src/build/build.ts -v 0.99.9",
+        "build": "yarn node -r ts-node/register ./src/build/build.ts",
         "cli:debug": "cd src/packages/omnihive && yarn run cli:debug",
         "cli:taskRunner:debug": "cd src/packages/omnihive && yarn run cli:taskRunner:debug",
         "doctor": "yarn dlx @yarnpkg/doctor",
         "server:debug": "cd src/packages/omnihive && yarn run server:debug",
-        "server:debug:noAdmin": "cd src/packages/omnihive && yarn run watch:node",
         "test": "omnihive_test_settings=\"./settings/omnihive_test_config.json\" nyc --reporter=html mocha -r ts-node/register 'src/packages/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors",
         "test:custom": "omnihive_test_settings=\"./settings/omnihive_test_config.json\" nyc mocha -r ts-node/register 'src/custom/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors"
     },
@@ -38,6 +37,7 @@
         "chalk": "4.1.0",
         "cross-env": "7.0.3",
         "dayjs": "1.10.4",
+        "dotenv": "8.2.0",
         "eslint": "7.21.0",
         "eslint-config-prettier": "8.1.0",
         "eslint-plugin-prettier": "3.3.1",

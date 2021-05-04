@@ -44,7 +44,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
     }
 
     public async init(config: HiveWorker): Promise<void> {
-        await AwaitHelper.execute<void>(super.init(config));
+        await AwaitHelper.execute(super.init(config));
 
         try {
             this.metadata = this.checkObjectStructure<HiveWorkerMetadataServer>(
@@ -111,7 +111,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             for (const worker of dbWorkers) {
                 logWorker?.write(OmniHiveLogLevel.Info, `Retrieving ${worker.registeredWorker.name} Schema`);
 
-                const result: ConnectionSchema = await AwaitHelper.execute<ConnectionSchema>(
+                const result: ConnectionSchema = await AwaitHelper.execute(
                     (worker.registeredWorker.instance as IDatabaseWorker).getSchema()
                 );
 
@@ -441,10 +441,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             res.setHeader("Content-Type", "application/json");
 
                             try {
-                                const workerResponse: RestEndpointExecuteResponse = await workerInstance.execute(
-                                    req.headers,
-                                    `${req.protocol}://${req.get("host")}${req.originalUrl}`,
-                                    req.body
+                                const workerResponse: RestEndpointExecuteResponse = await AwaitHelper.execute(
+                                    workerInstance.execute(
+                                        req.headers,
+                                        `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+                                        req.body
+                                    )
                                 );
 
                                 if (workerResponse.response) {

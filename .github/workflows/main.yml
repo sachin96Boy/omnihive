@@ -12,6 +12,8 @@ jobs:
       - name: Yarn Install
         run: yarn
       - name: Build and Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: yarn node -r ts-node/register ./src/build/build.ts -c "main" -t "patch" -p --pa "public" --pt "latest"
       - name: Version Number
         id: version

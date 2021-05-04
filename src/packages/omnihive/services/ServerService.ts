@@ -18,7 +18,7 @@ import express from "express";
 import helmet from "helmet";
 import http, { Server } from "http";
 import path from "path";
-import readPkgUp from "read-pkg-up";
+import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import swaggerUi from "swagger-ui-express";
@@ -50,7 +50,7 @@ export class ServerService {
                 global.omnihive.serverSettings = await AwaitHelper.execute(configWorker.get());
             }
 
-            const pkgJson: readPkgUp.NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
+            const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
 
             await AwaitHelper.execute(appService.initOmniHiveApp(pkgJson));
 

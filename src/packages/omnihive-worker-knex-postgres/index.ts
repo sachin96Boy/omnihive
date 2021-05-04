@@ -3,7 +3,6 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLog
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
@@ -13,21 +12,11 @@ import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/
 import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import knex, { Knex } from "knex";
-import sql from "mssql";
 import { serializeError } from "serialize-error";
-import yaml from "js-yaml";
-import fse from "fs-extra";
-import path from "path";
-
-export class MssqlDatabaseWorkerMetadata extends HiveWorkerMetadataDatabase {
-    public schemaName: string = "";
-}
 
 export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
-    private connectionPool!: sql.ConnectionPool;
-    private sqlConfig!: sql.config;
-    private metadata!: MssqlDatabaseWorkerMetadata;
+    private metadata!: HiveWorkerMetadataDatabase;
 
     constructor() {
         super();
@@ -36,29 +25,14 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     public async init(config: HiveWorker): Promise<void> {
         try {
             await AwaitHelper.execute(super.init(config));
-            this.metadata = this.checkObjectStructure<MssqlDatabaseWorkerMetadata>(
-                MssqlDatabaseWorkerMetadata,
+            this.metadata = this.checkObjectStructure<HiveWorkerMetadataDatabase>(
+                HiveWorkerMetadataDatabase,
                 config.metadata
             );
 
-            this.sqlConfig = {
-                user: this.metadata.userName,
-                password: this.metadata.password,
-                server: this.metadata.serverAddress,
-                port: +this.metadata.serverPort,
-                database: this.metadata.databaseName,
-                options: {
-                    enableArithAbort: true,
-                    encrypt: false,
-                },
-            };
-
-            this.connectionPool = new sql.ConnectionPool(this.sqlConfig);
-            await AwaitHelper.execute(this.connectionPool.connect());
-
-            const connectionOptions: Knex.Config = { connection: {}, pool: { min: 0, max: 150 } };
-            connectionOptions.client = "mssql";
-            connectionOptions.connection = this.sqlConfig;
+            const connectionOptions: Knex.Config = { client: "pg" connection: {
+                
+            } };
             this.connection = knex(connectionOptions);
         } catch (err) {
             throw new Error("MSSQL Init Error => " + JSON.stringify(serializeError(err)));
@@ -106,30 +80,8 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             storedProcs: [],
         };
 
-        let tableResult, storedProcResult;
-        const defaultDoc: object | undefined = yaml.load(
-            fse.readFileSync(path.join(__dirname, "/defaultSchema.yml"), "utf8")
-        ) as object;
-
-        if (this.metadata.tableSchemaExecutor && !StringHelper.isNullOrWhiteSpace(this.metadata.tableSchemaExecutor)) {
-            tableResult = await AwaitHelper.execute(this.executeQuery(`exec ${this.metadata.tableSchemaExecutor}`));
-        } else {
-            if (defaultDoc) {
-                tableResult = await AwaitHelper.execute(this.executeQuery((defaultDoc as any).tables as string));
-            } else {
-                throw new Error(`Cannot find a table executor for ${this.config.name}`);
-            }
-        }
-
-        if (this.metadata.procSchemaExecutor && !StringHelper.isNullOrWhiteSpace(this.metadata.procSchemaExecutor)) {
-            storedProcResult = await AwaitHelper.execute(this.executeQuery(`exec ${this.metadata.procSchemaExecutor}`));
-        } else {
-            if (defaultDoc) {
-                storedProcResult = await AwaitHelper.execute(this.executeQuery((defaultDoc as any).procs as string));
-            } else {
-                throw new Error(`Cannot find a stored proc executor for ${this.config.name}`);
-            }
-        }
+        const tableResult = await AwaitHelper.execute(this.executeQuery("exec oh_get_schema"));
+        const storedProcResult = await AwaitHelper.execute(this.executeQuery("exec oh_get_stored_proc_schema"));
 
         result.tables = ObjectHelper.createArray(TableSchema, tableResult[0]);
         result.storedProcs = ObjectHelper.createArray(StoredProcSchema, storedProcResult[0]);

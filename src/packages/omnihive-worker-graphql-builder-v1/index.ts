@@ -80,14 +80,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             });
 
             const fullSchema: TableSchema[] = connectionSchema.tables;
-            const primaryKey: TableSchema = tableSchema.filter((ts: TableSchema) => ts.columnIsPrimaryKey === true)[0];
+            const primaryKeys: TableSchema[] | undefined = tableSchema.filter(
+                (ts: TableSchema) => ts.columnIsPrimaryKey === true
+            );
+
             const primarySchema: TableSchema[] = fullSchema.filter((schema: TableSchema) => {
                 return schema.columnForeignKeyTableName === tableSchema[0].tableName;
             });
-
-            if (!primaryKey) {
-                throw new Error(`Cannot find primary key for ${table.tableName} in ${databaseWorker.config.name}`);
-            }
 
             const foreignSchema: TableSchema[] = [];
             tableSchema.forEach((column: TableSchema) => {
@@ -104,7 +103,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\textensions: {`);
             builder.appendLine(`\t\tdbWorkerInstance: "${databaseWorker.config.name}",`);
             builder.appendLine(`\t\tdbTableName: "${tableSchema[0].tableName}",`);
-            builder.appendLine(`\t\tdbPrimaryKey: "${primaryKey.columnNameDatabase}",`);
+            if (primaryKeys.length > 0) {
+                builder.appendLine(`\t\tdbPrimaryKey: "${primaryKey.columnNameDatabase}",`);
+            }
             builder.appendLine(`\t},`);
             builder.appendLine(`\tfields: () => ({`);
 
@@ -215,7 +216,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\textensions: {`);
             builder.appendLine(`\t\tdbWorkerInstance: "${databaseWorker.config.name}",`);
             builder.appendLine(`\t\tdbTableName: "${tableSchema[0].tableName}",`);
-            builder.appendLine(`\t\tdbPrimaryKey: "${primaryKey.columnNameDatabase}",`);
+            if (primaryKey) {
+                builder.appendLine(`\t\tdbPrimaryKey: "${primaryKey.columnNameDatabase}",`);
+            }
             builder.appendLine(`\t\taggregateType: true,`);
             builder.appendLine(`\t},`);
             builder.appendLine(`\tfields: () => ({`);

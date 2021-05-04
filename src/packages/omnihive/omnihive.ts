@@ -8,7 +8,7 @@ import chalk from "chalk";
 import figlet from "figlet";
 import fse from "fs-extra";
 import nodeCleanup from "node-cleanup";
-import readPkgUp from "read-pkg-up";
+import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import yargs from "yargs";
 import { GlobalObject } from "./models/GlobalObject";
 import { AdminService } from "./services/AdminService";
@@ -75,7 +75,7 @@ const init = async () => {
         }
     }
 
-    const pkgJson: readPkgUp.NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
+    const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
 
     // Load Boot Workers
     if (pkgJson && pkgJson.packageJson && pkgJson.packageJson.omniHive && pkgJson.packageJson.omniHive.bootWorkers) {

@@ -5,7 +5,7 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLog
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import fse from "fs-extra";
-import readPkgUp from "read-pkg-up";
+import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { AppService } from "./AppService";
@@ -13,7 +13,7 @@ import { AppService } from "./AppService";
 export class TaskRunnerService {
     public run = async (worker: string, args: string): Promise<void> => {
         // Run basic app service
-        const pkgJson: readPkgUp.NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
+        const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
         const appService: AppService = new AppService();
 
         await AwaitHelper.execute(appService.initOmniHiveApp(pkgJson));

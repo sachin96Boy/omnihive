@@ -4,14 +4,14 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLog
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import childProcess from "child_process";
-import readPkgUp from "read-pkg-up";
+import { NormalizedReadResult } from "read-pkg-up";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 
 export class AppService {
-    public initOmniHiveApp = async (packageJson: readPkgUp.NormalizedReadResult | undefined) => {
+    public initOmniHiveApp = async (packageJson: NormalizedReadResult | undefined) => {
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohBootLogWorker"

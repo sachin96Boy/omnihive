@@ -7966,6 +7966,7 @@ fsevents@~2.3.1:
     "@types/yargs": 16.0.0
     "@typescript-eslint/eslint-plugin": 4.17.0
     "@typescript-eslint/parser": 4.17.0
+    axios: 0.21.1
     chai: 4.3.3
     chalk: 4.1.0
     cross-env: 7.0.3

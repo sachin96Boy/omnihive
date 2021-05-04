@@ -10,7 +10,7 @@
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build:debug": "yarn node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./src/build/build.ts -v 0.99.9",
+        "build:debug": "yarn node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./src/build/build.ts",
         "build": "yarn node -r ts-node/register ./src/build/build.ts",
         "cli:debug": "cd src/packages/omnihive && yarn run cli:debug",
         "cli:taskRunner:debug": "cd src/packages/omnihive && yarn run cli:taskRunner:debug",
@@ -33,6 +33,7 @@
         "@types/yargs": "16.0.0",
         "@typescript-eslint/eslint-plugin": "4.17.0",
         "@typescript-eslint/parser": "4.17.0",
+        "axios": "0.21.1",
         "chai": "4.3.3",
         "chalk": "4.1.0",
         "cross-env": "7.0.3",

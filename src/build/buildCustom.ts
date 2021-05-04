@@ -6,7 +6,6 @@ import fse from "fs-extra";
 import path from "path";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import yargs from "yargs";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 
 const orangeHex: string = "#FFC022#";
 
@@ -93,7 +92,7 @@ const build = async (): Promise<void> => {
         to: `${buildNumber}`,
     };
 
-    await AwaitHelper.execute(replaceInFile.replaceInFile(replaceWorkspaceOptions));
+    await replaceInFile.replaceInFile(replaceWorkspaceOptions);
 
     const replaceVersionOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
@@ -102,7 +101,7 @@ const build = async (): Promise<void> => {
         to: `"version": "${buildNumber}"`,
     };
 
-    await AwaitHelper.execute(replaceInFile.replaceInFile(replaceVersionOptions));
+    await replaceInFile.replaceInFile(replaceVersionOptions);
 
     console.log(chalk.greenBright("Done patching package.json files..."));
 
@@ -149,7 +148,13 @@ const execSpawn = (commandString: string, cwd: string): string => {
     });
 
     if (execSpawn.status !== 0) {
-        console.log(chalk.red(execSpawn.stdout.toString().trim()));
+        if (execSpawn.stdout?.length > 0) {
+            console.log(chalk.red(execSpawn.stdout.toString().trim()));
+        } else if (execSpawn.stderr?.length > 0) {
+            console.log(chalk.red(execSpawn.stderr.toString().trim()));
+        } else if (execSpawn.error) {
+            console.log(chalk.red(execSpawn.error.message));
+        }
         process.exit(1);
     }
 

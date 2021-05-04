@@ -1,4 +1,3 @@
-import { Client } from "@elastic/elasticsearch";
 import chalk from "chalk";
 import childProcess from "child_process";
 import dayjs from "dayjs";
@@ -11,6 +10,7 @@ import semver from "semver";
 import tar from "tar";
 import writePkg from "write-pkg";
 import yargs from "yargs";
+import axios from "axios";
 
 // Elastic version record
 type Version = {
@@ -25,8 +25,11 @@ const build = async (): Promise<void> => {
     const startTime: dayjs.Dayjs = dayjs();
 
     // Define elastic client if needed
-    let elasticClient: Client | undefined = undefined;
-    let version: Version = { main: "", beta: "", dev: "" };
+    let version: Version = {
+        main: "",
+        beta: "",
+        dev: "",
+    };
 
     // Get the current git branch
     const currentBranch: string = execSpawn("git branch --show-current", "./");
@@ -111,27 +114,13 @@ const build = async (): Promise<void> => {
         }).argv;
 
     if (!args.argv.version) {
-        // Check if Elastic settings are available and get versions
-        if (
-            !process.env.omnihive_build_elastic_cloudId ||
-            !process.env.omnihive_build_elastic_cloudPassword ||
-            !process.env.omnihive_build_elastic_cloudUser
-        ) {
-            throw new Error("There are no elastic settings so the build cannot continue.");
-        }
+        const versions = (await axios.get("https://registry.npmjs.org/-/package/omnihive/dist-tags")).data;
 
-        elasticClient = new Client({
-            cloud: {
-                id: process.env.omnihive_build_elastic_cloudId,
-            },
-            auth: {
-                username: process.env.omnihive_build_elastic_cloudUser,
-                password: process.env.omnihive_build_elastic_cloudPassword,
-            },
-        });
-
-        const versionDoc = await elasticClient.get({ index: "master-version", id: "1" });
-        version = versionDoc.body._source as Version;
+        version = {
+            main: versions.latest,
+            beta: versions.beta,
+            dev: versions.dev,
+        };
     } else {
         version = {
             main: args.argv.version as string,
@@ -342,7 +331,7 @@ const build = async (): Promise<void> => {
                 version.beta = semver.inc(currentVersion, "prerelease", false, "beta") ?? "";
                 version.dev = semver.inc(currentVersion, "prerelease", false, "dev") ?? "";
                 break;
-            case "patch":
+            default:
                 currentVersion = semver.inc(version.main, "patch") ?? "";
 
                 if (!currentVersion || currentVersion === "") {
@@ -381,13 +370,6 @@ const build = async (): Promise<void> => {
     await replaceInFile.replaceInFile(replaceVersionOptions);
 
     console.log(chalk.greenBright("Done patching package.json files..."));
-
-    // Upate Elastic with new version
-    console.log(chalk.yellow("Updating version metadata..."));
-    if (!args.argv.version && elasticClient) {
-        await elasticClient.update({ index: "master-version", id: "1", body: { doc: version } });
-    }
-    console.log(chalk.greenBright("Done updating version metadata..."));
 
     // Finish version maintenance
     console.log(chalk.blue("Done with version maintenance..."));
@@ -490,7 +472,13 @@ const execSpawn = (commandString: string, cwd: string): string => {
     });
 
     if (execSpawn.status !== 0) {
-        console.log(chalk.red(execSpawn.stdout.toString().trim()));
+        if (execSpawn.stdout?.length > 0) {
+            console.log(chalk.red(execSpawn.stdout.toString().trim()));
+        } else if (execSpawn.stderr?.length > 0) {
+            console.log(chalk.red(execSpawn.stderr.toString().trim()));
+        } else if (execSpawn.error) {
+            console.log(chalk.red(execSpawn.error.message));
+        }
         process.exit(1);
     }
 

@@ -1,4 +1,4 @@
-name: Build and publish
+name: Patch
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
       - name: Yarn Install
         run: yarn
       - name: Build and Publish
-        run: yarn node -r ts-node/register ./build.ts -c "main" -t "patch" -p --pa "public" --pt "latest"
+        run: yarn node -r ts-node/register ./src/build/build.ts -c "main" -t "patch" -p --pa "public" --pt "latest"
       - name: Version Number
         id: version
         run: echo "::set-output name=VERSION::$(npm view omnihive version)"

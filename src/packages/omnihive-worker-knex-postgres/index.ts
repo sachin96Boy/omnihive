@@ -15,9 +15,12 @@ import knex, { Knex } from "knex";
 import { serializeError } from "serialize-error";
 import fse from "fs-extra";
 import path from "path";
+import pg from "pg";
 
 export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
+    private connectionPool!: pg.Pool;
+    private sqlConfig!: any;
     private metadata!: HiveWorkerMetadataDatabase;
 
     constructor() {
@@ -32,7 +35,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
                 config.metadata
             );
 
-            let connectionOptions: any = {
+            this.sqlConfig = {
                 host: this.metadata.serverAddress,
                 port: this.metadata.serverPort,
                 database: this.metadata.databaseName,
@@ -42,15 +45,20 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
 
             if (this.metadata.requireSsl) {
                 if (StringHelper.isNullOrWhiteSpace(this.metadata.sslCertPath)) {
-                    connectionOptions.ssl = this.metadata.requireSsl;
+                    this.sqlConfig.ssl = this.metadata.requireSsl;
                 } else {
-                    connectionOptions.ssl = {
+                    this.sqlConfig.ssl = {
                         ca: fse.readFileSync(this.metadata.sslCertPath).toString(),
                     };
                 }
             }
 
-            this.connection = knex({ client: "pg", connection: connectionOptions });
+            this.connectionPool = new pg.Pool(this.sqlConfig);
+
+            const connectionOptions: Knex.Config = { connection: {}, pool: { min: 0, max: 150 } };
+            connectionOptions.client = "pg";
+            connectionOptions.connection = this.sqlConfig;
+            this.connection = knex(connectionOptions);
         } catch (err) {
             throw new Error("MSSQL Init Error => " + JSON.stringify(serializeError(err)));
         }
@@ -62,7 +70,8 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             logWorker?.write(OmniHiveLogLevel.Info, query);
         }
 
-        const result = await AwaitHelper.execute(this.connection.raw(query));
+        const client: pg.PoolClient = await AwaitHelper.execute(this.connectionPool.connect());
+        const result = await AwaitHelper.execute(client.query(query));
 
         const returnResults: any[][] = [];
         let currentResultIndex: number = 0;
@@ -77,6 +86,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             currentResultIndex++;
         }
 
+        client.release();
         return returnResults;
     };
 

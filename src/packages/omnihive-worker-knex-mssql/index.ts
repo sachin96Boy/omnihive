@@ -20,7 +20,7 @@ import path from "path";
 export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
     private connectionPool!: sql.ConnectionPool;
-    private sqlConfig!: sql.config;
+    private sqlConfig!: any;
     private metadata!: HiveWorkerMetadataDatabase;
 
     constructor() {

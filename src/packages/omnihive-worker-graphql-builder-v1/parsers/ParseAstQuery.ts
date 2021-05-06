@@ -242,10 +242,21 @@ export class ParseAstQuery {
         // Set the intial "from" clause
         this.query.from(`${graphParentType.extensions?.dbTableName} as t${this.currentTableIndex}`);
 
-        // Get the main primary key from the root "from" table
-        const primaryKey: any = _.filter(graphParentType.getFields(), (field) => {
-            return field.extensions?.dbColumnName === graphParentType.extensions?.dbPrimaryKey;
-        })[0];
+        // Get the primary keys from the root "from" table if there are any
+        let primaryKeys: any[] = [];
+
+        if (
+            graphParentType &&
+            graphParentType.extensions &&
+            graphParentType.extensions.dbPrimaryKeys &&
+            Array.isArray(graphParentType.extensions.dbPrimaryKeys)
+        ) {
+            primaryKeys = _.filter(graphParentType.getFields(), (field) => {
+                return (graphParentType.extensions?.dbPrimaryKeys as Array<string>).includes(
+                    field.extensions?.dbColumnName
+                );
+            });
+        }
 
         // Build the root where arguments and get the where string
         const args: any = {};
@@ -282,7 +293,7 @@ export class ParseAstQuery {
         const hydrationDefinition: any = this.turnGraphNodeIntoSql(
             resolveInfo.fieldNodes[0].selectionSet?.selections ?? [],
             graphReturnType.getFields(),
-            primaryKey,
+            primaryKeys,
             args
         );
 
@@ -323,7 +334,7 @@ export class ParseAstQuery {
     private turnGraphNodeIntoSql = (
         selections: readonly SelectionNode[],
         selectionFields: GraphQLFieldMap<any, any>,
-        primaryKey: any,
+        primaryKeys: any[],
         args: any,
         parentTable?: ConverterDatabaseTable
     ): any => {
@@ -377,18 +388,20 @@ export class ParseAstQuery {
         // Get table for reference
         const table: ConverterDatabaseTable = this.tables[this.currentTableIndex];
 
-        // Primary key must ALWAYS be pushed in for every table so the hydrator will
-        // work.  It must also be pushed in FIRST.  We will ignore the primary key
+        // Primary keys must ALWAYS be pushed in for every table so the hydrator will
+        // work.  They must also be pushed in FIRST.  We will ignore the primary keys
         // later if the query has requested it.
 
         const graphParentType: GraphQLObjectType = (this.parentPath.type as GraphQLList<GraphQLObjectType>).ofType;
 
         if (!graphParentType.extensions?.aggregateType) {
-            returnHydration[primaryKey.name] = { column: `f${this.currentFieldIndex}`, id: true };
-            this.query.select(
-                `${table.tableAlias}.${primaryKey.extensions.dbColumnName} as f${this.currentFieldIndex}`
-            );
-            this.currentFieldIndex++;
+            primaryKeys.forEach((primaryKey) => {
+                returnHydration[primaryKey.name] = { column: `f${this.currentFieldIndex}`, id: true };
+                this.query.select(
+                    `${table.tableAlias}.${primaryKey.extensions.dbColumnName} as f${this.currentFieldIndex}`
+                );
+                this.currentFieldIndex++;
+            });
 
             // Get the selection fields that are actual fields, push them into the catcher interface,
             // and add them to the select.  Ignore the primary key if it is in the query.
@@ -399,7 +412,7 @@ export class ParseAstQuery {
             fields.forEach((selection: SelectionNode) => {
                 const graphField: GraphQLField<any, any> = _.get(selectionFields, (selection as FieldNode).name.value);
 
-                if (graphField.extensions?.dbColumnName !== primaryKey.extensions.dbColumnName) {
+                if (!primaryKeys.some((key) => key.extensions.dbColumnName === graphField.extensions?.dbColumnName)) {
                     returnHydration[graphField.name] = { column: `f${this.currentFieldIndex}` };
                     this.query.select(
                         `${table.tableAlias}.${graphField.extensions?.dbColumnName} as f${this.currentFieldIndex}`
@@ -497,14 +510,14 @@ export class ParseAstQuery {
             }
 
             // Grab the join's primary key for the recursion
-            const subPrimaryKey: any = _.filter(subFields, (field: any) => {
+            const subPrimaryKey: any[] = _.filter(subFields, (field: any) => {
                 return (
                     field.extensions.dbColumnName !== undefined &&
                     !field.name.toString().startsWith("from_") &&
                     !field.name.toString().startsWith("to_") &&
                     field.extensions.dbColumnName === graphField.extensions?.dbJoinForeignTablePrimaryKey
                 );
-            })[0];
+            });
 
             // Push into the catcher interface
             const subTable: ConverterDatabaseTable = {

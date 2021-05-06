@@ -934,13 +934,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@types/js-yaml@npm:4.0.1"
-  checksum: fd8985289c713e3b2a494d6c243139c94bdda856af60346cf0c0da25bd6289e0165d367e623202b8cdfab7cef73a424a183282063beb0c0823d152dbec6d4959
-  languageName: node
-  linkType: hard
-
 "@types/json-schema@npm:^7.0.3":
   version: 7.0.7
   resolution: "@types/json-schema@npm:7.0.7"
@@ -1311,15 +1304,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yaml@npm:1.9.7":
-  version: 1.9.7
-  resolution: "@types/yaml@npm:1.9.7"
-  dependencies:
-    yaml: "*"
-  checksum: d17c643192ec7d1e3dd29350f5032814469fa1069f6a19c173615e1c109f173e210fb352aea4a9b6ba3047b768071a4f64548c33d68ea17cc663104d6b79778b
-  languageName: node
-  linkType: hard
-
 "@types/yargs-parser@npm:*":
   version: 20.2.0
   resolution: "@types/yargs-parser@npm:20.2.0"
@@ -1623,13 +1607,10 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-knex-mssql@workspace:src/packages/omnihive-worker-knex-mssql"
   dependencies:
     "@types/fs-extra": 9.0.11
-    "@types/js-yaml": 4.0.1
     "@types/mssql": 6.0.8
-    "@types/yaml": 1.9.7
     "@withonevision/omnihive-core": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
-    js-yaml: 4.1.0
     knex: 0.95.4
     mssql: 6.3.1
     serialize-error: 8.1.0
@@ -1638,7 +1619,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-knex-postgres@workspace:src/packages/omnihive-worker-knex-postgres":
+"@withonevision/omnihive-worker-knex-postgres@workspace:*, @withonevision/omnihive-worker-knex-postgres@workspace:src/packages/omnihive-worker-knex-postgres":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-knex-postgres@workspace:src/packages/omnihive-worker-knex-postgres"
   dependencies:
@@ -5645,17 +5626,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.1.0":
-  version: 4.1.0
-  resolution: "js-yaml@npm:4.1.0"
-  dependencies:
-    argparse: ^2.0.1
-  bin:
-    js-yaml: bin/js-yaml.js
-  checksum: 8973cf4296c944cc2551d1e3d3d064e7de0d0a6db3f7bafe40339ee9e5e0329560b52c4b8492b9b22365404c9be0822b62340ab49884e1dedfcc7ff80158abe0
-  languageName: node
-  linkType: hard
-
 "js-yaml@npm:^3.13.1":
   version: 3.14.1
   resolution: "js-yaml@npm:3.14.1"
@@ -6906,6 +6876,7 @@ fsevents@~2.3.1:
     "@withonevision/omnihive-worker-function-core": "workspace:*"
     "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*"
     "@withonevision/omnihive-worker-knex-mssql": "workspace:*"
+    "@withonevision/omnihive-worker-knex-postgres": "workspace:*"
     "@withonevision/omnihive-worker-log-core": "workspace:*"
     "@withonevision/omnihive-worker-server-v1": "workspace:*"
     "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*"
@@ -10036,13 +10007,6 @@ typescript@4.2.4:
   version: 4.0.0
   resolution: "yallist@npm:4.0.0"
   checksum: a2960ef879af6ee67a76cae29bac9d8bffeb6e9e366c217dbd21464e7fce071933705544724f47e90ba5209cf9c83c17d5582dd04415d86747a826b2a231efb8
-  languageName: node
-  linkType: hard
-
-"yaml@npm:*":
-  version: 1.10.2
-  resolution: "yaml@npm:1.10.2"
-  checksum: 8d72062ea3dbfd8fae3d6ddd5b741c2aeb5835a31b0719bf14fac71dd84adde0829763d6fbac46387309da00af1440194c796da5efc349b0baf9de39d82ae69e
   languageName: node
   linkType: hard
 

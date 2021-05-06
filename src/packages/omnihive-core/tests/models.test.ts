@@ -21,7 +21,7 @@ import { RegisteredUrl } from "../models/RegisteredUrl";
 import { RestEndpointExecuteResponse } from "../models/RestEndpointExecuteResponse";
 import { ServerConfigSettings } from "../models/ServerConfigSettings";
 import { ServerSettings } from "../models/ServerSettings";
-import { StoredProcSchema } from "../models/StoredProcSchema";
+import { ProcSchema } from "../models/ProcSchema";
 import { TableSchema } from "../models/TableSchema";
 import { WorkerGetterBase } from "../models/WorkerGetterBase";
 import { WorkerSetterBase } from "../models/WorkerSetterBase";
@@ -90,8 +90,8 @@ describe("model tests", function () {
         assert.isTrue(test.workerName === "", "workerName not initialized properly");
         assert.isTrue(Array.isArray(test.tables), "tables not initialized properly");
         assert.isTrue(test.tables.length === 0, "tables array over populated when initialized");
-        assert.isTrue(Array.isArray(test.storedProcs), "storedProcs not initialized properly");
-        assert.isTrue(test.storedProcs.length === 0, "storedProcs array is over populated when initialized");
+        assert.isTrue(Array.isArray(test.procs), "procs not initialized properly");
+        assert.isTrue(test.procs.length === 0, "procs array is over populated when initialized");
     });
 
     it("ConverterSqlInfo", function () {
@@ -253,11 +253,11 @@ describe("model tests", function () {
         assert.isTrue(test.config.webRootUrl === "", "config.webRootUrl not initialized properly");
     });
 
-    it("StoredProcSchema", function () {
-        const test = new StoredProcSchema();
+    it("ProcSchema", function () {
+        const test = new ProcSchema();
 
-        assert.isTrue(test.schema === "", "schema not initialized properly");
-        assert.isTrue(test.storedProcName === "", "storedProcName not initialized properly");
+        assert.isTrue(test.procSchema === "", "schema not initialized properly");
+        assert.isTrue(test.procName === "", "procName not initialized properly");
         assert.isTrue(test.parameterId === 0, "parameterId not initialized properly");
         assert.isTrue(test.parameterName === "", "parameterName not initialized properly");
         assert.isTrue(test.parameterTypeDatabase === "", "parameterTypeDatabase not initialized properly");
@@ -275,6 +275,7 @@ describe("model tests", function () {
         assert.isTrue(test.columnNameEntity === "", "columnNameEntity not initialized properly");
         assert.isTrue(test.columnTypeDatabase === "", "columnTypeDatabase not initialized properly");
         assert.isTrue(test.columnTypeEntity === "", "columnTypeEntity not initialized properly");
+        assert.isTrue(test.columnPosition === 0, "columnPosition not initialized properly");
         assert.isTrue(test.columnIsNullable === true, "columnIsNullable not initialized properly");
         assert.isTrue(test.columnIsIdentity === false, "columnIsIdentity not initialized properly");
         assert.isTrue(test.columnIsPrimaryKey === false, "columnIsPrimaryKey not initialized properly");

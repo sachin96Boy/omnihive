@@ -1,6 +1,6 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
+import { ProcSchema } from "@withonevision/omnihive-core/models/ProcSchema";
 import { assert } from "chai";
 import MssqlDatabaseWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
@@ -38,10 +38,10 @@ describe("mssql database worker tests", function () {
 
     describe("Worker Functions", function () {
         const wipeData = async function (): Promise<void> {
-            const schema: StoredProcSchema = new StoredProcSchema();
-            schema.schema = "dbo";
-            schema.storedProcName = "test_truncate_mocha_testing";
-            await AwaitHelper.execute(worker.executeStoredProcedure(schema, []));
+            const schema: ProcSchema = new ProcSchema();
+            schema.procSchema = "dbo";
+            schema.procName = "test_truncate_mocha_testing";
+            await AwaitHelper.execute(worker.executeProcedure(schema, []));
         };
 
         before(async function () {
@@ -78,12 +78,12 @@ describe("mssql database worker tests", function () {
             assert.strictEqual(result[0][0].data, "Testing Values 1");
         });
 
-        it("execute stored procedure", async function () {
-            const schema: StoredProcSchema = new StoredProcSchema();
-            schema.schema = "dbo";
-            schema.storedProcName = "test_stored_proc_call";
+        it("execute procedure", async function () {
+            const schema: ProcSchema = new ProcSchema();
+            schema.procSchema = "dbo";
+            schema.procName = "test_stored_proc_call";
             const result = await AwaitHelper.execute(
-                worker.executeStoredProcedure(schema, [
+                worker.executeProcedure(schema, [
                     { name: "Value", value: "Testing Values ", isString: true },
                     { name: "Numeric", value: 1, isString: false },
                 ])
@@ -92,11 +92,11 @@ describe("mssql database worker tests", function () {
             assert.equal(result[0][0].data, "Testing Values 1");
         });
 
-        it("execute stored procedure with no schema", async function () {
-            const schema: StoredProcSchema = new StoredProcSchema();
-            schema.storedProcName = "test_stored_proc_call";
+        it("execute procedure with no schema", async function () {
+            const schema: ProcSchema = new ProcSchema();
+            schema.procName = "test_stored_proc_call";
             const result = await AwaitHelper.execute(
-                worker.executeStoredProcedure(schema, [
+                worker.executeProcedure(schema, [
                     { name: "Value", value: "Testing Values ", isString: true },
                     { name: "Numeric", value: 1, isString: false },
                 ])
@@ -109,7 +109,7 @@ describe("mssql database worker tests", function () {
             const results = await AwaitHelper.execute(worker.getSchema());
 
             assert.equal(results.tables[0].tableName, "mocha_testing");
-            assert.equal(results.storedProcs.length, 5);
+            assert.equal(results.procs.length, 5);
         });
 
         it("execute query - no log worker", async function () {

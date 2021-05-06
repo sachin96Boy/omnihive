@@ -7,7 +7,7 @@ import { ParseAstQuery } from "./ParseAstQuery";
 import { ParseCustomSql } from "./ParseCustomSql";
 import { ParseDelete } from "./ParseDelete";
 import { ParseInsert } from "./ParseInsert";
-import { ParseStoredProcedure } from "./ParseStoredProcedure";
+import { ParseProcedure } from "./ParseProcedure";
 import { ParseUpdate } from "./ParseUpdate";
 
 export class ParseMaster {
@@ -82,12 +82,12 @@ export class ParseMaster {
         return results;
     };
 
-    public parseStoredProcedure = async (
+    public parseProcedure = async (
         workerName: string,
         resolveInfo: GraphQLResolveInfo,
         omniHiveContext: GraphContext
     ): Promise<{ procName: string; results: any[][] }[]> => {
-        const parser: ParseStoredProcedure = new ParseStoredProcedure();
+        const parser: ParseProcedure = new ParseProcedure();
         return await AwaitHelper.execute(parser.parse(workerName, resolveInfo, omniHiveContext));
     };
 

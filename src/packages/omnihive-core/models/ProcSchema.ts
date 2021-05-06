@@ -1,6 +1,6 @@
-export class StoredProcSchema {
-    public schema: string = "";
-    public storedProcName: string = "";
+export class ProcSchema {
+    public procSchema: string = "";
+    public procName: string = "";
     public parameterId: number = 0;
     public parameterName: string = "";
     public parameterTypeDatabase: string = "";

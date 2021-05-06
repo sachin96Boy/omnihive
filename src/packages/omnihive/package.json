@@ -38,6 +38,7 @@
         "@withonevision/omnihive-worker-function-core": "workspace:*",
         "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*",
         "@withonevision/omnihive-worker-knex-mssql": "workspace:*",
+        "@withonevision/omnihive-worker-knex-postgres": "workspace:*",
         "@withonevision/omnihive-worker-log-core": "workspace:*",
         "@withonevision/omnihive-worker-server-v1": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",

@@ -8,10 +8,10 @@ import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeature
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
-import { StoredProcSchema } from "@withonevision/omnihive-core/models/StoredProcSchema";
+import { ProcSchema } from "@withonevision/omnihive-core/models/ProcSchema";
 import { FieldNode, GraphQLResolveInfo, SelectionNode } from "graphql";
 
-export class ParseStoredProcedure {
+export class ParseProcedure {
     public parse = async (
         workerName: string,
         resolveInfo: GraphQLResolveInfo,
@@ -71,32 +71,32 @@ export class ParseStoredProcedure {
         const schema: ConnectionSchema | undefined = global.omnihive.registeredSchemas.find(
             (value: ConnectionSchema) => value.workerName === workerName
         );
-        let fullSchema: StoredProcSchema[] = [];
+        let fullSchema: ProcSchema[] = [];
 
         if (schema) {
-            fullSchema = schema.storedProcs;
+            fullSchema = schema.procs;
         }
 
         const response: { procName: string; results: any[][] }[] = [];
 
-        const storedProcCall: readonly SelectionNode[] = resolveInfo.operation.selectionSet.selections;
+        const procCall: readonly SelectionNode[] = resolveInfo.operation.selectionSet.selections;
 
-        for (const call of storedProcCall) {
+        for (const call of procCall) {
             const callFieldNode = call as FieldNode;
             const inputArgs: readonly SelectionNode[] | undefined = callFieldNode.selectionSet?.selections;
 
             if (!inputArgs) {
-                throw new Error("Stored Procedure Graph Construction is Incorrect");
+                throw new Error("Procedure Graph Construction is Incorrect");
             }
 
             for (const selection of inputArgs) {
                 const selectionFieldNode = selection as FieldNode;
-                const proc: StoredProcSchema | undefined = fullSchema.find((s) => {
-                    return s.storedProcName === selectionFieldNode.name.value;
+                const proc: ProcSchema | undefined = fullSchema.find((s) => {
+                    return s.procName === selectionFieldNode.name.value;
                 });
 
                 if (!proc) {
-                    throw new Error("Stored Procedure Graph Construction is Incorrect");
+                    throw new Error("Procedure Graph Construction is Incorrect");
                 }
 
                 const procArgs: { name: string; value: any; isString: boolean }[] = [];
@@ -110,8 +110,8 @@ export class ParseStoredProcedure {
                 });
 
                 response.push({
-                    procName: proc.storedProcName,
-                    results: await AwaitHelper.execute(databaseWorker.executeStoredProcedure(proc, procArgs)),
+                    procName: proc.procName,
+                    results: await AwaitHelper.execute(databaseWorker.executeProcedure(proc, procArgs)),
                 });
             }
         }

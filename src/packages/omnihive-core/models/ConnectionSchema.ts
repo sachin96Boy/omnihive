@@ -1,8 +1,8 @@
-import { StoredProcSchema } from "./StoredProcSchema";
+import { ProcSchema } from "./ProcSchema";
 import { TableSchema } from "./TableSchema";
 
 export class ConnectionSchema {
     public workerName: string = "";
     public tables: TableSchema[] = [];
-    public storedProcs: StoredProcSchema[] = [];
+    public procs: ProcSchema[] = [];
 }

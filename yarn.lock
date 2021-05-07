@@ -1619,6 +1619,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@withonevision/omnihive-worker-knex-mysql@workspace:*, @withonevision/omnihive-worker-knex-mysql@workspace:src/packages/omnihive-worker-knex-mysql":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-worker-knex-mysql@workspace:src/packages/omnihive-worker-knex-mysql"
+  dependencies:
+    "@withonevision/omnihive-core": "workspace:*"
+    chai: 4.3.4
+    knex: 0.95.4
+    mysql2: 2.2.5
+    serialize-error: 8.1.0
+    typescript: 4.2.4
+  languageName: unknown
+  linkType: soft
+
 "@withonevision/omnihive-worker-knex-postgres@workspace:*, @withonevision/omnihive-worker-knex-postgres@workspace:src/packages/omnihive-worker-knex-postgres":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-knex-postgres@workspace:src/packages/omnihive-worker-knex-postgres"
@@ -3535,7 +3548,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"denque@npm:^1.1.0, denque@npm:^1.5.0":
+"denque@npm:^1.1.0, denque@npm:^1.4.1, denque@npm:^1.5.0":
   version: 1.5.0
   resolution: "denque@npm:1.5.0"
   checksum: 3564778cda60c7dee3f1d71e397e50e6b39a8c06118aab9843b9396cb621b3191ab56d13de5237b8beee2b87bec485e8239c58ca3133472d2d1eaa3d2d518022
@@ -4570,6 +4583,15 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"generate-function@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "generate-function@npm:2.3.1"
+  dependencies:
+    is-property: ^1.0.2
+  checksum: 620517b8c4b1e273bfdecaa22f92b013393a5800feadf1559c762cf87b164020ccfe217a51908fb715970b820bc27f1252a73436c4e02ef00d04226bf94e3cdc
+  languageName: node
+  linkType: hard
+
 "gensync@npm:^1.0.0-beta.2":
   version: 1.0.0-beta.2
   resolution: "gensync@npm:1.0.0-beta.2"
@@ -5428,6 +5450,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"is-property@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "is-property@npm:1.0.2"
+  checksum: 0473ad8e4e0a4a0d74f0dc820a0dd5e2b1e82eaea0b6ec32402656c5d87b80e964aabf344f4520920b8cbf9cac176f1ae2fcdbb7fb916926a8f5febfde106f69
+  languageName: node
+  linkType: hard
+
 "is-regex@npm:^1.0.3, is-regex@npm:^1.1.2":
   version: 1.1.2
   resolution: "is-regex@npm:1.1.2"
@@ -6212,6 +6241,16 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"lru-cache@npm:^4.1.3":
+  version: 4.1.5
+  resolution: "lru-cache@npm:4.1.5"
+  dependencies:
+    pseudomap: ^1.0.2
+    yallist: ^2.1.2
+  checksum: 6a098d23629357451d4324e1e4fefccdd6df316df29e25571c6148220ced923258381ebeafdf919f90e28c780b650427390582618c1d5fe097873e656d062511
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:^5.1.1":
   version: 5.1.1
   resolution: "lru-cache@npm:5.1.1"
@@ -6487,6 +6526,31 @@ fsevents@~2.3.1:
   bin:
     mssql: ./bin/mssql
   checksum: f3558a02964db19d7dff98d304539f949714593b8c7a54667d082951886bd13d3003ae8635ee6673bc65261bd9a53e6766e76e8342e50e871dafadb1b6b7ae55
+  languageName: node
+  linkType: hard
+
+"mysql2@npm:2.2.5":
+  version: 2.2.5
+  resolution: "mysql2@npm:2.2.5"
+  dependencies:
+    denque: ^1.4.1
+    generate-function: ^2.3.1
+    iconv-lite: ^0.6.2
+    long: ^4.0.0
+    lru-cache: ^6.0.0
+    named-placeholders: ^1.1.2
+    seq-queue: ^0.0.5
+    sqlstring: ^2.3.2
+  checksum: 2a3c2f07480d229ecce9b8ea0564ae15777da9f828b41d33a629e58800e49817b70fcd7b5a5f7bd2fcb85aba6f5b57c8651eadf6c1947601a3802c9f3696be4b
+  languageName: node
+  linkType: hard
+
+"named-placeholders@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "named-placeholders@npm:1.1.2"
+  dependencies:
+    lru-cache: ^4.1.3
+  checksum: 82c70713109054283ebe6c9001e2bc36cd80e4dd9d4712cc498a7718ed7d8e4cff5eac902efe900d528c99cfcd0af4f4b00f27529eb87a64f14d95dfcbec7dcf
   languageName: node
   linkType: hard
 
@@ -6876,6 +6940,7 @@ fsevents@~2.3.1:
     "@withonevision/omnihive-worker-function-core": "workspace:*"
     "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*"
     "@withonevision/omnihive-worker-knex-mssql": "workspace:*"
+    "@withonevision/omnihive-worker-knex-mysql": "workspace:*"
     "@withonevision/omnihive-worker-knex-postgres": "workspace:*"
     "@withonevision/omnihive-worker-log-core": "workspace:*"
     "@withonevision/omnihive-worker-server-v1": "workspace:*"
@@ -7526,7 +7591,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"pseudomap@npm:^1.0.1":
+"pseudomap@npm:^1.0.1, pseudomap@npm:^1.0.2":
   version: 1.0.2
   resolution: "pseudomap@npm:1.0.2"
   checksum: 1ad1802645e830d99f9c1db97efc6902d2316b660454633229f636dd59e751d00498dd325d3b18d49f2be990a2c9d28f8bfe6f9b544a8220a5faa2bfb4694bb7
@@ -8324,6 +8389,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"seq-queue@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "seq-queue@npm:0.0.5"
+  checksum: f1c644d98c681dcfe0bd5b86a224d49da069427f4234727e20b6ff3451413fb68088bd20ac069df98f221121831e1f1a7e71d3a1645a756420a1691fba8b59d9
+  languageName: node
+  linkType: hard
+
 "serialize-error@npm:8.1.0":
   version: 8.1.0
   resolution: "serialize-error@npm:8.1.0"
@@ -8649,6 +8721,13 @@ fsevents@~2.3.1:
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
   checksum: 51df1bce9e577287f56822d79ac5bd94f6c634fccf193895f2a1d2db2e975b6aa7bc97afae9cf11d49b7c37fe4afc188ff5c4878be91f2c86eabd11c5df8b62c
+  languageName: node
+  linkType: hard
+
+"sqlstring@npm:^2.3.2":
+  version: 2.3.2
+  resolution: "sqlstring@npm:2.3.2"
+  checksum: 2389f9436973af0287061f202ced7a77e2b62c15667a44bf961340f93b74775c8f0f9dfe03193c2b0a0ff943b6419e2461a12c33f6dd0e62a67d8bb992d6c56e
   languageName: node
   linkType: hard
 
@@ -9989,7 +10068,7 @@ typescript@4.2.4:
   languageName: node
   linkType: hard
 
-"yallist@npm:^2.0.0":
+"yallist@npm:^2.0.0, yallist@npm:^2.1.2":
   version: 2.1.2
   resolution: "yallist@npm:2.1.2"
   checksum: f83e3d18eeba68a0276be2ab09260be3f2a300307e84b1565c620ef71f03f106c3df9bec4c3a91e5fa621a038f8826c19b3786804d3795dd4f999e5b6be66ea3

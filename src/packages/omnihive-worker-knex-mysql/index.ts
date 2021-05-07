@@ -12,14 +12,15 @@ import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/
 import { ProcSchema } from "@withonevision/omnihive-core/models/ProcSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import knex, { Knex } from "knex";
-import sql from "mssql";
 import { serializeError } from "serialize-error";
 import fse from "fs-extra";
 import path from "path";
+import mysql from "mysql2";
+import { Pool } from "mysql2/promise";
 
-export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
+export default class MySqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
-    private connectionPool!: sql.ConnectionPool;
+    private connectionPool!: Pool;
     private sqlConfig!: any;
     private metadata!: HiveWorkerMetadataDatabase;
 
@@ -36,29 +37,40 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             );
 
             this.sqlConfig = {
-                user: this.metadata.userName,
-                password: this.metadata.password,
-                server: this.metadata.serverAddress,
+                host: this.metadata.serverAddress,
                 port: this.metadata.serverPort,
                 database: this.metadata.databaseName,
-                options: {
-                    enableArithAbort: true,
-                    encrypt: false,
-                },
+                user: this.metadata.userName,
+                password: this.metadata.password,
             };
 
-            this.connectionPool = new sql.ConnectionPool({ ...this.sqlConfig });
-            await AwaitHelper.execute(this.connectionPool.connect());
+            if (this.metadata.requireSsl) {
+                if (StringHelper.isNullOrWhiteSpace(this.metadata.sslCertPath)) {
+                    this.sqlConfig.ssl = this.metadata.requireSsl;
+                } else {
+                    this.sqlConfig.ssl = {
+                        ca: fse.readFileSync(this.metadata.sslCertPath).toString(),
+                    };
+                }
+            }
+
+            this.connectionPool = mysql
+                .createPool({
+                    ...this.sqlConfig,
+                    connectionLimit: this.metadata.connectionPoolLimit,
+                    multipleStatements: true,
+                })
+                .promise();
 
             const connectionOptions: Knex.Config = {
                 connection: {},
                 pool: { min: 0, max: this.metadata.connectionPoolLimit },
             };
-            connectionOptions.client = "mssql";
+            connectionOptions.client = "mysql2";
             connectionOptions.connection = this.sqlConfig;
             this.connection = knex(connectionOptions);
         } catch (err) {
-            throw new Error("MSSQL Init Error => " + JSON.stringify(serializeError(err)));
+            throw new Error("MySQL Init Error => " + JSON.stringify(serializeError(err)));
         }
     }
 
@@ -68,9 +80,22 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             logWorker?.write(OmniHiveLogLevel.Info, query);
         }
 
-        const poolRequest = this.connectionPool.request();
-        const result = await AwaitHelper.execute(poolRequest.query(query));
-        return result.recordsets;
+        const result: any = await AwaitHelper.execute(this.connectionPool.query(query));
+
+        const returnResults: any[][] = [];
+        let currentResultIndex: number = 0;
+
+        if (!Array.isArray(result[0][0])) {
+            returnResults[currentResultIndex] = result[0];
+            return returnResults;
+        }
+
+        for (let r of result[0]) {
+            returnResults[currentResultIndex] = r;
+            currentResultIndex++;
+        }
+
+        return returnResults;
     };
 
     public executeProcedure = async (
@@ -79,10 +104,10 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     ): Promise<any[][]> => {
         const builder: StringBuilder = new StringBuilder();
 
-        builder.append(`exec `);
+        builder.append(`call `);
 
         if (!procSchema.procSchema || procSchema.procSchema === "") {
-            builder.append(`dbo.` + procSchema.procName + ` `);
+            builder.append(`public.` + procSchema.procName + ` `);
         } else {
             builder.append(procSchema.procSchema + `.` + procSchema.procName + ` `);
         }
@@ -109,7 +134,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
 
         if (this.metadata.tableSchemaExecutor && !StringHelper.isNullOrWhiteSpace(this.metadata.tableSchemaExecutor)) {
             tableResult = await AwaitHelper.execute(
-                this.executeQuery(`exec ${this.metadata.tableSchemaExecutor}`, true)
+                this.executeQuery(`call ${this.metadata.tableSchemaExecutor}`, true)
             );
         } else {
             if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {
@@ -122,7 +147,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         }
 
         if (this.metadata.procSchemaExecutor && !StringHelper.isNullOrWhiteSpace(this.metadata.procSchemaExecutor)) {
-            procResult = await AwaitHelper.execute(this.executeQuery(`exec ${this.metadata.procSchemaExecutor}`, true));
+            procResult = await AwaitHelper.execute(this.executeQuery(`call ${this.metadata.procSchemaExecutor}`, true));
         } else {
             if (fse.existsSync(path.join(__dirname, "defaultProcs.sql"))) {
                 procResult = await AwaitHelper.execute(
@@ -133,7 +158,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             }
         }
 
-        tableResult[0].forEach((row) => {
+        tableResult[tableResult.length - 1].forEach((row) => {
             if (
                 !this.metadata.ignoreSchema &&
                 !this.metadata.schemas.includes("*") &&
@@ -160,7 +185,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             result.tables.push(schemaRow);
         });
 
-        procResult[0].forEach((row) => {
+        procResult[procResult.length - 1].forEach((row) => {
             if (
                 !this.metadata.ignoreSchema &&
                 !this.metadata.schemas.includes("*") &&

@@ -17,7 +17,7 @@ import fse from "fs-extra";
 import path from "path";
 import pg from "pg";
 
-export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
+export default class PostgresDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
     private connectionPool!: pg.Pool;
     private sqlConfig!: any;
@@ -53,14 +53,17 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
                 }
             }
 
-            this.connectionPool = new pg.Pool(this.sqlConfig);
+            this.connectionPool = new pg.Pool({ ...this.sqlConfig });
 
-            const connectionOptions: Knex.Config = { connection: {}, pool: { min: 0, max: 150 } };
+            const connectionOptions: Knex.Config = {
+                connection: {},
+                pool: { min: 0, max: this.metadata.connectionPoolLimit },
+            };
             connectionOptions.client = "pg";
             connectionOptions.connection = this.sqlConfig;
             this.connection = knex(connectionOptions);
         } catch (err) {
-            throw new Error("MSSQL Init Error => " + JSON.stringify(serializeError(err)));
+            throw new Error("Postgres Init Error => " + JSON.stringify(serializeError(err)));
         }
     }
 
@@ -151,7 +154,11 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         }
 
         tableResult[tableResult.length - 1].forEach((row) => {
-            if (!this.metadata.ignoreSchema && !this.metadata.schemas.includes(row.schema_name)) {
+            if (
+                !this.metadata.ignoreSchema &&
+                !this.metadata.schemas.includes("*") &&
+                !this.metadata.schemas.includes(row.schema_name)
+            ) {
                 return;
             }
 
@@ -174,7 +181,11 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         });
 
         procResult[procResult.length - 1].forEach((row) => {
-            if (!this.metadata.ignoreSchema && !this.metadata.schemas.includes(row.proc_schema)) {
+            if (
+                !this.metadata.ignoreSchema &&
+                !this.metadata.schemas.includes("*") &&
+                !this.metadata.schemas.includes(row.proc_schema)
+            ) {
                 return;
             }
 

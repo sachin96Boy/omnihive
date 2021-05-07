@@ -1,4 +1,5 @@
 export class HiveWorkerMetadataDatabase {
+    public connectionPoolLimit: number = 25;
     public databaseName: string = "";
     public ignoreSchema: boolean = true;
     public password: string = "";

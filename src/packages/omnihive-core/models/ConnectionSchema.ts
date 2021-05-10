@@ -1,8 +1,8 @@
-import { ProcSchema } from "./ProcSchema";
+import { ProcFunctionSchema } from "./ProcFunctionSchema";
 import { TableSchema } from "./TableSchema";
 
 export class ConnectionSchema {
     public workerName: string = "";
     public tables: TableSchema[] = [];
-    public procs: ProcSchema[] = [];
+    public procFunctions: ProcFunctionSchema[] = [];
 }

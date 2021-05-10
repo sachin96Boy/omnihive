@@ -11,7 +11,7 @@ import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBa
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataLifecycleFunction";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { ProcSchema } from "@withonevision/omnihive-core/models/ProcSchema";
+import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import _ from "lodash";
 import pluralize from "pluralize";
@@ -85,7 +85,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         tables.forEach((table: TableSchema) => {
             // Get meta things
             const tableSchema: TableSchema[] = connectionSchema.tables.filter((schema: TableSchema) => {
-                return schema.tableName === table.tableName && schema.schemaName;
+                return schema.tableName === table.tableName && schema.schemaName === table.schemaName;
             });
 
             const fullSchema: TableSchema[] = connectionSchema.tables;
@@ -1136,11 +1136,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Build stored proc object if they exist
         const dbWorkerMeta: HiveWorkerMetadataDatabase = databaseWorker.config.metadata as HiveWorkerMetadataDatabase;
 
-        if (connectionSchema.procs.length > 0) {
+        if (connectionSchema.procFunctions.length > 0) {
             // Stored proc object type
             builder.appendLine(`var DbProcObjectType = new GraphQLObjectType({`);
-            if (!StringHelper.isNullOrWhiteSpace(dbWorkerMeta.procGraphSchemaName)) {
-                builder.appendLine(`\tname: '${dbWorkerMeta.procGraphSchemaName}',`);
+            if (!StringHelper.isNullOrWhiteSpace(dbWorkerMeta.procFunctionGraphSchemaName)) {
+                builder.appendLine(`\tname: '${dbWorkerMeta.procFunctionGraphSchemaName}',`);
             } else {
                 builder.appendLine(`\tname: 'dbProcedures',`);
             }
@@ -1148,25 +1148,28 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Build all stored procedures as graph fields
 
-            let procs: ProcSchema[];
+            let procFunctions: ProcFunctionSchema[];
 
             if (dbWorkerMeta.ignoreSchema) {
-                procs = _.uniqBy(connectionSchema.procs, "procName");
+                procFunctions = _.uniqBy(connectionSchema.procFunctions, "procName");
             } else {
-                procs = _.uniqBy(connectionSchema.procs, (p) => [p.procSchema, p.procName].join("."));
+                procFunctions = _.uniqBy(connectionSchema.procFunctions, (p) => [p.schemaName, p.name].join("."));
             }
 
-            procs.forEach((proc: ProcSchema) => {
+            procFunctions.forEach((procFunction: ProcFunctionSchema) => {
                 if (dbWorkerMeta.ignoreSchema) {
-                    builder.appendLine(`\t\t${proc.procName}: {`);
+                    builder.appendLine(`\t\t${procFunction.name}: {`);
                 } else {
-                    builder.appendLine(`\t\t${proc.procSchema}_${proc.procName}: {`);
+                    builder.appendLine(`\t\t${procFunction.schemaName}_${procFunction.name}: {`);
                 }
                 builder.appendLine(`\t\t\ttype: GraphQLJSONObject,`);
                 builder.appendLine(`\t\t\targs: {`);
-                connectionSchema.procs
-                    .filter((arg: ProcSchema) => arg.procSchema === proc.procSchema && arg.procName === proc.procName)
-                    .forEach((arg: ProcSchema) => {
+                connectionSchema.procFunctions
+                    .filter(
+                        (arg: ProcFunctionSchema) =>
+                            arg.schemaName === procFunction.schemaName && arg.name === procFunction.name
+                    )
+                    .forEach((arg: ProcFunctionSchema) => {
                         if (arg.parameterName) {
                             builder.append(`\t\t\t\t${arg.parameterName.replace("@", "")}: { type : `);
 
@@ -1205,8 +1208,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\tquery: new GraphQLObjectType({`);
             builder.appendLine(`\t\tname: 'Query',`);
             builder.appendLine(`\t\tfields: () => ({`);
-            if (!StringHelper.isNullOrWhiteSpace(dbWorkerMeta.procGraphSchemaName)) {
-                builder.appendLine(`\t\t\t${dbWorkerMeta.procGraphSchemaName}: {`);
+            if (!StringHelper.isNullOrWhiteSpace(dbWorkerMeta.procFunctionGraphSchemaName)) {
+                builder.appendLine(`\t\t\t${dbWorkerMeta.procFunctionGraphSchemaName}: {`);
             } else {
                 builder.appendLine(`\t\t\tdbProcedures: {`);
             }

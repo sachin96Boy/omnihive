@@ -1,8 +1,9 @@
-select schema_name(so.schema_id) as proc_schema,
-    so.name as [proc_name],
-    p.parameter_id as [parameter_position],
-    p.name as [parameter_name],
-    type_name(p.user_type_id) as [parameter_type_database],
+select schema_name(so.schema_id) as procfunc_schema,
+    'storedProcedure' as procfunc_type,
+    so.name as procfunc_name,
+    p.parameter_id as parameter_order,
+    p.name as parameter_name,
+    type_name(p.user_type_id) as parameter_type_database,
     case
         typ.[name]
         when 'money' then 'number'

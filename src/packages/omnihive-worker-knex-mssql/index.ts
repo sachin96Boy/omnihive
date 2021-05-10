@@ -9,7 +9,7 @@ import { ConnectionSchema } from "@withonevision/omnihive-core/models/Connection
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
-import { ProcSchema } from "@withonevision/omnihive-core/models/ProcSchema";
+import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import knex, { Knex } from "knex";
 import sql from "mssql";
@@ -74,17 +74,17 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
     };
 
     public executeProcedure = async (
-        procSchema: ProcSchema,
+        procFunctionSchema: ProcFunctionSchema[],
         args: { name: string; value: any; isString: boolean }[]
     ): Promise<any[][]> => {
         const builder: StringBuilder = new StringBuilder();
 
         builder.append(`exec `);
 
-        if (!procSchema.procSchema || procSchema.procSchema === "") {
-            builder.append(`dbo.` + procSchema.procName + ` `);
+        if (!procFunctionSchema[0].schemaName || procFunctionSchema[0].schemaName === "") {
+            builder.append(`dbo.` + procFunctionSchema[0].name + ` `);
         } else {
-            builder.append(procSchema.procSchema + `.` + procSchema.procName + ` `);
+            builder.append(procFunctionSchema[0].schemaName + `.` + procFunctionSchema[0].name + ` `);
         }
 
         args.forEach((arg: { name: string; value: any; isString: boolean }, index: number) => {
@@ -102,14 +102,18 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
         const result: ConnectionSchema = {
             workerName: this.config.name,
             tables: [],
-            procs: [],
+            procFunctions: [],
         };
 
         let tableResult: any[][], procResult: any[][];
 
-        if (this.metadata.tableSchemaExecutor && !StringHelper.isNullOrWhiteSpace(this.metadata.tableSchemaExecutor)) {
+        if (
+            this.metadata.getSchemaSqlFile &&
+            !StringHelper.isNullOrWhiteSpace(this.metadata.getSchemaSqlFile) &&
+            fse.existsSync(this.metadata.getSchemaSqlFile)
+        ) {
             tableResult = await AwaitHelper.execute(
-                this.executeQuery(`exec ${this.metadata.tableSchemaExecutor}`, true)
+                this.executeQuery(fse.readFileSync(this.metadata.getSchemaSqlFile, "utf8"), true)
             );
         } else {
             if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {
@@ -121,12 +125,18 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             }
         }
 
-        if (this.metadata.procSchemaExecutor && !StringHelper.isNullOrWhiteSpace(this.metadata.procSchemaExecutor)) {
-            procResult = await AwaitHelper.execute(this.executeQuery(`exec ${this.metadata.procSchemaExecutor}`, true));
+        if (
+            this.metadata.getProcFunctionSqlFile &&
+            !StringHelper.isNullOrWhiteSpace(this.metadata.getProcFunctionSqlFile) &&
+            fse.existsSync(this.metadata.getProcFunctionSqlFile)
+        ) {
+            procResult = await AwaitHelper.execute(
+                this.executeQuery(fse.readFileSync(this.metadata.getProcFunctionSqlFile, "utf8"), true)
+            );
         } else {
-            if (fse.existsSync(path.join(__dirname, "defaultProcs.sql"))) {
+            if (fse.existsSync(path.join(__dirname, "defaultProcFunctions.sql"))) {
                 procResult = await AwaitHelper.execute(
-                    this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultProcs.sql"), "utf8"), true)
+                    this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultProcFunctions.sql"), "utf8"), true)
                 );
             } else {
                 throw new Error(`Cannot find a proc executor for ${this.config.name}`);
@@ -169,17 +179,17 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
                 return;
             }
 
-            const schemaRow = new ProcSchema();
+            const schemaRow = new ProcFunctionSchema();
 
-            schemaRow.procSchema = row.proc_schema;
-            schemaRow.procName = row.proc_name;
-            schemaRow.parameterId = row.parameter_id;
+            schemaRow.schemaName = row.procfunc_schema;
+            schemaRow.name = row.procfunc_name;
+            schemaRow.type = row.procfunc_type;
+            schemaRow.parameterOrder = row.parameter_order;
             schemaRow.parameterName = row.parameter_name;
             schemaRow.parameterTypeDatabase = row.parameter_type_database;
             schemaRow.parameterTypeEntity = row.parameter_type_entity;
-            schemaRow.parameterMaxBytes = row.parameter_max_bytes;
 
-            result.procs.push(schemaRow);
+            result.procFunctions.push(schemaRow);
         });
 
         return result;

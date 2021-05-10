@@ -8,7 +8,7 @@ import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeature
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
-import { ProcSchema } from "@withonevision/omnihive-core/models/ProcSchema";
+import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { FieldNode, GraphQLResolveInfo, SelectionNode } from "graphql";
 
 export class ParseProcedure {
@@ -71,10 +71,10 @@ export class ParseProcedure {
         const schema: ConnectionSchema | undefined = global.omnihive.registeredSchemas.find(
             (value: ConnectionSchema) => value.workerName === workerName
         );
-        let fullSchema: ProcSchema[] = [];
+        let fullSchema: ProcFunctionSchema[] = [];
 
         if (schema) {
-            fullSchema = schema.procs;
+            fullSchema = schema.procFunctions;
         }
 
         const response: { procName: string; results: any[][] }[] = [];
@@ -91,11 +91,11 @@ export class ParseProcedure {
 
             for (const selection of inputArgs) {
                 const selectionFieldNode = selection as FieldNode;
-                const proc: ProcSchema | undefined = fullSchema.find((s) => {
-                    return s.procName === selectionFieldNode.name.value;
+                const proc: ProcFunctionSchema[] | undefined = fullSchema.filter((s) => {
+                    return s.name === selectionFieldNode.name.value;
                 });
 
-                if (!proc) {
+                if (!proc || proc.length <= 0) {
                     throw new Error("Procedure Graph Construction is Incorrect");
                 }
 
@@ -110,7 +110,7 @@ export class ParseProcedure {
                 });
 
                 response.push({
-                    procName: proc.procName,
+                    procName: proc[0].name,
                     results: await AwaitHelper.execute(databaseWorker.executeProcedure(proc, procArgs)),
                 });
             }

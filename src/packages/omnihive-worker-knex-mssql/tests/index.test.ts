@@ -1,6 +1,6 @@
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { ProcSchema } from "@withonevision/omnihive-core/models/ProcSchema";
+import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { assert } from "chai";
 import MssqlDatabaseWorker from "..";
 import { TestConfigSettings } from "../../../tests/models/TestConfigSettings";
@@ -38,10 +38,10 @@ describe("mssql database worker tests", function () {
 
     describe("Worker Functions", function () {
         const wipeData = async function (): Promise<void> {
-            const schema: ProcSchema = new ProcSchema();
-            schema.procSchema = "dbo";
-            schema.procName = "test_truncate_mocha_testing";
-            await AwaitHelper.execute(worker.executeProcedure(schema, []));
+            const schema: ProcFunctionSchema = new ProcFunctionSchema();
+            schema.schemaName = "dbo";
+            schema.name = "test_truncate_mocha_testing";
+            await AwaitHelper.execute(worker.executeProcedure([schema], []));
         };
 
         before(async function () {
@@ -79,27 +79,33 @@ describe("mssql database worker tests", function () {
         });
 
         it("execute procedure", async function () {
-            const schema: ProcSchema = new ProcSchema();
-            schema.procSchema = "dbo";
-            schema.procName = "test_stored_proc_call";
+            const schema: ProcFunctionSchema = new ProcFunctionSchema();
+            schema.schemaName = "dbo";
+            schema.name = "test_stored_proc_call";
             const result = await AwaitHelper.execute(
-                worker.executeProcedure(schema, [
-                    { name: "Value", value: "Testing Values ", isString: true },
-                    { name: "Numeric", value: 1, isString: false },
-                ])
+                worker.executeProcedure(
+                    [schema],
+                    [
+                        { name: "Value", value: "Testing Values ", isString: true },
+                        { name: "Numeric", value: 1, isString: false },
+                    ]
+                )
             );
 
             assert.equal(result[0][0].data, "Testing Values 1");
         });
 
         it("execute procedure with no schema", async function () {
-            const schema: ProcSchema = new ProcSchema();
-            schema.procName = "test_stored_proc_call";
+            const schema: ProcFunctionSchema = new ProcFunctionSchema();
+            schema.name = "test_stored_proc_call";
             const result = await AwaitHelper.execute(
-                worker.executeProcedure(schema, [
-                    { name: "Value", value: "Testing Values ", isString: true },
-                    { name: "Numeric", value: 1, isString: false },
-                ])
+                worker.executeProcedure(
+                    [schema],
+                    [
+                        { name: "Value", value: "Testing Values ", isString: true },
+                        { name: "Numeric", value: 1, isString: false },
+                    ]
+                )
             );
 
             assert.equal(result[0][0].data, "Testing Values 1");
@@ -109,7 +115,7 @@ describe("mssql database worker tests", function () {
             const results = await AwaitHelper.execute(worker.getSchema());
 
             assert.equal(results.tables[0].tableName, "mocha_testing");
-            assert.equal(results.procs.length, 5);
+            assert.equal(results.procFunctions.length, 5);
         });
 
         it("execute query - no log worker", async function () {

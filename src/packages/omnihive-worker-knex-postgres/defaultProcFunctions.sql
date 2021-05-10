@@ -1,6 +1,7 @@
-select proc.specific_schema as proc_schema,
-	proc.routine_name as proc_name,
-	args.ordinal_position as parameter_position,
+select proc.specific_schema as procfunc_schema,
+	'procedures' as procfunc_type,
+	proc.routine_name as procfunc_name,
+	args.ordinal_position as parameter_order,
 	args.parameter_name,
 	args.data_type as parameter_type_database,
 	case

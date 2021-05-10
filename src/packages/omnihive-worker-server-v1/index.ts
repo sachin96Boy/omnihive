@@ -169,7 +169,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 global.omnihive.registeredSchemas.push({
                     workerName: worker.registeredWorker.name,
                     tables: result.tables,
-                    procs: result.procs,
+                    procFunctions: result.procFunctions,
                 });
             }
 

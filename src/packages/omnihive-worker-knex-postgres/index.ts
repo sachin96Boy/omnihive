@@ -100,7 +100,7 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
     ): Promise<any[][]> => {
         const builder: StringBuilder = new StringBuilder();
 
-        builder.append(`call `);
+        builder.append(`select * from `);
 
         if (!procFunctionSchema[0].schemaName || procFunctionSchema[0].schemaName === "") {
             builder.append(`public.` + procFunctionSchema[0].name);

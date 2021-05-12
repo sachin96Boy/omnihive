@@ -11,14 +11,15 @@ import nodeCleanup from "node-cleanup";
 import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import yargs from "yargs";
 import { GlobalObject } from "./models/GlobalObject";
-import { AdminService } from "./services/AdminService";
-import { ServerService } from "./services/ServerService";
+import { BootService } from "./services/BootService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
 import dotenv from "dotenv";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import path from "path";
+import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { AdminService } from "./services/AdminService";
 
 const init = async () => {
     const args = yargs(process.argv.slice(2));
@@ -75,6 +76,63 @@ const init = async () => {
         }
     }
 
+    if (
+        !process.env.OMNIHIVE_BOOT_LOADER_LOCATION ||
+        StringHelper.isNullOrWhiteSpace(process.env.OMNIHIVE_BOOT_LOADER_LOCATION) ||
+        (!fse.existsSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION) &&
+            !fse.existsSync(
+                path.join(
+                    path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
+                    process.env.OMNIHIVE_BOOT_LOADER_LOCATION
+                )
+            ) &&
+            !fse.existsSync(path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION)))
+    ) {
+        throw new Error("No Valid Boot Loader Location Given...OmniHive Cannot Continue");
+    }
+
+    try {
+        if (fse.existsSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION)) {
+            global.omnihive.bootLoaderSettings = JSON.parse(
+                fse.readFileSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION, "utf8")
+            );
+        }
+
+        if (
+            fse.existsSync(
+                path.join(
+                    path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
+                    process.env.OMNIHIVE_BOOT_LOADER_LOCATION
+                )
+            )
+        ) {
+            global.omnihive.bootLoaderSettings = JSON.parse(
+                fse.readFileSync(
+                    path.join(
+                        path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
+                        process.env.OMNIHIVE_BOOT_LOADER_LOCATION
+                    ),
+                    "utf8"
+                )
+            );
+        }
+
+        if (fse.existsSync(path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION))) {
+            global.omnihive.bootLoaderSettings = JSON.parse(
+                fse.readFileSync(
+                    path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION),
+                    "utf8"
+                )
+            );
+        }
+    } catch {
+        throw new Error("No Valid Boot Loader Location Given...OmniHive Cannot Continue");
+    }
+
+    await global.omnihive.pushWorker(global.omnihive.bootLoaderSettings.configWorker, true, false);
+    global.omnihive.bootWorkerNames.push(global.omnihive.bootLoaderSettings.configWorker.name);
+    global.omnihive.serverSettings.workers.push(global.omnihive.bootLoaderSettings.configWorker);
+
     const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
 
     // Load Boot Workers
@@ -83,25 +141,9 @@ const init = async () => {
 
         for (const bootWorker of bootWorkers) {
             if (!global.omnihive.registeredWorkers.some((rw: RegisteredHiveWorker) => rw.name === bootWorker.name)) {
-                let pushWorker: boolean = true;
-
-                if (bootWorker.type === "config") {
-                    if (process.env.OMNIHIVE_SETTINGS_TYPE) {
-                        switch (process.env.OMNIHIVE_SETTINGS_TYPE) {
-                            case "json":
-                                if (bootWorker.name !== "ohBootJsonConfigWorker") {
-                                    pushWorker = false;
-                                }
-                                break;
-                        }
-                    }
-                }
-
-                if (pushWorker) {
-                    await AwaitHelper.execute(global.omnihive.pushWorker(bootWorker, true, false));
-                    global.omnihive.bootWorkerNames.push(bootWorker.name);
-                    global.omnihive.serverSettings.workers.push(bootWorker);
-                }
+                await AwaitHelper.execute(global.omnihive.pushWorker(bootWorker, true, false));
+                global.omnihive.bootWorkerNames.push(bootWorker.name);
+                global.omnihive.serverSettings.workers.push(bootWorker);
             }
         }
     }
@@ -122,19 +164,25 @@ const init = async () => {
         case "server":
         default:
             const adminService: AdminService = new AdminService();
-            await AwaitHelper.execute(adminService.run());
+            await AwaitHelper.execute(adminService.boot());
 
-            const serverService: ServerService = new ServerService();
-            await AwaitHelper.execute(serverService.run());
+            const bootService: BootService = new BootService();
+            await AwaitHelper.execute(bootService.boot());
             break;
     }
 
     nodeCleanup(() => {
-        const adminService: AdminService = new AdminService();
-        adminService.sendToAllClients<{ serverStatus: ServerStatus; serverError: any | undefined }>("status-response", {
-            serverStatus: ServerStatus.Offline,
-            serverError: undefined,
-        });
+        if (global.omnihive.adminServer) {
+            global.omnihive.adminServer
+                .to(global.omnihive.bootLoaderSettings.baseSettings.clusterId)
+                .emit("status-response", {
+                    room: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
+                    data: {
+                        serverStatus: ServerStatus.Offline,
+                        serverError: undefined,
+                    },
+                });
+        }
     });
 
     process.on("SIGUSR2", () => process.kill(process.pid, "SIGHUP"));

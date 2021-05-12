@@ -15,9 +15,9 @@ mockClient.on("close", () => {
 describe("default log worker tests", () => {
     before(async () => {
         global.omnihive = {
-            adminServer: mockServer,
-            adminServerTimer: undefined!,
+            adminServer: undefined!,
             appServer: undefined!,
+            bootLoaderSettings: undefined!,
             bootWorkerNames: undefined!,
             commandLineArgs: undefined!,
             getWorker: undefined!,
@@ -41,8 +41,8 @@ describe("default log worker tests", () => {
 
         global.omnihive = {
             adminServer: undefined!,
-            adminServerTimer: undefined!,
             appServer: undefined!,
+            bootLoaderSettings: undefined!,
             bootWorkerNames: undefined!,
             commandLineArgs: undefined!,
             getWorker: undefined!,

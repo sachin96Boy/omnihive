@@ -10,7 +10,6 @@ import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
 import { serializeError } from "serialize-error";
-import { AdminEventResponse } from "@withonevision/omnihive-core/models/AdminEventResponse";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
@@ -20,6 +19,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
 
     public write = async (logLevel: OmniHiveLogLevel, logString: string): Promise<void> => {
         let featureWorker: IFeatureWorker | undefined = undefined;
+
         let consoleOnlyLogging: boolean = true;
         const timestamp: string = dayjs().format("YYYY-MM-DD HH:mm:ss");
         const osName: string = os.hostname();
@@ -39,22 +39,18 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             consoleOnlyLogging = true;
         }
 
-        let adminEvent: AdminEventResponse = {
-            event: "log-response",
-            data: {
-                logLevel,
-                timestamp,
-                osName,
-                logString,
-            },
-            requestComplete: true,
-            requestError: undefined,
-        };
-
-        if (global && global.omnihive && global.omnihive.adminServer && global.omnihive.adminServer.clients) {
-            global.omnihive.adminServer.clients.forEach((ws) => {
-                ws.send(JSON.stringify(adminEvent));
-            });
+        if (global.omnihive.adminServer) {
+            global.omnihive.adminServer
+                .to(global.omnihive.bootLoaderSettings.baseSettings.clusterId)
+                .emit("log-response", {
+                    room: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
+                    data: {
+                        logLevel,
+                        timestamp,
+                        osName,
+                        logString,
+                    },
+                });
         }
 
         if (consoleOnlyLogging) {

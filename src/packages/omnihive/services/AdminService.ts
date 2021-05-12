@@ -7,21 +7,20 @@ import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper"
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { AdminEvent } from "@withonevision/omnihive-core/models/AdminEvent";
-import { AdminEventResponse } from "@withonevision/omnihive-core/models/AdminEventResponse";
+import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
+import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
 import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
-import WebSocket from "ws";
-import { ServerService } from "./ServerService";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-
-interface ExtendedWebSocket extends WebSocket {
-    isAlive: boolean;
-}
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
+import { serializeError } from "serialize-error";
+import * as socketio from "socket.io";
+import { BootService } from "./BootService";
 
 export class AdminService {
-    public run = async () => {
+    public boot = async () => {
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohBootLogWorker"
@@ -29,18 +28,37 @@ export class AdminService {
 
         logWorker?.write(
             OmniHiveLogLevel.Info,
-            `Setting up admin server on port ${global.omnihive.serverSettings.config.adminPortNumber}...`
+            `Setting up admin server on port ${global.omnihive.bootLoaderSettings.baseSettings.adminPortNumber}...`
         );
 
-        global.omnihive.adminServer = new WebSocket.Server({
-            port: global.omnihive.serverSettings.config.adminPortNumber,
+        global.omnihive.adminServer = new socketio.Server();
+
+        if (global.omnihive.bootLoaderSettings.baseSettings.adminRedisEnable) {
+            this.ioServer.adapter({});
+        }
+
+        this.adminServer.on("close", () => {
+            clearInterval(this.adminServerTimer);
         });
 
-        global.omnihive.adminServer.on("close", () => {
-            clearInterval(global.omnihive.adminServerTimer);
+        global.omnihive.eventEmitter.on("serverReset", () => {
+            if (global.omnihive.bootLoaderSettings.baseSettings.hardResetOnRefresh === true) {
+                process.on("exit", () => {
+                    childProcess.spawn(process.argv.shift() ?? "", process.argv, {
+                        cwd: process.cwd(),
+                        detached: true,
+                        stdio: "inherit",
+                    });
+                });
+
+                process.exit();
+            }
+
+            const bootService: BootService = new BootService();
+            bootService.boot(true);
         });
 
-        global.omnihive.adminServer.on("connection", (ws: WebSocket) => {
+        this.adminServer.on("connection", (ws: WebSocket) => {
             (ws as ExtendedWebSocket).isAlive = true;
 
             ws.on("message", (message: string) => {
@@ -66,13 +84,13 @@ export class AdminService {
                     return;
                 }
 
-                const request: AdminEvent = JSON.parse(message);
+                const request: AdminRequest = JSON.parse(message);
 
                 if (
                     !request ||
                     !request.adminPassword ||
                     StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
-                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                    request.adminPassword !== global.omnihive.bootLoaderSettings.baseSettings.adminPassword
                 ) {
                     this.sendErrorToSingleClient(ws, "config-request-response", "Invalid Password");
                     return;
@@ -102,7 +120,7 @@ export class AdminService {
                     return;
                 }
 
-                const request: AdminEvent<{ serverLabel: string }> = JSON.parse(message);
+                const request: AdminRequest<{ serverLabel: string }> = JSON.parse(message);
 
                 if (!request.data) {
                     this.sendErrorToSingleClient(ws, "access-token-response", "No Server Label Given");
@@ -145,13 +163,13 @@ export class AdminService {
                     return;
                 }
 
-                const request: AdminEvent<{ config: ServerSettings }> = JSON.parse(message);
+                const request: AdminRequest<{ config: ServerSettings }> = JSON.parse(message);
 
                 if (
                     !request ||
                     !request.adminPassword ||
                     StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
-                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword ||
+                    request.adminPassword !== global.omnihive.bootLoaderSettings.baseSettings.adminPassword ||
                     !request.data?.config
                 ) {
                     this.sendErrorToSingleClient(ws, "config-save-response", "Invalid Password");
@@ -183,23 +201,21 @@ export class AdminService {
                     return;
                 }
 
-                const request: AdminEvent<{ refresh?: boolean }> = JSON.parse(message);
+                const request: AdminRequest<{ refresh?: boolean }> = JSON.parse(message);
 
                 if (
                     !request ||
                     !request.adminPassword ||
                     StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
-                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword ||
+                    request.adminPassword !== global.omnihive.bootLoaderSettings.baseSettings.adminPassword ||
                     !request.data?.refresh
                 ) {
                     this.sendErrorToSingleClient(ws, "refresh-response", "Invalid Password");
                     return;
                 }
 
-                const serverService: ServerService = new ServerService();
-                serverService.run(true);
-
                 this.sendToSingleClient<{ refresh: boolean }>(ws, "refresh-response", { refresh: true });
+                global.omnihive.eventEmitter.emit("serverReset");
             });
 
             ws.on("message", (message: string) => {
@@ -207,13 +223,13 @@ export class AdminService {
                     return;
                 }
 
-                const request: AdminEvent = JSON.parse(message);
+                const request: AdminRequest = JSON.parse(message);
 
                 if (
                     !request ||
                     !request.adminPassword ||
                     StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
-                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                    request.adminPassword !== global.omnihive.bootLoaderSettings.baseSettings.adminPassword
                 ) {
                     logWorker?.write(
                         OmniHiveLogLevel.Warn,
@@ -232,13 +248,13 @@ export class AdminService {
                     return;
                 }
 
-                const request: AdminEvent = JSON.parse(message);
+                const request: AdminRequest = JSON.parse(message);
 
                 if (
                     !request ||
                     !request.adminPassword ||
                     StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
-                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                    request.adminPassword !== global.omnihive.bootLoaderSettings.baseSettings.adminPassword
                 ) {
                     this.sendErrorToSingleClient(ws, "status-response", "Invalid Password");
                     return;
@@ -259,13 +275,13 @@ export class AdminService {
                     return;
                 }
 
-                const request: AdminEvent = JSON.parse(message);
+                const request: AdminRequest = JSON.parse(message);
 
                 if (
                     !request ||
                     !request.adminPassword ||
                     StringHelper.isNullOrWhiteSpace(request.adminPassword) ||
-                    request.adminPassword !== global.omnihive.serverSettings.config.adminPassword
+                    request.adminPassword !== global.omnihive.bootLoaderSettings.baseSettings.adminPassword
                 ) {
                     this.sendErrorToSingleClient(ws, "urls-response", "Invalid Password");
                     return;
@@ -277,8 +293,12 @@ export class AdminService {
             });
         });
 
-        global.omnihive.adminServerTimer = setInterval(() => {
-            global.omnihive.adminServer.clients.forEach((ws: WebSocket) => {
+        this.adminServerTimer = setInterval(() => {
+            if (!this.adminServer || !this.adminServer.clients) {
+                return;
+            }
+
+            this.adminServer.clients.forEach((ws: WebSocket) => {
                 if ((ws as ExtendedWebSocket).isAlive === false) {
                     return ws.terminate();
                 }
@@ -288,21 +308,22 @@ export class AdminService {
             });
         }, 20000);
 
-        logWorker?.write(
-            OmniHiveLogLevel.Info,
-            `Admin server listening on port ${global.omnihive.serverSettings.config.adminPortNumber}...`
-        );
+        logWorker?.write(OmniHiveLogLevel.Info, `Admin server listening on port ${this.portNumber}...`);
     };
 
-    public sendToAllClients = <T>(event: string, data?: T) => {
-        let adminEventResponse: AdminEventResponse<T> = {
+    public sendToAllClients = async <T>(event: string, data?: T): Promise<void> => {
+        if (!this.adminServer || !this.adminServer.clients) {
+            return;
+        }
+
+        let adminEventResponse: AdminResponse<T> = {
             event,
             data,
             requestComplete: true,
             requestError: undefined,
         };
 
-        global.omnihive.adminServer.clients.forEach((ws: WebSocket) => {
+        this.adminServer.clients.forEach((ws: WebSocket) => {
             ws.send(JSON.stringify(adminEventResponse));
         });
     };
@@ -313,7 +334,7 @@ export class AdminService {
         }
 
         try {
-            const response: AdminEventResponse = ObjectHelper.create(AdminEventResponse, JSON.parse(message));
+            const response: AdminResponse = ObjectHelper.create(AdminResponse, JSON.parse(message));
 
             if (response.event === eventName) {
                 return true;
@@ -336,13 +357,13 @@ export class AdminService {
     };
 
     private sendToSingleClient = <T>(ws: WebSocket, event: string, data?: T) => {
-        let adminEventResponse: AdminEventResponse<T> = {
+        let adminResponse: AdminResponse<T> = {
             event,
             data,
             requestComplete: true,
             requestError: undefined,
         };
 
-        ws.send(JSON.stringify(adminEventResponse));
+        ws.send(JSON.stringify(adminResponse));
     };
 }

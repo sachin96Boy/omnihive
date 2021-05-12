@@ -10,7 +10,7 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 
-export class AppService {
+export class CommonService {
     public initOmniHiveApp = async (packageJson: NormalizedReadResult | undefined) => {
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,

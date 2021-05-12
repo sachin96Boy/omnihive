@@ -22,12 +22,11 @@ import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import swaggerUi from "swagger-ui-express";
-import { AdminService } from "./AdminService";
-import { AppService } from "./AppService";
+import { CommonService } from "./CommonService";
 
-export class ServerService {
-    public run = async (serverReset: boolean = false): Promise<void> => {
-        const appService: AppService = new AppService();
+export class BootService {
+    public boot = async (serverReset: boolean = false): Promise<void> => {
+        const appService: CommonService = new CommonService();
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohBootLogWorker"
@@ -74,7 +73,7 @@ export class ServerService {
 
             app.get("/", (_req, res) => {
                 res.status(200).render("index", {
-                    rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: global.omnihive.serverError,
@@ -82,12 +81,14 @@ export class ServerService {
             });
 
             app.use((_req, res) => {
-                return res.status(404).render("404", { rootUrl: global.omnihive.serverSettings.config.webRootUrl });
+                return res
+                    .status(404)
+                    .render("404", { rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl });
             });
 
             app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
-                    rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: serializeError(err),
@@ -104,7 +105,7 @@ export class ServerService {
     };
 
     public changeServerStatus = async (serverStatus: ServerStatus, error?: Error): Promise<void> => {
-        const adminService: AdminService = new AdminService();
+        //const adminService: AdminService = new AdminService();
 
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
@@ -126,7 +127,7 @@ export class ServerService {
 
             app.get("/", (_req, res) => {
                 return res.status(200).render("index", {
-                    rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: global.omnihive.serverError,
@@ -134,12 +135,14 @@ export class ServerService {
             });
 
             app.use((_req, res) => {
-                return res.status(404).render("404", { rootUrl: global.omnihive.serverSettings.config.webRootUrl });
+                return res
+                    .status(404)
+                    .render("404", { rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl });
             });
 
             app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
-                    rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                    rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: serializeError(err),
@@ -153,17 +156,24 @@ export class ServerService {
         global.omnihive.webServer?.removeAllListeners().close();
         global.omnihive.webServer = server;
 
-        global.omnihive.webServer?.listen(global.omnihive.serverSettings.config.nodePortNumber, () => {
+        global.omnihive.webServer?.listen(global.omnihive.bootLoaderSettings.baseSettings.nodePortNumber, () => {
             logWorker?.write(
                 OmniHiveLogLevel.Info,
-                `New Server Listening on process ${process.pid} using port ${global.omnihive.serverSettings.config.nodePortNumber}`
+                `New Server Listening on process ${process.pid} using port ${global.omnihive.bootLoaderSettings.baseSettings.nodePortNumber}`
             );
         });
 
-        adminService.sendToAllClients<{ serverStatus: ServerStatus; serverError: any | undefined }>("status-response", {
-            serverStatus: global.omnihive.serverStatus,
-            serverError: global.omnihive.serverError,
-        });
+        if (global.omnihive.adminServer) {
+            global.omnihive.adminServer
+                .to(global.omnihive.bootLoaderSettings.baseSettings.clusterId)
+                .emit("status-response", {
+                    room: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
+                    data: {
+                        serverStatus: global.omnihive.serverStatus,
+                        serverError: global.omnihive.serverError,
+                    },
+                });
+        }
 
         logWorker?.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
     };
@@ -213,7 +223,7 @@ export class ServerService {
             openapi: "3.0.0",
             servers: [
                 {
-                    url: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/rest`,
+                    url: `${global.omnihive.bootLoaderSettings.baseSettings.webRootUrl}${adminRoot}/rest`,
                 },
             ],
             paths: {},
@@ -265,7 +275,7 @@ export class ServerService {
                             }
                         } catch (e) {
                             return res.status(500).render("500", {
-                                rootUrl: global.omnihive.serverSettings.config.webRootUrl,
+                                rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                                 error: serializeError(e),
                             });
                         }
@@ -273,7 +283,7 @@ export class ServerService {
                 );
 
                 global.omnihive.registeredUrls.push({
-                    path: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/rest/${workerMetaData.urlRoute}`,
+                    path: `${global.omnihive.bootLoaderSettings.baseSettings.webRootUrl}${adminRoot}/rest/${workerMetaData.urlRoute}`,
                     type: RegisteredUrlType.RestFunction,
                     metadata: {},
                 });
@@ -297,10 +307,10 @@ export class ServerService {
         app.use(`${adminRoot}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
 
         global.omnihive.registeredUrls.push({
-            path: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/api-docs`,
+            path: `${global.omnihive.bootLoaderSettings.baseSettings.webRootUrl}${adminRoot}/api-docs`,
             type: RegisteredUrlType.Swagger,
             metadata: {
-                swaggerJsonUrl: `${global.omnihive.serverSettings.config.webRootUrl}${adminRoot}/api-docs/swagger.json`,
+                swaggerJsonUrl: `${global.omnihive.bootLoaderSettings.baseSettings.webRootUrl}${adminRoot}/api-docs/swagger.json`,
             },
         });
 

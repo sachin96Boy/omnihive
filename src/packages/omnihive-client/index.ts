@@ -282,6 +282,7 @@ export class OmniHiveClient extends WorkerSetterBase {
                 config.data = {
                     generator: objectHash(this.clientSettings?.tokenMetadata, {
                         algorithm: this.clientSettings?.tokenMetadata.hashAlgorithm,
+                        respectType: false,
                     }),
                 };
                 config.method = "POST";

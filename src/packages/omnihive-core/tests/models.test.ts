@@ -22,7 +22,6 @@ import { ProcFunctionSchema } from "../models/ProcFunctionSchema";
 import { TableSchema } from "../models/TableSchema";
 import { WorkerGetterBase } from "../models/WorkerGetterBase";
 import { WorkerSetterBase } from "../models/WorkerSetterBase";
-import { BootLoaderSettings } from "src/packages/omnihive/models/BootLoaderSettings";
 
 class TestAbstractHiveWorkerBase extends HiveWorkerBase {
     public baseInit;
@@ -211,14 +210,6 @@ describe("model tests", function () {
 
         assert.isTrue(test.response === undefined, "response not initialized properly");
         assert.isTrue(test.status === 200, "status not initialized properly");
-    });
-
-    it("BootLoaderSettings", function () {
-        const test = new BootLoaderSettings();
-
-        assert.isTrue(test.baseSettings.adminPassword === "", "adminPassword not initialized properly");
-        assert.isTrue(test.baseSettings.nodePortNumber === 3001, "nodePortNumber not initialized properly");
-        assert.isTrue(test.baseSettings.webRootUrl === "", "webRootUrl not initialized properly");
     });
 
     it("ServerSettings", function () {

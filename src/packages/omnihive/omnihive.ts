@@ -172,17 +172,13 @@ const init = async () => {
     }
 
     nodeCleanup(() => {
-        if (global.omnihive.adminServer) {
-            global.omnihive.adminServer
-                .to(global.omnihive.bootLoaderSettings.baseSettings.clusterId)
-                .emit("status-response", {
-                    room: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
-                    data: {
-                        serverStatus: ServerStatus.Offline,
-                        serverError: undefined,
-                    },
-                });
-        }
+        const adminService: AdminService = new AdminService();
+        adminService.emitToCluster("status-response", {
+            data: {
+                serverStatus: ServerStatus.Offline,
+                serverError: undefined,
+            },
+        });
     });
 
     process.on("SIGUSR2", () => process.kill(process.pid, "SIGHUP"));

@@ -23,6 +23,7 @@ import { serializeError } from "serialize-error";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import swaggerUi from "swagger-ui-express";
 import { CommonService } from "./CommonService";
+import { AdminService } from "./AdminService";
 
 export class BootService {
     public boot = async (serverReset: boolean = false): Promise<void> => {
@@ -163,17 +164,11 @@ export class BootService {
             );
         });
 
-        if (global.omnihive.adminServer) {
-            global.omnihive.adminServer
-                .to(global.omnihive.bootLoaderSettings.baseSettings.clusterId)
-                .emit("status-response", {
-                    room: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
-                    data: {
-                        serverStatus: global.omnihive.serverStatus,
-                        serverError: global.omnihive.serverError,
-                    },
-                });
-        }
+        const adminService: AdminService = new AdminService();
+        adminService.emitToCluster("status-response", {
+            serverStatus: global.omnihive.serverStatus,
+            serverError: global.omnihive.serverError,
+        });
 
         logWorker?.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
     };

@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import os from "os";
 import { serializeError } from "serialize-error";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { AdminService } from "../omnihive/services/AdminService";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
     constructor() {
@@ -39,19 +40,15 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             consoleOnlyLogging = true;
         }
 
-        if (global.omnihive.adminServer) {
-            global.omnihive.adminServer
-                .to(global.omnihive.bootLoaderSettings.baseSettings.clusterId)
-                .emit("log-response", {
-                    room: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
-                    data: {
-                        logLevel,
-                        timestamp,
-                        osName,
-                        logString,
-                    },
-                });
-        }
+        const adminService: AdminService = new AdminService();
+        adminService.emitToCluster("log-response", {
+            data: {
+                logLevel,
+                timestamp,
+                osName,
+                logString,
+            },
+        });
 
         if (consoleOnlyLogging) {
             this.chalkConsole(logLevel, osName, timestamp, logString);

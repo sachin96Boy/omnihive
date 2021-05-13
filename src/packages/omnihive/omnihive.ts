@@ -20,6 +20,8 @@ import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import path from "path";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { AdminService } from "./services/AdminService";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 
 const init = async () => {
     const args = yargs(process.argv.slice(2));
@@ -173,11 +175,9 @@ const init = async () => {
 
     nodeCleanup(() => {
         const adminService: AdminService = new AdminService();
-        adminService.emitToCluster("status-response", {
-            data: {
-                serverStatus: ServerStatus.Offline,
-                serverError: undefined,
-            },
+        adminService.emitToCluster(AdminRoomType.Command, AdminEventType.StatusResponse, {
+            serverStatus: ServerStatus.Offline,
+            serverError: undefined,
         });
     });
 

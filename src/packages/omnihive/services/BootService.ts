@@ -24,6 +24,8 @@ import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWo
 import swaggerUi from "swagger-ui-express";
 import { CommonService } from "./CommonService";
 import { AdminService } from "./AdminService";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 
 export class BootService {
     public boot = async (serverReset: boolean = false): Promise<void> => {
@@ -106,8 +108,6 @@ export class BootService {
     };
 
     public changeServerStatus = async (serverStatus: ServerStatus, error?: Error): Promise<void> => {
-        //const adminService: AdminService = new AdminService();
-
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohBootLogWorker"
@@ -165,11 +165,9 @@ export class BootService {
         });
 
         const adminService: AdminService = new AdminService();
-        adminService.emitToCluster("status-response", {
-            data: {
-                serverStatus: global.omnihive.serverStatus,
-                serverError: global.omnihive.serverError,
-            },
+        adminService.emitToCluster(AdminRoomType.Command, AdminEventType.StatusResponse, {
+            serverStatus: global.omnihive.serverStatus,
+            serverError: global.omnihive.serverError,
         });
 
         logWorker?.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);

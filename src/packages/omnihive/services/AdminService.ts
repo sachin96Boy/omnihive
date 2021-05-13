@@ -226,12 +226,13 @@ export class AdminService {
         );
     };
 
-    public emitToCluster = async (event: string, message?: AdminResponse): Promise<void> => {
+    public emitToCluster = async (room: AdminRoomType, event: AdminEventType, message?: any): Promise<void> => {
         if (global.omnihive.adminServer) {
-            global.omnihive.adminServer.to(global.omnihive.bootLoaderSettings.baseSettings.clusterId).emit(event, {
-                room: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
-                data: message,
-            });
+            const eventMessage: AdminResponse = { requestComplete: true, requestError: undefined, data: message };
+
+            global.omnihive.adminServer
+                .to(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${room}`)
+                .emit(event, eventMessage);
         }
     };
 

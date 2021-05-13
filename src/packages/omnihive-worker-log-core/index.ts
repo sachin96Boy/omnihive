@@ -13,6 +13,7 @@ import { serializeError } from "serialize-error";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { AdminService } from "../omnihive/services/AdminService";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
     constructor() {
@@ -42,13 +43,11 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         }
 
         const adminService: AdminService = new AdminService();
-        adminService.emitToCluster(AdminEventType.LogResponse, {
-            data: {
-                logLevel,
-                timestamp,
-                osName,
-                logString,
-            },
+        adminService.emitToCluster(AdminRoomType.Log, AdminEventType.LogResponse, {
+            logLevel,
+            timestamp,
+            osName,
+            logString,
         });
 
         if (consoleOnlyLogging) {

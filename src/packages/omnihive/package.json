@@ -59,7 +59,6 @@
         "node-cleanup": "2.1.2",
         "pug": "3.0.2",
         "read-pkg-up": "7.0.1",
-        "redis": "3.1.2",
         "serialize-error": "8.1.0",
         "socket.io": "4.1.1",
         "swagger-ui-express": "4.1.6",

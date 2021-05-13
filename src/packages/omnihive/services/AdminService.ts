@@ -33,7 +33,13 @@ export class AdminService {
 
         // Start-up admin server
         global.omnihive.adminServer = new socketio.Server(
-            global.omnihive.bootLoaderSettings.baseSettings.adminPortNumber
+            global.omnihive.bootLoaderSettings.baseSettings.adminPortNumber,
+            {
+                cors: {
+                    origin: "*",
+                    methods: "*",
+                },
+            }
         );
 
         // Enable Redis if necessary
@@ -58,17 +64,8 @@ export class AdminService {
             socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Command}`);
 
             // Admin Event : Access Token
-            socket.on(AdminEventType.AccessTokenRequest, (message: AdminRequest<{ serverLabel: string }>) => {
+            socket.on(AdminEventType.AccessTokenRequest, (message: AdminRequest) => {
                 if (!this.checkRequest(AdminEventType.AccessTokenRequest, socket, message)) {
-                    return;
-                }
-
-                if (
-                    !message.data ||
-                    !message.data.serverLabel ||
-                    StringHelper.isNullOrWhiteSpace(message.data.serverLabel)
-                ) {
-                    this.sendErrorToSocket(AdminEventType.AccessTokenRequest, socket, "No Server Label Given");
                     return;
                 }
 
@@ -89,7 +86,6 @@ export class AdminService {
                     this.sendSuccessToSocket(AdminEventType.AccessTokenRequest, socket, {
                         hasWorker: true,
                         token,
-                        serverLabel: message.data?.serverLabel,
                     });
                 });
             });
@@ -230,7 +226,7 @@ export class AdminService {
         );
     };
 
-    public emitToCluster = async <T>(event: string, message?: AdminResponse<T>): Promise<void> => {
+    public emitToCluster = async (event: string, message?: AdminResponse): Promise<void> => {
         if (global.omnihive.adminServer) {
             global.omnihive.adminServer.to(global.omnihive.bootLoaderSettings.baseSettings.clusterId).emit(event, {
                 room: global.omnihive.bootLoaderSettings.baseSettings.clusterId,

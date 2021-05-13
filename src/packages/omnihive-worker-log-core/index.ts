@@ -12,6 +12,7 @@ import os from "os";
 import { serializeError } from "serialize-error";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { AdminService } from "../omnihive/services/AdminService";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
     constructor() {
@@ -41,7 +42,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         }
 
         const adminService: AdminService = new AdminService();
-        adminService.emitToCluster("log-response", {
+        adminService.emitToCluster(AdminEventType.LogResponse, {
             data: {
                 logLevel,
                 timestamp,

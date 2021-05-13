@@ -6,6 +6,7 @@ export enum AdminEventType {
     ConfigSaveRequest = "config-save-request",
     ConfigSaveResponse = "config-save-response",
     Connection = "connection",
+    LogResponse = "log-response",
     RegisterRequest = "register-request",
     RegisterResponse = "register-response",
     ServerResetRequest = "server-reset-request",

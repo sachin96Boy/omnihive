@@ -166,8 +166,10 @@ export class BootService {
 
         const adminService: AdminService = new AdminService();
         adminService.emitToCluster("status-response", {
-            serverStatus: global.omnihive.serverStatus,
-            serverError: global.omnihive.serverError,
+            data: {
+                serverStatus: global.omnihive.serverStatus,
+                serverError: global.omnihive.serverError,
+            },
         });
 
         logWorker?.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);

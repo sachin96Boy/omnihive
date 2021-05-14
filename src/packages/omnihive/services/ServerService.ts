@@ -202,6 +202,7 @@ export class ServerService {
             OmniHiveLogLevel.Info,
             `Server Memory Usage => heapTotal => ${Math.round((used.heapTotal / 1024 / 1024) * 100) / 100} MB`
         );
+        logWorker?.write(OmniHiveLogLevel.Info, `Server Process Usage => listeners => ${process.listeners.length}`);
     };
 
     public getCleanAppServer = async (): Promise<express.Express> => {

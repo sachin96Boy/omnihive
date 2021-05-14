@@ -27,15 +27,20 @@ import { AdminService } from "./AdminService";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 
-export class BootService {
+export class ServerService {
     public boot = async (serverReset: boolean = false): Promise<void> => {
-        const appService: CommonService = new CommonService();
+        const commonService: CommonService = new CommonService();
+
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "ohBootLogWorker"
         );
 
         try {
+            // Reboot admin service
+            const adminService: AdminService = new AdminService();
+            await AwaitHelper.execute(adminService.boot());
+
             // Set server to rebuilding first
             await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Rebuilding));
 
@@ -54,7 +59,7 @@ export class BootService {
 
             const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
 
-            await AwaitHelper.execute(appService.initOmniHiveApp(pkgJson));
+            await AwaitHelper.execute(commonService.initOmniHiveApp(pkgJson));
 
             // Try to spin up full server
             let app: express.Express = await AwaitHelper.execute(this.getCleanAppServer());
@@ -105,6 +110,11 @@ export class BootService {
             await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Admin, err));
             logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
         }
+
+        // Run garbage collection
+        if (global.gc) {
+            global.gc();
+        }
     };
 
     public changeServerStatus = async (serverStatus: ServerStatus, error?: Error): Promise<void> => {
@@ -150,11 +160,14 @@ export class BootService {
                 });
             });
 
+            global.omnihive.appServer?.removeAllListeners();
+            global.omnihive.appServer = undefined;
             global.omnihive.appServer = app;
         }
 
         const server: Server = http.createServer(global.omnihive.appServer);
         global.omnihive.webServer?.removeAllListeners().close();
+        global.omnihive.webServer = undefined;
         global.omnihive.webServer = server;
 
         global.omnihive.webServer?.listen(global.omnihive.bootLoaderSettings.baseSettings.nodePortNumber, () => {
@@ -171,6 +184,24 @@ export class BootService {
         });
 
         logWorker?.write(OmniHiveLogLevel.Info, `Server Change Handler Completed`);
+
+        const used = process.memoryUsage();
+        logWorker?.write(
+            OmniHiveLogLevel.Info,
+            `Server Memory Usage => rss => ${Math.round((used.rss / 1024 / 1024) * 100) / 100} MB`
+        );
+        logWorker?.write(
+            OmniHiveLogLevel.Info,
+            `Server Memory Usage => external => ${Math.round((used.external / 1024 / 1024) * 100) / 100} MB`
+        );
+        logWorker?.write(
+            OmniHiveLogLevel.Info,
+            `Server Memory Usage => heapUsed => ${Math.round((used.heapUsed / 1024 / 1024) * 100) / 100} MB`
+        );
+        logWorker?.write(
+            OmniHiveLogLevel.Info,
+            `Server Memory Usage => heapTotal => ${Math.round((used.heapTotal / 1024 / 1024) * 100) / 100} MB`
+        );
     };
 
     public getCleanAppServer = async (): Promise<express.Express> => {

@@ -11,7 +11,7 @@ import nodeCleanup from "node-cleanup";
 import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import yargs from "yargs";
 import { GlobalObject } from "./models/GlobalObject";
-import { BootService } from "./services/BootService";
+import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
 import dotenv from "dotenv";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
@@ -24,6 +24,7 @@ import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventTyp
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 
 const init = async () => {
+    process.setMaxListeners(0);
     const args = yargs(process.argv.slice(2));
 
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
@@ -165,11 +166,8 @@ const init = async () => {
             break;
         case "server":
         default:
-            const adminService: AdminService = new AdminService();
-            await AwaitHelper.execute(adminService.boot());
-
-            const bootService: BootService = new BootService();
-            await AwaitHelper.execute(bootService.boot());
+            const serverService: ServerService = new ServerService();
+            await AwaitHelper.execute(serverService.boot());
             break;
     }
 

@@ -9,10 +9,9 @@ import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettin
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import * as socketio from "socket.io";
-import { BootService } from "./BootService";
+import { ServerService } from "./ServerService";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { ClientOpts, RedisClient } from "redis";
-import childProcess from "child_process";
 import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
@@ -32,6 +31,12 @@ export class AdminService {
         );
 
         // Start-up admin server
+
+        if (global.omnihive.adminServer) {
+            global.omnihive.adminServer.disconnectSockets(true);
+            global.omnihive.adminServer.close();
+        }
+
         global.omnihive.adminServer = new socketio.Server(
             global.omnihive.bootLoaderSettings.baseSettings.adminPortNumber,
             {
@@ -62,6 +67,14 @@ export class AdminService {
         // Admin Event : Connection
         global.omnihive.adminServer.on(AdminEventType.Connection, (socket: socketio.Socket) => {
             socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Command}`);
+
+            // Socket disconnect clear memory
+            socket.on(AdminEventType.Disconnect, () => {
+                socket.removeAllListeners();
+                global.omnihive.adminServer?.sockets.sockets.forEach((sck: socketio.Socket) => {
+                    if (socket.id === sck.id) sck.disconnect(true);
+                });
+            });
 
             // Admin Event : Access Token
             socket.on(AdminEventType.AccessTokenRequest, (message: AdminRequest) => {
@@ -169,20 +182,10 @@ export class AdminService {
             socket.on(AdminEventType.ServerResetRequest, () => {
                 socket.emit(AdminEventType.ServerResetResponse);
 
-                if (global.omnihive.bootLoaderSettings.baseSettings.hardResetOnRefresh === true) {
-                    process.on("exit", () => {
-                        childProcess.spawn(process.argv.shift() ?? "", process.argv, {
-                            cwd: process.cwd(),
-                            detached: true,
-                            stdio: "inherit",
-                        });
-                    });
-
-                    process.exit();
-                }
-
-                const bootService: BootService = new BootService();
-                bootService.boot(true);
+                setTimeout(() => {
+                    const serverService: ServerService = new ServerService();
+                    serverService.boot(true);
+                }, 3000);
             });
 
             // Admin Event : Status

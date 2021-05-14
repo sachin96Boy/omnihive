@@ -6,7 +6,6 @@ export class BaseSettings {
     public adminRedisPort: number = 6379;
     public adminRedisPassword: string = "";
     public clusterId: string = "";
-    public hardResetOnRefresh: boolean = false;
     public nodePortNumber: number = 3001;
     public webRootUrl: string = "";
 }

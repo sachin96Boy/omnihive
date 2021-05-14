@@ -18,17 +18,20 @@ export class CommonService {
         );
 
         // Cleanup Reset
-        global.omnihive.registeredSchemas = [];
-        global.omnihive.registeredUrls = [];
+        global.omnihive.registeredSchemas.splice(0, global.omnihive.registeredSchemas.length);
+        global.omnihive.registeredUrls.splice(0, global.omnihive.registeredUrls.length);
 
         const prunedHiveWorkers: RegisteredHiveWorker[] = [];
 
         global.omnihive.registeredWorkers.forEach((worker: RegisteredHiveWorker) => {
             if (global.omnihive.bootWorkerNames.includes(worker.name)) {
                 prunedHiveWorkers.push(worker);
+            } else {
+                delete require.cache[require.resolve(worker.importPath)];
             }
         });
 
+        global.omnihive.registeredWorkers.splice(0, global.omnihive.registeredWorkers.length);
         global.omnihive.registeredWorkers = prunedHiveWorkers;
 
         // Load Core Workers

@@ -474,7 +474,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                                     res.status(workerResponse.status).send(true);
                                 }
                             } catch (e) {
-                                return res.status(500).render("500", {
+                                return res.status(500).render("pages/500", {
                                     rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                                     error: serializeError(e),
                                 });

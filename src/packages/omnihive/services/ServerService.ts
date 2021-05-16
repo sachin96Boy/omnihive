@@ -80,7 +80,7 @@ export class ServerService {
             }
 
             app.get("/", (_req, res) => {
-                res.status(200).render("index", {
+                res.status(200).render("pages/index", {
                     rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
@@ -91,11 +91,11 @@ export class ServerService {
             app.use((_req, res) => {
                 return res
                     .status(404)
-                    .render("404", { rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl });
+                    .render("pages/404", { rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl });
             });
 
             app.use((err: any, _req: any, res: any, _next: any) => {
-                return res.status(500).render("500", {
+                return res.status(500).render("pages/500", {
                     rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
@@ -137,7 +137,7 @@ export class ServerService {
             const app: express.Express = await AwaitHelper.execute(this.getCleanAppServer());
 
             app.get("/", (_req, res) => {
-                return res.status(200).render("index", {
+                return res.status(200).render("pages/index", {
                     rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
@@ -152,7 +152,7 @@ export class ServerService {
             });
 
             app.use((err: any, _req: any, res: any, _next: any) => {
-                return res.status(500).render("500", {
+                return res.status(500).render("pages/500", {
                     rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
@@ -233,8 +233,8 @@ export class ServerService {
         app.use(bodyParser.json());
         app.use(cors());
 
-        // Setup Pug
-        app.set("view engine", "pug");
+        // Setup View Engine
+        app.set("view engine", "ejs");
         app.set("views", path.join(global.omnihive.ohDirName, `app`, `views`));
         app.use("/public", express.static(path.join(global.omnihive.ohDirName, `app`, `public`)));
 
@@ -301,7 +301,7 @@ export class ServerService {
                                 res.status(workerResponse.status).send(true);
                             }
                         } catch (e) {
-                            return res.status(500).render("500", {
+                            return res.status(500).render("pages/500", {
                                 rootUrl: global.omnihive.bootLoaderSettings.baseSettings.webRootUrl,
                                 error: serializeError(e),
                             });

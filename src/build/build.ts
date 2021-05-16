@@ -210,7 +210,7 @@ const build = async (): Promise<void> => {
             console.log(chalk.greenBright(`Done building main server package ${value}...`));
         });
 
-    //Copy over miscellaneous files (npmignore, pug, etc.)
+    //Copy over miscellaneous files
     console.log(chalk.yellow("Copying miscellaneous OmniHive files..."));
 
     const miscFiles = [".npmignore"];

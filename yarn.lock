@@ -1544,6 +1544,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@withonevision/omnihive-worker-config-postgres@workspace:src/packages/omnihive-worker-config-postgres":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-worker-config-postgres@workspace:src/packages/omnihive-worker-config-postgres"
+  dependencies:
+    "@types/pg": 7.14.11
+    "@withonevision/omnihive-core": "workspace:*"
+    chai: 4.3.4
+    knex: 0.95.4
+    pg: 8.6.0
+    serialize-error: 8.1.0
+    typescript: 4.2.4
+  languageName: unknown
+  linkType: soft
+
 "@withonevision/omnihive-worker-date-dayjs@workspace:*, @withonevision/omnihive-worker-date-dayjs@workspace:src/packages/omnihive-worker-date-dayjs":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-date-dayjs@workspace:src/packages/omnihive-worker-date-dayjs"
@@ -1670,7 +1684,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-knex-mysql@workspace:*, @withonevision/omnihive-worker-knex-mysql@workspace:src/packages/omnihive-worker-knex-mysql":
+"@withonevision/omnihive-worker-knex-mysql@workspace:src/packages/omnihive-worker-knex-mysql":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-knex-mysql@workspace:src/packages/omnihive-worker-knex-mysql"
   dependencies:
@@ -1701,7 +1715,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-knex-sqlite@workspace:*, @withonevision/omnihive-worker-knex-sqlite@workspace:src/packages/omnihive-worker-knex-sqlite":
+"@withonevision/omnihive-worker-knex-sqlite@workspace:src/packages/omnihive-worker-knex-sqlite":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-knex-sqlite@workspace:src/packages/omnihive-worker-knex-sqlite"
   dependencies:
@@ -3275,16 +3289,6 @@ __metadata:
   dependencies:
     safe-buffer: ~5.1.1
   checksum: b10fbf041e3221c65e1ab67f05c8fcbad9c5fd078c62f4a6e05cb5fddc4b5a0e8a17c6a361c6a44f011b1a0c090b36aa88543be9dfa65da8c9e7f39c5de2d4df
-  languageName: node
-  linkType: hard
-
-"cookie-parser@npm:1.4.5":
-  version: 1.4.5
-  resolution: "cookie-parser@npm:1.4.5"
-  dependencies:
-    cookie: 0.4.0
-    cookie-signature: 1.0.6
-  checksum: a3eeda832d81862477e40444a8d411595b91e15f9b1d2b397a173e9efa744a29129de9aaa99342cf9468641d854a464c4e215cd60d1df49374c9ccffa1af52bf
   languageName: node
   linkType: hard
 
@@ -7230,9 +7234,7 @@ fsevents@~2.3.1:
     "@withonevision/omnihive-worker-function-core": "workspace:*"
     "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*"
     "@withonevision/omnihive-worker-knex-mssql": "workspace:*"
-    "@withonevision/omnihive-worker-knex-mysql": "workspace:*"
     "@withonevision/omnihive-worker-knex-postgres": "workspace:*"
-    "@withonevision/omnihive-worker-knex-sqlite": "workspace:*"
     "@withonevision/omnihive-worker-log-core": "workspace:*"
     "@withonevision/omnihive-worker-server-v1": "workspace:*"
     "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*"
@@ -7240,7 +7242,6 @@ fsevents@~2.3.1:
     chai: 4.3.4
     chalk: 4.1.1
     connect-redis: 5.2.0
-    cookie-parser: 1.4.5
     cors: 2.8.5
     cross-env: 7.0.3
     dayjs: 1.10.4

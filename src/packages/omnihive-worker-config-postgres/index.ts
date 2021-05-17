@@ -20,6 +20,8 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
     private sqlConfig!: any;
     private metadata!: PostgresConfigWorkerMetadata;
 
+    private configId: number = 0;
+
     constructor() {
         super();
     }
@@ -78,8 +80,7 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
             WHERE config_name = '${this.metadata.configName}'`;
 
         const srvConfigConstantsSql = `
-            SELECT   c.constant_id
-                    ,c.config_id
+            SELECT   c.config_id
                     ,c.constant_key
                     ,c.constant_value
             FROM srv_config_constants c
@@ -88,8 +89,7 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
             WHERE b.config_name = '${this.metadata.configName}'`;
 
         const srvConfigFeaturesSql = `
-            SELECT   f.feature_id
-                    ,f.config_id
+            SELECT   f.config_id
                     ,f.feature_key
                     ,f.feature_value
             FROM srv_config_features f
@@ -98,16 +98,15 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
             WHERE b.config_name = '${this.metadata.configName}'`;
 
         const srvConfigWorkersSql = `
-            SELECT   w.worker_id
-                    ,w.config_id
-                    ,w.name
-                    ,w.type
-                    ,w.package
-                    ,w.version
-                    ,w.import_path
-                    ,w.default
-                    ,w.enabled
-                    ,w.metadata
+            SELECT   w.config_id
+                    ,w.worker_name
+                    ,w.worker_type
+                    ,w.worker_package
+                    ,w.worker_version
+                    ,w.worker_import_path
+                    ,w.worker_is_default
+                    ,w.worker_is_enabled
+                    ,w.worker_metadata
             FROM srv_config_workers w
                 INNER JOIN srv_config_base b
                     on w.config_id = b.config_id
@@ -124,6 +123,8 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
 
         const serverSettings: ServerSettings = new ServerSettings();
 
+        this.configId = +results[0][0][0].config_id;
+
         results[1][0].forEach((row) => {
             serverSettings.constants[row.constant_key] = row.constant_value;
         });
@@ -134,21 +135,94 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
 
         results[3][0].forEach((row) => {
             serverSettings.workers.push({
-                name: row.name,
-                type: row.type,
-                package: row.package,
-                version: row.version,
-                importPath: row.import_path,
-                default: row.default,
-                enabled: row.enabled,
-                metadata: row.metadata,
+                name: row.worker_name,
+                type: row.worker_type,
+                package: row.worker_package,
+                version: row.worker_version,
+                importPath: row.worker_import_path,
+                default: row.worker_is_default,
+                enabled: row.worker_is_enabled,
+                metadata: row.worker_metadata,
             });
         });
 
         return serverSettings;
     };
 
-    public set = async (_settings: ServerSettings): Promise<boolean> => {
+    public set = async (settings: ServerSettings): Promise<boolean> => {
+        const client = await this.connectionPool.connect();
+
+        await client.query("BEGIN");
+
+        try {
+            for (let key in settings.constants) {
+                let upsertConstantsSql = `INSERT INTO srv_config_constants(config_id, constant_key, constant_value)`;
+
+                if (typeof settings.constants[key] === "number") {
+                    upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', ${settings.constants[key]})`;
+                } else {
+                    upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', '${settings.constants[key]}')`;
+                }
+
+                upsertConstantsSql = `${upsertConstantsSql} ON CONFLICT (config_id, constant_key) DO UPDATE SET constant_value = EXCLUDED.constant_value`;
+
+                await client.query(upsertConstantsSql);
+            }
+
+            for (let key in settings.features) {
+                const upsertFeaturesSql = `
+                    INSERT INTO srv_config_features(config_id, feature_key, feature_value)
+                    VALUES (${this.configId}, '${key}', ${settings.features[key]})
+                    ON CONFLICT (config_id, feature_key) DO UPDATE SET feature_value = EXCLUDED.feature_value;
+                `;
+
+                await client.query(upsertFeaturesSql);
+            }
+
+            for (let worker of settings.workers) {
+                const upsertWorkersSql = `
+                    INSERT INTO srv_config_workers(
+                        config_id, 
+                        worker_name, 
+                        worker_type, 
+                        worker_package, 
+                        worker_version, 
+                        worker_import_path, 
+                        worker_is_default, 
+                        worker_is_enabled, 
+                        worker_metadata)
+                    VALUES (
+                        ${this.configId}, 
+                        '${worker.name}', 
+                        '${worker.type}', 
+                        '${worker.package}', 
+                        '${worker.version}', 
+                        '${worker.importPath}', 
+                        '${worker.default}', 
+                        '${worker.enabled}', 
+                        '${JSON.stringify(worker.metadata)}')
+                    ON CONFLICT (
+                        config_id, 
+                        worker_name) DO UPDATE 
+                        SET worker_type = EXCLUDED.worker_type, 
+                            worker_package = EXCLUDED.worker_package, 
+                            worker_version = EXCLUDED.worker_version, 
+                            worker_import_path = EXCLUDED.worker_import_path, 
+                            worker_is_default = EXCLUDED.worker_is_default, 
+                            worker_is_enabled = EXCLUDED.worker_is_enabled, 
+                            worker_metadata = EXCLUDED.worker_metadata;
+                `;
+
+                await client.query(upsertWorkersSql);
+                await client.query("COMMIT");
+            }
+        } catch (err) {
+            await client.query("ROLLBACK");
+            throw new Error("Postgres Config Save Error => " + JSON.stringify(serializeError(err)));
+        } finally {
+            client.release();
+        }
+
         return true;
     };
 

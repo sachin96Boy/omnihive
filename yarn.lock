@@ -1292,6 +1292,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/sqlite3@npm:3.1.7":
+  version: 3.1.7
+  resolution: "@types/sqlite3@npm:3.1.7"
+  dependencies:
+    "@types/node": "*"
+  checksum: a7279200c03e43fd944f5a8c6d2f277c502b3f23b82adf517fc21d4af59437d9b4acec1a9152fe538a502d4732e9e9f4c07148f996059b8fb7f5450f9391f28c
+  languageName: node
+  linkType: hard
+
 "@types/swagger-ui-express@npm:4.1.2":
   version: 4.1.2
   resolution: "@types/swagger-ui-express@npm:4.1.2"
@@ -1544,6 +1553,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@withonevision/omnihive-worker-config-mysql@workspace:src/packages/omnihive-worker-config-mysql":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-worker-config-mysql@workspace:src/packages/omnihive-worker-config-mysql"
+  dependencies:
+    "@withonevision/omnihive-core": "workspace:*"
+    chai: 4.3.4
+    knex: 0.95.4
+    mysql2: 2.2.5
+    serialize-error: 8.1.0
+    typescript: 4.2.4
+  languageName: unknown
+  linkType: soft
+
 "@withonevision/omnihive-worker-config-postgres@workspace:src/packages/omnihive-worker-config-postgres":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-config-postgres@workspace:src/packages/omnihive-worker-config-postgres"
@@ -1554,6 +1576,20 @@ __metadata:
     knex: 0.95.4
     pg: 8.6.0
     serialize-error: 8.1.0
+    typescript: 4.2.4
+  languageName: unknown
+  linkType: soft
+
+"@withonevision/omnihive-worker-config-sqlite@workspace:src/packages/omnihive-worker-config-sqlite":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-worker-config-sqlite@workspace:src/packages/omnihive-worker-config-sqlite"
+  dependencies:
+    "@types/sqlite3": 3.1.7
+    "@withonevision/omnihive-core": "workspace:*"
+    chai: 4.3.4
+    knex: 0.95.4
+    serialize-error: 8.1.0
+    sqlite3: 5.0.2
     typescript: 4.2.4
   languageName: unknown
   linkType: soft

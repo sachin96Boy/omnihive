@@ -110,11 +110,6 @@ export class ServerService {
             await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Admin, err));
             logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
         }
-
-        // Run garbage collection
-        if (global.gc) {
-            global.gc();
-        }
     };
 
     public changeServerStatus = async (serverStatus: ServerStatus, error?: Error): Promise<void> => {

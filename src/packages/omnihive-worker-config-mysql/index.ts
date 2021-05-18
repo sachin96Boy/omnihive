@@ -7,12 +7,13 @@ import fse from "fs-extra";
 import { serializeError } from "serialize-error";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import knex, { Knex } from "knex";
-import pg from "pg";
+import mysql from "mysql2";
+import { Pool } from "mysql2/promise";
 import { HiveWorkerMetadataConfigDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataConfigDatabase";
 
-export default class PostgresConfigWorker extends HiveWorkerBase implements IConfigWorker {
+export default class MySqlConfigWorker extends HiveWorkerBase implements IConfigWorker {
     public connection!: Knex;
-    private connectionPool!: pg.Pool;
+    private connectionPool!: Pool;
     private sqlConfig!: any;
     private metadata!: HiveWorkerMetadataConfigDatabase;
 
@@ -29,10 +30,6 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                 HiveWorkerMetadataConfigDatabase,
                 config.metadata
             );
-
-            if (StringHelper.isNullOrWhiteSpace(this.metadata.configName)) {
-                throw new Error("No config name set to retrieve");
-            }
 
             this.sqlConfig = {
                 host: this.metadata.serverAddress,
@@ -52,18 +49,23 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                 }
             }
 
-            this.connectionPool = new pg.Pool({ ...this.sqlConfig });
-            this.connectionPool.connect();
+            this.connectionPool = mysql
+                .createPool({
+                    ...this.sqlConfig,
+                    connectionLimit: 10,
+                    multipleStatements: true,
+                })
+                .promise();
 
             const connectionOptions: Knex.Config = {
                 connection: {},
                 pool: { min: 0, max: 10 },
             };
-            connectionOptions.client = "pg";
+            connectionOptions.client = "mysql2";
             connectionOptions.connection = this.sqlConfig;
             this.connection = knex(connectionOptions);
         } catch (err) {
-            throw new Error("Postgres Init Error => " + JSON.stringify(serializeError(err)));
+            throw new Error("MySQL Init Error => " + JSON.stringify(serializeError(err)));
         }
     }
 
@@ -128,7 +130,7 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                     serverSettings.constants[row.constant_key] = Number(row.constant_value);
                     break;
                 case "boolean":
-                    serverSettings.constants[row.constant_key] = row.constant_value === "true";
+                    serverSettings.constants[row.constant_key] = row.constant_value === 1;
                     break;
                 default:
                     serverSettings.constants[row.constant_key] = String(row.constant_value);
@@ -147,8 +149,8 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                 package: row.worker_package,
                 version: row.worker_version,
                 importPath: row.worker_import_path,
-                default: row.worker_is_default,
-                enabled: row.worker_is_enabled,
+                default: row.worker_is_default === 1,
+                enabled: row.worker_is_enabled === 1,
                 metadata: row.worker_metadata,
             });
         });
@@ -157,9 +159,9 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
     };
 
     public set = async (settings: ServerSettings): Promise<boolean> => {
-        const client = await this.connectionPool.connect();
+        const connection = await this.connectionPool.getConnection();
 
-        await client.query("BEGIN");
+        await connection.beginTransaction();
 
         try {
             for (let key in settings.constants) {
@@ -171,26 +173,28 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                         upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', ${settings.constants[key]}, 'number')`;
                         break;
                     case "boolean":
-                        upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', '${settings.constants[key]}', 'boolean')`;
+                        upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', ${
+                            settings.constants[key] === true ? 1 : 0
+                        }, 'boolean')`;
                         break;
                     default:
                         upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', '${settings.constants[key]}', 'string')`;
                         break;
                 }
 
-                upsertConstantsSql = `${upsertConstantsSql} ON CONFLICT (config_id, constant_key) DO UPDATE SET constant_value = EXCLUDED.constant_value`;
+                upsertConstantsSql = `${upsertConstantsSql} ON DUPLICATE KEY UPDATE constant_value = VALUES(constant_value)`;
 
-                await client.query(upsertConstantsSql);
+                await connection.query(upsertConstantsSql);
             }
 
             for (let key in settings.features) {
                 const upsertFeaturesSql = `
                     INSERT INTO oh_srv_config_features(config_id, feature_key, feature_value)
-                    VALUES (${this.configId}, '${key}', '${settings.features[key]}')
-                    ON CONFLICT (config_id, feature_key) DO UPDATE SET feature_value = EXCLUDED.feature_value;
+                    VALUES (${this.configId}, '${key}', ${settings.features[key] === true ? 1 : 0})
+                    ON DUPLICATE KEY UPDATE feature_value = VALUES(feature_value);
                 `;
 
-                await client.query(upsertFeaturesSql);
+                await connection.query(upsertFeaturesSql);
             }
 
             for (let worker of settings.workers) {
@@ -212,48 +216,48 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                         '${worker.package}', 
                         '${worker.version}', 
                         '${worker.importPath}', 
-                        '${worker.default}', 
-                        '${worker.enabled}', 
+                        '${worker.default === true ? 1 : 0}', 
+                        '${worker.enabled === true ? 1 : 0}', 
                         '${JSON.stringify(worker.metadata)}')
-                    ON CONFLICT (
-                        config_id, 
-                        worker_name) DO UPDATE 
-                        SET worker_type = EXCLUDED.worker_type, 
-                            worker_package = EXCLUDED.worker_package, 
-                            worker_version = EXCLUDED.worker_version, 
-                            worker_import_path = EXCLUDED.worker_import_path, 
-                            worker_is_default = EXCLUDED.worker_is_default, 
-                            worker_is_enabled = EXCLUDED.worker_is_enabled, 
-                            worker_metadata = EXCLUDED.worker_metadata;
+                    ON DUPLICATE KEY UPDATE 
+                        worker_type = VALUES(worker_type), 
+                        worker_package = VALUES(worker_package), 
+                        worker_version = VALUES(worker_version), 
+                        worker_import_path = VALUES(worker_import_path), 
+                        worker_is_default = VALUES(worker_is_default), 
+                        worker_is_enabled = VALUES(worker_is_enabled), 
+                        worker_metadata = VALUES(worker_metadata);
                 `;
 
-                await client.query(upsertWorkersSql);
+                await connection.query(upsertWorkersSql);
             }
 
-            await client.query("COMMIT");
+            await connection.commit();
         } catch (err) {
-            await client.query("ROLLBACK");
-            throw new Error("Postgres Config Save Error => " + JSON.stringify(serializeError(err)));
+            if (connection) {
+                connection.rollback();
+            }
+            throw new Error("MySQL Config Save Error => " + JSON.stringify(serializeError(err)));
         } finally {
-            client.release();
+            connection.release();
         }
 
         return true;
     };
 
-    private executeQuery = async (query: string): Promise<any[][]> => {
-        const result = await AwaitHelper.execute(this.connectionPool.query(query));
+    public executeQuery = async (query: string): Promise<any[][]> => {
+        const result: any = await AwaitHelper.execute(this.connectionPool.query(query));
 
         const returnResults: any[][] = [];
         let currentResultIndex: number = 0;
 
-        if (!Array.isArray(result)) {
-            returnResults[currentResultIndex] = result.rows;
+        if (!Array.isArray(result[0][0])) {
+            returnResults[currentResultIndex] = result[0];
             return returnResults;
         }
 
-        for (let r of result) {
-            returnResults[currentResultIndex] = r.rows;
+        for (let r of result[0]) {
+            returnResults[currentResultIndex] = r;
             currentResultIndex++;
         }
 

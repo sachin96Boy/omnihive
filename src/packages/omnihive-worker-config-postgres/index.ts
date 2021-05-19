@@ -157,9 +157,9 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
     };
 
     public set = async (settings: ServerSettings): Promise<boolean> => {
-        const client = await this.connectionPool.connect();
+        const client = await AwaitHelper.execute(this.connectionPool.connect());
 
-        await client.query("BEGIN");
+        await AwaitHelper.execute(client.query("BEGIN"));
 
         try {
             for (let key in settings.constants) {
@@ -180,7 +180,7 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
 
                 upsertConstantsSql = `${upsertConstantsSql} ON CONFLICT (config_id, constant_key) DO UPDATE SET constant_value = EXCLUDED.constant_value`;
 
-                await client.query(upsertConstantsSql);
+                await AwaitHelper.execute(client.query(upsertConstantsSql));
             }
 
             for (let key in settings.features) {
@@ -190,7 +190,7 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                     ON CONFLICT (config_id, feature_key) DO UPDATE SET feature_value = EXCLUDED.feature_value;
                 `;
 
-                await client.query(upsertFeaturesSql);
+                await AwaitHelper.execute(client.query(upsertFeaturesSql));
             }
 
             for (let worker of settings.workers) {
@@ -227,12 +227,12 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                             worker_metadata = EXCLUDED.worker_metadata;
                 `;
 
-                await client.query(upsertWorkersSql);
+                await AwaitHelper.execute(client.query(upsertWorkersSql));
             }
 
-            await client.query("COMMIT");
+            await AwaitHelper.execute(client.query("COMMIT"));
         } catch (err) {
-            await client.query("ROLLBACK");
+            await AwaitHelper.execute(client.query("ROLLBACK"));
             throw new Error("Postgres Config Save Error => " + JSON.stringify(serializeError(err)));
         } finally {
             client.release();

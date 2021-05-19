@@ -1,19 +1,17 @@
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import fse from "fs-extra";
-import { serializeError } from "serialize-error";
-import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import knex, { Knex } from "knex";
-import mysql from "mysql2";
-import { Pool } from "mysql2/promise";
+import sql from "mssql";
+import { serializeError } from "serialize-error";
+import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
+import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import { HiveWorkerMetadataConfigDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataConfigDatabase";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 
-export default class MySqlConfigWorker extends HiveWorkerBase implements IConfigWorker {
+export default class MssqlConfigWorker extends HiveWorkerBase implements IConfigWorker {
     public connection!: Knex;
-    private connectionPool!: Pool;
+    private connectionPool!: sql.ConnectionPool;
     private sqlConfig!: any;
     private metadata!: HiveWorkerMetadataConfigDatabase;
 
@@ -32,40 +30,29 @@ export default class MySqlConfigWorker extends HiveWorkerBase implements IConfig
             );
 
             this.sqlConfig = {
-                host: this.metadata.serverAddress,
-                port: this.metadata.serverPort,
-                database: this.metadata.databaseName,
                 user: this.metadata.userName,
                 password: this.metadata.password,
+                server: this.metadata.serverAddress,
+                port: this.metadata.serverPort,
+                database: this.metadata.databaseName,
+                options: {
+                    enableArithAbort: true,
+                    encrypt: false,
+                },
             };
 
-            if (this.metadata.requireSsl) {
-                if (StringHelper.isNullOrWhiteSpace(this.metadata.sslCertPath)) {
-                    this.sqlConfig.ssl = this.metadata.requireSsl;
-                } else {
-                    this.sqlConfig.ssl = {
-                        ca: fse.readFileSync(this.metadata.sslCertPath).toString(),
-                    };
-                }
-            }
-
-            this.connectionPool = mysql
-                .createPool({
-                    ...this.sqlConfig,
-                    connectionLimit: 10,
-                    multipleStatements: true,
-                })
-                .promise();
+            this.connectionPool = new sql.ConnectionPool({ ...this.sqlConfig });
+            await AwaitHelper.execute(this.connectionPool.connect());
 
             const connectionOptions: Knex.Config = {
                 connection: {},
                 pool: { min: 0, max: 10 },
             };
-            connectionOptions.client = "mysql2";
+            connectionOptions.client = "mssql";
             connectionOptions.connection = this.sqlConfig;
             this.connection = knex(connectionOptions);
         } catch (err) {
-            throw new Error("MySQL Init Error => " + JSON.stringify(serializeError(err)));
+            throw new Error("MSSQL Init Error => " + JSON.stringify(serializeError(err)));
         }
     }
 
@@ -130,7 +117,7 @@ export default class MySqlConfigWorker extends HiveWorkerBase implements IConfig
                     serverSettings.constants[row.constant_key] = Number(row.constant_value);
                     break;
                 case "boolean":
-                    serverSettings.constants[row.constant_key] = row.constant_value === 1;
+                    serverSettings.constants[row.constant_key] = row.constant_value === "true";
                     break;
                 default:
                     serverSettings.constants[row.constant_key] = String(row.constant_value);
@@ -149,9 +136,9 @@ export default class MySqlConfigWorker extends HiveWorkerBase implements IConfig
                 package: row.worker_package,
                 version: row.worker_version,
                 importPath: row.worker_import_path,
-                default: row.worker_is_default === 1,
-                enabled: row.worker_is_enabled === 1,
-                metadata: row.worker_metadata,
+                default: row.worker_is_default,
+                enabled: row.worker_is_enabled,
+                metadata: JSON.parse(row.worker_metadata),
             });
         });
 
@@ -159,46 +146,82 @@ export default class MySqlConfigWorker extends HiveWorkerBase implements IConfig
     };
 
     public set = async (settings: ServerSettings): Promise<boolean> => {
-        const connection = await AwaitHelper.execute(this.connectionPool.getConnection());
+        const transaction = new sql.Transaction(this.connectionPool);
 
-        await AwaitHelper.execute(connection.beginTransaction());
+        await AwaitHelper.execute(transaction.begin());
 
         try {
             for (let key in settings.constants) {
-                let upsertConstantsSql = `INSERT INTO oh_srv_config_constants(config_id, constant_key, constant_value, constant_datatype)`;
+                const queryBuilder = new StringBuilder();
+                queryBuilder.appendLine(`BEGIN TRY`);
+                queryBuilder.append(
+                    `INSERT oh_srv_config_constants(config_id, constant_key, constant_value, constant_datatype) `
+                );
 
                 switch (typeof settings.constants[key]) {
                     case "number":
                     case "bigint":
-                        upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', ${settings.constants[key]}, 'number')`;
+                        queryBuilder.appendLine(
+                            `VALUES (${this.configId}, '${key}', ${settings.constants[key]}, 'number')`
+                        );
                         break;
                     case "boolean":
-                        upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', ${
-                            settings.constants[key] === true ? 1 : 0
-                        }, 'boolean')`;
+                        queryBuilder.appendLine(
+                            `VALUES (${this.configId}, '${key}', '${settings.constants[key]}', 'boolean')`
+                        );
                         break;
                     default:
-                        upsertConstantsSql = `${upsertConstantsSql} VALUES (${this.configId}, '${key}', '${settings.constants[key]}', 'string')`;
+                        queryBuilder.appendLine(
+                            `VALUES (${this.configId}, '${key}', '${settings.constants[key]}', 'string')`
+                        );
                         break;
                 }
 
-                upsertConstantsSql = `${upsertConstantsSql} ON DUPLICATE KEY UPDATE constant_value = VALUES(constant_value)`;
+                queryBuilder.appendLine(`END TRY`);
+                queryBuilder.appendLine(`BEGIN CATCH`);
 
-                await AwaitHelper.execute(connection.query(upsertConstantsSql));
+                queryBuilder.append(`UPDATE oh_srv_config_constants SET `);
+
+                switch (typeof settings.constants[key]) {
+                    case "number":
+                    case "bigint":
+                        queryBuilder.appendLine(`constant_value = ${settings.constants[key]}`);
+                        break;
+                    case "boolean":
+                        queryBuilder.appendLine(`constant_value = '${settings.constants[key]}'`);
+                        break;
+                    default:
+                        queryBuilder.appendLine(`constant_value = '${settings.constants[key]}'`);
+                        break;
+                }
+
+                queryBuilder.appendLine(`WHERE config_id = ${this.configId} AND constant_key = '${key}'`);
+
+                queryBuilder.appendLine(`END CATCH`);
+
+                await AwaitHelper.execute(new sql.Request(transaction).query(queryBuilder.outputString()));
             }
 
             for (let key in settings.features) {
                 const upsertFeaturesSql = `
-                    INSERT INTO oh_srv_config_features(config_id, feature_key, feature_value)
-                    VALUES (${this.configId}, '${key}', ${settings.features[key] === true ? 1 : 0})
-                    ON DUPLICATE KEY UPDATE feature_value = VALUES(feature_value);
+                    BEGIN TRY
+                    INSERT oh_srv_config_features(config_id, feature_key, feature_value)
+                    VALUES (${this.configId}, '${key}', '${settings.features[key]}')
+                    END TRY
+                    BEGIN CATCH
+                    UPDATE oh_srv_config_features
+                    SET feature_value = '${settings.features[key]}'
+                    WHERE config_id = ${this.configId}
+                    AND feature_key = '${key}'
+                    END CATCH
                 `;
 
-                await AwaitHelper.execute(connection.query(upsertFeaturesSql));
+                await AwaitHelper.execute(new sql.Request(transaction).query(upsertFeaturesSql));
             }
 
             for (let worker of settings.workers) {
                 const upsertWorkersSql = `
+                    BEGIN TRY
                     INSERT INTO oh_srv_config_workers(
                         config_id, 
                         worker_name, 
@@ -216,51 +239,39 @@ export default class MySqlConfigWorker extends HiveWorkerBase implements IConfig
                         '${worker.package}', 
                         '${worker.version}', 
                         '${worker.importPath}', 
-                        '${worker.default === true ? 1 : 0}', 
-                        '${worker.enabled === true ? 1 : 0}', 
+                        '${worker.default}', 
+                        '${worker.enabled}', 
                         '${JSON.stringify(worker.metadata)}')
-                    ON DUPLICATE KEY UPDATE 
-                        worker_type = VALUES(worker_type), 
-                        worker_package = VALUES(worker_package), 
-                        worker_version = VALUES(worker_version), 
-                        worker_import_path = VALUES(worker_import_path), 
-                        worker_is_default = VALUES(worker_is_default), 
-                        worker_is_enabled = VALUES(worker_is_enabled), 
-                        worker_metadata = VALUES(worker_metadata);
+                    END TRY
+                    BEGIN CATCH
+                    UPDATE oh_srv_config_workers
+                    SET worker_type = '${worker.type}',
+                    worker_package = '${worker.package}',
+                    worker_version = '${worker.version}',
+                    worker_import_path = '${worker.importPath}',
+                    worker_is_default = '${worker.default}',
+                    worker_is_enabled = '${worker.enabled}',
+                    worker_metadata = '${JSON.stringify(worker.metadata)}'
+                    WHERE config_id = ${this.configId}
+                    AND worker_name = '${worker.name}'
+                    END CATCH
                 `;
 
-                await AwaitHelper.execute(connection.query(upsertWorkersSql));
+                await AwaitHelper.execute(new sql.Request(transaction).query(upsertWorkersSql));
             }
 
-            await AwaitHelper.execute(connection.commit());
+            await AwaitHelper.execute(transaction.commit());
         } catch (err) {
-            if (connection) {
-                await AwaitHelper.execute(connection.rollback());
-            }
-            throw new Error("MySQL Config Save Error => " + JSON.stringify(serializeError(err)));
-        } finally {
-            connection.release();
+            await AwaitHelper.execute(transaction.rollback());
+            throw new Error("MSSQL Config Save Error => " + JSON.stringify(serializeError(err)));
         }
 
         return true;
     };
 
-    public executeQuery = async (query: string): Promise<any[][]> => {
-        const result: any = await AwaitHelper.execute(this.connectionPool.query(query));
-
-        const returnResults: any[][] = [];
-        let currentResultIndex: number = 0;
-
-        if (!Array.isArray(result[0][0])) {
-            returnResults[currentResultIndex] = result[0];
-            return returnResults;
-        }
-
-        for (let r of result[0]) {
-            returnResults[currentResultIndex] = r;
-            currentResultIndex++;
-        }
-
-        return returnResults;
+    private executeQuery = async (query: string): Promise<any[][]> => {
+        const poolRequest = this.connectionPool.request();
+        const result = await AwaitHelper.execute(poolRequest.query(query));
+        return result.recordsets;
     };
 }

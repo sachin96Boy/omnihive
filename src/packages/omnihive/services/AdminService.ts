@@ -48,14 +48,16 @@ export class AdminService {
         );
 
         // Enable Redis if necessary
-        if (global.omnihive.bootLoaderSettings.baseSettings.adminRedisEnable) {
+        if (global.omnihive.bootLoaderSettings.baseSettings.clusterEnable) {
             const clientOpts: ClientOpts = {
-                host: global.omnihive.bootLoaderSettings.baseSettings.adminRedisHost,
-                port: global.omnihive.bootLoaderSettings.baseSettings.adminRedisPort,
+                host: global.omnihive.bootLoaderSettings.baseSettings.clusterRedisHost,
+                port: global.omnihive.bootLoaderSettings.baseSettings.clusterRedisPort,
             };
 
-            if (!StringHelper.isNullOrWhiteSpace(global.omnihive.bootLoaderSettings.baseSettings.adminRedisPassword)) {
-                clientOpts.password = global.omnihive.bootLoaderSettings.baseSettings.adminRedisPassword;
+            if (
+                !StringHelper.isNullOrWhiteSpace(global.omnihive.bootLoaderSettings.baseSettings.clusterRedisPassword)
+            ) {
+                clientOpts.password = global.omnihive.bootLoaderSettings.baseSettings.clusterRedisPassword;
             }
 
             const pubClient = new RedisClient(clientOpts);

@@ -437,7 +437,7 @@ const copyMiscFile = async (file: string) => {
 };
 
 const getMiscFolders = () => {
-    return [path.join(`app`, `public`), path.join(`app`, `views`), "templates"];
+    return [path.join(`app`, `public`), path.join(`app`, `views`)];
 };
 
 const copyMiscFolder = async (folder: string) => {

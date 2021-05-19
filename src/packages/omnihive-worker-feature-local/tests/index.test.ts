@@ -6,12 +6,6 @@ import LocalFeatureWorker from "..";
 const mockServerSettings: ServerSettings = {
     features: { mockFeature: "mockFeatureValue" },
     constants: {},
-    config: {
-        adminPassword: "mockPassword",
-        adminPortNumber: 9999,
-        nodePortNumber: 9999,
-        webRootUrl: "mockUrl",
-    },
     workers: [],
 };
 

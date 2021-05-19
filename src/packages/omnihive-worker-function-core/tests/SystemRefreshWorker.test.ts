@@ -13,12 +13,6 @@ worker.serverSettings = {
     constants: {},
     features: {},
     workers: [],
-    config: {
-        adminPassword: "correctPassword",
-        adminPortNumber: 9999,
-        nodePortNumber: 9999,
-        webRootUrl: "http://mock.example.com",
-    },
 };
 
 const testService = new TestService();

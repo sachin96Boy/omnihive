@@ -1,0 +1,30 @@
+name: Patch
+
+on:
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Yarn Install
+              run: yarn
+            - name: Build and Publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: |
+                  echo "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >> ~/.npmrc
+                  yarn node -r ts-node/register ./src/build/build.ts -c "main" -t "patch" -p --pa "public" --pt "latest"
+            - name: Version Number
+              id: version
+              run: echo "::set-output name=VERSION::$(node -p -e "require('./dist/packages/omnihive/package.json').version")"
+            - name: Log into GitHub CLI
+              run: |
+                  echo ${{secrets.GH_CLI_AUTH_TOKEN}} > gh.txt
+                  gh auth login --with-token < gh.txt
+            - name: Create GitHub Release
+              run: |
+                tar -czvf omnihive.tar.gz ./dist/packages/omnihive
+                gh release create ${{ steps.version.outputs.VERSION }} omnihive.tar.gz

@@ -22,6 +22,7 @@ import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper"
 import { AdminService } from "./services/AdminService";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
+import childProcess from "child_process";
 
 const init = async () => {
     process.setMaxListeners(0);
@@ -136,6 +137,20 @@ const init = async () => {
     global.omnihive.bootWorkerNames.push(global.omnihive.bootLoaderSettings.configWorker.name);
     global.omnihive.serverSettings.workers.push(global.omnihive.bootLoaderSettings.configWorker);
 
+    const addSpawn = childProcess.spawnSync(
+        `yarn add ${global.omnihive.bootLoaderSettings.configWorker.package}@${global.omnihive.bootLoaderSettings.configWorker.version}`,
+        {
+            shell: true,
+            cwd: global.omnihive.ohDirName,
+            stdio: ["inherit", "pipe", "pipe"],
+        }
+    );
+
+    if (addSpawn.status !== 0) {
+        const addError: Error = new Error(addSpawn.stderr.toString().trim());
+        throw addError;
+    }
+
     const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
 
     // Load Boot Workers
@@ -147,6 +162,17 @@ const init = async () => {
                 await AwaitHelper.execute(global.omnihive.pushWorker(bootWorker, true, false));
                 global.omnihive.bootWorkerNames.push(bootWorker.name);
                 global.omnihive.serverSettings.workers.push(bootWorker);
+
+                const addSpawn = childProcess.spawnSync(`yarn add ${bootWorker.package}@${bootWorker.version}`, {
+                    shell: true,
+                    cwd: global.omnihive.ohDirName,
+                    stdio: ["inherit", "pipe", "pipe"],
+                });
+
+                if (addSpawn.status !== 0) {
+                    const addError: Error = new Error(addSpawn.stderr.toString().trim());
+                    throw addError;
+                }
             }
         }
     }

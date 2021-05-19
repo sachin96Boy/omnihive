@@ -17,17 +17,6 @@ jobs:
               run: |
                   echo "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >> ~/.npmrc
                   yarn node -r ts-node/register ./src/build/build.ts -c "main" -t "major" -p --pa "public" --pt "latest"
-            - name: Version Number
-              id: version
-              run: echo "::set-output name=VERSION::$(node -p -e "require('./dist/packages/omnihive/package.json').version")"
-            - name: Log into GitHub CLI
-              run: |
-                  echo ${{secrets.GH_CLI_AUTH_TOKEN}} > gh.txt
-                  gh auth login --with-token < gh.txt
-            - name: Create GitHub Release
-              run: |
-                  tar -czvf omnihive.tar.gz ./dist/packages/omnihive
-                  gh release create ${{ steps.version.outputs.VERSION }} omnihive.tar.gz
             - name: Build Docker Images
               run: docker build . -f ./omnihive.dockerfile --tag omnihive
             - name: Log into Docker Hub
@@ -40,3 +29,14 @@ jobs:
               with:
                   push: true
                   tags: withonevision/omnihive
+            - name: Version Number
+              id: version
+              run: echo "::set-output name=VERSION::$(node -p -e "require('./dist/packages/omnihive/package.json').version")"
+            - name: Log into GitHub CLI
+              run: |
+                  echo ${{secrets.GH_CLI_AUTH_TOKEN}} > gh.txt
+                  gh auth login --with-token < gh.txt
+            - name: Create GitHub Release
+              run: |
+                  tar -czvf omnihive.tar.gz ./dist/packages/omnihive
+                  gh release create ${{ steps.version.outputs.VERSION }} omnihive.tar.gz

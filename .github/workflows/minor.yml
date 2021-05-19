@@ -28,6 +28,8 @@ jobs:
               run: |
                   tar -czvf omnihive.tar.gz ./dist/packages/omnihive
                   gh release create ${{ steps.version.outputs.VERSION }} omnihive.tar.gz
+            - name: Build Docker Images
+              run: docker build . -f ./build.dockerfile --tag omnihive
             - name: Log into Docker Hub
               uses: docker/login-action@v1
               with:

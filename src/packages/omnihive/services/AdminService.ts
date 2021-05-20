@@ -11,7 +11,7 @@ import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import * as socketio from "socket.io";
 import { ServerService } from "./ServerService";
 import { createAdapter } from "@socket.io/redis-adapter";
-import { ClientOpts, RedisClient } from "redis";
+import redis from "redis";
 import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
@@ -49,18 +49,9 @@ export class AdminService {
 
         // Enable Redis if necessary
         if (global.omnihive.bootLoaderSettings.baseSettings.clusterEnable) {
-            const clientOpts: ClientOpts = {
-                host: global.omnihive.bootLoaderSettings.baseSettings.clusterRedisHost,
-                port: global.omnihive.bootLoaderSettings.baseSettings.clusterRedisPort,
-            };
-
-            if (
-                !StringHelper.isNullOrWhiteSpace(global.omnihive.bootLoaderSettings.baseSettings.clusterRedisPassword)
-            ) {
-                clientOpts.password = global.omnihive.bootLoaderSettings.baseSettings.clusterRedisPassword;
-            }
-
-            const pubClient = new RedisClient(clientOpts);
+            const pubClient = redis.createClient(
+                global.omnihive.bootLoaderSettings.baseSettings.clusterRedisConnectionString
+            );
             const subClient = pubClient.duplicate();
 
             global.omnihive.adminServer.adapter(createAdapter(pubClient, subClient));

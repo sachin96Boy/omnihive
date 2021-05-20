@@ -1735,7 +1735,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-knex-mysql@workspace:src/packages/omnihive-worker-knex-mysql":
+"@withonevision/omnihive-worker-knex-mysql@workspace:*, @withonevision/omnihive-worker-knex-mysql@workspace:src/packages/omnihive-worker-knex-mysql":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-knex-mysql@workspace:src/packages/omnihive-worker-knex-mysql"
   dependencies:
@@ -1766,7 +1766,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-knex-sqlite@workspace:src/packages/omnihive-worker-knex-sqlite":
+"@withonevision/omnihive-worker-knex-sqlite@workspace:*, @withonevision/omnihive-worker-knex-sqlite@workspace:src/packages/omnihive-worker-knex-sqlite":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-knex-sqlite@workspace:src/packages/omnihive-worker-knex-sqlite"
   dependencies:
@@ -7364,7 +7364,9 @@ fsevents@~2.3.1:
     "@withonevision/omnihive-worker-function-core": "workspace:*"
     "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*"
     "@withonevision/omnihive-worker-knex-mssql": "workspace:*"
+    "@withonevision/omnihive-worker-knex-mysql": "workspace:*"
     "@withonevision/omnihive-worker-knex-postgres": "workspace:*"
+    "@withonevision/omnihive-worker-knex-sqlite": "workspace:*"
     "@withonevision/omnihive-worker-log-core": "workspace:*"
     "@withonevision/omnihive-worker-server-v1": "workspace:*"
     "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*"

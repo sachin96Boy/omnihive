@@ -231,16 +231,6 @@ export class AdminService {
         );
     };
 
-    public emitToCluster = async (room: AdminRoomType, event: AdminEventType, message?: any): Promise<void> => {
-        if (global.omnihive.adminServer) {
-            const eventMessage: AdminResponse = { requestComplete: true, requestError: undefined, data: message };
-
-            global.omnihive.adminServer
-                .to(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${room}`)
-                .emit(event, eventMessage);
-        }
-    };
-
     private checkRequest = (adminEvent: AdminEventType, socket: socketio.Socket, request: AdminRequest): boolean => {
         if (
             !StringHelper.isNullOrWhiteSpace(request.adminPassword) &&

@@ -172,8 +172,7 @@ export class ServerService {
             );
         });
 
-        const adminService: AdminService = new AdminService();
-        adminService.emitToCluster(AdminRoomType.Command, AdminEventType.StatusResponse, {
+        global.omnihive.emitToCluster(AdminRoomType.Command, AdminEventType.StatusResponse, {
             serverStatus: global.omnihive.serverStatus,
             serverError: global.omnihive.serverError,
         });

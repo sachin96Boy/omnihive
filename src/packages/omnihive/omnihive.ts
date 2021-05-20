@@ -19,7 +19,6 @@ import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerTyp
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import path from "path";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
-import { AdminService } from "./services/AdminService";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 
@@ -172,8 +171,7 @@ const init = async () => {
     }
 
     nodeCleanup(() => {
-        const adminService: AdminService = new AdminService();
-        adminService.emitToCluster(AdminRoomType.Command, AdminEventType.StatusResponse, {
+        global.omnihive.emitToCluster(AdminRoomType.Command, AdminEventType.StatusResponse, {
             serverStatus: ServerStatus.Offline,
             serverError: undefined,
         });

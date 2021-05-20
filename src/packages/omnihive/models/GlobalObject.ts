@@ -18,6 +18,9 @@ import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { CommandLineArgs } from "./CommandLineArgs";
 import { BootLoaderSettings } from "./BootLoaderSettings";
 import socketIo from "socket.io";
+import { AdminRoomType } from "src/packages/omnihive-core/enums/AdminRoomType";
+import { AdminEventType } from "src/packages/omnihive-core/enums/AdminEventType";
+import { AdminResponse } from "src/packages/omnihive-core/models/AdminResponse";
 
 export class GlobalObject extends WorkerSetterBase {
     public adminServer: socketIo.Server | undefined = undefined;
@@ -31,6 +34,16 @@ export class GlobalObject extends WorkerSetterBase {
     public serverError: any = {};
     public serverStatus: ServerStatus = ServerStatus.Unknown;
     public webServer: Server | undefined = undefined;
+
+    public emitToCluster = async (room: AdminRoomType, event: AdminEventType, message?: any): Promise<void> => {
+        if (global.omnihive.adminServer) {
+            const eventMessage: AdminResponse = { requestComplete: true, requestError: undefined, data: message };
+
+            global.omnihive.adminServer
+                .to(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${room}`)
+                .emit(event, eventMessage);
+        }
+    };
 
     public async pushWorker(hiveWorker: HiveWorker, isBoot: boolean = false, isCore: boolean = false): Promise<void> {
         const logWorker: ILogWorker | undefined = this.getWorker(HiveWorkerType.Log);

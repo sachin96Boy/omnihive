@@ -8,6 +8,8 @@ import { ServerSettings } from "src/packages/omnihive-core/models/ServerSettings
 import { IHiveWorker } from "src/packages/omnihive-core/interfaces/IHiveWorker";
 import { CommandLineArgs } from "src/packages/omnihive/models/CommandLineArgs";
 import { BootLoaderSettings } from "src/packages/omnihive/models/BootLoaderSettings";
+import { AdminRoomType } from "src/packages/omnihive-core/enums/AdminRoomType";
+import { AdminEventType } from "src/packages/omnihive-core/enums/AdminEventType";
 import socketio from "socket.io";
 
 declare global {
@@ -19,6 +21,7 @@ declare global {
                 bootLoaderSettings: BootLoaderSettings;
                 bootWorkerNames: string[];
                 commandLineArgs: CommandLineArgs;
+                emitToCluster: (room: AdminRoomType, event: AdminEventType, message?: any) => Promise<void>;
                 getWorker: <T extends IHiveWorker | undefined>(type: string, name?: string) => T | undefined;
                 initWorkers: (configs: HiveWorker[]) => Promise<void>;
                 ohDirName: string;

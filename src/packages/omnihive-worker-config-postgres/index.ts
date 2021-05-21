@@ -157,6 +157,8 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
     };
 
     public set = async (settings: ServerSettings): Promise<boolean> => {
+        const currentSettings: ServerSettings = await this.get();
+
         const client = await AwaitHelper.execute(this.connectionPool.connect());
 
         await AwaitHelper.execute(client.query("BEGIN"));
@@ -181,6 +183,8 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                 upsertConstantsSql = `${upsertConstantsSql} ON CONFLICT (config_id, constant_key) DO UPDATE SET constant_value = EXCLUDED.constant_value`;
 
                 await AwaitHelper.execute(client.query(upsertConstantsSql));
+
+                delete currentSettings.constants[key];
             }
 
             for (let key in settings.features) {
@@ -191,6 +195,8 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                 `;
 
                 await AwaitHelper.execute(client.query(upsertFeaturesSql));
+
+                delete currentSettings.features[key];
             }
 
             for (let worker of settings.workers) {
@@ -228,6 +234,24 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
                 `;
 
                 await AwaitHelper.execute(client.query(upsertWorkersSql));
+
+                const filteredWorkers = currentSettings.workers.filter((hw: HiveWorker) => hw.name !== worker.name);
+                currentSettings.workers = filteredWorkers;
+            }
+
+            for (let key in currentSettings.constants) {
+                const deleteConstantsQuery: string = `DELETE oh_srv_config_constants where config_id = ${this.configId} AND constant_key = '${key}';`;
+                await AwaitHelper.execute(client.query(deleteConstantsQuery));
+            }
+
+            for (let key in currentSettings.features) {
+                const deleteFeaturesQuery: string = `DELETE oh_srv_config_features where config_id = ${this.configId} AND feature_key = '${key}';`;
+                await AwaitHelper.execute(client.query(deleteFeaturesQuery));
+            }
+
+            for (let worker of currentSettings.workers) {
+                const deleteWorkerQuery: string = `DELETE oh_srv_config_workers where config_id = ${this.configId} AND worker_name = '${worker.name}';`;
+                await AwaitHelper.execute(client.query(deleteWorkerQuery));
             }
 
             await AwaitHelper.execute(client.query("COMMIT"));

@@ -1364,6 +1364,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/yaml@npm:1.9.7":
+  version: 1.9.7
+  resolution: "@types/yaml@npm:1.9.7"
+  dependencies:
+    yaml: "*"
+  checksum: d17c643192ec7d1e3dd29350f5032814469fa1069f6a19c173615e1c109f173e210fb352aea4a9b6ba3047b768071a4f64548c33d68ea17cc663104d6b79778b
+  languageName: node
+  linkType: hard
+
 "@types/yargs-parser@npm:*":
   version: 20.2.0
   resolution: "@types/yargs-parser@npm:20.2.0"
@@ -1606,6 +1615,21 @@ __metadata:
     serialize-error: 8.1.0
     sqlite3: 5.0.2
     typescript: 4.2.4
+  languageName: unknown
+  linkType: soft
+
+"@withonevision/omnihive-worker-config-yaml@workspace:src/packages/omnihive-worker-config-yaml":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-worker-config-yaml@workspace:src/packages/omnihive-worker-config-yaml"
+  dependencies:
+    "@types/fs-extra": 9.0.11
+    "@types/yaml": 1.9.7
+    "@withonevision/omnihive-core": "workspace:*"
+    chai: 4.3.4
+    fs-extra: 10.0.0
+    serialize-error: 8.1.0
+    typescript: 4.2.4
+    yaml: 1.10.2
   languageName: unknown
   linkType: soft
 
@@ -10552,6 +10576,13 @@ typescript@4.2.4:
   version: 4.0.0
   resolution: "yallist@npm:4.0.0"
   checksum: a2960ef879af6ee67a76cae29bac9d8bffeb6e9e366c217dbd21464e7fce071933705544724f47e90ba5209cf9c83c17d5582dd04415d86747a826b2a231efb8
+  languageName: node
+  linkType: hard
+
+"yaml@npm:*, yaml@npm:1.10.2":
+  version: 1.10.2
+  resolution: "yaml@npm:1.10.2"
+  checksum: 8d72062ea3dbfd8fae3d6ddd5b741c2aeb5835a31b0719bf14fac71dd84adde0829763d6fbac46387309da00af1440194c796da5efc349b0baf9de39d82ae69e
   languageName: node
   linkType: hard
 

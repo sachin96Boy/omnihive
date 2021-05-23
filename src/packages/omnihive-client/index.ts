@@ -66,7 +66,7 @@ export class OmniHiveClient extends WorkerSetterBase {
             }
 
             if (this.accessToken !== "") {
-                config.headers["X-OmniHive-Access"] = this.accessToken;
+                config.headers["x-omnihive-access"] = this.accessToken;
             }
 
             if (this.authToken !== "") {
@@ -76,28 +76,28 @@ export class OmniHiveClient extends WorkerSetterBase {
             if (!(cacheType === null || cacheType === undefined)) {
                 switch (cacheType) {
                     case QueryCacheType.None:
-                        config.headers["X-OmniHive-Cache-Type"] = "none";
+                        config.headers["x-omnihive-cache-type"] = "none";
                         break;
                     case QueryCacheType.FromCache:
-                        config.headers["X-OmniHive-Cache-Type"] = "cache";
+                        config.headers["x-omnihive-cache-type"] = "cache";
                         break;
                     case QueryCacheType.FromCacheForceRefresh:
-                        config.headers["X-OmniHive-Cache-Type"] = "cacheRefresh";
+                        config.headers["x-omnihive-cache-type"] = "cacheRefresh";
                         break;
                 }
             } else {
-                config.headers["X-OmniHive-Cache-Type"] = "none";
+                config.headers["x-omnihive-cache-type"] = "none";
             }
 
             if (!(cacheExpireInSeconds === null || cacheExpireInSeconds === undefined)) {
                 try {
                     const cacheTimeNumber: number = +cacheExpireInSeconds;
-                    config.headers["X-OmniHive-Cache-Seconds"] = cacheTimeNumber;
+                    config.headers["x-omnihive-cache-seconds"] = cacheTimeNumber;
                 } catch {
-                    config.headers["X-OmniHive-Cache-Seconds"] = -1;
+                    config.headers["x-omnihive-cache-seconds"] = -1;
                 }
             } else {
-                config.headers["X-OmniHive-Cache-Seconds"] = -1;
+                config.headers["x-omnihive-cache-seconds"] = -1;
             }
 
             config.headers["Content-Type"] = "application/json";
@@ -152,7 +152,7 @@ export class OmniHiveClient extends WorkerSetterBase {
             }
 
             if (this.accessToken !== "") {
-                config.headers["X-OmniHive-Access"] = this.accessToken;
+                config.headers["x-omnihive-access"] = this.accessToken;
             }
 
             if (this.authToken !== "") {

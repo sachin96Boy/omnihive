@@ -73,7 +73,7 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
                         parameters: [
                             {
                                 in: "header",
-                                name: "X-OmniHive-Access",
+                                name: "x-omnihive-access",
                                 required: true,
                                 schema: {
                                     type: "string",
@@ -113,11 +113,11 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
             throw new Error("Request Denied");
         }
 
-        if (!headers["X-OmniHive-Access"]) {
+        if (!headers["x-omnihive-access"]) {
             throw new Error("[ohAccessError] Token Invalid");
         }
 
-        if (!this.tokenWorker?.verify(headers["X-OmniHive-Access"])) {
+        if (!this.tokenWorker?.verify(headers["x-omnihive-access"])) {
             throw new Error("[ohAccessError] Token Invalid");
         }
 

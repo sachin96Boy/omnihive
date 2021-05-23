@@ -28,6 +28,7 @@ jobs:
                   push: true
                   tags: withonevision/omnihive
                   file: ./omnihive.dockerfile
+                  context: ./
             - name: Version Number
               id: version
               run: echo "::set-output name=VERSION::$(node -p -e "require('./dist/packages/omnihive/package.json').version")"

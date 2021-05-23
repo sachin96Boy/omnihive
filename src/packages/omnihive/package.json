@@ -69,6 +69,7 @@
         "serialize-error": "8.1.0",
         "socket.io": "4.1.1",
         "swagger-ui-express": "4.1.6",
+        "yaml": "1.10.2",
         "yargs": "17.0.1"
     },
     "devDependencies": {
@@ -83,6 +84,7 @@
         "@types/redis": "2.8.28",
         "@types/swagger-ui-express": "4.1.2",
         "@types/ws": "7.4.2",
+        "@types/yaml": "1.9.7",
         "chai": "4.3.4",
         "cross-env": "7.0.3",
         "nodemon": "2.0.7",
@@ -122,6 +124,7 @@
             "serialize-error": "8.1.0",
             "socket.io": "4.1.1",
             "swagger-ui-express": "4.1.6",
+            "yaml": "1.10.2",
             "yargs": "17.0.1"
         },
         "bootWorkers": [

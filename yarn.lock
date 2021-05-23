@@ -1618,7 +1618,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-config-yaml@workspace:src/packages/omnihive-worker-config-yaml":
+"@withonevision/omnihive-worker-config-yaml@workspace:*, @withonevision/omnihive-worker-config-yaml@workspace:src/packages/omnihive-worker-config-yaml":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-config-yaml@workspace:src/packages/omnihive-worker-config-yaml"
   dependencies:
@@ -7375,12 +7375,14 @@ fsevents@~2.3.1:
     "@types/redis": 2.8.28
     "@types/swagger-ui-express": 4.1.2
     "@types/ws": 7.4.2
+    "@types/yaml": 1.9.7
     "@withonevision/omnihive-core": "workspace:*"
     "@withonevision/omnihive-worker-config-json": "workspace:*"
     "@withonevision/omnihive-worker-config-mssql": "workspace:*"
     "@withonevision/omnihive-worker-config-mysql": "workspace:*"
     "@withonevision/omnihive-worker-config-postgres": "workspace:*"
     "@withonevision/omnihive-worker-config-sqlite": "workspace:*"
+    "@withonevision/omnihive-worker-config-yaml": "workspace:*"
     "@withonevision/omnihive-worker-date-dayjs": "workspace:*"
     "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*"
     "@withonevision/omnihive-worker-feature-local": "workspace:*"
@@ -7418,6 +7420,7 @@ fsevents@~2.3.1:
     swagger-ui-express: 4.1.6
     ts-node: 9.1.1
     typescript: 4.2.4
+    yaml: 1.10.2
     yargs: 17.0.1
   bin:
     omnihive: ./omnihive.js

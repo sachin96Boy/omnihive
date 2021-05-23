@@ -58,7 +58,7 @@ export default class SystemRegisterWorker extends HiveWorkerBase implements IRes
                         parameters: [
                             {
                                 in: "header",
-                                name: "ohAccess",
+                                name: "X-OmniHive-Access",
                                 required: true,
                                 schema: {
                                     type: "string",
@@ -98,11 +98,11 @@ export default class SystemRegisterWorker extends HiveWorkerBase implements IRes
             throw new Error("Request Denied");
         }
 
-        if (!headers.ohAccess) {
+        if (!headers["X-OmniHive-Access"]) {
             throw new Error("[ohAccessError] Token Invalid");
         }
 
-        if (!this.tokenWorker?.verify(headers.ohAccess)) {
+        if (!this.tokenWorker?.verify(headers["X-OmniHive-Access"])) {
             throw new Error("[ohAccessError] Token Invalid");
         }
 

@@ -9,19 +9,18 @@ import semver from "semver";
 import writePkg from "write-pkg";
 import yargs from "yargs";
 import axios from "axios";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { Listr } from "listr2";
 
-// Elastic version record
+// Version holder
 type Version = {
     main: string;
     beta: string;
     dev: string;
 };
 
-const orangeHex: string = "#FFC022#";
-
+// Master build process
 const build = async (): Promise<void> => {
+    // Reset version
     let version: Version = {
         main: "",
         beta: "",
@@ -128,17 +127,14 @@ const build = async (): Promise<void> => {
 
     // Header
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
-    console.log(chalk.hex(orangeHex)("Building OmniHive monorepo..."));
     console.log();
 
     const tasks = setupTasks(args, version);
-
     await tasks.run();
 };
 
+// Main Listr setup
 const setupTasks = (args: any, version: Version): Listr<any> => {
-    const packages: string[] = getAllPackages();
-
     return new Listr<any>([
         {
             title: "Clear Out Existing Dist Directories",
@@ -150,22 +146,8 @@ const setupTasks = (args: any, version: Version): Listr<any> => {
             },
         },
         {
-            title: "Build Core Packages",
-            task: (_ctx, task): Listr =>
-                task.newListr(
-                    getCorePackages(packages).map((directory) => ({
-                        title: `Building ${directory}`,
-                        task: async () => await buildPackage(directory),
-                        retry: 5,
-                        options: {
-                            persistentOutput: true,
-                            showTimer: true,
-                            suffixRetries: true,
-                            showSubtasks: true,
-                        },
-                    })),
-                    { concurrent: true }
-                ),
+            title: "Build Repo",
+            task: buildRepo,
             retry: 5,
             options: {
                 persistentOutput: true,
@@ -173,86 +155,17 @@ const setupTasks = (args: any, version: Version): Listr<any> => {
             },
         },
         {
-            title: "Build Workers",
-            task: (_ctx, task): Listr =>
-                task.newListr(
-                    getWorkerPackages(packages).map((directory) => ({
-                        title: `Building ${directory}`,
-                        task: async () => await buildPackage(directory),
-                        retry: 5,
-                        options: {
-                            persistentOutput: true,
-                            showTimer: true,
-                            suffixRetries: true,
-                            showSubtasks: true,
-                        },
-                    })),
-                    { concurrent: true }
-                ),
-            retry: 5,
-            options: {
-                persistentOutput: true,
-                showTimer: true,
-            },
-        },
-        {
-            title: "Build Client",
-            task: (_ctx, task): Listr =>
-                task.newListr(
-                    getClientPackage(packages).map((directory) => ({
-                        title: `Building ${directory}`,
-                        task: async () => await buildPackage(directory),
-                        retry: 5,
-                        options: {
-                            persistentOutput: true,
-                            showTimer: true,
-                            suffixRetries: true,
-                            showSubtasks: true,
-                        },
-                    })),
-                    { concurrent: true }
-                ),
-            retry: 5,
-            options: {
-                persistentOutput: true,
-                showTimer: true,
-            },
-        },
-        {
-            title: "Build Server",
-            task: (_ctx, task): Listr =>
-                task.newListr(
-                    getServerPackage(packages).map((directory) => ({
-                        title: `Building ${directory}`,
-                        task: async () => await buildPackage(directory),
-                        retry: 5,
-                        options: {
-                            persistentOutput: true,
-                            showTimer: true,
-                            suffixRetries: true,
-                            showSubtasks: true,
-                        },
-                    })),
-                    { concurrent: true }
-                ),
-            retry: 5,
-            options: {
-                persistentOutput: true,
-                showTimer: true,
-            },
-        },
-        {
-            title: "Copy miscellaneous OmniHive files",
+            title: "Copy required files and folders",
             task: (_ctx, task): Listr =>
                 task.newListr(
                     [
-                        ...getMiscFiles().map((file) => ({
-                            title: `Copying Ignore Files`,
-                            task: async () => await copyMiscFile(file),
+                        ...getRequiredFiles().map((file) => ({
+                            title: `Copying Required Files`,
+                            task: async () => await copyRequiredFile(file),
                         })),
-                        ...getMiscFolders().map((directory) => ({
+                        ...getRequiredFolders().map((directory) => ({
                             title: `Copying Required Directories`,
-                            task: async () => await copyMiscFolder(directory),
+                            task: async () => await copyRequiredFolder(directory),
                             retry: 5,
                             options: {
                                 persistentOutput: true,
@@ -272,7 +185,7 @@ const setupTasks = (args: any, version: Version): Listr<any> => {
         },
         {
             title: "Remove non-core packages from OmniHive package.json",
-            task: removeNonCorePackages,
+            task: removeNonCorePackagesFromMainPackageJson,
             retry: 5,
             options: {
                 persistentOutput: true,
@@ -289,85 +202,13 @@ const setupTasks = (args: any, version: Version): Listr<any> => {
             },
         },
         {
-            title: "Publish Core Packages",
+            title: "Publish Packages",
             skip: (_ctx) => !getPublishFlag(args),
             task: (_ctx, task): Listr =>
                 task.newListr(
-                    getCorePackages(packages).map((directory) => ({
+                    getPublishFolders().map((directory) => ({
                         title: `Publishing ${directory}`,
-                        task: async () => await publish(args, directory),
-                        retry: 5,
-                        options: {
-                            persistentOutput: true,
-                            showTimer: true,
-                            suffixRetries: true,
-                            showSubtasks: true,
-                        },
-                    })),
-                    { concurrent: true }
-                ),
-            retry: 5,
-            options: {
-                persistentOutput: true,
-                showTimer: true,
-            },
-        },
-        {
-            title: "Publish Workers",
-            skip: (_ctx) => !getPublishFlag(args),
-            task: (_ctx, task): Listr =>
-                task.newListr(
-                    getWorkerPackages(packages).map((directory) => ({
-                        title: `Publishing ${directory}`,
-                        task: async () => await publish(args, directory),
-                        retry: 5,
-                        options: {
-                            persistentOutput: true,
-                            showTimer: true,
-                            suffixRetries: true,
-                            showSubtasks: true,
-                        },
-                    })),
-                    { concurrent: true }
-                ),
-            retry: 5,
-            options: {
-                persistentOutput: true,
-                showTimer: true,
-            },
-        },
-        {
-            title: "Publish Client",
-            skip: (_ctx) => !getPublishFlag(args),
-            task: (_ctx, task): Listr =>
-                task.newListr(
-                    getClientPackage(packages).map((directory) => ({
-                        title: `Publishing ${directory}`,
-                        task: async () => await publish(args, directory),
-                        retry: 5,
-                        options: {
-                            persistentOutput: true,
-                            showTimer: true,
-                            suffixRetries: true,
-                            showSubtasks: true,
-                        },
-                    })),
-                    { concurrent: true }
-                ),
-            retry: 5,
-            options: {
-                persistentOutput: true,
-                showTimer: true,
-            },
-        },
-        {
-            title: "Publish Server",
-            skip: (_ctx) => !getPublishFlag(args),
-            task: (_ctx, task): Listr =>
-                task.newListr(
-                    getServerPackage(packages).map((directory) => ({
-                        title: `Publishing ${directory}`,
-                        task: async () => await publish(args, directory),
+                        task: () => publish(args, directory),
                         retry: 5,
                         options: {
                             persistentOutput: true,
@@ -387,72 +228,75 @@ const setupTasks = (args: any, version: Version): Listr<any> => {
     ]);
 };
 
+// Listr task helpers
+const buildRepo = () => {
+    execSpawn("npx tsc -b --force", path.join(`.`));
+};
+
 const clearOutExistingDist = () => {
     // Clear out existing dist directory
-    console.log(chalk.yellow("Clearing existing dist directory..."));
     fse.rmSync(path.join(`.`, `dist`), { recursive: true, force: true });
-    console.log(chalk.greenBright("Done clearing existing dist directory..."));
 };
 
-const getAllPackages = () => {
+const copyRequiredFile = async (file: string) => {
+    await fse.copyFile(path.join(`.`, `src`, `packages`, `${file}`), path.join(`.`, `dist`, `packages`, `${file}`));
+};
+
+const copyRequiredFolder = async (folder: string) => {
+    await fse.copy(path.join(`.`, `src`, `packages`, `${folder}`), path.join(`.`, `dist`, `packages`, `${folder}`));
+};
+
+const getPublishFolders = () => {
     // Get all packages directories
     return fse
-        .readdirSync(path.join(`.`, `src`, `packages`))
-        .filter((f) => fse.statSync(path.join(`.`, `src`, `packages`, f)).isDirectory());
+        .readdirSync(path.join(`.`, `dist`, `packages`))
+        .filter((f) => fse.statSync(path.join(`.`, `dist`, `packages`, f)).isDirectory());
 };
 
-const getCorePackages = (directories: string[]) => {
-    return directories.filter((value: string) => value === "omnihive-core");
+const getRequiredFiles = () => {
+    return [
+        path.join(`omnihive`, `.npmignore`),
+        path.join(`omnihive-worker-knex-mssql`, `.npmignore`),
+        path.join(`omnihive-worker-knex-mssql`, `defaultProcFunctions.sql`),
+        path.join(`omnihive-worker-knex-mssql`, `defaultTables.sql`),
+        path.join(`omnihive-worker-knex-mysql`, `.npmignore`),
+        path.join(`omnihive-worker-knex-mysql`, `defaultProcFunctions.sql`),
+        path.join(`omnihive-worker-knex-mysql`, `defaultTables.sql`),
+        path.join(`omnihive-worker-knex-postgres`, `.npmignore`),
+        path.join(`omnihive-worker-knex-postgres`, `defaultProcFunctions.sql`),
+        path.join(`omnihive-worker-knex-postgres`, `defaultTables.sql`),
+        path.join(`omnihive-worker-knex-sqlite`, `.npmignore`),
+        path.join(`omnihive-worker-knex-sqlite`, `defaultTables.sql`),
+    ];
 };
 
-const getWorkerPackages = (directories: string[]) => {
-    return directories.filter((value: string) => value.startsWith("omnihive-worker"));
+const getRequiredFolders = () => {
+    return [path.join(`omnihive`, `app`, `public`), path.join(`omnihive`, `app`, `views`)];
 };
 
-const getClientPackage = (directories: string[]) => {
-    return directories.filter((value: string) => value === "omnihive-client");
+const publish = (args: any, directory: string) => {
+    fse.rmdirSync(path.join(`.`, `dist`, `packages`, directory, `tests`), { recursive: true });
+
+    let publishString: string = "npm publish";
+
+    if (args.argv.publishAccess) {
+        publishString = `${publishString} --access ${args.argv.publishAccess as string}`;
+    } else {
+        publishString = `${publishString} --access public`;
+    }
+
+    if (args.argv.publishTag) {
+        publishString = `${publishString} --tag ${args.argv.publishTag as string}`;
+    }
+
+    execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${directory}`));
+    execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${directory}`));
 };
 
-const getServerPackage = (directories: string[]) => {
-    return directories.filter((value: string) => value === "omnihive");
-};
-
-const buildPackage = async (directory: string) => {
-    await execSpawn("yarn run build", path.join(`.`, `src`, `packages`, `${directory}`));
-    fse.copySync(
-        path.join(`.`, `src`, `packages`, `${directory}`, `package.json`),
-        path.join(`.`, `dist`, `packages`, `${directory}`, `package.json`)
-    );
-};
-
-const getMiscFiles = () => {
-    return [".npmignore"];
-};
-
-const copyMiscFile = async (file: string) => {
-    await fse.copyFile(
-        path.join(`.`, `src`, `packages`, `omnihive`, `${file}`),
-        path.join(`.`, `dist`, `packages`, `omnihive`, `${file}`)
-    );
-};
-
-const getMiscFolders = () => {
-    return [path.join(`app`, `public`), path.join(`app`, `views`)];
-};
-
-const copyMiscFolder = async (folder: string) => {
-    await fse.copy(
-        path.join(`.`, `src`, `packages`, `omnihive`, `${folder}`),
-        path.join(`.`, `dist`, `packages`, `omnihive`, `${folder}`)
-    );
-};
-
-const removeNonCorePackages = async () => {
-    const packageJson: NormalizedReadResult | undefined = await AwaitHelper.execute(
-        readPkgUp({
-            cwd: path.join(`.`, `dist`, `packages`, `omnihive`),
-        })
-    );
+const removeNonCorePackagesFromMainPackageJson = async () => {
+    const packageJson: NormalizedReadResult | undefined = await readPkgUp({
+        cwd: path.join(`.`, `dist`, `packages`, `omnihive`),
+    });
 
     const corePackages: any = packageJson?.packageJson.omniHive.coreDependencies;
     const loadedPackages: any = packageJson?.packageJson.dependencies;
@@ -492,8 +336,7 @@ const updateVersion = async (args: any, version: Version) => {
                         currentVersion = semver.inc(version.dev, "prerelease", false, "dev") ?? "";
 
                         if (!currentVersion || currentVersion === "") {
-                            console.log(chalk.red("SemVer is incorrect"));
-                            process.exit();
+                            throw new Error("SemVer is incorrect");
                         }
 
                         version.dev = currentVersion;
@@ -502,23 +345,20 @@ const updateVersion = async (args: any, version: Version) => {
                         currentVersion = semver.inc(version.beta, "prerelease", false, "beta") ?? "";
 
                         if (!currentVersion || currentVersion === "") {
-                            console.log(chalk.red("SemVer is incorrect"));
-                            process.exit();
+                            throw new Error("SemVer is incorrect");
                         }
 
                         version.beta = currentVersion;
                         break;
                     default:
-                        console.log(chalk.red("Must have dev or beta channel with prerelease"));
-                        process.exit();
+                        throw new Error("Must have dev or beta channel with prerelease");
                 }
                 break;
             case "major":
                 currentVersion = semver.inc(version.main, "major") ?? "";
 
                 if (!currentVersion || currentVersion === "") {
-                    console.log(chalk.red("SemVer is incorrect"));
-                    process.exit();
+                    throw new Error("SemVer is incorrect");
                 }
 
                 version.main = currentVersion;
@@ -529,8 +369,7 @@ const updateVersion = async (args: any, version: Version) => {
                 currentVersion = semver.inc(version.main, "minor") ?? "";
 
                 if (!currentVersion || currentVersion === "") {
-                    console.log(chalk.red("SemVer is incorrect"));
-                    process.exit();
+                    throw new Error("SemVer is incorrect");
                 }
 
                 version.main = currentVersion;
@@ -541,8 +380,7 @@ const updateVersion = async (args: any, version: Version) => {
                 currentVersion = semver.inc(version.main, "patch") ?? "";
 
                 if (!currentVersion || currentVersion === "") {
-                    console.log(chalk.red("SemVer is incorrect"));
-                    process.exit();
+                    throw new Error("SemVer is incorrect");
                 }
 
                 version.main = currentVersion;
@@ -553,8 +391,6 @@ const updateVersion = async (args: any, version: Version) => {
     }
 
     // Patch package.json with SemVer
-    console.log(chalk.yellow("Patching package.json files..."));
-
     const replaceWorkspaceOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
         files: [path.join(`dist`, `packages`, `**`, `package.json`)],
@@ -574,23 +410,7 @@ const updateVersion = async (args: any, version: Version) => {
     await replaceInFile.replaceInFile(replaceVersionOptions);
 };
 
-const getPublishFlag = (args: any) => args.argv.publish as boolean;
-
-const publish = async (args: any, directory: string) => {
-    let publishString: string = "npm publish";
-
-    if (args.argv.publishAccess) {
-        publishString = `${publishString} --access ${args.argv.publishAccess as string}`;
-    } else {
-        publishString = `${publishString} --access public`;
-    }
-
-    if (args.argv.publishTag) {
-        publishString = `${publishString} --tag ${args.argv.publishTag as string}`;
-    }
-    await execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${directory}`));
-    await execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${directory}`));
-};
+// Helper functions
 
 const execSpawn = (commandString: string, cwd: string): string => {
     const execSpawn = childProcess.spawnSync(commandString, {
@@ -601,11 +421,11 @@ const execSpawn = (commandString: string, cwd: string): string => {
 
     if (execSpawn.status !== 0) {
         if (execSpawn.stdout?.length > 0) {
-            console.log(chalk.red(execSpawn.stdout.toString().trim()));
+            throw new Error(execSpawn.stdout.toString().trim());
         } else if (execSpawn.stderr?.length > 0) {
-            console.log(chalk.red(execSpawn.stderr.toString().trim()));
+            throw new Error(execSpawn.stderr.toString().trim());
         } else if (execSpawn.error) {
-            console.log(chalk.red(execSpawn.error.message));
+            throw new Error(execSpawn.error.message);
         }
         process.exit(1);
     }
@@ -619,4 +439,7 @@ const execSpawn = (commandString: string, cwd: string): string => {
     }
 };
 
+const getPublishFlag = (args: any) => args.argv.publish as boolean;
+
+// Master runner
 build();

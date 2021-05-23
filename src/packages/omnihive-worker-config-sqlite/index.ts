@@ -144,6 +144,8 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
     };
 
     public set = async (settings: ServerSettings): Promise<boolean> => {
+        const currentSettings: ServerSettings = await this.get();
+
         const database = new sqlite.Database(this.metadata.filename);
         database.serialize(() => {
             database.run("BEGIN");
@@ -170,6 +172,8 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
                     upsertConstantsSql = `${upsertConstantsSql} ON CONFLICT (config_id, constant_key) DO UPDATE SET constant_value = EXCLUDED.constant_value`;
 
                     database.run(upsertConstantsSql);
+
+                    delete currentSettings.constants[key];
                 }
 
                 for (let key in settings.features) {
@@ -180,6 +184,8 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
                     `;
 
                     database.run(upsertFeaturesSql);
+
+                    delete currentSettings.features[key];
                 }
 
                 for (let worker of settings.workers) {
@@ -217,6 +223,24 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
                     `;
 
                     database.run(upsertWorkersSql);
+
+                    const filteredWorkers = currentSettings.workers.filter((hw: HiveWorker) => hw.name !== worker.name);
+                    currentSettings.workers = filteredWorkers;
+                }
+
+                for (let key in currentSettings.constants) {
+                    const deleteConstantsQuery: string = `DELETE oh_srv_config_constants where config_id = ${this.configId} AND constant_key = '${key}';`;
+                    database.run(deleteConstantsQuery);
+                }
+
+                for (let key in currentSettings.features) {
+                    const deleteFeaturesQuery: string = `DELETE oh_srv_config_features where config_id = ${this.configId} AND feature_key = '${key}';`;
+                    database.run(deleteFeaturesQuery);
+                }
+
+                for (let worker of currentSettings.workers) {
+                    const deleteWorkerQuery: string = `DELETE oh_srv_config_workers where config_id = ${this.configId} AND worker_name = '${worker.name}';`;
+                    database.run(deleteWorkerQuery);
                 }
 
                 database.run("COMMIT");

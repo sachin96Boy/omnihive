@@ -21,6 +21,7 @@ import path from "path";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
+import yaml from "yaml";
 
 const init = async () => {
     process.setMaxListeners(0);
@@ -68,6 +69,8 @@ const init = async () => {
         taskRunnerArgs: (args.argv.args as string) ?? "",
     };
 
+    let bootLoaderType: string = "json";
+
     if (args.argv.environmentFile && fse.existsSync(args.argv.environmentFile as string)) {
         dotenv.config({ path: args.argv.environmentFile as string });
     }
@@ -76,6 +79,17 @@ const init = async () => {
         if (fse.existsSync(path.join(global.omnihive.ohDirName, args.argv.environmentFile as string))) {
             dotenv.config({ path: path.join(global.omnihive.ohDirName, args.argv.environmentFile as string) });
         }
+    }
+
+    if (
+        !process.env.OMNIHIVE_BOOT_LOADER_TYPE ||
+        StringHelper.isNullOrWhiteSpace(process.env.OMNIHIVE_BOOT_LOADER_TYPE) ||
+        (process.env.OMNIHIVE_BOOT_LOADER_TYPE?.toLowerCase() !== "json" &&
+            process.env.OMNIHIVE_BOOT_LOADER_TYPE?.toLowerCase() !== "yaml")
+    ) {
+        chalk.yellow("No valid boot loader type provided...assuming JSON");
+    } else {
+        bootLoaderType = process.env.OMNIHIVE_BOOT_LOADER_TYPE;
     }
 
     if (
@@ -93,11 +107,11 @@ const init = async () => {
         throw new Error("No Valid Boot Loader Location Given...OmniHive Cannot Continue");
     }
 
+    let bootLoaderFile: string = "";
+
     try {
         if (fse.existsSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION)) {
-            global.omnihive.bootLoaderSettings = JSON.parse(
-                fse.readFileSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION, "utf8")
-            );
+            bootLoaderFile = fse.readFileSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION, "utf8");
         }
 
         if (
@@ -108,24 +122,32 @@ const init = async () => {
                 )
             )
         ) {
-            global.omnihive.bootLoaderSettings = JSON.parse(
-                fse.readFileSync(
-                    path.join(
-                        path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
-                        process.env.OMNIHIVE_BOOT_LOADER_LOCATION
-                    ),
-                    "utf8"
-                )
+            bootLoaderFile = fse.readFileSync(
+                path.join(
+                    path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
+                    process.env.OMNIHIVE_BOOT_LOADER_LOCATION
+                ),
+                "utf8"
             );
         }
 
         if (fse.existsSync(path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION))) {
-            global.omnihive.bootLoaderSettings = JSON.parse(
-                fse.readFileSync(
-                    path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION),
-                    "utf8"
-                )
+            bootLoaderFile = fse.readFileSync(
+                path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION),
+                "utf8"
             );
+        }
+
+        switch (bootLoaderType.toLowerCase()) {
+            case "json":
+                global.omnihive.bootLoaderSettings = JSON.parse(bootLoaderFile);
+                break;
+            case "yaml":
+                global.omnihive.bootLoaderSettings = yaml.parse(bootLoaderFile);
+                break;
+            default:
+                global.omnihive.bootLoaderSettings = JSON.parse(bootLoaderFile);
+                break;
         }
     } catch {
         throw new Error("No Valid Boot Loader Location Given...OmniHive Cannot Continue");

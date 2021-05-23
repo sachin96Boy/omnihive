@@ -307,10 +307,10 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             schema: graphDatabaseSchema,
                             context: async ({ req }) => {
                                 const omnihive = {
-                                    access: req.headers.ohaccess || ``,
+                                    access: req.headers["X-OmniHive-Access"] || ``,
                                     auth: req.headers.authorization || ``,
-                                    cache: req.headers.ohcache || ``,
-                                    cacheSeconds: req.headers.ohcacheseconds,
+                                    cache: req.headers["X-OmniHive-Cache-Type"] || ``,
+                                    cacheSeconds: req.headers["X-OmniHive-Cache-Seconds"],
                                 };
                                 return { omnihive };
                             },
@@ -366,10 +366,10 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     schema: graphFunctionSchema,
                     context: async ({ req }) => {
                         const omnihive = {
-                            access: req.headers.ohaccess || ``,
+                            access: req.headers["X-OmniHive-Access"] || ``,
                             auth: req.headers.authorization || ``,
-                            cache: req.headers.ohcache || ``,
-                            cacheSeconds: req.headers.ohcacheseconds,
+                            cache: req.headers["X-OmniHive-Cache-Type"] || ``,
+                            cacheSeconds: req.headers["X-OmniHive-Cache-Seconds"],
                         };
                         return { omnihive };
                     },

@@ -24,8 +24,7 @@
     "bin": "./omnihive.js",
     "scripts": {
         "build": "tsc",
-        "cli:debug": "nodemon --no-stdin --config ./nodemon.cli.json",
-        "cli:taskRunner:debug": "nodemon --no-stdin --config ./nodemon.taskRunner.json",
+        "taskRunner:debug": "nodemon --no-stdin --config ./nodemon.taskRunner.json",
         "server:debug": "nodemon --no-stdin --config ./nodemon.server.json"
     },
     "dependencies": {

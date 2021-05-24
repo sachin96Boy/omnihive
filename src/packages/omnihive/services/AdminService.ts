@@ -194,17 +194,26 @@ export class AdminService {
             });
 
             // Admin Event : Start Log
-            socket.on(AdminEventType.StartLogRequest, () => {
+            socket.on(AdminEventType.StartLogRequest, (message: AdminRequest) => {
+                if (!this.checkRequest(AdminEventType.StartLogRequest, socket, message)) {
+                    return;
+                }
+
                 socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Log}`);
                 socket.emit(AdminEventType.StartLogResponse);
             });
 
             // Admin Event : Stop Log
-            socket.on(AdminEventType.StopLogRequest, () => {
+            socket.on(AdminEventType.StopLogRequest, (message: AdminRequest) => {
+                if (!this.checkRequest(AdminEventType.StopLogRequest, socket, message)) {
+                    return;
+                }
+
                 socket.leave(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Log}`);
                 socket.emit(AdminEventType.StopLogResponse);
             });
 
+            // Admin Event : URL Request
             socket.on(AdminEventType.UrlListRequest, (message: AdminRequest) => {
                 if (!this.checkRequest(AdminEventType.UrlListRequest, socket, message)) {
                     return;
@@ -224,8 +233,17 @@ export class AdminService {
 
     private checkRequest = (adminEvent: AdminEventType, socket: socketio.Socket, request: AdminRequest): boolean => {
         if (
+            StringHelper.isNullOrWhiteSpace(request.clusterId) ||
+            request.clusterId !== global.omnihive.bootLoaderSettings.baseSettings.clusterId
+        ) {
+            return false;
+        }
+
+        if (
             !StringHelper.isNullOrWhiteSpace(request.adminPassword) &&
-            request.adminPassword === global.omnihive.bootLoaderSettings.baseSettings.adminPassword
+            !StringHelper.isNullOrWhiteSpace(request.clusterId) &&
+            request.adminPassword === global.omnihive.bootLoaderSettings.baseSettings.adminPassword &&
+            request.clusterId === global.omnihive.bootLoaderSettings.baseSettings.clusterId
         ) {
             return true;
         }
@@ -267,6 +285,7 @@ export class AdminService {
 
     private sendErrorToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, errorMessage: string): void => {
         const adminResponse: AdminResponse = {
+            clusterId: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
             requestComplete: false,
             requestError: errorMessage,
         };
@@ -276,6 +295,7 @@ export class AdminService {
 
     private sendSuccessToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, message: any): void => {
         const adminResponse: AdminResponse = {
+            clusterId: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
             requestComplete: true,
             requestError: undefined,
             data: message,

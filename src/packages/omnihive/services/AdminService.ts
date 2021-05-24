@@ -172,8 +172,12 @@ export class AdminService {
             });
 
             // Admin Event : Server Reset
-            socket.on(AdminEventType.ServerResetRequest, () => {
-                socket.emit(AdminEventType.ServerResetResponse);
+            socket.on(AdminEventType.ServerResetRequest, (message: AdminRequest) => {
+                if (!this.checkRequest(AdminEventType.ServerResetRequest, socket, message)) {
+                    return;
+                }
+
+                this.sendSuccessToSocket(AdminEventType.ServerResetRequest, socket, { verified: true });
 
                 setTimeout(() => {
                     const serverService: ServerService = new ServerService();
@@ -200,7 +204,7 @@ export class AdminService {
                 }
 
                 socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Log}`);
-                socket.emit(AdminEventType.StartLogResponse);
+                this.sendSuccessToSocket(AdminEventType.StartLogRequest, socket, { verified: true });
             });
 
             // Admin Event : Stop Log
@@ -210,7 +214,7 @@ export class AdminService {
                 }
 
                 socket.leave(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Log}`);
-                socket.emit(AdminEventType.StopLogResponse);
+                this.sendSuccessToSocket(AdminEventType.StopLogRequest, socket, { verified: true });
             });
 
             // Admin Event : URL Request

@@ -70,7 +70,6 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
     public get = async (): Promise<ServerSettings> => {
         const srvConfigBaseSql = `
             SELECT   config_id
-                    ,cluster_id
                     ,config_name
             FROM oh_srv_config_base 
             WHERE config_name = '${this.metadata.configName}'`;

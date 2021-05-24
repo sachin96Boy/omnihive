@@ -38,14 +38,14 @@ export class GlobalObject extends WorkerSetterBase {
     public emitToCluster = async (room: AdminRoomType, event: AdminEventType, message?: any): Promise<void> => {
         if (global.omnihive.adminServer) {
             const eventMessage: AdminResponse = {
-                clusterId: this.bootLoaderSettings.baseSettings.clusterId,
+                serverId: this.bootLoaderSettings.baseSettings.serverId,
                 requestComplete: true,
                 requestError: undefined,
                 data: message,
             };
 
             global.omnihive.adminServer
-                .to(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${room}`)
+                .to(`${global.omnihive.bootLoaderSettings.baseSettings.serverId}-${room}`)
                 .emit(event, eventMessage);
         }
     };

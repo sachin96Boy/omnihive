@@ -59,7 +59,7 @@ export class AdminService {
 
         // Admin Event : Connection
         global.omnihive.adminServer.on(AdminEventType.Connection, (socket: socketio.Socket) => {
-            socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Command}`);
+            socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.serverId}-${AdminRoomType.Command}`);
 
             // Socket disconnect clear memory
             socket.on(AdminEventType.Disconnect, () => {
@@ -203,7 +203,7 @@ export class AdminService {
                     return;
                 }
 
-                socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Log}`);
+                socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.serverId}-${AdminRoomType.Log}`);
                 this.sendSuccessToSocket(AdminEventType.StartLogRequest, socket, { verified: true });
             });
 
@@ -213,7 +213,7 @@ export class AdminService {
                     return;
                 }
 
-                socket.leave(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Log}`);
+                socket.leave(`${global.omnihive.bootLoaderSettings.baseSettings.serverId}-${AdminRoomType.Log}`);
                 this.sendSuccessToSocket(AdminEventType.StopLogRequest, socket, { verified: true });
             });
 
@@ -237,17 +237,17 @@ export class AdminService {
 
     private checkRequest = (adminEvent: AdminEventType, socket: socketio.Socket, request: AdminRequest): boolean => {
         if (
-            StringHelper.isNullOrWhiteSpace(request.clusterId) ||
-            request.clusterId !== global.omnihive.bootLoaderSettings.baseSettings.clusterId
+            StringHelper.isNullOrWhiteSpace(request.serverId) ||
+            request.serverId !== global.omnihive.bootLoaderSettings.baseSettings.serverId
         ) {
             return false;
         }
 
         if (
             !StringHelper.isNullOrWhiteSpace(request.adminPassword) &&
-            !StringHelper.isNullOrWhiteSpace(request.clusterId) &&
+            !StringHelper.isNullOrWhiteSpace(request.serverId) &&
             request.adminPassword === global.omnihive.bootLoaderSettings.baseSettings.adminPassword &&
-            request.clusterId === global.omnihive.bootLoaderSettings.baseSettings.clusterId
+            request.serverId === global.omnihive.bootLoaderSettings.baseSettings.serverId
         ) {
             return true;
         }
@@ -289,7 +289,7 @@ export class AdminService {
 
     private sendErrorToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, errorMessage: string): void => {
         const adminResponse: AdminResponse = {
-            clusterId: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
+            serverId: global.omnihive.bootLoaderSettings.baseSettings.serverId,
             requestComplete: false,
             requestError: errorMessage,
         };
@@ -299,7 +299,7 @@ export class AdminService {
 
     private sendSuccessToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, message: any): void => {
         const adminResponse: AdminResponse = {
-            clusterId: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
+            serverId: global.omnihive.bootLoaderSettings.baseSettings.serverId,
             requestComplete: true,
             requestError: undefined,
             data: message,

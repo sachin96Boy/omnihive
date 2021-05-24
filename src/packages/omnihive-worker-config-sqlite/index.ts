@@ -57,7 +57,6 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
     public get = async (): Promise<ServerSettings> => {
         const srvConfigBaseSql = `
             SELECT   config_id
-                    ,cluster_id
                     ,config_name
             FROM oh_srv_config_base 
             WHERE config_name = '${this.metadata.configName}'`;

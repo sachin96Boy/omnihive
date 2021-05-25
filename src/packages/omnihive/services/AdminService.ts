@@ -189,6 +189,7 @@ export class AdminService {
                 this.logWorker?.write(OmniHiveLogLevel.Info, "OmniHive Server Restarting...");
 
                 setTimeout(() => {
+                    global.omnihive.emitToCluster(AdminRoomType.Command, AdminEventType.ServerResetRequest, message);
                     const serverService: ServerService = new ServerService();
                     serverService.boot(true);
                 }, 3000);

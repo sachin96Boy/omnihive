@@ -193,7 +193,7 @@ const init = async () => {
     }
 
     nodeCleanup(() => {
-        global.omnihive.emitToCluster(AdminRoomType.Command, AdminEventType.StatusResponse, {
+        global.omnihive.emitToNamespace(AdminRoomType.Command, AdminEventType.StatusResponse, {
             serverStatus: ServerStatus.Offline,
             serverError: undefined,
         });

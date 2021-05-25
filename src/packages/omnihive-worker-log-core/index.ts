@@ -41,7 +41,7 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
             consoleOnlyLogging = true;
         }
 
-        global.omnihive.emitToCluster(AdminRoomType.Log, AdminEventType.LogResponse, {
+        global.omnihive.emitToNamespace(AdminRoomType.Log, AdminEventType.LogResponse, {
             logLevel,
             timestamp,
             osName,

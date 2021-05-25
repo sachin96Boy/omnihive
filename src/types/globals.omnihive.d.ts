@@ -21,7 +21,8 @@ declare global {
                 bootLoaderSettings: BootLoaderSettings;
                 bootWorkerNames: string[];
                 commandLineArgs: CommandLineArgs;
-                emitToCluster: (room: AdminRoomType, event: AdminEventType, message?: any) => Promise<void>;
+                emitToCluster: (event: AdminEventType, message?: any) => Promise<void>;
+                emitToNamespace: (room: AdminRoomType, event: AdminEventType, message?: any) => Promise<void>;
                 getWorker: <T extends IHiveWorker | undefined>(type: string, name?: string) => T | undefined;
                 initWorkers: (configs: HiveWorker[]) => Promise<void>;
                 ohDirName: string;

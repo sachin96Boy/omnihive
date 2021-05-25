@@ -172,7 +172,7 @@ export class ServerService {
             );
         });
 
-        global.omnihive.emitToCluster(AdminRoomType.Command, AdminEventType.StatusResponse, {
+        global.omnihive.emitToNamespace(AdminRoomType.Command, AdminEventType.StatusResponse, {
             serverStatus: global.omnihive.serverStatus,
             serverError: global.omnihive.serverError,
         });

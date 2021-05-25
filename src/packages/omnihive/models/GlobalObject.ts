@@ -21,6 +21,7 @@ import socketIo from "socket.io";
 import { AdminRoomType } from "src/packages/omnihive-core/enums/AdminRoomType";
 import { AdminEventType } from "src/packages/omnihive-core/enums/AdminEventType";
 import { AdminResponse } from "src/packages/omnihive-core/models/AdminResponse";
+import { AdminRequest } from "src/packages/omnihive-core/models/AdminRequest";
 
 export class GlobalObject extends WorkerSetterBase {
     public adminServer: socketIo.Server | undefined = undefined;
@@ -35,17 +36,30 @@ export class GlobalObject extends WorkerSetterBase {
     public serverStatus: ServerStatus = ServerStatus.Unknown;
     public webServer: Server | undefined = undefined;
 
-    public emitToCluster = async (room: AdminRoomType, event: AdminEventType, message?: any): Promise<void> => {
+    public emitToCluster = async (event: AdminEventType, message?: any): Promise<void> => {
+        if (global.omnihive.adminServer) {
+            const eventMessage: AdminRequest = {
+                adminPassword: this.bootLoaderSettings.baseSettings.adminPassword,
+                serverGroupId: this.bootLoaderSettings.baseSettings.serverGroupId,
+                data: message,
+            };
+
+            global.omnihive.adminServer.emit(event, eventMessage);
+        }
+    };
+
+    public emitToNamespace = async (room: AdminRoomType, event: AdminEventType, message?: any): Promise<void> => {
         if (global.omnihive.adminServer) {
             const eventMessage: AdminResponse = {
-                clusterId: this.bootLoaderSettings.baseSettings.clusterId,
+                serverGroupId: this.bootLoaderSettings.baseSettings.serverGroupId,
                 requestComplete: true,
                 requestError: undefined,
                 data: message,
             };
 
             global.omnihive.adminServer
-                .to(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${room}`)
+                .of(`/${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}`)
+                .to(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${room}`)
                 .emit(event, eventMessage);
         }
     };

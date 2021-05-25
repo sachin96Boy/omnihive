@@ -740,6 +740,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@socket.io/redis-emitter@npm:4.1.0":
+  version: 4.1.0
+  resolution: "@socket.io/redis-emitter@npm:4.1.0"
+  dependencies:
+    debug: ~4.3.1
+    notepack.io: ~2.1.0
+    socket.io-parser: ~4.0.4
+  checksum: f3bba88426723e88c4179387204e69d7d2e52562b4fde2d00840cf33b78ba68c0ce9f5383db2f494246904312a6750c45817cde715b8584a010cd02cb940b9aa
+  languageName: node
+  linkType: hard
+
 "@szmarczak/http-timer@npm:^1.1.2":
   version: 1.1.2
   resolution: "@szmarczak/http-timer@npm:1.1.2"
@@ -7197,6 +7208,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"notepack.io@npm:~2.1.0":
+  version: 2.1.3
+  resolution: "notepack.io@npm:2.1.3"
+  checksum: fdf8a0b5b0f93318dd25f9cc66fd5a0232291740593b6a723f7bb9c7277c2749f4c76e978209fa085c37b984738ce2d1085c16bdd3b4afe772d41ede8bf22f01
+  languageName: node
+  linkType: hard
+
 "notepack.io@npm:~2.2.0":
   version: 2.2.0
   resolution: "notepack.io@npm:2.2.0"
@@ -7364,6 +7382,7 @@ fsevents@~2.3.1:
   resolution: "omnihive@workspace:src/packages/omnihive"
   dependencies:
     "@socket.io/redis-adapter": 7.0.0
+    "@socket.io/redis-emitter": 4.1.0
     "@types/body-parser": 1.19.0
     "@types/connect-redis": 0.0.16
     "@types/cors": 2.8.10

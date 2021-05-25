@@ -17,9 +17,11 @@ import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType"
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { Emitter } from "@socket.io/redis-emitter";
 
 export class AdminService {
     private logWorker!: ILogWorker | undefined;
+    private ioEmitter!: Emitter | undefined;
 
     public boot = async () => {
         // Initiate log worker
@@ -33,7 +35,9 @@ export class AdminService {
         // Start-up admin server
 
         if (global.omnihive.adminServer) {
-            global.omnihive.adminServer.disconnectSockets(true);
+            global.omnihive.adminServer
+                .of(`/${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}`)
+                .disconnectSockets(true);
             global.omnihive.adminServer.close();
         }
 
@@ -47,31 +51,53 @@ export class AdminService {
             }
         );
 
+        const namespace: socketio.Namespace = global.omnihive.adminServer.of(
+            global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
+        );
+
         // Enable Redis if necessary
         if (global.omnihive.bootLoaderSettings.baseSettings.clusterEnable) {
             const pubClient = redis.createClient(
                 global.omnihive.bootLoaderSettings.baseSettings.clusterRedisConnectionString
             );
             const subClient = pubClient.duplicate();
+            const emitClient = pubClient.duplicate();
 
             global.omnihive.adminServer.adapter(createAdapter(pubClient, subClient));
+            this.ioEmitter = new Emitter(emitClient);
         }
 
+        // Admin Event : Server Reset
+        global.omnihive.adminServer.on(AdminEventType.ServerResetRequest, (message: AdminRequest) => {
+            if (!this.checkRequest(AdminEventType.ServerResetRequest, message)) {
+                return;
+            }
+
+            this.logWorker?.write(OmniHiveLogLevel.Info, "OmniHive Server Restarting...");
+
+            setTimeout(() => {
+                const serverService: ServerService = new ServerService();
+                serverService.boot(true);
+            }, 3000);
+        });
+
         // Admin Event : Connection
-        global.omnihive.adminServer.on(AdminEventType.Connection, (socket: socketio.Socket) => {
-            socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Command}`);
+        namespace.on(AdminEventType.Connection, (socket: socketio.Socket) => {
+            socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${AdminRoomType.Command}`);
 
             // Socket disconnect clear memory
             socket.on(AdminEventType.Disconnect, () => {
                 socket.removeAllListeners();
-                global.omnihive.adminServer?.sockets.sockets.forEach((sck: socketio.Socket) => {
-                    if (socket.id === sck.id) sck.disconnect(true);
-                });
+                global.omnihive.adminServer
+                    ?.of(global.omnihive.bootLoaderSettings.baseSettings.serverGroupId)
+                    .sockets.forEach((sck: socketio.Socket) => {
+                        if (socket.id === sck.id) sck.disconnect(true);
+                    });
             });
 
             // Admin Event : Access Token
             socket.on(AdminEventType.AccessTokenRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.AccessTokenRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.AccessTokenRequest, message, socket)) {
                     return;
                 }
 
@@ -98,7 +124,7 @@ export class AdminService {
 
             // Admin Event : Config
             socket.on(AdminEventType.ConfigRequest, async (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.ConfigRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.ConfigRequest, message, socket)) {
                     return;
                 }
 
@@ -125,7 +151,7 @@ export class AdminService {
 
             // Admin Event : Config Save
             socket.on(AdminEventType.ConfigSaveRequest, async (message: AdminRequest<{ config: ServerSettings }>) => {
-                if (!this.checkRequest(AdminEventType.ConfigSaveRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.ConfigSaveRequest, message, socket)) {
                     return;
                 }
 
@@ -162,20 +188,30 @@ export class AdminService {
                 }
             });
 
-            // Admin Event : Server Reset
+            // Admin Event : Server Register
             socket.on(AdminEventType.RegisterRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.RegisterRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.RegisterRequest, message, socket)) {
                     return;
                 }
 
                 this.sendSuccessToSocket(AdminEventType.RegisterRequest, socket, { verified: true });
             });
 
-            // Admin Event : Server Reset
-            socket.on(AdminEventType.ServerResetRequest, () => {
-                socket.emit(AdminEventType.ServerResetResponse);
+            // Admin Event : Server Reset : Namespace
+            socket.on(AdminEventType.ServerResetRequest, (message: AdminRequest) => {
+                if (!this.checkRequest(AdminEventType.ServerResetRequest, message, socket)) {
+                    return;
+                }
+
+                this.sendSuccessToSocket(AdminEventType.ServerResetRequest, socket, { verified: true });
+                this.logWorker?.write(OmniHiveLogLevel.Info, "Broadcasting Restart...");
 
                 setTimeout(() => {
+                    if (this.ioEmitter && global.omnihive.bootLoaderSettings.baseSettings.clusterEnable === true) {
+                        this.ioEmitter.serverSideEmit(AdminEventType.ServerResetRequest, message);
+                        return;
+                    }
+
                     const serverService: ServerService = new ServerService();
                     serverService.boot(true);
                 }, 3000);
@@ -183,7 +219,7 @@ export class AdminService {
 
             // Admin Event : Status
             socket.on(AdminEventType.StatusRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.StatusRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.StatusRequest, message, socket)) {
                     return;
                 }
 
@@ -195,27 +231,27 @@ export class AdminService {
 
             // Admin Event : Start Log
             socket.on(AdminEventType.StartLogRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.StartLogRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.StartLogRequest, message, socket)) {
                     return;
                 }
 
-                socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Log}`);
-                socket.emit(AdminEventType.StartLogResponse);
+                socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${AdminRoomType.Log}`);
+                this.sendSuccessToSocket(AdminEventType.StartLogRequest, socket, { verified: true });
             });
 
             // Admin Event : Stop Log
             socket.on(AdminEventType.StopLogRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.StopLogRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.StopLogRequest, message, socket)) {
                     return;
                 }
 
-                socket.leave(`${global.omnihive.bootLoaderSettings.baseSettings.clusterId}-${AdminRoomType.Log}`);
-                socket.emit(AdminEventType.StopLogResponse);
+                socket.leave(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${AdminRoomType.Log}`);
+                this.sendSuccessToSocket(AdminEventType.StopLogRequest, socket, { verified: true });
             });
 
             // Admin Event : URL Request
             socket.on(AdminEventType.UrlListRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.UrlListRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.UrlListRequest, message, socket)) {
                     return;
                 }
 
@@ -231,19 +267,19 @@ export class AdminService {
         );
     };
 
-    private checkRequest = (adminEvent: AdminEventType, socket: socketio.Socket, request: AdminRequest): boolean => {
+    private checkRequest = (adminEvent: AdminEventType, request: AdminRequest, socket?: socketio.Socket): boolean => {
         if (
-            StringHelper.isNullOrWhiteSpace(request.clusterId) ||
-            request.clusterId !== global.omnihive.bootLoaderSettings.baseSettings.clusterId
+            StringHelper.isNullOrWhiteSpace(request.serverGroupId) ||
+            request.serverGroupId !== global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
         ) {
             return false;
         }
 
         if (
             !StringHelper.isNullOrWhiteSpace(request.adminPassword) &&
-            !StringHelper.isNullOrWhiteSpace(request.clusterId) &&
+            !StringHelper.isNullOrWhiteSpace(request.serverGroupId) &&
             request.adminPassword === global.omnihive.bootLoaderSettings.baseSettings.adminPassword &&
-            request.clusterId === global.omnihive.bootLoaderSettings.baseSettings.clusterId
+            request.serverGroupId === global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
         ) {
             return true;
         }
@@ -253,7 +289,9 @@ export class AdminService {
             `Admin client register error using password ${request.adminPassword}...`
         );
 
-        this.sendErrorToSocket(adminEvent, socket, "Invalid Admin Password");
+        if (socket) {
+            this.sendErrorToSocket(adminEvent, socket, "Invalid Admin Password");
+        }
 
         return false;
     };
@@ -285,7 +323,7 @@ export class AdminService {
 
     private sendErrorToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, errorMessage: string): void => {
         const adminResponse: AdminResponse = {
-            clusterId: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
+            serverGroupId: global.omnihive.bootLoaderSettings.baseSettings.serverGroupId,
             requestComplete: false,
             requestError: errorMessage,
         };
@@ -295,7 +333,7 @@ export class AdminService {
 
     private sendSuccessToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, message: any): void => {
         const adminResponse: AdminResponse = {
-            clusterId: global.omnihive.bootLoaderSettings.baseSettings.clusterId,
+            serverGroupId: global.omnihive.bootLoaderSettings.baseSettings.serverGroupId,
             requestComplete: true,
             requestError: undefined,
             data: message,

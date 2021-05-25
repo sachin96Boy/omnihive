@@ -207,9 +207,13 @@ export class AdminService {
                 this.logWorker?.write(OmniHiveLogLevel.Info, "Broadcasting Restart...");
 
                 setTimeout(() => {
-                    if (this.ioEmitter) {
+                    if (this.ioEmitter && global.omnihive.bootLoaderSettings.baseSettings.clusterEnable === true) {
                         this.ioEmitter.serverSideEmit(AdminEventType.ServerResetRequest, message);
+                        return;
                     }
+
+                    const serverService: ServerService = new ServerService();
+                    serverService.boot(true);
                 }, 3000);
             });
 

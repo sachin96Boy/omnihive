@@ -162,7 +162,7 @@ export class AdminService {
                 }
             });
 
-            // Admin Event : Server Reset
+            // Admin Event : Server Register
             socket.on(AdminEventType.RegisterRequest, (message: AdminRequest) => {
                 if (!this.checkRequest(AdminEventType.RegisterRequest, socket, message)) {
                     return;
@@ -178,6 +178,7 @@ export class AdminService {
                 }
 
                 this.sendSuccessToSocket(AdminEventType.ServerResetRequest, socket, { verified: true });
+                this.logWorker?.write(OmniHiveLogLevel.Info, "OmniHive Server Restarting...");
 
                 setTimeout(() => {
                     const serverService: ServerService = new ServerService();

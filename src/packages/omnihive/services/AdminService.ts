@@ -237,17 +237,17 @@ export class AdminService {
 
     private checkRequest = (adminEvent: AdminEventType, socket: socketio.Socket, request: AdminRequest): boolean => {
         if (
-            StringHelper.isNullOrWhiteSpace(request.serverId) ||
-            request.serverId !== global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
+            StringHelper.isNullOrWhiteSpace(request.serverGroupId) ||
+            request.serverGroupId !== global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
         ) {
             return false;
         }
 
         if (
             !StringHelper.isNullOrWhiteSpace(request.adminPassword) &&
-            !StringHelper.isNullOrWhiteSpace(request.serverId) &&
+            !StringHelper.isNullOrWhiteSpace(request.serverGroupId) &&
             request.adminPassword === global.omnihive.bootLoaderSettings.baseSettings.adminPassword &&
-            request.serverId === global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
+            request.serverGroupId === global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
         ) {
             return true;
         }
@@ -289,7 +289,7 @@ export class AdminService {
 
     private sendErrorToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, errorMessage: string): void => {
         const adminResponse: AdminResponse = {
-            serverId: global.omnihive.bootLoaderSettings.baseSettings.serverGroupId,
+            serverGroupId: global.omnihive.bootLoaderSettings.baseSettings.serverGroupId,
             requestComplete: false,
             requestError: errorMessage,
         };
@@ -299,7 +299,7 @@ export class AdminService {
 
     private sendSuccessToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, message: any): void => {
         const adminResponse: AdminResponse = {
-            serverId: global.omnihive.bootLoaderSettings.baseSettings.serverGroupId,
+            serverGroupId: global.omnihive.bootLoaderSettings.baseSettings.serverGroupId,
             requestComplete: true,
             requestError: undefined,
             data: message,

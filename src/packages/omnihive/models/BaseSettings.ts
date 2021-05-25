@@ -4,6 +4,6 @@ export class BaseSettings {
     public clusterEnable: boolean = false;
     public clusterRedisConnectionString: string = "";
     public nodePortNumber: number = 3001;
-    public serverId: string = "";
+    public serverGroupId: string = "";
     public webRootUrl: string = "";
 }

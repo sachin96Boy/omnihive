@@ -63,6 +63,20 @@ export class AdminService {
             global.omnihive.adminServer.adapter(createAdapter(pubClient, subClient));
         }
 
+        // Admin Event : Server Reset
+        global.omnihive.adminServer.on(AdminEventType.ServerResetRequest, (message: AdminRequest) => {
+            if (!this.checkRequest(AdminEventType.ServerResetRequest, message)) {
+                return;
+            }
+
+            this.logWorker?.write(OmniHiveLogLevel.Info, "OmniHive Server Restarting...");
+
+            setTimeout(() => {
+                const serverService: ServerService = new ServerService();
+                serverService.boot(true);
+            }, 3000);
+        });
+
         // Admin Event : Connection
         namespace.on(AdminEventType.Connection, (socket: socketio.Socket) => {
             socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${AdminRoomType.Command}`);
@@ -79,7 +93,7 @@ export class AdminService {
 
             // Admin Event : Access Token
             socket.on(AdminEventType.AccessTokenRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.AccessTokenRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.AccessTokenRequest, message, socket)) {
                     return;
                 }
 
@@ -106,7 +120,7 @@ export class AdminService {
 
             // Admin Event : Config
             socket.on(AdminEventType.ConfigRequest, async (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.ConfigRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.ConfigRequest, message, socket)) {
                     return;
                 }
 
@@ -133,7 +147,7 @@ export class AdminService {
 
             // Admin Event : Config Save
             socket.on(AdminEventType.ConfigSaveRequest, async (message: AdminRequest<{ config: ServerSettings }>) => {
-                if (!this.checkRequest(AdminEventType.ConfigSaveRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.ConfigSaveRequest, message, socket)) {
                     return;
                 }
 
@@ -172,16 +186,16 @@ export class AdminService {
 
             // Admin Event : Server Register
             socket.on(AdminEventType.RegisterRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.RegisterRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.RegisterRequest, message, socket)) {
                     return;
                 }
 
                 this.sendSuccessToSocket(AdminEventType.RegisterRequest, socket, { verified: true });
             });
 
-            // Admin Event : Server Reset
+            // Admin Event : Server Reset : Namespace
             socket.on(AdminEventType.ServerResetRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.ServerResetRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.ServerResetRequest, message, socket)) {
                     return;
                 }
 
@@ -189,7 +203,7 @@ export class AdminService {
                 this.logWorker?.write(OmniHiveLogLevel.Info, "OmniHive Server Restarting...");
 
                 setTimeout(() => {
-                    global.omnihive.emitToCluster(AdminRoomType.Command, AdminEventType.ServerResetRequest, message);
+                    global.omnihive.emitToCluster(AdminEventType.ServerResetRequest, message);
                     const serverService: ServerService = new ServerService();
                     serverService.boot(true);
                 }, 3000);
@@ -197,7 +211,7 @@ export class AdminService {
 
             // Admin Event : Status
             socket.on(AdminEventType.StatusRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.StatusRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.StatusRequest, message, socket)) {
                     return;
                 }
 
@@ -209,7 +223,7 @@ export class AdminService {
 
             // Admin Event : Start Log
             socket.on(AdminEventType.StartLogRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.StartLogRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.StartLogRequest, message, socket)) {
                     return;
                 }
 
@@ -219,7 +233,7 @@ export class AdminService {
 
             // Admin Event : Stop Log
             socket.on(AdminEventType.StopLogRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.StopLogRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.StopLogRequest, message, socket)) {
                     return;
                 }
 
@@ -229,7 +243,7 @@ export class AdminService {
 
             // Admin Event : URL Request
             socket.on(AdminEventType.UrlListRequest, (message: AdminRequest) => {
-                if (!this.checkRequest(AdminEventType.UrlListRequest, socket, message)) {
+                if (!this.checkRequest(AdminEventType.UrlListRequest, message, socket)) {
                     return;
                 }
 
@@ -245,7 +259,7 @@ export class AdminService {
         );
     };
 
-    private checkRequest = (adminEvent: AdminEventType, socket: socketio.Socket, request: AdminRequest): boolean => {
+    private checkRequest = (adminEvent: AdminEventType, request: AdminRequest, socket?: socketio.Socket): boolean => {
         if (
             StringHelper.isNullOrWhiteSpace(request.serverGroupId) ||
             request.serverGroupId !== global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
@@ -267,7 +281,9 @@ export class AdminService {
             `Admin client register error using password ${request.adminPassword}...`
         );
 
-        this.sendErrorToSocket(adminEvent, socket, "Invalid Admin Password");
+        if (socket) {
+            this.sendErrorToSocket(adminEvent, socket, "Invalid Admin Password");
+        }
 
         return false;
     };

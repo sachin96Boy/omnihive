@@ -35,7 +35,20 @@ export class GlobalObject extends WorkerSetterBase {
     public serverStatus: ServerStatus = ServerStatus.Unknown;
     public webServer: Server | undefined = undefined;
 
-    public emitToCluster = async (room: AdminRoomType, event: AdminEventType, message?: any): Promise<void> => {
+    public emitToCluster = async (event: AdminEventType, message?: any): Promise<void> => {
+        if (global.omnihive.adminServer) {
+            const eventMessage: AdminResponse = {
+                serverGroupId: this.bootLoaderSettings.baseSettings.serverGroupId,
+                requestComplete: true,
+                requestError: undefined,
+                data: message,
+            };
+
+            global.omnihive.adminServer.emit(event, eventMessage);
+        }
+    };
+
+    public emitToNamespace = async (room: AdminRoomType, event: AdminEventType, message?: any): Promise<void> => {
         if (global.omnihive.adminServer) {
             const eventMessage: AdminResponse = {
                 serverGroupId: this.bootLoaderSettings.baseSettings.serverGroupId,

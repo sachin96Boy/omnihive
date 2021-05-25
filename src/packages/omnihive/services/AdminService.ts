@@ -17,9 +17,11 @@ import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType"
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { Emitter } from "@socket.io/redis-emitter";
 
 export class AdminService {
     private logWorker!: ILogWorker | undefined;
+    private ioEmitter!: Emitter | undefined;
 
     public boot = async () => {
         // Initiate log worker
@@ -59,8 +61,10 @@ export class AdminService {
                 global.omnihive.bootLoaderSettings.baseSettings.clusterRedisConnectionString
             );
             const subClient = pubClient.duplicate();
+            const emitClient = pubClient.duplicate();
 
             global.omnihive.adminServer.adapter(createAdapter(pubClient, subClient));
+            this.ioEmitter = new Emitter(emitClient);
         }
 
         // Admin Event : Server Reset
@@ -200,12 +204,12 @@ export class AdminService {
                 }
 
                 this.sendSuccessToSocket(AdminEventType.ServerResetRequest, socket, { verified: true });
-                this.logWorker?.write(OmniHiveLogLevel.Info, "OmniHive Server Restarting...");
+                this.logWorker?.write(OmniHiveLogLevel.Info, "Broadcasting Restart...");
 
                 setTimeout(() => {
-                    global.omnihive.emitToCluster(AdminEventType.ServerResetRequest, message);
-                    const serverService: ServerService = new ServerService();
-                    serverService.boot(true);
+                    if (this.ioEmitter) {
+                        this.ioEmitter.serverSideEmit(AdminEventType.ServerResetRequest, message);
+                    }
                 }, 3000);
             });
 

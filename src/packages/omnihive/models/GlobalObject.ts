@@ -21,6 +21,7 @@ import socketIo from "socket.io";
 import { AdminRoomType } from "src/packages/omnihive-core/enums/AdminRoomType";
 import { AdminEventType } from "src/packages/omnihive-core/enums/AdminEventType";
 import { AdminResponse } from "src/packages/omnihive-core/models/AdminResponse";
+import { AdminRequest } from "src/packages/omnihive-core/models/AdminRequest";
 
 export class GlobalObject extends WorkerSetterBase {
     public adminServer: socketIo.Server | undefined = undefined;
@@ -37,10 +38,9 @@ export class GlobalObject extends WorkerSetterBase {
 
     public emitToCluster = async (event: AdminEventType, message?: any): Promise<void> => {
         if (global.omnihive.adminServer) {
-            const eventMessage: AdminResponse = {
+            const eventMessage: AdminRequest = {
+                adminPassword: this.bootLoaderSettings.baseSettings.adminPassword,
                 serverGroupId: this.bootLoaderSettings.baseSettings.serverGroupId,
-                requestComplete: true,
-                requestError: undefined,
                 data: message,
             };
 

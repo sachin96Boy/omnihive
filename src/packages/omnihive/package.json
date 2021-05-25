@@ -29,6 +29,7 @@
     },
     "dependencies": {
         "@socket.io/redis-adapter": "7.0.0",
+        "@socket.io/redis-emitter": "4.1.0",
         "@withonevision/omnihive-core": "workspace:*",
         "@withonevision/omnihive-worker-config-json": "workspace:*",
         "@withonevision/omnihive-worker-config-mssql": "workspace:*",
@@ -93,6 +94,7 @@
     "omniHive": {
         "coreDependencies": {
             "@socket.io/redis-adapter": "7.0.0",
+            "@socket.io/redis-emitter": "4.1.0",
             "@withonevision/omnihive-core": "workspace:*",
             "@withonevision/omnihive-worker-config-json": "workspace:*",
             "@withonevision/omnihive-worker-config-mssql": "workspace:*",

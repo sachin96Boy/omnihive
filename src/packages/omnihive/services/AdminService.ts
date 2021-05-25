@@ -33,7 +33,9 @@ export class AdminService {
         // Start-up admin server
 
         if (global.omnihive.adminServer) {
-            global.omnihive.adminServer.disconnectSockets(true);
+            global.omnihive.adminServer
+                .of(`/${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}`)
+                .disconnectSockets(true);
             global.omnihive.adminServer.close();
         }
 
@@ -47,6 +49,10 @@ export class AdminService {
             }
         );
 
+        const namespace: socketio.Namespace = global.omnihive.adminServer.of(
+            global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
+        );
+
         // Enable Redis if necessary
         if (global.omnihive.bootLoaderSettings.baseSettings.clusterEnable) {
             const pubClient = redis.createClient(
@@ -58,15 +64,17 @@ export class AdminService {
         }
 
         // Admin Event : Connection
-        global.omnihive.adminServer.on(AdminEventType.Connection, (socket: socketio.Socket) => {
+        namespace.on(AdminEventType.Connection, (socket: socketio.Socket) => {
             socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${AdminRoomType.Command}`);
 
             // Socket disconnect clear memory
             socket.on(AdminEventType.Disconnect, () => {
                 socket.removeAllListeners();
-                global.omnihive.adminServer?.sockets.sockets.forEach((sck: socketio.Socket) => {
-                    if (socket.id === sck.id) sck.disconnect(true);
-                });
+                global.omnihive.adminServer
+                    ?.of(global.omnihive.bootLoaderSettings.baseSettings.serverGroupId)
+                    .sockets.forEach((sck: socketio.Socket) => {
+                        if (socket.id === sck.id) sck.disconnect(true);
+                    });
             });
 
             // Admin Event : Access Token

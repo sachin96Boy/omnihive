@@ -45,6 +45,7 @@ export class GlobalObject extends WorkerSetterBase {
             };
 
             global.omnihive.adminServer
+                .of(`/${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}`)
                 .to(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${room}`)
                 .emit(event, eventMessage);
         }

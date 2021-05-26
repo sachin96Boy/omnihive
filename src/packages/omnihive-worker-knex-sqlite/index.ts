@@ -96,18 +96,21 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
         const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         try {
-            const filePath = fileHelper.getFilePath(this.metadata.getSchemaSqlFile);
+            const tableFilePath = fileHelper.getFilePath(this.metadata.getSchemaSqlFile);
 
             if (
                 this.metadata.getSchemaSqlFile &&
-                StringHelper.isNullOrWhiteSpace(this.metadata.getSchemaSqlFile) &&
-                fse.existsSync(filePath)
+                !StringHelper.isNullOrWhiteSpace(this.metadata.getSchemaSqlFile) &&
+                fse.existsSync(tableFilePath)
             ) {
                 tableResult = await AwaitHelper.execute(
-                    this.executeQuery(fse.readFileSync(this.metadata.getSchemaSqlFile, "utf8"), true)
+                    this.executeQuery(fse.readFileSync(tableFilePath, "utf8"), true)
                 );
             } else {
-                if (this.metadata.getSchemaSqlFile && StringHelper.isNullOrWhiteSpace(this.metadata.getSchemaSqlFile)) {
+                if (
+                    this.metadata.getSchemaSqlFile &&
+                    !StringHelper.isNullOrWhiteSpace(this.metadata.getSchemaSqlFile)
+                ) {
                     logWorker?.write(OmniHiveLogLevel.Warn, "Provided Schema SQL File is not found.");
                 }
                 if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {

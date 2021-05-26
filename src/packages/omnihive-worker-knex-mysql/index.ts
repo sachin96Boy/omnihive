@@ -18,6 +18,7 @@ import path from "path";
 import mysql from "mysql2";
 import { Pool } from "mysql2/promise";
 import orderBy from "lodash.orderby";
+import { FileHelper } from "@withonevision/omnihive-core/helpers/FileHelper";
 
 export default class MySqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
@@ -76,7 +77,7 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
     }
 
     public executeQuery = async (query: string, disableLog?: boolean): Promise<any[][]> => {
-        if (disableLog === null || disableLog === undefined || disableLog === false) {
+        if (!disableLog) {
             const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
             logWorker?.write(OmniHiveLogLevel.Info, query);
         }
@@ -141,41 +142,67 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
         };
 
         let tableResult: any[][], procResult: any[][];
+        const fileHelper: FileHelper = new FileHelper();
+        const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
-        if (
-            this.metadata.getSchemaSqlFile &&
-            !StringHelper.isNullOrWhiteSpace(this.metadata.getSchemaSqlFile) &&
-            fse.existsSync(this.metadata.getSchemaSqlFile)
-        ) {
-            tableResult = await AwaitHelper.execute(
-                this.executeQuery(fse.readFileSync(this.metadata.getSchemaSqlFile, "utf8"), true)
-            );
-        } else {
-            if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {
+        try {
+            const filePath = fileHelper.getFilePath(this.metadata.getSchemaSqlFile);
+
+            if (
+                this.metadata.getSchemaSqlFile &&
+                StringHelper.isNullOrWhiteSpace(this.metadata.getSchemaSqlFile) &&
+                fse.existsSync(filePath)
+            ) {
                 tableResult = await AwaitHelper.execute(
-                    this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultTables.sql"), "utf8"), true)
+                    this.executeQuery(fse.readFileSync(this.metadata.getSchemaSqlFile, "utf8"), true)
                 );
             } else {
-                throw new Error(`Cannot find a table executor for ${this.config.name}`);
+                if (this.metadata.getSchemaSqlFile && StringHelper.isNullOrWhiteSpace(this.metadata.getSchemaSqlFile)) {
+                    logWorker?.write(OmniHiveLogLevel.Warn, "Provided Schema SQL File is not found.");
+                }
+                if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {
+                    tableResult = await AwaitHelper.execute(
+                        this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultTables.sql"), "utf8"), true)
+                    );
+                } else {
+                    throw new Error(`Cannot find a table executor for ${this.config.name}`);
+                }
             }
+        } catch (err) {
+            throw new Error("Schema SQL File Location not found: " + JSON.stringify(serializeError(err)));
         }
 
-        if (
-            this.metadata.getProcFunctionSqlFile &&
-            !StringHelper.isNullOrWhiteSpace(this.metadata.getProcFunctionSqlFile) &&
-            fse.existsSync(this.metadata.getProcFunctionSqlFile)
-        ) {
-            procResult = await AwaitHelper.execute(
-                this.executeQuery(fse.readFileSync(this.metadata.getProcFunctionSqlFile, "utf8"), true)
-            );
-        } else {
-            if (fse.existsSync(path.join(__dirname, "defaultProcFunctions.sql"))) {
+        try {
+            const filePath = fileHelper.getFilePath(this.metadata.getProcFunctionSqlFile);
+
+            if (
+                this.metadata.getProcFunctionSqlFile &&
+                StringHelper.isNullOrWhiteSpace(this.metadata.getProcFunctionSqlFile) &&
+                fse.existsSync(filePath)
+            ) {
                 procResult = await AwaitHelper.execute(
-                    this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultProcFunctions.sql"), "utf8"), true)
+                    this.executeQuery(fse.readFileSync(this.metadata.getProcFunctionSqlFile, "utf8"), true)
                 );
             } else {
-                throw new Error(`Cannot find a proc executor for ${this.config.name}`);
+                if (
+                    this.metadata.getProcFunctionSqlFile &&
+                    StringHelper.isNullOrWhiteSpace(this.metadata.getProcFunctionSqlFile)
+                ) {
+                    logWorker?.write(OmniHiveLogLevel.Warn, "Provided Proc SQL File is not found.");
+                }
+                if (fse.existsSync(path.join(__dirname, "defaultProcFunctions.sql"))) {
+                    procResult = await AwaitHelper.execute(
+                        this.executeQuery(
+                            fse.readFileSync(path.join(__dirname, "defaultProcFunctions.sql"), "utf8"),
+                            true
+                        )
+                    );
+                } else {
+                    throw new Error(`Cannot find a proc executor for ${this.config.name}`);
+                }
             }
+        } catch (err) {
+            throw new Error("Schema SQL File Location not found: " + JSON.stringify(serializeError(err)));
         }
 
         tableResult[tableResult.length - 1].forEach((row) => {

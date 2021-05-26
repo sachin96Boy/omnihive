@@ -6,8 +6,7 @@ import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBa
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import fse from "fs-extra";
 import { serializeError } from "serialize-error";
-import path from "path";
-import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { FileHelper } from "@withonevision/omnihive-core/helpers/FileHelper";
 
 export class JsonConfigWorkerMetadata {
     public configPath: string = "";
@@ -27,34 +26,9 @@ export default class JsonConfigWorker extends HiveWorkerBase implements IConfigW
                 JsonConfigWorkerMetadata,
                 config.metadata
             );
+            const fileHelper: FileHelper = new FileHelper();
 
-            if (this.pathExists(metadata.configPath)) {
-                this.configPath = metadata.configPath;
-            }
-
-            if (
-                StringHelper.isNullOrWhiteSpace(this.configPath) &&
-                this.pathExists(path.join(global.omnihive.ohDirName, metadata.configPath))
-            ) {
-                this.configPath = path.join(global.omnihive.ohDirName, metadata.configPath);
-            }
-
-            if (
-                StringHelper.isNullOrWhiteSpace(this.configPath) &&
-                !StringHelper.isNullOrWhiteSpace(global.omnihive.commandLineArgs.environmentFile) &&
-                this.pathExists(
-                    path.join(path.parse(global.omnihive.commandLineArgs.environmentFile).dir, metadata.configPath)
-                )
-            ) {
-                this.configPath = path.join(
-                    path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
-                    metadata.configPath
-                );
-            }
-
-            if (StringHelper.isNullOrWhiteSpace(this.configPath)) {
-                throw new Error("Json Config Worker Path Not Available");
-            }
+            this.configPath = fileHelper.getFilePath(metadata.configPath);
         } catch (err) {
             throw new Error("Json Config Worker Init Error => " + JSON.stringify(serializeError(err)));
         }
@@ -67,10 +41,6 @@ export default class JsonConfigWorker extends HiveWorkerBase implements IConfigW
     public set = async (settings: ServerSettings): Promise<boolean> => {
         this.writeJsonToFile(this.configPath, settings);
         return true;
-    };
-
-    private pathExists = (path: string): boolean => {
-        return fse.existsSync(path);
     };
 
     private readFile = (path: string): string => {

@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import childProcess from "child_process";
 import figlet from "figlet";
 import fse from "fs-extra";
 import path from "path";
@@ -7,6 +6,7 @@ import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import writePkg from "write-pkg";
 import yargs from "yargs";
 import { Listr } from "listr2";
+import execa from "execa";
 
 // Master build process
 const build = async (): Promise<void> => {
@@ -36,28 +36,32 @@ const build = async (): Promise<void> => {
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
-    const tasks = setupTasks(args.argv.test as boolean, args.argv.tag as string);
-    await tasks.run();
+    const tasks = setupTasks(args.argv.debug as boolean, args.argv.tag as string);
+
+    try {
+        await tasks.run();
+    } catch (err) {
+        console.log(err);
+        process.exit(1);
+    }
 };
 
 // Main Listr setup
-const setupTasks = (testOnly: boolean, distTag: string): Listr<any> => {
+const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
     return new Listr<any>([
         {
             title: "Clear Out Existing Dist Directories",
             task: clearOutExistingDist,
-            retry: 5,
+            exitOnError: true,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
         {
             title: "Build Repo",
             task: buildRepo,
-            retry: 5,
+            exitOnError: true,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
@@ -68,23 +72,20 @@ const setupTasks = (testOnly: boolean, distTag: string): Listr<any> => {
                     [
                         ...getRequiredFiles().map((file) => ({
                             title: `Copying Required Files`,
-                            task: async () => await copyRequiredFile(file),
+                            task: () => copyRequiredFile(file),
                         })),
                         ...getRequiredFolders().map((directory) => ({
                             title: `Copying Required Directories`,
-                            task: async () => await copyRequiredFolder(directory),
-                            retry: 5,
+                            task: () => copyRequiredFolder(directory),
                             options: {
-                                persistentOutput: true,
                                 showTimer: true,
-                                suffixRetries: true,
                                 showSubtasks: true,
                             },
                         })),
                     ],
                     { concurrent: true }
                 ),
-            retry: 5,
+            exitOnError: true,
             options: {
                 persistentOutput: true,
                 showTimer: true,
@@ -92,25 +93,23 @@ const setupTasks = (testOnly: boolean, distTag: string): Listr<any> => {
         },
         {
             title: "Remove non-core packages from OmniHive package.json",
-            task: removeNonCorePackagesFromMainPackageJson,
-            retry: 5,
+            task: async () => removeNonCorePackagesFromMainPackageJson(),
+            exitOnError: true,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
         {
             title: "Run Standard Version",
-            task: () => runVersioning(testOnly),
-            retry: 5,
+            task: () => runVersioning(debug),
+            exitOnError: true,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
         {
             title: "Publish Packages",
-            skip: (_ctx) => !testOnly,
+            skip: (_ctx) => debug,
             task: (_ctx, task): Listr =>
                 task.newListr(
                     getPublishFolders().map((directory) => ({
@@ -118,17 +117,14 @@ const setupTasks = (testOnly: boolean, distTag: string): Listr<any> => {
                         task: () => publish(directory, distTag),
                         retry: 5,
                         options: {
-                            persistentOutput: true,
                             showTimer: true,
-                            suffixRetries: true,
                             showSubtasks: true,
                         },
                     })),
                     { concurrent: true }
                 ),
-            retry: 5,
+            exitOnError: true,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
@@ -137,20 +133,19 @@ const setupTasks = (testOnly: boolean, distTag: string): Listr<any> => {
 
 // Listr task helpers
 const buildRepo = () => {
-    execSpawn("npx tsc -b --force", path.join(`.`));
+    execa.commandSync("npx tsc -b --force", { cwd: path.join(`.`) });
 };
 
 const clearOutExistingDist = () => {
-    // Clear out existing dist directory
     fse.rmSync(path.join(`.`, `dist`), { recursive: true, force: true });
 };
 
-const copyRequiredFile = async (file: string) => {
-    await fse.copyFile(path.join(`.`, `src`, `packages`, `${file}`), path.join(`.`, `dist`, `packages`, `${file}`));
+const copyRequiredFile = (file: string) => {
+    fse.copyFileSync(path.join(`.`, `src`, `packages`, `${file}`), path.join(`.`, `dist`, `packages`, `${file}`));
 };
 
-const copyRequiredFolder = async (folder: string) => {
-    await fse.copy(path.join(`.`, `src`, `packages`, `${folder}`), path.join(`.`, `dist`, `packages`, `${folder}`));
+const copyRequiredFolder = (folder: string) => {
+    fse.copySync(path.join(`.`, `src`, `packages`, `${folder}`), path.join(`.`, `dist`, `packages`, `${folder}`));
 };
 
 const getPublishFolders = () => {
@@ -190,8 +185,8 @@ const publish = (directory: string, distTag: string) => {
         publishString = `${publishString} --tag ${distTag}`;
     }
 
-    execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${directory}`));
-    execSpawn("npm pack", path.join(`.`, `dist`, `packages`, `${directory}`));
+    console.log(`Publishing NPM Package at ${directory}`);
+    execa.commandSync(publishString, { cwd: path.join(`.`, `dist`, `packages`, `${directory}`) });
 };
 
 const removeNonCorePackagesFromMainPackageJson = async () => {
@@ -224,40 +219,11 @@ const removeNonCorePackagesFromMainPackageJson = async () => {
     }
 };
 
-const runVersioning = (test: boolean) => {
-    if (test) {
-        execSpawn("yarn run release-dry-run", path.join(`.`));
+const runVersioning = async (debug: boolean) => {
+    if (debug) {
+        console.log(execa.commandSync("yarn run release-dry-run", { cwd: path.join(`.`), shell: true }).stdout);
     } else {
-        execSpawn("yarn run release", path.join(`.`));
-    }
-};
-
-// Helper functions
-
-const execSpawn = (commandString: string, cwd: string): string => {
-    const execSpawn = childProcess.spawnSync(commandString, {
-        shell: true,
-        cwd,
-        stdio: ["inherit", "pipe", "pipe"],
-    });
-
-    if (execSpawn.status !== 0) {
-        if (execSpawn.stdout?.length > 0) {
-            throw new Error(execSpawn.stdout.toString().trim());
-        } else if (execSpawn.stderr?.length > 0) {
-            throw new Error(execSpawn.stderr.toString().trim());
-        } else if (execSpawn.error) {
-            throw new Error(execSpawn.error.message);
-        }
-        process.exit(1);
-    }
-
-    const execOut = execSpawn.stdout.toString().trim();
-
-    if (execOut && execOut !== "") {
-        return execOut;
-    } else {
-        return "";
+        console.log(execa.commandSync("yarn run release", { cwd: path.join(`.`), shell: true }).stdout);
     }
 };
 

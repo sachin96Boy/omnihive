@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import childProcess from "child_process";
 import figlet from "figlet";
 import fse from "fs-extra";
 import path from "path";
@@ -7,6 +6,7 @@ import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import yargs from "yargs";
 import axios from "axios";
 import { Listr } from "listr2";
+import execa from "execa";
 
 const build = async (): Promise<void> => {
     // Handle args
@@ -69,51 +69,40 @@ const setupTasks = (args: any, version: string): Listr<any> => {
         {
             title: "Clear Out Existing Dist Directories",
             task: clearOutExistingDist,
-            retry: 5,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
         {
             title: "Build Repo",
             task: buildRepo,
-            retry: 5,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
         {
             title: "Update Package Versions",
             task: async () => await updateVersion(version),
-            retry: 5,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
         {
             title: "Publish Packages",
-            skip: (_ctx) => !getPublishFlag(args),
+            skip: (_ctx) => args.argv.publish as boolean,
             task: (_ctx, task): Listr =>
                 task.newListr(
                     getPublishFolders().map((directory) => ({
                         title: `Publishing ${directory}`,
                         task: () => publish(args, directory),
-                        retry: 5,
                         options: {
-                            persistentOutput: true,
                             showTimer: true,
-                            suffixRetries: true,
                             showSubtasks: true,
                         },
                     })),
                     { concurrent: true }
                 ),
-            retry: 5,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
@@ -122,11 +111,10 @@ const setupTasks = (args: any, version: string): Listr<any> => {
 
 // Listr task helpers
 const buildRepo = () => {
-    execSpawn("npx tsc -b --force", path.join(`.`));
+    execa.commandSync("npx tsc -b --force", { cwd: path.join(`.`) });
 };
 
 const clearOutExistingDist = () => {
-    // Clear out existing dist directory
     fse.rmSync(path.join(`.`, `dist`), { recursive: true, force: true });
 };
 
@@ -152,8 +140,8 @@ const publish = (args: any, directory: string) => {
         publishString = `${publishString} --tag ${args.argv.publishTag as string}`;
     }
 
-    execSpawn(publishString, path.join(`.`, `dist`, `custom`, `${directory}`));
-    execSpawn("npm pack", path.join(`.`, `dist`, `custom`, `${directory}`));
+    console.log(`Publishing NPM Package at ${directory}`);
+    execa.commandSync(publishString, { cwd: path.join(`.`, `dist`, `packages`, `${directory}`) });
 };
 
 const updateVersion = async (buildNumber: string) => {
@@ -176,36 +164,5 @@ const updateVersion = async (buildNumber: string) => {
 
     await replaceInFile.replaceInFile(replaceVersionOptions);
 };
-
-// Helper functions
-
-const execSpawn = (commandString: string, cwd: string): string => {
-    const execSpawn = childProcess.spawnSync(commandString, {
-        shell: true,
-        cwd,
-        stdio: ["inherit", "pipe", "pipe"],
-    });
-
-    if (execSpawn.status !== 0) {
-        if (execSpawn.stdout?.length > 0) {
-            console.log(chalk.red(execSpawn.stdout.toString().trim()));
-        } else if (execSpawn.stderr?.length > 0) {
-            console.log(chalk.red(execSpawn.stderr.toString().trim()));
-        } else if (execSpawn.error) {
-            console.log(chalk.red(execSpawn.error.message));
-        }
-        process.exit(1);
-    }
-
-    const execOut = execSpawn.stdout.toString().trim();
-
-    if (execOut && execOut !== "") {
-        return execOut;
-    } else {
-        return "";
-    }
-};
-
-const getPublishFlag = (args: any) => args.argv.publish as boolean;
 
 build();

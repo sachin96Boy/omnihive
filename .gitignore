@@ -36,9 +36,10 @@ yarn-debug.log*
 yarn-error.log*
 
 #exclusions
+!.commitlintrc.js
 !.eslintrc.js
 !.prettierrc.js
-!commitlint.config.js
+!.versionrc.js
 
 #settings
 /settings

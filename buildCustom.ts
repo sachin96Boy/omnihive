@@ -7,7 +7,6 @@ import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import yargs from "yargs";
 import axios from "axios";
 import { Listr } from "listr2";
-import semver from "semver";
 
 const build = async (): Promise<void> => {
     // Handle args

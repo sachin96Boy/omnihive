@@ -4,32 +4,12 @@ import figlet from "figlet";
 import fse from "fs-extra";
 import path from "path";
 import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
-import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
-import semver from "semver";
 import writePkg from "write-pkg";
 import yargs from "yargs";
-import axios from "axios";
 import { Listr } from "listr2";
-
-// Version holder
-type Version = {
-    main: string;
-    beta: string;
-    dev: string;
-};
 
 // Master build process
 const build = async (): Promise<void> => {
-    // Reset version
-    let version: Version = {
-        main: "",
-        beta: "",
-        dev: "",
-    };
-
-    // Get the current git branch
-    const currentBranch: string = execSpawn("git branch --show-current", "./");
-
     // Handle args
     const args = yargs(process.argv.slice(2));
 
@@ -37,104 +17,31 @@ const build = async (): Promise<void> => {
         .help(false)
         .version(false)
         .strict()
-        .option("version", {
-            alias: "v",
-            type: "string",
-            demandCommand: false,
-            description: "Build number to use.  Will use WOV Elastic provider if not provided",
-        })
-        .option("channel", {
-            alias: "c",
-            type: "string",
+        .option("debug", {
+            alias: "d",
+            type: "boolean",
             demandOption: false,
-            description: "Name of the channel you wish to build",
-            choices: ["dev", "beta", "main"],
+            description: "Debug Mode (Test Only)",
+            default: false,
         })
-        .option("type", {
+        .option("tag", {
             alias: "t",
             type: "string",
             demandOption: false,
-            description: "Release type (major, minor, patch, prerelease)",
-            choices: ["major", "minor", "patch", "prerelease"],
-        })
-        .option("publish", {
-            alias: "p",
-            type: "boolean",
-            demandOption: false,
-            description: "Publish to NPM and GitHub",
-            default: false,
-        })
-        .option("publishAccess", {
-            alias: "pa",
-            type: "string",
-            demandOption: false,
-            description: "Access to use when publishing to NPM",
-            choices: ["public", "restricted"],
-        })
-        .option("publishTag", {
-            alias: "pt",
-            type: "string",
-            demandOption: false,
-            description: "Tag to use when publishing",
-        })
-        .check((args) => {
-            if (args.version && (args.channel || args.type)) {
-                throw new Error("You cannot specify a predetermined version and specify a channel and/or a type");
-            }
-
-            if ((args.publishAccess || args.publishTag) && (args.publish === undefined || args.publish === false)) {
-                throw new Error("You must add a publish flag to use tagging or access levels");
-            }
-
-            if (args.channel && args.channel !== currentBranch) {
-                throw new Error(
-                    "Your selected channel and your current git branch do not match.  Please choose a different channel or switch branches in git."
-                );
-            }
-
-            if (args.channel === "main" && args.type === "prerelease") {
-                throw new Error(
-                    "You cannot specify the main channel and specify prerelease.  Prerelease is for dev and beta channels only."
-                );
-            }
-
-            if (
-                (args.channel === "dev" || args.channel === "beta") &&
-                (args.type === "major" || args.type === "minor" || args.type === "patch")
-            ) {
-                throw new Error(
-                    "You cannot specify a prerelease type and specify the main channel.  Prerelease is the only option for the dev or beta channel."
-                );
-            }
-            return true;
+            description: "NPM Dist Tag",
+            default: "latest",
         }).argv;
-
-    if (!args.argv.version) {
-        const versions = (await axios.get("https://registry.npmjs.org/-/package/omnihive/dist-tags")).data;
-
-        version = {
-            main: versions.latest,
-            beta: versions.beta,
-            dev: versions.dev,
-        };
-    } else {
-        version = {
-            main: args.argv.version as string,
-            beta: args.argv.version as string,
-            dev: args.argv.version as string,
-        };
-    }
 
     // Header
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
-    const tasks = setupTasks(args, version);
+    const tasks = setupTasks(args.argv.test as boolean, args.argv.tag as string);
     await tasks.run();
 };
 
 // Main Listr setup
-const setupTasks = (args: any, version: Version): Listr<any> => {
+const setupTasks = (testOnly: boolean, distTag: string): Listr<any> => {
     return new Listr<any>([
         {
             title: "Clear Out Existing Dist Directories",
@@ -193,8 +100,8 @@ const setupTasks = (args: any, version: Version): Listr<any> => {
             },
         },
         {
-            title: "Update Package Versions",
-            task: async () => await updateVersion(args, version),
+            title: "Run Standard Version",
+            task: () => runVersioning(testOnly),
             retry: 5,
             options: {
                 persistentOutput: true,
@@ -203,12 +110,12 @@ const setupTasks = (args: any, version: Version): Listr<any> => {
         },
         {
             title: "Publish Packages",
-            skip: (_ctx) => !getPublishFlag(args),
+            skip: (_ctx) => !testOnly,
             task: (_ctx, task): Listr =>
                 task.newListr(
                     getPublishFolders().map((directory) => ({
                         title: `Publishing ${directory}`,
-                        task: () => publish(args, directory),
+                        task: () => publish(directory, distTag),
                         retry: 5,
                         options: {
                             persistentOutput: true,
@@ -274,19 +181,13 @@ const getRequiredFolders = () => {
     return [path.join(`omnihive`, `app`, `public`), path.join(`omnihive`, `app`, `views`)];
 };
 
-const publish = (args: any, directory: string) => {
+const publish = (directory: string, distTag: string) => {
     fse.rmdirSync(path.join(`.`, `dist`, `packages`, directory, `tests`), { recursive: true });
 
-    let publishString: string = "npm publish";
+    let publishString: string = "npm publish --access public";
 
-    if (args.argv.publishAccess) {
-        publishString = `${publishString} --access ${args.argv.publishAccess as string}`;
-    } else {
-        publishString = `${publishString} --access public`;
-    }
-
-    if (args.argv.publishTag) {
-        publishString = `${publishString} --tag ${args.argv.publishTag as string}`;
+    if (distTag !== "" && distTag !== "latest") {
+        publishString = `${publishString} --tag ${distTag}`;
     }
 
     execSpawn(publishString, path.join(`.`, `dist`, `packages`, `${directory}`));
@@ -323,91 +224,12 @@ const removeNonCorePackagesFromMainPackageJson = async () => {
     }
 };
 
-const updateVersion = async (args: any, version: Version) => {
-    let currentVersion: string = "";
-
-    if (args.argv.version) {
-        currentVersion = version.main;
+const runVersioning = (test: boolean) => {
+    if (test) {
+        execSpawn("yarn run release-dry-run", path.join(`.`));
     } else {
-        switch (args.argv.type) {
-            case "prerelease":
-                switch (args.argv.channel) {
-                    case "dev":
-                        currentVersion = semver.inc(version.dev, "prerelease", false, "dev") ?? "";
-
-                        if (!currentVersion || currentVersion === "") {
-                            throw new Error("SemVer is incorrect");
-                        }
-
-                        version.dev = currentVersion;
-                        break;
-                    case "beta":
-                        currentVersion = semver.inc(version.beta, "prerelease", false, "beta") ?? "";
-
-                        if (!currentVersion || currentVersion === "") {
-                            throw new Error("SemVer is incorrect");
-                        }
-
-                        version.beta = currentVersion;
-                        break;
-                    default:
-                        throw new Error("Must have dev or beta channel with prerelease");
-                }
-                break;
-            case "major":
-                currentVersion = semver.inc(version.main, "major") ?? "";
-
-                if (!currentVersion || currentVersion === "") {
-                    throw new Error("SemVer is incorrect");
-                }
-
-                version.main = currentVersion;
-                version.beta = semver.inc(currentVersion, "prerelease", false, "beta") ?? "";
-                version.dev = semver.inc(currentVersion, "prerelease", false, "dev") ?? "";
-                break;
-            case "minor":
-                currentVersion = semver.inc(version.main, "minor") ?? "";
-
-                if (!currentVersion || currentVersion === "") {
-                    throw new Error("SemVer is incorrect");
-                }
-
-                version.main = currentVersion;
-                version.beta = semver.inc(currentVersion, "prerelease", false, "beta") ?? "";
-                version.dev = semver.inc(currentVersion, "prerelease", false, "dev") ?? "";
-                break;
-            default:
-                currentVersion = semver.inc(version.main, "patch") ?? "";
-
-                if (!currentVersion || currentVersion === "") {
-                    throw new Error("SemVer is incorrect");
-                }
-
-                version.main = currentVersion;
-                version.beta = semver.inc(currentVersion, "prerelease", false, "beta") ?? "";
-                version.dev = semver.inc(currentVersion, "prerelease", false, "dev") ?? "";
-                break;
-        }
+        execSpawn("yarn run release", path.join(`.`));
     }
-
-    // Patch package.json with SemVer
-    const replaceWorkspaceOptions: ReplaceInFileConfig = {
-        allowEmptyPaths: true,
-        files: [path.join(`dist`, `packages`, `**`, `package.json`)],
-        from: /workspace:\*/g,
-        to: `${currentVersion}`,
-    };
-
-    await replaceInFile.replaceInFile(replaceWorkspaceOptions);
-
-    const replaceVersionOptions: ReplaceInFileConfig = {
-        allowEmptyPaths: true,
-        files: [path.join(`dist`, `packages`, `**`, `package.json`)],
-        from: /"version": "0.0.1"/g,
-        to: `"version": "${currentVersion}"`,
-    };
-
-    await replaceInFile.replaceInFile(replaceVersionOptions);
 };
 
 // Helper functions
@@ -438,8 +260,6 @@ const execSpawn = (commandString: string, cwd: string): string => {
         return "";
     }
 };
-
-const getPublishFlag = (args: any) => args.argv.publish as boolean;
 
 // Master runner
 build();

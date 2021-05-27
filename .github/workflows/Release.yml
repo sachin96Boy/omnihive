@@ -21,6 +21,7 @@ jobs:
                   git config --global user.email "$GH_EMAIL"
                   git config --global user.name "$GH_NAME"
                   yarn node -r ts-node/register ./build.ts
+                  git push --follow-tags origin main
             - name: Log into Docker Hub
               uses: docker/login-action@v1
               with:

@@ -105,6 +105,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 if (column.columnIsForeignKey) {
                     foreignSchema.push(column);
                 }
+
+                column.columnNameDatabase = column.columnNameDatabase.replace(/\"/g, "");
+                column.tableName = column.tableName.replace(/\"/g, "");
+
+                if (column.columnForeignKeyColumnName) {
+                    column.columnForeignKeyColumnName = column.columnForeignKeyColumnName.replace(/\"/g, "");
+                }
             });
 
             // Base Object Type => Definitions

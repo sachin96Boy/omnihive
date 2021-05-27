@@ -8,6 +8,7 @@ import { serializeError } from "serialize-error";
 import knex, { Knex } from "knex";
 import { HiveWorkerMetadataConfigDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataConfigDatabase";
 import sqlite from "sqlite3";
+import { FileHelper } from "@withonevision/omnihive-core/helpers/FileHelper";
 
 export class SqliteWorkerMetadata extends HiveWorkerMetadataConfigDatabase {
     public filename: string = "";
@@ -37,7 +38,10 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
             await AwaitHelper.execute(super.init(config));
             this.metadata = this.checkObjectStructure<SqliteWorkerMetadata>(SqliteWorkerMetadata, sqliteMetadata);
 
-            if (!fse.existsSync(this.metadata.filename)) {
+            const fileHelper: FileHelper = new FileHelper();
+            const filePath = fileHelper.getFilePath(this.metadata.filename);
+
+            if (!fse.existsSync(filePath)) {
                 throw new Error("SQLite database cannot be found");
             }
 

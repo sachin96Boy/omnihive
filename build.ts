@@ -50,6 +50,14 @@ const build = async (): Promise<void> => {
 const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
     return new Listr<any>([
         {
+            title: "Run Standard Version",
+            task: () => runVersioning(debug),
+            exitOnError: true,
+            options: {
+                showTimer: true,
+            },
+        },
+        {
             title: "Clear Out Existing Dist Directories",
             task: clearOutExistingDist,
             exitOnError: true,
@@ -94,14 +102,6 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
         {
             title: "Remove non-core packages from OmniHive package.json",
             task: async () => removeNonCorePackagesFromMainPackageJson(),
-            exitOnError: true,
-            options: {
-                showTimer: true,
-            },
-        },
-        {
-            title: "Run Standard Version",
-            task: () => runVersioning(debug),
             exitOnError: true,
             options: {
                 showTimer: true,

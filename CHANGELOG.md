@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 6.2.27 (2021-05-28)
+
+
+### Build
+
+* **monorepo:** relase tar fix ([06f7839](https://github.com/WithOneVisionTechnologies/omnihive/commit/06f78396358d4bef70ed235a8658e1a88cefed72))
+
 ### 6.2.26 (2021-05-28)
 
 

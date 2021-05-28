@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-token-auth0",
-    "version": "6.2.26",
+    "version": "6.2.27",
     "description": "OmniHive Auth0 Token Worker",
     "license": "MIT",
     "author": {

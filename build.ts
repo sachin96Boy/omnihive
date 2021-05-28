@@ -128,6 +128,15 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
                 showTimer: true,
             },
         },
+        {
+            title: "Push GitHub changes",
+            skip: (_ctx) => debug,
+            task: pushGithubChanges,
+            exitOnError: true,
+            options: {
+                showTimer: true,
+            },
+        },
     ]);
 };
 
@@ -217,6 +226,10 @@ const removeNonCorePackagesFromMainPackageJson = async () => {
     if (packageJson && packageJson.packageJson) {
         await writePkg(path.join(`.`, `dist`, `packages`, `omnihive`), packageJson.packageJson);
     }
+};
+
+const pushGithubChanges = () => {
+    execa.commandSync(`git push --follow-tags origin main`, { cwd: path.join(`.`) });
 };
 
 const runVersioning = async (debug: boolean) => {

@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-filesystem-fsextra",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive FSExtra FileSystem Worker",
     "license": "MIT",
     "author": {

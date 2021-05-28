@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-log-elastic",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive Elastic Log Worker",
     "license": "MIT",
     "author": {

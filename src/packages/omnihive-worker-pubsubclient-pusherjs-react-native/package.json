@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-pubsubclient-pusherjs-react-native",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive Pusher JS React Native Client Worker",
     "license": "MIT",
     "author": {

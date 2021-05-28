@@ -8,6 +8,7 @@ import yargs from "yargs";
 import { Listr } from "listr2";
 import execa from "execa";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
+import tar from "tar";
 
 // Master build process
 const build = async (): Promise<void> => {
@@ -117,6 +118,13 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
             },
         },
         {
+            title: "Create release tarball",
+            task: createTarball,
+            options: {
+                showTimer: true,
+            },
+        },
+        {
             title: "Publish Packages",
             skip: (_ctx) => debug,
             task: (_ctx, task): Listr =>
@@ -164,6 +172,16 @@ const copyRequiredFile = (file: string) => {
 
 const copyRequiredFolder = (folder: string) => {
     fse.copySync(path.join(`.`, `src`, `packages`, `${folder}`), path.join(`.`, `dist`, `packages`, `${folder}`));
+};
+
+const createTarball = () => {
+    tar.c(
+        {
+            gzip: true,
+            cwd: path.join(".", "dist", "packages", "omnihive"),
+        },
+        ["."]
+    ).pipe(fse.createWriteStream("./omnihive.tgz"));
 };
 
 const getPublishFolders = () => {
@@ -243,7 +261,7 @@ const pushGithubChanges = () => {
 
 const runVersioning = async (debug: boolean) => {
     if (debug) {
-        console.log(execa.commandSync("yarn run release-dry-run", { cwd: path.join(`.`), shell: true }).stdout);
+        console.log(execa.commandSync("yarn run release:dry-run", { cwd: path.join(`.`), shell: true }).stdout);
     } else {
         console.log(execa.commandSync("yarn run release", { cwd: path.join(`.`), shell: true }).stdout);
     }

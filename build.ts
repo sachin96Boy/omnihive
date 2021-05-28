@@ -254,6 +254,10 @@ const updateVersion = async () => {
         cwd: path.join(`.`, `dist`, `packages`, `omnihive`),
     });
 
+    if (!packageJson) {
+        throw new Error("Update version cannot find the main package.json");
+    }
+
     const currentVersion: string = packageJson.packageJson.version;
 
     const replaceWorkspaceOptions: ReplaceInFileConfig = {

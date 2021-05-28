@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-error-sentry-node",
-    "version": "6.2.21",
+    "version": "6.2.22",
     "description": "OmniHive Sentry Node Error Worker",
     "license": "MIT",
     "author": {

@@ -18,10 +18,11 @@ import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { CommandLineArgs } from "./CommandLineArgs";
 import { BootLoaderSettings } from "./BootLoaderSettings";
 import socketIo from "socket.io";
-import { AdminRoomType } from "src/packages/omnihive-core/enums/AdminRoomType";
-import { AdminEventType } from "src/packages/omnihive-core/enums/AdminEventType";
-import { AdminResponse } from "src/packages/omnihive-core/models/AdminResponse";
-import { AdminRequest } from "src/packages/omnihive-core/models/AdminRequest";
+import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
+import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
+import fse from "fs-extra";
 
 export class GlobalObject extends WorkerSetterBase {
     public adminServer: socketIo.Server | undefined = undefined;
@@ -62,6 +63,35 @@ export class GlobalObject extends WorkerSetterBase {
                 .to(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${room}`)
                 .emit(event, eventMessage);
         }
+    };
+
+    public getFilePath = (filePath: string): string => {
+        let finalPath: string = "";
+
+        if (!filePath || StringHelper.isNullOrWhiteSpace(filePath)) {
+            return finalPath;
+        }
+
+        if (this.pathExists(filePath)) {
+            finalPath = filePath;
+        }
+
+        if (
+            StringHelper.isNullOrWhiteSpace(finalPath) &&
+            this.pathExists(path.join(global.omnihive.ohDirName, filePath))
+        ) {
+            finalPath = path.join(global.omnihive.ohDirName, filePath);
+        }
+
+        if (
+            StringHelper.isNullOrWhiteSpace(finalPath) &&
+            !StringHelper.isNullOrWhiteSpace(global.omnihive.commandLineArgs.environmentFile) &&
+            this.pathExists(path.join(path.parse(global.omnihive.commandLineArgs.environmentFile).dir, filePath))
+        ) {
+            finalPath = path.join(path.parse(global.omnihive.commandLineArgs.environmentFile).dir, filePath);
+        }
+
+        return finalPath;
     };
 
     public async pushWorker(hiveWorker: HiveWorker, isBoot: boolean = false, isCore: boolean = false): Promise<void> {
@@ -140,4 +170,8 @@ export class GlobalObject extends WorkerSetterBase {
             this.registeredWorkers.push(registeredWorker);
         }
     }
+
+    private pathExists = (path: string): boolean => {
+        return fse.existsSync(path);
+    };
 }

@@ -11,9 +11,9 @@ import execa from "execa";
 // Master build process
 const build = async (): Promise<void> => {
     // Handle args
-    const args = yargs(process.argv.slice(2));
+    const cmdLineArgs = yargs(process.argv.slice(2));
 
-    args
+    cmdLineArgs
         .help(false)
         .version(false)
         .strict()
@@ -30,13 +30,15 @@ const build = async (): Promise<void> => {
             demandOption: false,
             description: "NPM Dist Tag",
             default: "latest",
-        }).argv;
+        });
+
+    const args = await cmdLineArgs.argv;
 
     // Header
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
-    const tasks = setupTasks(args.argv.debug as boolean, args.argv.tag as string);
+    const tasks = setupTasks(args.debug as boolean, args.tag as string);
 
     try {
         await tasks.run();

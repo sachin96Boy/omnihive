@@ -1,3 +1,5 @@
+/// <reference path="../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
@@ -14,7 +16,6 @@ import { serializeError } from "serialize-error";
 import fse from "fs-extra";
 import path from "path";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
-import { FileHelper } from "@withonevision/omnihive-core/helpers/FileHelper";
 
 export class SqliteWorkerMetadata extends HiveWorkerMetadataDatabase {
     public filename: string = "";
@@ -92,11 +93,10 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
         };
 
         let tableResult: any[][];
-        const fileHelper: FileHelper = new FileHelper();
         const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         try {
-            const tableFilePath = fileHelper.getFilePath(this.metadata.getSchemaSqlFile);
+            const tableFilePath = global.omnihive.getFilePath(this.metadata.getSchemaSqlFile);
 
             if (
                 this.metadata.getSchemaSqlFile &&

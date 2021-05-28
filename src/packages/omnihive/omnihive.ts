@@ -25,12 +25,13 @@ import yaml from "yaml";
 
 const init = async () => {
     process.setMaxListeners(0);
-    const args = yargs(process.argv.slice(2));
+    const cmdLineArgs = yargs(process.argv.slice(2));
 
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
-    args.help(false)
+    cmdLineArgs
+        .help(false)
         .version(false)
         .strict()
         .command(["*", "server"], "Server Runner", (args) => {
@@ -61,23 +62,25 @@ const init = async () => {
                 });
         });
 
+    const args = await cmdLineArgs.argv;
+
     global.omnihive = new GlobalObject();
     global.omnihive.ohDirName = __dirname;
     global.omnihive.commandLineArgs = {
-        environmentFile: (args.argv.environmentFile as string) ?? "",
-        taskRunnerWorker: (args.argv.worker as string) ?? "",
-        taskRunnerArgs: (args.argv.args as string) ?? "",
+        environmentFile: (args.environmentFile as string) ?? "",
+        taskRunnerWorker: (args.worker as string) ?? "",
+        taskRunnerArgs: (args.args as string) ?? "",
     };
 
     let bootLoaderType: string = "json";
 
-    if (args.argv.environmentFile && fse.existsSync(args.argv.environmentFile as string)) {
-        dotenv.config({ path: args.argv.environmentFile as string });
+    if (args.environmentFile && fse.existsSync(args.environmentFile as string)) {
+        dotenv.config({ path: args.environmentFile as string });
     }
 
-    if (args.argv.environmentFile && !fse.existsSync(args.argv.environmentFile as string)) {
-        if (fse.existsSync(path.join(global.omnihive.ohDirName, args.argv.environmentFile as string))) {
-            dotenv.config({ path: path.join(global.omnihive.ohDirName, args.argv.environmentFile as string) });
+    if (args.environmentFile && !fse.existsSync(args.environmentFile as string)) {
+        if (fse.existsSync(path.join(global.omnihive.ohDirName, args.environmentFile as string))) {
+            dotenv.config({ path: path.join(global.omnihive.ohDirName, args.environmentFile as string) });
         }
     }
 
@@ -180,10 +183,10 @@ const init = async () => {
 
     global.omnihive.serverSettings = await AwaitHelper.execute(configWorker.get());
 
-    switch (args.argv._[0]) {
+    switch (args._[0]) {
         case "taskRunner":
             const taskRunnerService: TaskRunnerService = new TaskRunnerService();
-            await AwaitHelper.execute(taskRunnerService.run(args.argv.worker as string, args.argv.args as string));
+            await AwaitHelper.execute(taskRunnerService.run(args.worker as string, args.args as string));
             break;
         case "server":
         default:

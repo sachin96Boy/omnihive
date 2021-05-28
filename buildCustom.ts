@@ -10,9 +10,9 @@ import execa from "execa";
 
 const build = async (): Promise<void> => {
     // Handle args
-    const args = yargs(process.argv.slice(2));
+    const cmdLineArgs = yargs(process.argv.slice(2));
 
-    args
+    cmdLineArgs
         .help(false)
         .version(false)
         .strict()
@@ -42,14 +42,16 @@ const build = async (): Promise<void> => {
             type: "string",
             demandCommand: false,
             description: "Tag to use when publishing",
-        }).argv;
+        });
+
+    const args = await cmdLineArgs.argv;
 
     // Handle version number
 
     let buildNumber: string;
 
-    if (args.argv.version as string) {
-        buildNumber = args.argv.version as string;
+    if (args.version as string) {
+        buildNumber = args.version as string;
     } else {
         const versions = (await axios.get("https://registry.npmjs.org/-/package/omnihive/dist-tags")).data;
         buildNumber = versions.latest;

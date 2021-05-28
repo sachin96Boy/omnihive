@@ -7,6 +7,7 @@ import writePkg from "write-pkg";
 import yargs from "yargs";
 import { Listr } from "listr2";
 import execa from "execa";
+import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 
 // Master build process
 const build = async (): Promise<void> => {
@@ -97,7 +98,6 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
                 ),
             exitOnError: true,
             options: {
-                persistentOutput: true,
                 showTimer: true,
             },
         },
@@ -105,6 +105,13 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
             title: "Remove non-core packages from OmniHive package.json",
             task: async () => removeNonCorePackagesFromMainPackageJson(),
             exitOnError: true,
+            options: {
+                showTimer: true,
+            },
+        },
+        {
+            title: "Update Package Versions",
+            task: async () => await updateVersion(),
             options: {
                 showTimer: true,
             },
@@ -240,6 +247,32 @@ const runVersioning = async (debug: boolean) => {
     } else {
         console.log(execa.commandSync("yarn run release", { cwd: path.join(`.`), shell: true }).stdout);
     }
+};
+
+const updateVersion = async () => {
+    const packageJson: NormalizedReadResult | undefined = await readPkgUp({
+        cwd: path.join(`.`, `dist`, `packages`, `omnihive`),
+    });
+
+    const currentVersion: string = packageJson.packageJson.version;
+
+    const replaceWorkspaceOptions: ReplaceInFileConfig = {
+        allowEmptyPaths: true,
+        files: [path.join(`dist`, `packages`, `**`, `package.json`)],
+        from: /workspace:\*/g,
+        to: `${currentVersion}`,
+    };
+
+    await replaceInFile.replaceInFile(replaceWorkspaceOptions);
+
+    const replaceVersionOptions: ReplaceInFileConfig = {
+        allowEmptyPaths: true,
+        files: [path.join(`dist`, `packages`, `**`, `package.json`)],
+        from: /"version": "0.0.1"/g,
+        to: `"version": "${currentVersion}"`,
+    };
+
+    await replaceInFile.replaceInFile(replaceVersionOptions);
 };
 
 // Master runner

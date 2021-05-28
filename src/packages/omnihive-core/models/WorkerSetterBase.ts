@@ -5,9 +5,9 @@ import { HiveWorker } from "./HiveWorker";
 import { RegisteredHiveWorker } from "./RegisteredHiveWorker";
 import { ServerSettings } from "./ServerSettings";
 import { WorkerGetterBase } from "./WorkerGetterBase";
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { HiveWorkerType } from "../enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "../enums/OmniHiveLogLevel";
+import { ILogWorker } from "../interfaces/ILogWorker";
 
 export abstract class WorkerSetterBase extends WorkerGetterBase {
     constructor() {

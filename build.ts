@@ -11,9 +11,9 @@ import execa from "execa";
 // Master build process
 const build = async (): Promise<void> => {
     // Handle args
-    const args = yargs(process.argv.slice(2));
+    const cmdLineArgs = yargs(process.argv.slice(2));
 
-    args
+    cmdLineArgs
         .help(false)
         .version(false)
         .strict()
@@ -30,13 +30,15 @@ const build = async (): Promise<void> => {
             demandOption: false,
             description: "NPM Dist Tag",
             default: "latest",
-        }).argv;
+        });
+
+    const args = await cmdLineArgs.argv;
 
     // Header
     console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
     console.log();
 
-    const tasks = setupTasks(args.argv.debug as boolean, args.argv.tag as string);
+    const tasks = setupTasks(args.debug as boolean, args.tag as string);
 
     try {
         await tasks.run();
@@ -49,6 +51,14 @@ const build = async (): Promise<void> => {
 // Main Listr setup
 const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
     return new Listr<any>([
+        {
+            title: "Run Standard Version",
+            task: () => runVersioning(debug),
+            exitOnError: true,
+            options: {
+                showTimer: true,
+            },
+        },
         {
             title: "Clear Out Existing Dist Directories",
             task: clearOutExistingDist,
@@ -100,14 +110,6 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
             },
         },
         {
-            title: "Run Standard Version",
-            task: () => runVersioning(debug),
-            exitOnError: true,
-            options: {
-                showTimer: true,
-            },
-        },
-        {
             title: "Publish Packages",
             skip: (_ctx) => debug,
             task: (_ctx, task): Listr =>
@@ -123,6 +125,15 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
                     })),
                     { concurrent: true }
                 ),
+            exitOnError: true,
+            options: {
+                showTimer: true,
+            },
+        },
+        {
+            title: "Push GitHub changes",
+            skip: (_ctx) => debug,
+            task: pushGithubChanges,
             exitOnError: true,
             options: {
                 showTimer: true,
@@ -217,6 +228,10 @@ const removeNonCorePackagesFromMainPackageJson = async () => {
     if (packageJson && packageJson.packageJson) {
         await writePkg(path.join(`.`, `dist`, `packages`, `omnihive`), packageJson.packageJson);
     }
+};
+
+const pushGithubChanges = () => {
+    execa.commandSync(`git push --follow-tags origin main`, { cwd: path.join(`.`) });
 };
 
 const runVersioning = async (debug: boolean) => {

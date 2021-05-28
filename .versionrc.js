@@ -1,296 +1,49 @@
-module.exports = {
-    packageFiles: [
-        {
-            filename: "package.json",
-            type: "json",
-        },
-    ],
-    bumpFiles: [
-        //Source Directory
-        {
-            filename: "src/packages/omnihive/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-client/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-core/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-cache-nodecache/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-cache-redis/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-config-json/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-config-mssql/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-config-mysql/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-config-postgres/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-config-sqlite/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-config-yaml/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-cross-storage/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-date-dayjs/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-encryption-nodeforge/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-date-error-sentry-node/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-feature-launchdarkly-node/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-feature-local/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-filesystem-fsextra/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-function-core/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-graphql-builder-v1/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-knex-mssql/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-knex-mysql/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-knex-postgres/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-knex-sqlite/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-log-console/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-log-core/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-log-elastic/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-pubsubclient-pusherjs/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-pubsubclient-pusherjs-react-native/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-pubsubclient-socketio/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-pubsubserver-pusher/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-pubsubserver-socketio/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-server-v1/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-token-auth0/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-token-jsonwebtoken/package.json",
-            type: "json",
-        },
-        {
-            filename: "src/packages/omnihive-worker-user-auth0/package.json",
-            type: "json",
-        },
-        //Dist directory
-        {
-            filename: "dist/packages/omnihive-client/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-core/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-cache-nodecache/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-cache-redis/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-config-json/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-config-mssql/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-config-mysql/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-config-postgres/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-config-sqlite/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-config-yaml/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-cross-storage/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-date-dayjs/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-encryption-nodeforge/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-date-error-sentry-node/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-feature-launchdarkly-node/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-feature-local/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-filesystem-fsextra/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-function-core/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-graphql-builder-v1/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-knex-mssql/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-knex-mysql/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-knex-postgres/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-knex-sqlite/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-log-console/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-log-core/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-log-elastic/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-pubsubclient-pusherjs/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-pubsubclient-pusherjs-react-native/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-pubsubclient-socketio/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-pubsubserver-pusher/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-pubsubserver-socketio/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-server-v1/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-token-auth0/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-token-jsonwebtoken/package.json",
-            type: "json",
-        },
-        {
-            filename: "dist/packages/omnihive-worker-user-auth0/package.json",
-            type: "json",
-        },
+const fse = require("fs-extra");
+const path = require("path");
+
+const rcObject = {
+    packageFiles: [],
+    bumpFiles: [],
+    types: [
+        { type: "build", section: "Build", hidden: false },
+        { type: "chore", section: "Code Maitenance", hidden: false },
+        { type: "ci", section: "Build", hidden: false },
+        { type: "docs", section: "Documentation", hidden: false },
+        { type: "feat", section: "Features", hidden: false },
+        { type: "fix", section: "Bug Fixes", hidden: false },
+        { type: "perf", section: "Performance", hidden: false },
+        { type: "refactor", section: "Code Maintenance", hidden: false },
+        { type: "revert", section: "Code Maintenance", hidden: false },
+        { type: "style", section: "Code Maintenance", hidden: false },
+        { type: "test", section: "Tests", hidden: false },
     ],
 };
+
+function buildVersionRc() {
+    rcObject.packageFiles.push({
+        filename: `${path.join(".", "package.json")}`,
+        type: "json",
+    });
+
+    rcObject.bumpFiles.push({
+        filename: `${path.join(".", "package.json")}`,
+        type: "json",
+    });
+
+    getPackageFolders().forEach((directory) => {
+        rcObject.bumpFiles.push({
+            filename: `${path.join(".", "src", "packages", directory, "package.json")}`,
+            type: "json",
+        });
+    });
+
+    return rcObject;
+}
+
+const getPackageFolders = () => {
+    return fse
+        .readdirSync(path.join(`.`, `src`, `packages`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `packages`, f)).isDirectory());
+};
+
+module.exports = buildVersionRc();

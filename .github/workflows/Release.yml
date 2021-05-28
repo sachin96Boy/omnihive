@@ -1,4 +1,4 @@
-name: Minor
+name: Release
 
 on:
     workflow_dispatch:
@@ -13,9 +13,13 @@ jobs:
               run: yarn
             - name: Build and Publish
               env:
+                  GH_EMAIL: ${{ secrets.GH_EMAIL }}
+                  GH_NAME: ${{ secrets.GH_NAME }}
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               run: |
                   echo "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >> ~/.npmrc
+                  git config --global user.email "$GH_EMAIL"
+                  git config --global user.name "$GH_NAME"
                   yarn node -r ts-node/register ./build.ts
             - name: Log into Docker Hub
               uses: docker/login-action@v1

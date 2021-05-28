@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-user-auth0",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive Auth0 User Worker",
     "license": "MIT",
     "author": {
@@ -24,7 +24,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "auth0": "2.34.2",
+        "auth0": "2.35.0",
         "serialize-error": "8.1.0"
     },
     "devDependencies": {

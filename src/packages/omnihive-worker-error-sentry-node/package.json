@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-error-sentry-node",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive Sentry Node Error Worker",
     "license": "MIT",
     "author": {
@@ -23,7 +23,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@sentry/node": "6.3.5",
+        "@sentry/node": "6.4.1",
         "@withonevision/omnihive-core": "workspace:*",
         "serialize-error": "8.1.0"
     },

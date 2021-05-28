@@ -1,3 +1,5 @@
+/// <reference path="../../types/globals.omnihive.d.ts" />
+
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
@@ -6,7 +8,6 @@ import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBa
 import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import fse from "fs-extra";
 import { serializeError } from "serialize-error";
-import { FileHelper } from "@withonevision/omnihive-core/helpers/FileHelper";
 
 export class JsonConfigWorkerMetadata {
     public configPath: string = "";
@@ -26,9 +27,12 @@ export default class JsonConfigWorker extends HiveWorkerBase implements IConfigW
                 JsonConfigWorkerMetadata,
                 config.metadata
             );
-            const fileHelper: FileHelper = new FileHelper();
 
-            this.configPath = fileHelper.getFilePath(metadata.configPath);
+            this.configPath = global.omnihive.getFilePath(metadata.configPath);
+
+            if (!fse.existsSync(this.configPath)) {
+                throw new Error("Config path cannot be found");
+            }
         } catch (err) {
             throw new Error("Json Config Worker Init Error => " + JSON.stringify(serializeError(err)));
         }

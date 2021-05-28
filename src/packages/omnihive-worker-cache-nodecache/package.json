@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-cache-nodecache",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive Node Cache Worker",
     "license": "MIT",
     "author": {
@@ -24,8 +24,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "node-cache": "5.1.2",
-        "serialize-error": "8.1.0"
+        "node-cache": "5.1.2"
     },
     "devDependencies": {
         "chai": "4.3.4",

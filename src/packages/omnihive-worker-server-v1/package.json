@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-server-v1",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive Server Worker V1",
     "license": "MIT",
     "author": {
@@ -24,8 +24,8 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "apollo-server": "2.24.0",
-        "apollo-server-express": "2.24.0",
+        "apollo-server": "2.25.0",
+        "apollo-server-express": "2.25.0",
         "change-case": "4.1.2",
         "express": "4.17.1",
         "graphql": "15.5.0",
@@ -34,7 +34,7 @@
         "swagger-ui-express": "4.1.6"
     },
     "devDependencies": {
-        "@types/express": "4.17.11",
+        "@types/express": "4.17.12",
         "@types/require-from-string": "1.2.0",
         "@types/swagger-ui-express": "4.1.2",
         "chai": "4.3.4",

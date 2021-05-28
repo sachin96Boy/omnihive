@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-encryption-nodeforge",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive NodeForge Encryption Worker",
     "license": "MIT",
     "author": {
@@ -24,11 +24,10 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "node-forge": "0.10.0",
-        "serialize-error": "8.1.0"
+        "node-forge": "0.10.0"
     },
     "devDependencies": {
-        "@types/node-forge": "0.9.7",
+        "@types/node-forge": "0.9.9",
         "chai": "4.3.4",
         "typescript": "4.2.4"
     }

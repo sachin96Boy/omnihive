@@ -1,3 +1,5 @@
+/// <reference path="../../types/globals.omnihive.d.ts" />
+
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
@@ -17,7 +19,6 @@ import fse from "fs-extra";
 import path from "path";
 import pg from "pg";
 import orderBy from "lodash.orderby";
-import { FileHelper } from "@withonevision/omnihive-core/helpers/FileHelper";
 
 export default class PostgresDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
@@ -139,11 +140,10 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
         };
 
         let tableResult: any[][], procResult: any[][];
-        const fileHelper: FileHelper = new FileHelper();
         const logWorker: ILogWorker | undefined = this.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
         try {
-            const tableFilePath = fileHelper.getFilePath(this.metadata.getSchemaSqlFile);
+            const tableFilePath = global.omnihive.getFilePath(this.metadata.getSchemaSqlFile);
 
             if (
                 this.metadata.getSchemaSqlFile &&
@@ -173,7 +173,7 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
         }
 
         try {
-            const procFilePath = fileHelper.getFilePath(this.metadata.getProcFunctionSqlFile);
+            const procFilePath = global.omnihive.getFilePath(this.metadata.getProcFunctionSqlFile);
 
             if (
                 this.metadata.getProcFunctionSqlFile &&

@@ -3,10 +3,10 @@ import { TestConfigSettings } from "../models/TestConfigSettings";
 import { TestSettings } from "../models/TestSettings";
 import { WorkerSetterBase } from "../../packages/omnihive-core/models/WorkerSetterBase";
 import fse from "fs-extra";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { AwaitHelper } from "../../packages/omnihive-core/helpers/AwaitHelper";
+import { IHiveWorker } from "../../packages/omnihive-core/interfaces/IHiveWorker";
+import { HiveWorker } from "../../packages/omnihive-core/models/HiveWorker";
+import { RegisteredHiveWorker } from "../../packages/omnihive-core/models/RegisteredHiveWorker";
 
 export class TestService extends WorkerSetterBase {
     public clearWorkers = (): void => {

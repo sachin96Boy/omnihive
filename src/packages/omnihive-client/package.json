@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-client",
-    "version": "0.0.1",
+    "version": "6.2.21",
     "description": "OmniHive Client",
     "license": "MIT",
     "author": {
@@ -20,21 +20,16 @@
         "With One Vision"
     ],
     "scripts": {
-        "build": "tsc",
-        "cli:debug": "nodemon --no-stdin --config ./nodemon.cli.json"
+        "build": "tsc"
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
         "axios": "0.21.1",
-        "graphql": "15.5.0",
-        "object-hash": "2.1.1",
-        "serialize-error": "8.1.0"
+        "object-hash": "2.2.0"
     },
     "devDependencies": {
         "@types/object-hash": "2.1.0",
         "chai": "4.3.4",
-        "nodemon": "2.0.7",
-        "ts-node": "9.1.1",
         "typescript": "4.2.4"
     }
 }

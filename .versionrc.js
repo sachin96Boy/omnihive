@@ -8,13 +8,18 @@ function buildVersionRc() {
     };
 
     rcObject.packageFiles.push({
-        filename: "package.json",
+        filename: `${path.join(".", "package.json")}`,
+        type: "json",
+    });
+
+    rcObject.bumpFiles.push({
+        filename: `${path.join(".", "package.json")}`,
         type: "json",
     });
 
     getPackageFolders().forEach((directory) => {
         rcObject.bumpFiles.push({
-            filename: `src/packages/${directory}/package.json`,
+            filename: `${path.join(".", "src", "packages", directory, "package.json")}`,
             type: "json",
         });
     });

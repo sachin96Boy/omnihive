@@ -1,7 +1,7 @@
 {
     "name": "root",
     "private": true,
-    "version": "6.2.20",
+    "version": "6.2.21",
     "workspaces": [
         "src/packages/*",
         "src/custom/*"
@@ -24,7 +24,7 @@
         "doctor": "yarn dlx @yarnpkg/doctor@2.1.3",
         "husky": "husky install",
         "release": "standard-version",
-        "release-dry-run": "standard-version --dry-run",
+        "release:dry-run": "standard-version --dry-run",
         "server:debug": "cd src/packages/omnihive && yarn run server:debug",
         "taskRunner:debug": "cd src/packages/omnihive && yarn run cli:taskRunner:debug",
         "test": "omnihive_test_settings=\"./settings/omnihive_test_config.json\" nyc --reporter=html mocha -r ts-node/register 'src/packages/**/tests/**/*.ts' --inspect=127.0.0.1:9228 --timeout 5000 --retries 5 --colors",

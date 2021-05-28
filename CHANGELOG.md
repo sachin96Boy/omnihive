@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 6.2.26 (2021-05-28)
+
+
+### Build
+
+* **monorepo:** build undefined error ([78bcf35](https://github.com/WithOneVisionTechnologies/omnihive/commit/78bcf3584f551e4b31e3311cb8694c5c4211712d))
+
 ### 6.2.22 (2021-05-28)
 
 

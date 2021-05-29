@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-config-postgres",
-    "version": "6.2.27",
+    "version": "6.2.28",
     "description": "OmniHive Postgres Config Worker",
     "license": "MIT",
     "author": {

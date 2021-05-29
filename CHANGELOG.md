@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 6.2.28 (2021-05-29)
+
+
+### Build
+
+* **monorepo:** :hammer: cleanup of GHA ([89de63b](https://github.com/WithOneVisionTechnologies/omnihive/commit/89de63b941eb03bbd410d6a5f40ba69cc3a414df))
+
 ### 6.2.27 (2021-05-28)
 
 

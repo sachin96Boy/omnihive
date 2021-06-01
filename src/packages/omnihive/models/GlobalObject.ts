@@ -156,8 +156,7 @@ export class GlobalObject extends WorkerSetterBase {
         });
 
         if (registerWorker) {
-            delete require.cache[require.resolve(hiveWorker.importPath)];
-            const newWorker: any = require(hiveWorker.importPath);
+            const newWorker: any = await import(hiveWorker.importPath);
             const newWorkerInstance: any = new newWorker.default();
             await AwaitHelper.execute((newWorkerInstance as IHiveWorker).init(hiveWorker));
 

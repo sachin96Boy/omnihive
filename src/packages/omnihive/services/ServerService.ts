@@ -18,18 +18,20 @@ import express from "express";
 import helmet from "helmet";
 import http, { Server } from "http";
 import path from "path";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
-import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import swaggerUi from "swagger-ui-express";
 import { CommonService } from "./CommonService";
 import { AdminService } from "./AdminService";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
+import { CommandLineArgs } from "../models/CommandLineArgs";
 
 export class ServerService {
-    public boot = async (serverReset: boolean = false): Promise<void> => {
+    public run = async (rootDir: string, commandLineArgs: CommandLineArgs): Promise<void> => {
         const commonService: CommonService = new CommonService();
+
+        //Run bootloader
+        await AwaitHelper.execute(commonService.bootLoader(rootDir, commandLineArgs));
 
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
@@ -39,27 +41,13 @@ export class ServerService {
         try {
             // Reboot admin service
             const adminService: AdminService = new AdminService();
-            await AwaitHelper.execute(adminService.boot());
+            await AwaitHelper.execute(adminService.run());
 
             // Set server to rebuilding first
             await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Rebuilding));
 
-            // Check for server reset and re-poll settings in case they have changed
-            if (serverReset === true) {
-                const configWorker: IConfigWorker | undefined = global.omnihive.getWorker<IConfigWorker>(
-                    HiveWorkerType.Config
-                );
-
-                if (!configWorker) {
-                    throw new Error("No config worker can be found.  OmniHive cannot load.");
-                }
-
-                global.omnihive.serverSettings = await AwaitHelper.execute(configWorker.get());
-            }
-
-            const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
-
-            await AwaitHelper.execute(commonService.initOmniHiveApp(pkgJson));
+            // Run worker loader
+            await AwaitHelper.execute(commonService.workerLoader());
 
             // Try to spin up full server
             let app: express.Express = await AwaitHelper.execute(this.getCleanAppServer());

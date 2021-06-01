@@ -13,11 +13,12 @@ import { ParseUpdate } from "./ParseUpdate";
 export class ParseMaster {
     public parseAstQuery = async (
         workerName: string,
+        args: any,
         resolveInfo: GraphQLResolveInfo,
         omniHiveContext: GraphContext
     ): Promise<any> => {
         const parser: ParseAstQuery = new ParseAstQuery();
-        return await AwaitHelper.execute(parser.parse(workerName, resolveInfo, omniHiveContext));
+        return await AwaitHelper.execute(parser.parse(workerName, args, resolveInfo, omniHiveContext));
     };
 
     public parseCustomSql = async (

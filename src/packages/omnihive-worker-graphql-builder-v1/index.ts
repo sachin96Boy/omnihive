@@ -122,6 +122,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\textensions: {`);
             builder.appendLine(`\t\tdbWorkerInstance: "${databaseWorker.config.name}",`);
             builder.appendLine(`\t\tdbTableName: "${tableSchema[0].tableName}",`);
+            builder.appendLine(`\t\tdbSchemaName: "${tableSchema[0].schemaName}",`);
             if (primaryKeys.length > 0) {
                 builder.append(`\t\tdbPrimaryKeys: [`);
                 primaryKeys.forEach((key: TableSchema) => {
@@ -618,7 +619,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
             builder.appendLine(
-                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.omnihive));`
+                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", args, resolveInfo, context.omnihive));`
             );
             builder.appendLine(`\t\t\t\t}`);
             builder.appendLine(`\t\t\t},`);
@@ -640,7 +641,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
             builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
             builder.appendLine(
-                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", resolveInfo, context.omnihive));`
+                `\t\t\t\t\treturn await AwaitHelper.execute(graphParser.parseAstQuery("${databaseWorker.config.name}", args, resolveInfo, context.omnihive));`
             );
             builder.appendLine(`\t\t\t\t}`);
             builder.appendLine(`\t\t\t},`);

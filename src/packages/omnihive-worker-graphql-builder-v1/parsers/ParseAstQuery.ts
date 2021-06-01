@@ -50,6 +50,7 @@ export class ParseAstQuery {
 
     public parse = async (
         workerName: string,
+        args: any,
         resolveInfo: GraphQLResolveInfo,
         omniHiveContext: GraphContext
     ): Promise<any> => {
@@ -125,7 +126,7 @@ export class ParseAstQuery {
         this.databaseWorker = databaseWorker;
         this.encryptionWorker = encryptionWorker;
 
-        const converterInfo: ConverterSqlInfo = await AwaitHelper.execute(this.getSqlFromGraph(resolveInfo));
+        const converterInfo: ConverterSqlInfo = await AwaitHelper.execute(this.getSqlFromGraph(resolveInfo, args));
 
         let cacheKey: string = "";
         let cacheSeconds = -1;
@@ -220,7 +221,7 @@ export class ParseAstQuery {
         return hydratedData;
     };
 
-    private getSqlFromGraph = async (resolveInfo: GraphQLResolveInfo): Promise<ConverterSqlInfo> => {
+    private getSqlFromGraph = async (resolveInfo: GraphQLResolveInfo, args: any): Promise<ConverterSqlInfo> => {
         // Get the parent type and the return type to resolve table info
         this.parentPath = _.get(resolveInfo.parentType.getFields(), resolveInfo.fieldNodes[0].name.value);
         const graphReturnType: GraphQLObjectType = (resolveInfo.returnType as GraphQLList<GraphQLObjectType>).ofType;
@@ -239,8 +240,14 @@ export class ParseAstQuery {
 
         this.tables.push(currentTable);
 
-        // Set the intial "from" clause
-        this.query.from(`${graphParentType.extensions?.dbTableName} as t${this.currentTableIndex}`);
+        // Set the initial "from" clause
+        if (this.databaseWorker.config.metadata.ignoreSchema) {
+            this.query.from(`${graphParentType.extensions?.dbTableName} as t${this.currentTableIndex}`);
+        } else {
+            this.query.from(
+                `${graphParentType.extensions?.dbSchemaName}.${graphParentType.extensions?.dbTableName} as t${this.currentTableIndex}`
+            );
+        }
 
         // Get the primary keys from the root "from" table if there are any
         let primaryKeys: any[] = [];
@@ -259,32 +266,6 @@ export class ParseAstQuery {
         }
 
         // Build the root where arguments and get the where string
-        const args: any = {};
-
-        Object.keys(resolveInfo.variableValues).forEach((key: string) => {
-            const graphKey = key.replace(/^_.*_/, "");
-
-            if (
-                graphKey !== "dbPage" &&
-                graphKey !== "dbLimit" &&
-                graphKey !== "whereMode" &&
-                graphKey !== "objPage" &&
-                graphKey !== "objLimit" &&
-                !graphReturnType.extensions?.aggregateType
-            ) {
-                const dbColumnName = _.filter(
-                    graphReturnType.getFields(),
-                    (field: GraphQLField<any, any>) => field.name === graphKey
-                )[0].extensions?.dbColumnName;
-                args[dbColumnName] = resolveInfo.variableValues[key];
-            } else if (graphReturnType.extensions?.aggregateType) {
-                const dbColumnName = this.parentPath.args.filter((arg: GraphQLArgument) => arg.name === graphKey)[0]
-                    ?.extensions?.dbColumnName;
-                args[dbColumnName] = resolveInfo.variableValues[key];
-            } else {
-                args[graphKey] = resolveInfo.variableValues[key];
-            }
-        });
 
         this.whereOrderByHandler(graphParentType.extensions?.dbTableName, `t${this.currentTableIndex}`, args);
 

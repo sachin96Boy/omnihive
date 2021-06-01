@@ -66,8 +66,7 @@ export class TestService extends WorkerSetterBase {
             throw new Error(`Hive worker type ${hiveWorker.type} with name ${hiveWorker.name} has no import path`);
         }
 
-        delete require.cache[require.resolve(hiveWorker.importPath)];
-        const newWorker: any = require(hiveWorker.importPath);
+        const newWorker: any = import(hiveWorker.importPath);
         const newWorkerInstance: any = new newWorker.default();
         await AwaitHelper.execute((newWorkerInstance as IHiveWorker).init(hiveWorker));
 

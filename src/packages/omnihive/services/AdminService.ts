@@ -9,7 +9,6 @@ import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettin
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import * as socketio from "socket.io";
-import { ServerService } from "./ServerService";
 import { createAdapter } from "@socket.io/redis-adapter";
 import redis from "redis";
 import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
@@ -18,12 +17,19 @@ import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventTyp
 import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { Emitter } from "@socket.io/redis-emitter";
+import ipc from "node-ipc";
+import { v4 as uuidv4 } from "uuid";
+
+let ipcId: string = uuidv4();
+ipc.config.id = ipcId;
+ipc.config.retry = 1000;
+ipc.config.sync = true;
 
 export class AdminService {
     private logWorker!: ILogWorker | undefined;
     private ioEmitter!: Emitter | undefined;
 
-    public boot = async () => {
+    public run = async () => {
         // Initiate log worker
         this.logWorker = global.omnihive.getWorker<ILogWorker>(HiveWorkerType.Log, "ohBootLogWorker");
 
@@ -76,9 +82,12 @@ export class AdminService {
             this.logWorker?.write(OmniHiveLogLevel.Info, "OmniHive Server Restarting...");
 
             setTimeout(() => {
-                const serverService: ServerService = new ServerService();
-                serverService.boot(true);
-            }, 3000);
+                ipc.connectTo(global.omnihive.commandLineArgs.ipcServerId, () => {
+                    ipc.of[global.omnihive.commandLineArgs.ipcServerId].on("connect", () => {
+                        ipc.of[global.omnihive.commandLineArgs.ipcServerId].emit("omnihive.reboot");
+                    });
+                });
+            }, 2000);
         });
 
         // Admin Event : Connection
@@ -212,9 +221,12 @@ export class AdminService {
                         return;
                     }
 
-                    const serverService: ServerService = new ServerService();
-                    serverService.boot(true);
-                }, 3000);
+                    ipc.connectTo(global.omnihive.commandLineArgs.ipcServerId, () => {
+                        ipc.of[global.omnihive.commandLineArgs.ipcServerId].on("connect", () => {
+                            ipc.of[global.omnihive.commandLineArgs.ipcServerId].emit("omnihive.reboot");
+                        });
+                    });
+                }, 2000);
             });
 
             // Admin Event : Status

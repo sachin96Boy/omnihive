@@ -26,10 +26,13 @@ import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
+import { transformSync } from "esbuild";
 import express from "express";
-import requireFromString from "require-from-string";
+import Module from "module";
+import { nanoid } from "nanoid";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
+import { runInNewContext } from "vm";
 
 type BuilderDatabaseWorker = {
     registeredWorker: RegisteredHiveWorker;
@@ -80,7 +83,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             const dbWorkers: BuilderDatabaseWorker[] = [];
 
             buildWorkers.forEach((worker: RegisteredHiveWorker) => {
-                const buildWorkerMetadata: HiveWorkerMetadataGraphBuilder = worker.metadata as HiveWorkerMetadataGraphBuilder;
+                const buildWorkerMetadata: HiveWorkerMetadataGraphBuilder =
+                    worker.metadata as HiveWorkerMetadataGraphBuilder;
 
                 if (buildWorkerMetadata.dbWorkers.includes("*")) {
                     this.registeredWorkers
@@ -191,7 +195,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     );
 
                     const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
-                    const dbWorkerModule = requireFromString(fileString);
+                    const dbWorkerModule = this.importFromString(fileString);
                     dbWorkerModules.push({ workerName: dbWorker.registeredWorker.name, dbModule: dbWorkerModule });
                 }
             }
@@ -257,7 +261,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 builder.appendLine(`\t}),`);
                 builder.appendLine(`});`);
 
-                graphEndpointModule = requireFromString(builder.outputString());
+                graphEndpointModule = this.importFromString(builder.outputString());
             }
 
             logWorker?.write(OmniHiveLogLevel.Info, `Graph Generation Files Completed`);
@@ -534,5 +538,18 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
             throw new Error(err);
         }
+    };
+
+    private importFromString = (code: string): any => {
+        const transformResult = transformSync(code, { format: "cjs" });
+        const contextModule = new Module(nanoid());
+
+        runInNewContext(transformResult.code, {
+            exports: contextModule.exports,
+            module: contextModule,
+            require,
+        });
+
+        return contextModule.exports;
     };
 }

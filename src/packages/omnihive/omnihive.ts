@@ -1,34 +1,32 @@
 #!/usr/bin/env node
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import chalk from "chalk";
-import figlet from "figlet";
-import fse from "fs-extra";
-import nodeCleanup from "node-cleanup";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import yargs from "yargs";
-import { GlobalObject } from "./models/GlobalObject";
-import { ServerService } from "./services/ServerService";
 import { TaskRunnerService } from "./services/TaskRunnerService";
-import dotenv from "dotenv";
-import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import path from "path";
+import { CommandLineArgs } from "./models/CommandLineArgs";
 import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
-import yaml from "yaml";
+import exitHook from "exit-hook";
+import { v4 as uuidv4 } from "uuid";
+import ipc from "node-ipc";
+import forever from "forever-monitor";
+
+// Setup IPC
+
+let ipcId: string = uuidv4();
+ipc.config.id = ipcId;
+ipc.config.retry = 1500;
+ipc.config.sync = true;
+
+// Setup Child Process
+let child: forever.Monitor;
+
+// Get running directory
+const runningDir: string = __dirname;
 
 const init = async () => {
-    process.setMaxListeners(0);
+    // Interpret command line
     const cmdLineArgs = yargs(process.argv.slice(2));
-
-    console.log(chalk.yellow(figlet.textSync("OMNIHIVE")));
-    console.log();
 
     cmdLineArgs
         .help(false)
@@ -38,6 +36,7 @@ const init = async () => {
             return args.option("environmentFile", {
                 alias: "ef",
                 type: "string",
+                demandOption: false,
                 description: "Path to environment file (absolute and relative will be checked)",
             });
         })
@@ -63,146 +62,75 @@ const init = async () => {
         });
 
     const args = await cmdLineArgs.argv;
-
-    global.omnihive = new GlobalObject();
-    global.omnihive.ohDirName = __dirname;
-    global.omnihive.commandLineArgs = {
+    const commandLineArgs: CommandLineArgs = {
         environmentFile: (args.environmentFile as string) ?? "",
+        ipcServerId: ipcId,
         taskRunnerWorker: (args.worker as string) ?? "",
         taskRunnerArgs: (args.args as string) ?? "",
     };
 
-    let bootLoaderType: string = "json";
-
-    if (args.environmentFile && fse.existsSync(args.environmentFile as string)) {
-        dotenv.config({ path: args.environmentFile as string });
+    // Check for task runner
+    if (args._[0] === "taskRunner") {
+        const taskRunnerService: TaskRunnerService = new TaskRunnerService();
+        return await AwaitHelper.execute(taskRunnerService.run(runningDir, commandLineArgs));
     }
 
-    if (args.environmentFile && !fse.existsSync(args.environmentFile as string)) {
-        if (fse.existsSync(path.join(global.omnihive.ohDirName, args.environmentFile as string))) {
-            dotenv.config({ path: path.join(global.omnihive.ohDirName, args.environmentFile as string) });
-        }
-    }
-
-    if (
-        !process.env.OMNIHIVE_BOOT_LOADER_TYPE ||
-        StringHelper.isNullOrWhiteSpace(process.env.OMNIHIVE_BOOT_LOADER_TYPE) ||
-        (process.env.OMNIHIVE_BOOT_LOADER_TYPE?.toLowerCase() !== "json" &&
-            process.env.OMNIHIVE_BOOT_LOADER_TYPE?.toLowerCase() !== "yaml")
-    ) {
-        chalk.yellow("No valid boot loader type provided...assuming JSON");
-    } else {
-        bootLoaderType = process.env.OMNIHIVE_BOOT_LOADER_TYPE;
-    }
-
-    if (
-        !process.env.OMNIHIVE_BOOT_LOADER_LOCATION ||
-        StringHelper.isNullOrWhiteSpace(process.env.OMNIHIVE_BOOT_LOADER_LOCATION) ||
-        (!fse.existsSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION) &&
-            !fse.existsSync(
-                path.join(
-                    path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
-                    process.env.OMNIHIVE_BOOT_LOADER_LOCATION
-                )
-            ) &&
-            !fse.existsSync(path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION)))
-    ) {
-        throw new Error("No Valid Boot Loader Location Given...OmniHive Cannot Continue");
-    }
-
-    let bootLoaderFile: string = "";
-
-    try {
-        if (fse.existsSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION)) {
-            bootLoaderFile = fse.readFileSync(process.env.OMNIHIVE_BOOT_LOADER_LOCATION, "utf8");
-        }
-
-        if (
-            fse.existsSync(
-                path.join(
-                    path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
-                    process.env.OMNIHIVE_BOOT_LOADER_LOCATION
-                )
-            )
-        ) {
-            bootLoaderFile = fse.readFileSync(
-                path.join(
-                    path.parse(global.omnihive.commandLineArgs.environmentFile).dir,
-                    process.env.OMNIHIVE_BOOT_LOADER_LOCATION
-                ),
-                "utf8"
-            );
-        }
-
-        if (fse.existsSync(path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION))) {
-            bootLoaderFile = fse.readFileSync(
-                path.join(global.omnihive.ohDirName, process.env.OMNIHIVE_BOOT_LOADER_LOCATION),
-                "utf8"
-            );
-        }
-
-        switch (bootLoaderType.toLowerCase()) {
-            case "json":
-                global.omnihive.bootLoaderSettings = JSON.parse(bootLoaderFile);
-                break;
-            case "yaml":
-                global.omnihive.bootLoaderSettings = yaml.parse(bootLoaderFile);
-                break;
-            default:
-                global.omnihive.bootLoaderSettings = JSON.parse(bootLoaderFile);
-                break;
-        }
-    } catch {
-        throw new Error("No Valid Boot Loader Location Given...OmniHive Cannot Continue");
-    }
-
-    await global.omnihive.pushWorker(global.omnihive.bootLoaderSettings.configWorker, true, false);
-    global.omnihive.bootWorkerNames.push(global.omnihive.bootLoaderSettings.configWorker.name);
-    global.omnihive.serverSettings.workers.push(global.omnihive.bootLoaderSettings.configWorker);
-
-    const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
-
-    // Load Boot Workers
-    if (pkgJson && pkgJson.packageJson && pkgJson.packageJson.omniHive && pkgJson.packageJson.omniHive.bootWorkers) {
-        const bootWorkers: HiveWorker[] = pkgJson.packageJson.omniHive.bootWorkers as HiveWorker[];
-
-        for (const bootWorker of bootWorkers) {
-            if (!global.omnihive.registeredWorkers.some((rw: RegisteredHiveWorker) => rw.name === bootWorker.name)) {
-                await AwaitHelper.execute(global.omnihive.pushWorker(bootWorker, true, false));
-                global.omnihive.bootWorkerNames.push(bootWorker.name);
-                global.omnihive.serverSettings.workers.push(bootWorker);
-            }
-        }
-    }
-
-    const configWorker: IConfigWorker | undefined = global.omnihive.getWorker<IConfigWorker>(HiveWorkerType.Config);
-
-    if (!configWorker) {
-        throw new Error("No config worker can be found.  OmniHive cannot load.");
-    }
-
-    global.omnihive.serverSettings = await AwaitHelper.execute(configWorker.get());
-
-    switch (args._[0]) {
-        case "taskRunner":
-            const taskRunnerService: TaskRunnerService = new TaskRunnerService();
-            await AwaitHelper.execute(taskRunnerService.run(args.worker as string, args.args as string));
-            break;
-        case "server":
-        default:
-            const serverService: ServerService = new ServerService();
-            await AwaitHelper.execute(serverService.boot());
-            break;
-    }
-
-    nodeCleanup(() => {
-        global.omnihive.emitToNamespace(AdminRoomType.Command, AdminEventType.StatusResponse, {
-            serverStatus: ServerStatus.Offline,
-            serverError: undefined,
+    // Server is necessary because it's not the taskRunner
+    // Serve up IPC
+    ipc.serve(() => {
+        ipc.server.on("omnihive.reboot", () => {
+            child.restart();
         });
     });
 
-    process.on("SIGUSR2", () => process.kill(process.pid, "SIGHUP"));
+    ipc.server.start();
+
+    // Create child process
+    createServerChild(commandLineArgs);
+
+    // Process termination (mostly from nodemon)
+    process.on("SIGUSR2", () => {
+        if (child) {
+            child.kill(true);
+        }
+        process.kill(process.pid, "SIGHUP");
+    });
 };
 
+// Child process spawner
+const createServerChild = async (commandLineArgs: CommandLineArgs) => {
+    child = new forever.Monitor(
+        [
+            `${process.env.NODE_ENV === "production" ? `node` : `ts-node`}`,
+            `serverRunner.${process.env.NODE_ENV === "production" ? `js` : `ts`}`,
+            `${ipcId}`,
+            `${
+                !StringHelper.isNullOrWhiteSpace(commandLineArgs.environmentFile)
+                    ? `${commandLineArgs.environmentFile}`
+                    : ``
+            }`,
+        ],
+        { cwd: runningDir, env: { ...process.env, FORCE_COLOR: "1" } }
+    );
+
+    child.on("exit:code", (code: number) => {
+        if (!child || code === null) {
+            return;
+        }
+
+        child.kill(true);
+        process.exit(code);
+    });
+
+    child.start();
+};
+
+// Kill child if parent dies
+exitHook(() => {
+    if (child) {
+        child.kill(true);
+    }
+});
+
+// Run init
 init();

@@ -5,31 +5,33 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLog
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import fse from "fs-extra";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { CommonService } from "./CommonService";
+import { CommandLineArgs } from "../models/CommandLineArgs";
+import yaml from "yaml";
 
 export class TaskRunnerService {
-    public run = async (worker: string, args: string): Promise<void> => {
-        // Run basic app service
-        const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
-        const appService: CommonService = new CommonService();
-
-        await AwaitHelper.execute(appService.initOmniHiveApp(pkgJson));
+    public run = async (rootDir: string, commandLineArgs: CommandLineArgs): Promise<void> => {
+        // Run boot and worker loader
+        const commonService: CommonService = new CommonService();
+        await AwaitHelper.execute(commonService.bootLoader(rootDir, commandLineArgs));
+        await AwaitHelper.execute(commonService.workerLoader());
 
         // Get TaskWorker
 
         const taskWorker: RegisteredHiveWorker | undefined = global.omnihive.registeredWorkers.find(
             (rw: RegisteredHiveWorker) =>
-                rw.name === worker && rw.enabled === true && rw.type === HiveWorkerType.TaskFunction
+                rw.name === commandLineArgs.taskRunnerWorker &&
+                rw.enabled === true &&
+                rw.type === HiveWorkerType.TaskFunction
         );
 
         if (!taskWorker) {
             this.logError(
-                worker,
+                commandLineArgs.taskRunnerWorker,
                 new Error(
-                    `Task Worker ${worker} was not found in server configuration, is disabled, or is not of the right type`
+                    `Task Worker ${commandLineArgs.taskRunnerWorker} was not found in server configuration, is disabled, or is not of the right type`
                 )
             );
             return;
@@ -38,11 +40,15 @@ export class TaskRunnerService {
         // Set up worker args
         let workerArgs: any = null;
 
-        if (args && args !== "") {
+        if (commandLineArgs.taskRunnerArgs && commandLineArgs.taskRunnerArgs !== "") {
             try {
-                workerArgs = JSON.parse(fse.readFileSync(args, { encoding: "utf8" }));
+                workerArgs = JSON.parse(fse.readFileSync(commandLineArgs.taskRunnerArgs, { encoding: "utf8" }));
             } catch (err) {
-                this.logError(worker, err);
+                try {
+                    workerArgs = yaml.parse(fse.readFileSync(commandLineArgs.taskRunnerArgs, { encoding: "utf8" }));
+                } catch {
+                    this.logError(commandLineArgs.taskRunnerWorker, err);
+                }
             }
         }
 
@@ -54,7 +60,7 @@ export class TaskRunnerService {
                 await AwaitHelper.execute(taskWorker.instance.execute());
             }
         } catch (err) {
-            this.logError(worker, err);
+            this.logError(commandLineArgs.taskRunnerWorker, err);
         }
 
         process.exit();

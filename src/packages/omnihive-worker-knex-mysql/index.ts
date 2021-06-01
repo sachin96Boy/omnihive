@@ -237,7 +237,7 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
             if (
                 !this.metadata.ignoreSchema &&
                 !this.metadata.schemas.includes("*") &&
-                !this.metadata.schemas.includes(row.proc_schema)
+                !this.metadata.schemas.includes(row.procfunc_schema)
             ) {
                 return;
             }

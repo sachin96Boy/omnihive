@@ -234,7 +234,7 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
             if (
                 !this.metadata.ignoreSchema &&
                 !this.metadata.schemas.includes("*") &&
-                !this.metadata.schemas.includes(row.proc_schema)
+                !this.metadata.schemas.includes(row.procfunc_schema)
             ) {
                 return;
             }

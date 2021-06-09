@@ -1,23 +1,24 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
+import { createAdapter } from "@socket.io/redis-adapter";
+import { Emitter } from "@socket.io/redis-emitter";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { StringHelper } from "@withonevision/omnihive-core/helpers/StringHelper";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
-import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import * as socketio from "socket.io";
-import { createAdapter } from "@socket.io/redis-adapter";
-import redis from "redis";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { Emitter } from "@socket.io/redis-emitter";
+import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
+import { AppSettings } from "@withonevision/omnihive-core/models/AppSettings";
 import ipc from "node-ipc";
+import redis from "redis";
+import * as socketio from "socket.io";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
 import { v4 as uuidv4 } from "uuid";
 
 let ipcId: string = uuidv4();
@@ -30,42 +31,41 @@ export class AdminService {
     private ioEmitter!: Emitter | undefined;
 
     public run = async () => {
-        // Initiate log worker
-        this.logWorker = global.omnihive.getWorker<ILogWorker>(HiveWorkerType.Log, "ohBootLogWorker");
-
-        this.logWorker?.write(
-            OmniHiveLogLevel.Info,
-            `Setting up admin server on port ${global.omnihive.bootLoaderSettings.baseSettings.adminPortNumber}...`
+        const adminPortNumber = global.omnihive.getEnvironmentVariable<number>("OH_ADMIN_PORT_NUMBER");
+        const serverGroupId = global.omnihive.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID");
+        const clusterEnabled = global.omnihive.getEnvironmentVariable<boolean>("OH_CLUSTER_ENABLE");
+        const clusterConnectionString = global.omnihive.getEnvironmentVariable<string>(
+            "OH_CLUSTER_REDIS_CONNECTION_STRING"
         );
+
+        if (IsHelper.isNullOrUndefined(serverGroupId) || IsHelper.isNullOrUndefined(adminPortNumber)) {
+            throw new Error("Server group ID or admin port is undefined");
+        }
+
+        // Initiate log worker
+        this.logWorker = global.omnihive.getWorker<ILogWorker>(HiveWorkerType.Log, "__ohBootLogWorker");
+
+        this.logWorker?.write(OmniHiveLogLevel.Info, `Setting up admin server on port ${adminPortNumber}...`);
 
         // Start-up admin server
 
-        if (global.omnihive.adminServer) {
-            global.omnihive.adminServer
-                .of(`/${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}`)
-                .disconnectSockets(true);
+        if (!IsHelper.isNullOrUndefined(global.omnihive.adminServer)) {
+            global.omnihive.adminServer.of(`/${serverGroupId}`).disconnectSockets(true);
             global.omnihive.adminServer.close();
         }
 
-        global.omnihive.adminServer = new socketio.Server(
-            global.omnihive.bootLoaderSettings.baseSettings.adminPortNumber,
-            {
-                cors: {
-                    origin: "*",
-                    methods: "*",
-                },
-            }
-        );
+        global.omnihive.adminServer = new socketio.Server(adminPortNumber, {
+            cors: {
+                origin: "*",
+                methods: "*",
+            },
+        });
 
-        const namespace: socketio.Namespace = global.omnihive.adminServer.of(
-            global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
-        );
+        const namespace: socketio.Namespace = global.omnihive.adminServer.of(serverGroupId);
 
         // Enable Redis if necessary
-        if (global.omnihive.bootLoaderSettings.baseSettings.clusterEnable) {
-            const pubClient = redis.createClient(
-                global.omnihive.bootLoaderSettings.baseSettings.clusterRedisConnectionString
-            );
+        if (clusterEnabled && !IsHelper.isNullOrUndefined(clusterConnectionString)) {
+            const pubClient = redis.createClient(clusterConnectionString);
             const subClient = pubClient.duplicate();
             const emitClient = pubClient.duplicate();
 
@@ -92,16 +92,14 @@ export class AdminService {
 
         // Admin Event : Connection
         namespace.on(AdminEventType.Connection, (socket: socketio.Socket) => {
-            socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${AdminRoomType.Command}`);
+            socket.join(`${serverGroupId}-${AdminRoomType.Command}`);
 
             // Socket disconnect clear memory
             socket.on(AdminEventType.Disconnect, () => {
                 socket.removeAllListeners();
-                global.omnihive.adminServer
-                    ?.of(global.omnihive.bootLoaderSettings.baseSettings.serverGroupId)
-                    .sockets.forEach((sck: socketio.Socket) => {
-                        if (socket.id === sck.id) sck.disconnect(true);
-                    });
+                global.omnihive.adminServer?.of(serverGroupId).sockets.forEach((sck: socketio.Socket) => {
+                    if (socket.id === sck.id) sck.disconnect(true);
+                });
             });
 
             // Admin Event : Access Token
@@ -114,7 +112,7 @@ export class AdminService {
                     HiveWorkerType.Token
                 );
 
-                if (!tokenWorker) {
+                if (IsHelper.isNullOrUndefined(tokenWorker)) {
                     this.sendSuccessToSocket(AdminEventType.AccessTokenRequest, socket, {
                         hasWorker: false,
                         token: "",
@@ -137,35 +135,38 @@ export class AdminService {
                     return;
                 }
 
-                let serverSettings: ServerSettings = new ServerSettings();
+                let appSettings: AppSettings = new AppSettings();
 
                 const configWorker: IConfigWorker | undefined = global.omnihive.getWorker<IConfigWorker>(
                     HiveWorkerType.Config
                 );
 
-                if (!configWorker) {
-                    serverSettings = global.omnihive.serverSettings;
+                if (IsHelper.isNullOrUndefined(configWorker)) {
+                    appSettings = global.omnihive.appSettings;
                 } else {
                     try {
-                        serverSettings = await AwaitHelper.execute(configWorker.get());
+                        appSettings = await AwaitHelper.execute(configWorker.get());
                     } catch {
-                        serverSettings = global.omnihive.serverSettings;
+                        appSettings = global.omnihive.appSettings;
                     }
                 }
 
                 this.sendSuccessToSocket(AdminEventType.ConfigRequest, socket, {
-                    config: serverSettings,
+                    config: appSettings,
+                    systemEnvironmentVariables: global.omnihive.appSettings.environmentVariables.filter(
+                        (variable: EnvironmentVariable) => variable.isSystem
+                    ),
                 });
             });
 
             // Admin Event : Config Save
-            socket.on(AdminEventType.ConfigSaveRequest, async (message: AdminRequest<{ config: ServerSettings }>) => {
+            socket.on(AdminEventType.ConfigSaveRequest, async (message: AdminRequest<{ config: AppSettings }>) => {
                 if (!this.checkRequest(AdminEventType.ConfigSaveRequest, message, socket)) {
                     return;
                 }
 
                 try {
-                    if (!message.data || !message.data.config) {
+                    if (IsHelper.isNullOrUndefined(message.data) || IsHelper.isNullOrUndefined(message.data.config)) {
                         this.sendErrorToSocket(
                             AdminEventType.ConfigSaveRequest,
                             socket,
@@ -173,8 +174,8 @@ export class AdminService {
                         );
                     }
 
-                    const settings: ServerSettings = ObjectHelper.createStrict<ServerSettings>(
-                        ServerSettings,
+                    const settings: AppSettings = ObjectHelper.createStrict<AppSettings>(
+                        AppSettings,
                         message.data?.config
                     );
 
@@ -182,7 +183,7 @@ export class AdminService {
                         HiveWorkerType.Config
                     );
 
-                    if (!configWorker) {
+                    if (IsHelper.isNullOrUndefined(configWorker)) {
                         throw new Error("No config worker detected on server");
                     }
 
@@ -216,7 +217,7 @@ export class AdminService {
                 this.logWorker?.write(OmniHiveLogLevel.Info, "Broadcasting Restart...");
 
                 setTimeout(() => {
-                    if (this.ioEmitter && global.omnihive.bootLoaderSettings.baseSettings.clusterEnable === true) {
+                    if (!IsHelper.isNullOrUndefined(this.ioEmitter) && clusterEnabled) {
                         this.ioEmitter.serverSideEmit(AdminEventType.ServerResetRequest, message);
                         return;
                     }
@@ -247,7 +248,7 @@ export class AdminService {
                     return;
                 }
 
-                socket.join(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${AdminRoomType.Log}`);
+                socket.join(`${serverGroupId}-${AdminRoomType.Log}`);
                 this.sendSuccessToSocket(AdminEventType.StartLogRequest, socket, { verified: true });
             });
 
@@ -257,7 +258,7 @@ export class AdminService {
                     return;
                 }
 
-                socket.leave(`${global.omnihive.bootLoaderSettings.baseSettings.serverGroupId}-${AdminRoomType.Log}`);
+                socket.leave(`${serverGroupId}-${AdminRoomType.Log}`);
                 this.sendSuccessToSocket(AdminEventType.StopLogRequest, socket, { verified: true });
             });
 
@@ -273,25 +274,22 @@ export class AdminService {
             });
         });
 
-        this.logWorker?.write(
-            OmniHiveLogLevel.Info,
-            `Admin server listening on port ${global.omnihive.bootLoaderSettings.baseSettings.adminPortNumber}...`
-        );
+        this.logWorker?.write(OmniHiveLogLevel.Info, `Admin server listening on port ${adminPortNumber}...`);
     };
 
     private checkRequest = (adminEvent: AdminEventType, request: AdminRequest, socket?: socketio.Socket): boolean => {
         if (
-            StringHelper.isNullOrWhiteSpace(request.serverGroupId) ||
-            request.serverGroupId !== global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
+            IsHelper.isEmptyStringOrWhitespace(request.serverGroupId) ||
+            request.serverGroupId !== global.omnihive.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID")
         ) {
             return false;
         }
 
         if (
-            !StringHelper.isNullOrWhiteSpace(request.adminPassword) &&
-            !StringHelper.isNullOrWhiteSpace(request.serverGroupId) &&
-            request.adminPassword === global.omnihive.bootLoaderSettings.baseSettings.adminPassword &&
-            request.serverGroupId === global.omnihive.bootLoaderSettings.baseSettings.serverGroupId
+            !IsHelper.isEmptyStringOrWhitespace(request.adminPassword) &&
+            !IsHelper.isEmptyStringOrWhitespace(request.serverGroupId) &&
+            request.adminPassword === global.omnihive.getEnvironmentVariable<string>("OH_ADMIN_PASSWORD") &&
+            request.serverGroupId === global.omnihive.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID")
         ) {
             return true;
         }
@@ -301,7 +299,7 @@ export class AdminService {
             `Admin client register error using password ${request.adminPassword}...`
         );
 
-        if (socket) {
+        if (!IsHelper.isNullOrUndefined(socket)) {
             this.sendErrorToSocket(adminEvent, socket, "Invalid Admin Password");
         }
 
@@ -334,8 +332,14 @@ export class AdminService {
     };
 
     private sendErrorToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, errorMessage: string): void => {
+        const serverGroupId = global.omnihive.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID");
+
+        if (IsHelper.isNullOrUndefined(serverGroupId)) {
+            throw new Error("Server group ID is undefined");
+        }
+
         const adminResponse: AdminResponse = {
-            serverGroupId: global.omnihive.bootLoaderSettings.baseSettings.serverGroupId,
+            serverGroupId,
             requestComplete: false,
             requestError: errorMessage,
         };
@@ -344,8 +348,14 @@ export class AdminService {
     };
 
     private sendSuccessToSocket = (adminEvent: AdminEventType, socket: socketio.Socket, message: any): void => {
+        const serverGroupId = global.omnihive.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID");
+
+        if (IsHelper.isNullOrUndefined(serverGroupId)) {
+            throw new Error("Server group ID is undefined");
+        }
+
         const adminResponse: AdminResponse = {
-            serverGroupId: global.omnihive.bootLoaderSettings.baseSettings.serverGroupId,
+            serverGroupId,
             requestComplete: true,
             requestError: undefined,
             data: message,

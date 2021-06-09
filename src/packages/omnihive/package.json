@@ -39,14 +39,11 @@
         "@withonevision/omnihive-worker-config-yaml": "workspace:*",
         "@withonevision/omnihive-worker-date-dayjs": "workspace:*",
         "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*",
-        "@withonevision/omnihive-worker-feature-local": "workspace:*",
         "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
         "@withonevision/omnihive-worker-function-core": "workspace:*",
         "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*",
         "@withonevision/omnihive-worker-knex-mssql": "workspace:*",
-        "@withonevision/omnihive-worker-knex-mysql": "workspace:*",
         "@withonevision/omnihive-worker-knex-postgres": "workspace:*",
-        "@withonevision/omnihive-worker-knex-sqlite": "workspace:*",
         "@withonevision/omnihive-worker-log-core": "workspace:*",
         "@withonevision/omnihive-worker-server-v1": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",
@@ -101,7 +98,6 @@
             "@withonevision/omnihive-worker-config-postgres": "workspace:*",
             "@withonevision/omnihive-worker-config-sqlite": "workspace:*",
             "@withonevision/omnihive-worker-config-yaml": "workspace:*",
-            "@withonevision/omnihive-worker-feature-local": "workspace:*",
             "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
             "@withonevision/omnihive-worker-function-core": "workspace:*",
             "@withonevision/omnihive-worker-log-core": "workspace:*",
@@ -129,29 +125,115 @@
         },
         "bootWorkers": [
             {
-                "name": "ohBootLogWorker",
+                "name": "__ohBootLogWorker",
                 "type": "log",
                 "package": "@withonevision/omnihive-worker-log-core",
-                "version": "",
+                "version": "workspace:*",
                 "importPath": "@withonevision/omnihive-worker-log-core/index",
                 "default": false,
                 "enabled": true,
                 "metadata": {}
             }
         ],
-        "coreWorkers": [
+        "configWorkers": [
             {
-                "name": "ohreqFeatureWorker",
-                "type": "feature",
-                "package": "@withonevision/omnihive-worker-feature-local",
+                "name": "__ohConfigJsonWorker",
+                "type": "config",
+                "package": "@withonevision/omnihive-worker-config-json",
                 "version": "workspace:*",
-                "importPath": "@withonevision/omnihive-worker-feature-local/index",
+                "importPath": "@withonevision/omnihive-worker-config-json/index",
                 "default": false,
                 "enabled": true,
-                "metadata": {}
+                "metadata": {
+                    "configPath": "${OH_CONFIG_FILE_PATH}"
+                }
             },
             {
-                "name": "ohreqFileSystemWorker",
+                "name": "__ohConfigMssqlWorker",
+                "type": "config",
+                "package": "@withonevision/omnihive-worker-config-mssql",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-config-mssql/index",
+                "default": false,
+                "enabled": true,
+                "metadata": {
+                    "configName": "${OH_CONFIG_DB_CONFIG_NAME}",
+                    "databaseName": "${OH_CONFIG_DB_DATABASE_NAME}",
+                    "password": "${OH_CONFIG_DB_PASSWORD}",
+                    "requireSsl": "${OH_CONFIG_DB_SSL_REQUIRE}",
+                    "serverAddress": "${OH_CONFIG_DB_SERVER_ADDRESS}",
+                    "serverPort": "${OH_CONFIG_DB_SERVER_PORT}",
+                    "sslCertPath": "${OH_CONFIG_DB_SSL_CERT_PATH}",
+                    "userName": "${OH_CONFIG_DB_USER_NAME}"
+                }
+            },
+            {
+                "name": "__ohConfigMysqlWorker",
+                "type": "config",
+                "package": "@withonevision/omnihive-worker-config-mysql",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-config-mysql/index",
+                "default": false,
+                "enabled": true,
+                "metadata": {
+                    "configName": "${OH_CONFIG_DB_CONFIG_NAME}",
+                    "databaseName": "${OH_CONFIG_DB_DATABASE_NAME}",
+                    "password": "${OH_CONFIG_DB_PASSWORD}",
+                    "requireSsl": "${OH_CONFIG_DB_SSL_REQUIRE}",
+                    "serverAddress": "${OH_CONFIG_DB_SERVER_ADDRESS}",
+                    "serverPort": "${OH_CONFIG_DB_SERVER_PORT}",
+                    "sslCertPath": "${OH_CONFIG_DB_SSL_CERT_PATH}",
+                    "userName": "${OH_CONFIG_DB_USER_NAME}"
+                }
+            },
+            {
+                "name": "__ohConfigPostgresWorker",
+                "type": "config",
+                "package": "@withonevision/omnihive-worker-config-postgres",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-config-postgres/index",
+                "default": false,
+                "enabled": true,
+                "metadata": {
+                    "configName": "${OH_CONFIG_DB_CONFIG_NAME}",
+                    "databaseName": "${OH_CONFIG_DB_DATABASE_NAME}",
+                    "password": "${OH_CONFIG_DB_PASSWORD}",
+                    "requireSsl": "${OH_CONFIG_DB_SSL_REQUIRE}",
+                    "serverAddress": "${OH_CONFIG_DB_SERVER_ADDRESS}",
+                    "serverPort": "${OH_CONFIG_DB_SERVER_PORT}",
+                    "sslCertPath": "${OH_CONFIG_DB_SSL_CERT_PATH}",
+                    "userName": "${OH_CONFIG_DB_USER_NAME}"
+                }
+            },
+            {
+                "name": "__ohConfigSqliteWorker",
+                "type": "config",
+                "package": "@withonevision/omnihive-worker-config-sqlite",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-config-sqlite/index",
+                "default": false,
+                "enabled": true,
+                "metadata": {
+                    "configName": "${OH_CONFIG_DB_CONFIG_NAME}",
+                    "filename": "${OH_CONFIG_DB_FILE_PATH}"
+                }
+            },
+            {
+                "name": "__ohConfigYamlWorker",
+                "type": "config",
+                "package": "@withonevision/omnihive-worker-config-yaml",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-config-yaml/index",
+                "default": false,
+                "enabled": true,
+                "metadata": {
+                    "configPath": "${OH_CONFIG_FILE_PATH}"
+                }
+            }
+        ],
+        "coreWorkers": [
+            {
+                "name": "__ohCoreFileSystemWorker",
                 "type": "fileSystem",
                 "package": "@withonevision/omnihive-worker-filesystem-fsextra",
                 "version": "workspace:*",
@@ -161,7 +243,7 @@
                 "metadata": {}
             },
             {
-                "name": "ohreqRestSystemAccessToken",
+                "name": "__ohCoreRestSystemAccessToken",
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
@@ -174,7 +256,7 @@
                 }
             },
             {
-                "name": "ohreqRestSystemRegister",
+                "name": "__ohCoreRestSystemRegister",
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
@@ -187,7 +269,7 @@
                 }
             },
             {
-                "name": "ohreqRestSystemRefresh",
+                "name": "__ohCoreRestSystemRefresh",
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
@@ -200,7 +282,7 @@
                 }
             },
             {
-                "name": "ohreqRestSystemStatus",
+                "name": "__ohCoreRestSystemStatus",
                 "type": "restEndpointFunction",
                 "package": "@withonevision/omnihive-worker-function-core",
                 "version": "workspace:*",
@@ -215,7 +297,7 @@
         ],
         "defaultWorkers": [
             {
-                "name": "defaultBuildWorker",
+                "name": "__ohDefaultBuildWorker",
                 "type": "graphBuilder",
                 "package": "@withonevision/omnihive-worker-graphql-builder-v1",
                 "version": "workspace:*",
@@ -230,7 +312,7 @@
                 }
             },
             {
-                "name": "defaultDateWorker",
+                "name": "__ohDefaultDateWorker",
                 "type": "date",
                 "package": "@withonevision/omnihive-worker-date-dayjs",
                 "version": "workspace:*",
@@ -242,7 +324,7 @@
                 }
             },
             {
-                "name": "defaultEncryptionWorker",
+                "name": "__ohDefaultEncryptionWorker",
                 "type": "encryption",
                 "package": "@withonevision/omnihive-worker-encryption-nodeforge",
                 "version": "workspace:*",
@@ -250,11 +332,11 @@
                 "default": true,
                 "enabled": true,
                 "metadata": {
-                    "encryptionKey": "${ohEncryptionKey}"
+                    "encryptionKey": "${OH_SECURITY_ENCRYPTION_KEY}"
                 }
             },
             {
-                "name": "defaultServerWorker",
+                "name": "__ohDefaultServerWorker",
                 "type": "server",
                 "package": "@withonevision/omnihive-worker-server-v1",
                 "version": "workspace:*",
@@ -269,7 +351,7 @@
                 }
             },
             {
-                "name": "defaultTokenWorker",
+                "name": "__ohDefaultTokenWorker",
                 "type": "token",
                 "package": "@withonevision/omnihive-worker-token-jsonwebtoken",
                 "version": "workspace:*",
@@ -277,10 +359,10 @@
                 "default": true,
                 "enabled": true,
                 "metadata": {
-                    "audience": "${ohTokenAudience}",
-                    "tokenSecret": "${ohTokenSecret}",
-                    "expiresIn": "${ohTokenExpiresIn}",
-                    "hashAlgorithm": "${ohTokenHashAlgorithm}",
+                    "audience": "${OH_SECURITY_TOKEN_AUDIENCE}",
+                    "tokenSecret": "${OH_SECURITY_TOKEN_SECRET}",
+                    "expiresIn": "${OH_SECURITY_TOKEN_EXPIRES_IN}",
+                    "hashAlgorithm": "${OH_SECURITY_TOKEN_HASH_ALGORITHM}",
                     "verifyOn": false
                 }
             }

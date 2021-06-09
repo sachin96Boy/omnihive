@@ -9,6 +9,7 @@ import { Listr } from "listr2";
 import execa from "execa";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import tar from "tar";
+import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
 
 // Master build process
 const build = async (): Promise<void> => {
@@ -217,7 +218,7 @@ const publish = (directory: string, distTag: string) => {
 
     let publishString: string = "npm publish --access public";
 
-    if (distTag !== "" && distTag !== "latest") {
+    if (!IsHelper.isEmptyStringOrWhitespace(distTag) && distTag !== "latest") {
         publishString = `${publishString} --tag ${distTag}`;
     }
 
@@ -244,13 +245,17 @@ const removeNonCorePackagesFromMainPackageJson = async () => {
         }
 
         if (removeLoadedPackage) {
-            if (packageJson && packageJson.packageJson && packageJson.packageJson.dependencies) {
+            if (
+                !IsHelper.isNullOrUndefined(packageJson) &&
+                !IsHelper.isNullOrUndefined(packageJson.packageJson) &&
+                !IsHelper.isNullOrUndefined(packageJson.packageJson.dependencies)
+            ) {
                 delete packageJson.packageJson.dependencies[loadedPackage[0]];
             }
         }
     }
 
-    if (packageJson && packageJson.packageJson) {
+    if (!IsHelper.isNullOrUndefined(packageJson) && !IsHelper.isNullOrUndefined(packageJson.packageJson)) {
         await writePkg(path.join(`.`, `dist`, `packages`, `omnihive`), packageJson.packageJson);
     }
 };
@@ -272,7 +277,7 @@ const updateVersion = async () => {
         cwd: path.join(`.`, `dist`, `packages`, `omnihive`),
     });
 
-    if (!packageJson) {
+    if (IsHelper.isNullOrUndefined(packageJson)) {
         throw new Error("Update version cannot find the main package.json");
     }
 

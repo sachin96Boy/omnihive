@@ -9,15 +9,17 @@ import { ParseDelete } from "./ParseDelete";
 import { ParseInsert } from "./ParseInsert";
 import { ParseProcedure } from "./ParseProcedure";
 import { ParseUpdate } from "./ParseUpdate";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 export class ParseMaster {
     public parseAstQuery = async (
         workerName: string,
+        args: any,
         resolveInfo: GraphQLResolveInfo,
         omniHiveContext: GraphContext
     ): Promise<any> => {
         const parser: ParseAstQuery = new ParseAstQuery();
-        return await AwaitHelper.execute(parser.parse(workerName, resolveInfo, omniHiveContext));
+        return await AwaitHelper.execute(parser.parse(workerName, args, resolveInfo, omniHiveContext));
     };
 
     public parseCustomSql = async (
@@ -59,7 +61,7 @@ export class ParseMaster {
         );
         let tableSchema: TableSchema[] = [];
 
-        if (schema) {
+        if (!IsHelper.isNullOrUndefined(schema)) {
             tableSchema = schema.tables;
         }
         tableSchema = tableSchema.filter((tableSchema: TableSchema) => tableSchema.tableName === tableName);
@@ -69,7 +71,7 @@ export class ParseMaster {
             Object.keys(results[i]).forEach((x) => {
                 const column = tableSchema.find((y) => y.columnNameDatabase === x);
 
-                if (column) {
+                if (!IsHelper.isNullOrUndefined(column)) {
                     convertedResults[column.columnNameEntity] = results[i][x];
                 } else {
                     convertedResults[x] = results[i][x];

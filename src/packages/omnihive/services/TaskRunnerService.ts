@@ -5,31 +5,32 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLog
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import fse from "fs-extra";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { serializeError } from "serialize-error";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { CommonService } from "./CommonService";
+import { CommandLineArgs } from "../models/CommandLineArgs";
+import yaml from "yaml";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 export class TaskRunnerService {
-    public run = async (worker: string, args: string): Promise<void> => {
-        // Run basic app service
-        const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
-        const appService: CommonService = new CommonService();
-
-        await AwaitHelper.execute(appService.initOmniHiveApp(pkgJson));
+    public run = async (rootDir: string, commandLineArgs: CommandLineArgs): Promise<void> => {
+        // Run boot and worker loader
+        const commonService: CommonService = new CommonService();
+        await AwaitHelper.execute(commonService.bootLoader(rootDir, commandLineArgs));
+        await AwaitHelper.execute(commonService.workerLoader());
 
         // Get TaskWorker
 
         const taskWorker: RegisteredHiveWorker | undefined = global.omnihive.registeredWorkers.find(
             (rw: RegisteredHiveWorker) =>
-                rw.name === worker && rw.enabled === true && rw.type === HiveWorkerType.TaskFunction
+                rw.name === commandLineArgs.taskRunnerWorker && rw.enabled && rw.type === HiveWorkerType.TaskFunction
         );
 
-        if (!taskWorker) {
+        if (IsHelper.isNullOrUndefined(taskWorker)) {
             this.logError(
-                worker,
+                commandLineArgs.taskRunnerWorker,
                 new Error(
-                    `Task Worker ${worker} was not found in server configuration, is disabled, or is not of the right type`
+                    `Task Worker ${commandLineArgs.taskRunnerWorker} was not found in server configuration, is disabled, or is not of the right type`
                 )
             );
             return;
@@ -38,23 +39,30 @@ export class TaskRunnerService {
         // Set up worker args
         let workerArgs: any = null;
 
-        if (args && args !== "") {
+        if (
+            !IsHelper.isNullOrUndefined(commandLineArgs.taskRunnerArgs) &&
+            !IsHelper.isEmptyStringOrWhitespace(commandLineArgs.taskRunnerArgs)
+        ) {
             try {
-                workerArgs = JSON.parse(fse.readFileSync(args, { encoding: "utf8" }));
+                workerArgs = JSON.parse(fse.readFileSync(commandLineArgs.taskRunnerArgs, { encoding: "utf8" }));
             } catch (err) {
-                this.logError(worker, err);
+                try {
+                    workerArgs = yaml.parse(fse.readFileSync(commandLineArgs.taskRunnerArgs, { encoding: "utf8" }));
+                } catch {
+                    this.logError(commandLineArgs.taskRunnerWorker, err);
+                }
             }
         }
 
         // Try running the worker
         try {
-            if (!(workerArgs === null || workerArgs === undefined)) {
+            if (!IsHelper.isNullOrUndefined(workerArgs)) {
                 await AwaitHelper.execute(taskWorker.instance.execute(workerArgs));
             } else {
                 await AwaitHelper.execute(taskWorker.instance.execute());
             }
         } catch (err) {
-            this.logError(worker, err);
+            this.logError(commandLineArgs.taskRunnerWorker, err);
         }
 
         process.exit();
@@ -63,7 +71,7 @@ export class TaskRunnerService {
     private logError = async (workerName: string, err: Error) => {
         const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
-            "ohBootLogWorker"
+            "__ohBootLogWorker"
         );
 
         logWorker?.write(

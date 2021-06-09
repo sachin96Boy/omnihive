@@ -5,9 +5,9 @@ import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper"
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { ServerSettings } from "@withonevision/omnihive-core/models/ServerSettings";
 import fse from "fs-extra";
 import { serializeError } from "serialize-error";
+import { AppSettings } from "@withonevision/omnihive-core/models/AppSettings";
 import yaml from "yaml";
 
 export class JsonConfigWorkerMetadata {
@@ -39,11 +39,11 @@ export default class JsonConfigWorker extends HiveWorkerBase implements IConfigW
         }
     }
 
-    public get = async (): Promise<ServerSettings> => {
-        return ObjectHelper.create<ServerSettings>(ServerSettings, yaml.parse(this.readFile(this.configPath)));
+    public get = async (): Promise<AppSettings> => {
+        return ObjectHelper.create<AppSettings>(AppSettings, yaml.parse(this.readFile(this.configPath)));
     };
 
-    public set = async (settings: ServerSettings): Promise<boolean> => {
+    public set = async (settings: AppSettings): Promise<boolean> => {
         this.writeYamlToFile(this.configPath, settings);
         return true;
     };

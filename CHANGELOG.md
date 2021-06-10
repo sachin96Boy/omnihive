@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 6.2.30 (2021-06-10)
+
+
+### Bug Fixes
+
+* **omnihive:** fix boot loading error ([af21f25](https://github.com/WithOneVisionTechnologies/omnihive/commit/af21f252ae1602b36a7f0b1dbec40b5ee941d3b0))
+
 ### 6.2.29 (2021-06-09)
 
 ### 6.2.28 (2021-05-29)

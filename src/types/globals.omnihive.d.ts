@@ -1,16 +1,17 @@
-import { ServerStatus } from "src/packages/omnihive-core/enums/ServerStatus";
-import { RegisteredUrl } from "src/packages/omnihive-core/models/RegisteredUrl";
 import express from "express";
 import { Server } from "http";
-import { ConnectionSchema } from "src/packages/omnihive-core/models/ConnectionSchema";
-import { RegisteredHiveWorker } from "src/packages/omnihive-core/models/RegisteredHiveWorker";
-import { AppSettings } from "src/packages/omnihive-core/models/AppSettings";
-import { IHiveWorker } from "src/packages/omnihive-core/interfaces/IHiveWorker";
-import { CommandLineArgs } from "src/packages/omnihive/models/CommandLineArgs";
-import { AdminRoomType } from "src/packages/omnihive-core/enums/AdminRoomType";
-import { AdminEventType } from "src/packages/omnihive-core/enums/AdminEventType";
-import { HiveWorker } from "src/packages/omnihive-core/models/HiveWorker";
 import socketio from "socket.io";
+import { AdminEventType } from "src/packages/omnihive-core/enums/AdminEventType";
+import { AdminRoomType } from "src/packages/omnihive-core/enums/AdminRoomType";
+import { RegisteredHiveWorkerSection } from "src/packages/omnihive-core/enums/RegisteredHiveWorkerSection";
+import { ServerStatus } from "src/packages/omnihive-core/enums/ServerStatus";
+import { IHiveWorker } from "src/packages/omnihive-core/interfaces/IHiveWorker";
+import { AppSettings } from "src/packages/omnihive-core/models/AppSettings";
+import { ConnectionSchema } from "src/packages/omnihive-core/models/ConnectionSchema";
+import { HiveWorker } from "src/packages/omnihive-core/models/HiveWorker";
+import { RegisteredHiveWorker } from "src/packages/omnihive-core/models/RegisteredHiveWorker";
+import { RegisteredUrl } from "src/packages/omnihive-core/models/RegisteredUrl";
+import { CommandLineArgs } from "src/packages/omnihive/models/CommandLineArgs";
 
 declare global {
     declare namespace NodeJS {
@@ -28,7 +29,7 @@ declare global {
                 getWorker: <T extends IHiveWorker | undefined>(type: string, name?: string) => T | undefined;
                 initWorkers: (appSettings: AppSettings) => Promise<void>;
                 ohDirName: string;
-                pushWorker: (hiveWorker: HiveWorker, isBoot: boolean = false, isCore: boolean = false) => Promise<void>;
+                pushWorker: (hiveWorker: HiveWorker, section?: RegisteredHiveWorkerSection) => Promise<void>;
                 registeredSchemas: ConnectionSchema[];
                 registeredUrls: RegisteredUrl[];
                 registeredWorkers: RegisteredHiveWorker[];

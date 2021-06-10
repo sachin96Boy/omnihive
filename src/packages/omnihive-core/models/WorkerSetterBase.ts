@@ -1,16 +1,17 @@
 import { serializeError } from "serialize-error";
-import { AwaitHelper } from "../helpers/AwaitHelper";
-import { IHiveWorker } from "../interfaces/IHiveWorker";
-import { HiveWorker } from "./HiveWorker";
-import { RegisteredHiveWorker } from "./RegisteredHiveWorker";
-import { AppSettings } from "./AppSettings";
-import { WorkerGetterBase } from "./WorkerGetterBase";
+import { EnvironmentVariableType } from "../enums/EnvironmentVariableType";
 import { HiveWorkerType } from "../enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "../enums/OmniHiveLogLevel";
-import { ILogWorker } from "../interfaces/ILogWorker";
-import { EnvironmentVariable } from "./EnvironmentVariable";
-import { EnvironmentVariableType } from "../enums/EnvironmentVariableType";
+import { RegisteredHiveWorkerSection } from "../enums/RegisteredHiveWorkerSection";
+import { AwaitHelper } from "../helpers/AwaitHelper";
 import { IsHelper } from "../helpers/IsHelper";
+import { IHiveWorker } from "../interfaces/IHiveWorker";
+import { ILogWorker } from "../interfaces/ILogWorker";
+import { AppSettings } from "./AppSettings";
+import { EnvironmentVariable } from "./EnvironmentVariable";
+import { HiveWorker } from "./HiveWorker";
+import { RegisteredHiveWorker } from "./RegisteredHiveWorker";
+import { WorkerGetterBase } from "./WorkerGetterBase";
 
 export abstract class WorkerSetterBase extends WorkerGetterBase {
     constructor() {
@@ -63,11 +64,15 @@ export abstract class WorkerSetterBase extends WorkerGetterBase {
         }
     }
 
-    public async pushWorker(hiveWorker: HiveWorker, isBoot: boolean = false, isCore: boolean = false): Promise<void> {
+    public async pushWorker(hiveWorker: HiveWorker, section?: RegisteredHiveWorkerSection): Promise<void> {
         const logWorker: ILogWorker | undefined = this.getWorker(HiveWorkerType.Log);
 
         if (!hiveWorker.enabled) {
             return;
+        }
+
+        if (IsHelper.isNullOrUndefined(section)) {
+            section = RegisteredHiveWorkerSection.User;
         }
 
         if (
@@ -143,8 +148,7 @@ export abstract class WorkerSetterBase extends WorkerGetterBase {
             const registeredWorker: RegisteredHiveWorker = {
                 ...hiveWorker,
                 instance: newWorkerInstance,
-                isCore,
-                isBoot,
+                section,
             };
             this.registeredWorkers.push(registeredWorker);
         }

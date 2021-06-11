@@ -1,6 +1,6 @@
 {
     "name": "omnihive",
-    "version": "6.2.28",
+    "version": "6.2.30",
     "description": "OmniHive Server",
     "license": "MIT",
     "author": {
@@ -125,6 +125,16 @@
         },
         "bootWorkers": [
             {
+                "name": "__ohBootFileSystemWorker",
+                "type": "fileSystem",
+                "package": "@withonevision/omnihive-worker-filesystem-fsextra",
+                "version": "workspace:*",
+                "importPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
+                "default": false,
+                "enabled": true,
+                "metadata": {}
+            },
+            {
                 "name": "__ohBootLogWorker",
                 "type": "log",
                 "package": "@withonevision/omnihive-worker-log-core",
@@ -232,16 +242,6 @@
             }
         ],
         "coreWorkers": [
-            {
-                "name": "__ohCoreFileSystemWorker",
-                "type": "fileSystem",
-                "package": "@withonevision/omnihive-worker-filesystem-fsextra",
-                "version": "workspace:*",
-                "importPath": "@withonevision/omnihive-worker-filesystem-fsextra/index",
-                "default": false,
-                "enabled": true,
-                "metadata": {}
-            },
             {
                 "name": "__ohCoreRestSystemAccessToken",
                 "type": "restEndpointFunction",

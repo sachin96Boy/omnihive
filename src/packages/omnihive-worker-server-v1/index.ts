@@ -2,6 +2,7 @@
 
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
 import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
@@ -432,7 +433,9 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 const restWorkers = this.registeredWorkers.filter(
                     (rw: RegisteredHiveWorker) =>
-                        rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled && !rw.isCore
+                        rw.type === HiveWorkerType.RestEndpointFunction &&
+                        rw.section === RegisteredHiveWorkerSection.User &&
+                        rw.enabled
                 );
 
                 restWorkers.forEach((rw: RegisteredHiveWorker) => {

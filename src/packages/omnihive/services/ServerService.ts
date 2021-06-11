@@ -4,9 +4,11 @@ import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventTyp
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
 import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
 import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
@@ -21,7 +23,6 @@ import helmet from "helmet";
 import http, { Server } from "http";
 import path from "path";
 import { serializeError } from "serialize-error";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import swaggerUi from "swagger-ui-express";
 import { CommandLineArgs } from "../models/CommandLineArgs";
 import { AdminService } from "./AdminService";
@@ -261,7 +262,10 @@ export class ServerService {
 
         global.omnihive.registeredWorkers
             .filter(
-                (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.RestEndpointFunction && rw.enabled && rw.isCore
+                (rw: RegisteredHiveWorker) =>
+                    rw.type === HiveWorkerType.RestEndpointFunction &&
+                    rw.section === RegisteredHiveWorkerSection.Core &&
+                    rw.enabled
             )
             .forEach((rw: RegisteredHiveWorker) => {
                 let workerMetaData: HiveWorkerMetadataRestFunction;

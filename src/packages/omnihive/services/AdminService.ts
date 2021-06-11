@@ -7,6 +7,7 @@ import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType"
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
@@ -14,11 +15,10 @@ import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWork
 import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
 import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
 import { AppSettings } from "@withonevision/omnihive-core/models/AppSettings";
+import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
 import ipc from "node-ipc";
 import redis from "redis";
 import * as socketio from "socket.io";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
 import { v4 as uuidv4 } from "uuid";
 
 let ipcId: string = uuidv4();

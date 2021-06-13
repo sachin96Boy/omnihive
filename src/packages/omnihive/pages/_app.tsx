@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import ms from "ms";
 import App, { AppContext, AppProps } from "next/app";
+import Head from "next/head";
 import React from "react";
 import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
 import store2 from "store2";
@@ -49,6 +50,9 @@ const OmniHiveAdmin = ({ Component, pageProps }: AppProps): React.ReactElement =
 
     return (
         <>
+            <Head>
+                <link rel="icon" type="image/png" href="/images/favicon.png" />
+            </Head>
             {initialized && (
                 <>
                     {isLoggedIn && <Component {...pageProps} />}

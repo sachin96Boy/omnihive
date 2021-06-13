@@ -16,7 +16,6 @@ import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWo
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
-import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -29,16 +28,22 @@ import { AdminService } from "./AdminService";
 import { CommonService } from "./CommonService";
 
 export class ServerService {
+    private webRootUrl: string = "";
+    private webPortNumber: number = 3001;
+
     public run = async (rootDir: string, commandLineArgs: CommandLineArgs): Promise<void> => {
         const commonService: CommonService = new CommonService();
 
         //Run environment loader
         await AwaitHelper.execute(commonService.bootLoader(rootDir, commandLineArgs));
 
-        const webRootUrl = global.omnihive.getEnvironmentVariable<string>("OH_WEB_ROOT_URL");
-        const webPortNumber = global.omnihive.getEnvironmentVariable<number>("OH_WEB_PORT_NUMBER");
+        this.webRootUrl = global.omnihive.getEnvironmentVariable<string>("OH_WEB_ROOT_URL") ?? "";
+        this.webPortNumber = global.omnihive.getEnvironmentVariable<number>("OH_WEB_PORT_NUMBER") ?? 3001;
 
-        if (IsHelper.isNullOrUndefined(webRootUrl) || IsHelper.isNullOrUndefined(webPortNumber)) {
+        if (
+            IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(this.webRootUrl) ||
+            IsHelper.isNullOrUndefined(this.webPortNumber)
+        ) {
             throw new Error("Web root url or port number is undefined");
         }
 
@@ -77,26 +82,22 @@ export class ServerService {
             }
 
             app.get("/", (_req, res) => {
-                res.status(200).render("pages/index", {
-                    rootUrl: webRootUrl,
-                    registeredUrls: global.omnihive.registeredUrls,
+                res.status(200).render("index", {
+                    rootUrl: this.webRootUrl,
                     status: global.omnihive.serverStatus,
-                    error: global.omnihive.serverError,
                 });
             });
 
             app.use((_req, res) => {
-                return res.status(404).render("pages/404", {
-                    rootUrl: webRootUrl,
+                return res.status(404).render("404", {
+                    rootUrl: this.webRootUrl,
                 });
             });
 
-            app.use((err: any, _req: any, res: any, _next: any) => {
-                return res.status(500).render("pages/500", {
-                    rootUrl: webRootUrl,
-                    registeredUrls: global.omnihive.registeredUrls,
+            app.use((_err: any, _req: any, res: any, _next: any) => {
+                return res.status(500).render("500", {
+                    rootUrl: this.webRootUrl,
                     status: global.omnihive.serverStatus,
-                    error: serializeError(err),
                 });
             });
 
@@ -110,10 +111,10 @@ export class ServerService {
     };
 
     public changeServerStatus = async (serverStatus: ServerStatus, error?: Error): Promise<void> => {
-        const webRootUrl = global.omnihive.getEnvironmentVariable<string>("OH_WEB_ROOT_URL");
-        const webPortNumber = global.omnihive.getEnvironmentVariable<number>("OH_WEB_PORT_NUMBER");
-
-        if (IsHelper.isNullOrUndefined(webRootUrl) || IsHelper.isNullOrUndefined(webPortNumber)) {
+        if (
+            IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(this.webRootUrl) ||
+            IsHelper.isNullOrUndefined(this.webPortNumber)
+        ) {
             throw new Error("Web root url or port number is undefined");
         }
 
@@ -136,8 +137,8 @@ export class ServerService {
             const app: express.Express = await AwaitHelper.execute(this.getCleanAppServer());
 
             app.get("/", (_req, res) => {
-                return res.status(200).render("pages/index", {
-                    rootUrl: webRootUrl,
+                return res.status(200).render("index", {
+                    rootUrl: this.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: global.omnihive.serverError,
@@ -145,12 +146,12 @@ export class ServerService {
             });
 
             app.use((_req, res) => {
-                return res.status(404).render("404", { rootUrl: webRootUrl });
+                return res.status(404).render("404", { rootUrl: this.webRootUrl });
             });
 
             app.use((err: any, _req: any, res: any, _next: any) => {
-                return res.status(500).render("pages/500", {
-                    rootUrl: webRootUrl,
+                return res.status(500).render("500", {
+                    rootUrl: this.webRootUrl,
                     registeredUrls: global.omnihive.registeredUrls,
                     status: global.omnihive.serverStatus,
                     error: serializeError(err),
@@ -167,10 +168,10 @@ export class ServerService {
         global.omnihive.webServer = undefined;
         global.omnihive.webServer = server;
 
-        global.omnihive.webServer?.listen(webPortNumber, () => {
+        global.omnihive.webServer?.listen(this.webPortNumber, () => {
             logWorker?.write(
                 OmniHiveLogLevel.Info,
-                `New Server Listening on process ${process.pid} using port ${webPortNumber}`
+                `New Server Listening on process ${process.pid} using port ${this.webPortNumber}`
             );
         });
 
@@ -205,7 +206,10 @@ export class ServerService {
         const webRootUrl = global.omnihive.getEnvironmentVariable<string>("OH_WEB_ROOT_URL");
         const webPortNumber = global.omnihive.getEnvironmentVariable<number>("OH_WEB_PORT_NUMBER");
 
-        if (IsHelper.isNullOrUndefined(webRootUrl) || IsHelper.isNullOrUndefined(webPortNumber)) {
+        if (
+            IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(webRootUrl) ||
+            IsHelper.isNullOrUndefined(webPortNumber)
+        ) {
             throw new Error("Web root url or port number is undefined");
         }
 
@@ -232,14 +236,14 @@ export class ServerService {
         app.use(helmet.referrerPolicy());
         app.use(helmet.xssFilter());
 
-        app.use(bodyParser.urlencoded({ extended: true }));
-        app.use(bodyParser.json());
+        app.use(express.urlencoded({ extended: true }));
+        app.use(express.json());
         app.use(cors());
 
         // Setup View Engine
         app.set("view engine", "ejs");
-        app.set("views", path.join(global.omnihive.ohDirName, `app`, `views`));
-        app.use("/public", express.static(path.join(global.omnihive.ohDirName, `app`, `public`)));
+        app.set("views", path.join(global.omnihive.ohDirName, `pages`));
+        app.use("/public", express.static(path.join(global.omnihive.ohDirName, `public`)));
 
         // Register system REST endpoints
 
@@ -306,7 +310,7 @@ export class ServerService {
                                 res.status(workerResponse.status).send(true);
                             }
                         } catch (e) {
-                            return res.status(500).render("pages/500", {
+                            return res.status(500).render("500", {
                                 rootUrl: webRootUrl,
                                 error: serializeError(e),
                             });

@@ -1,4 +1,4 @@
 export enum ServerRunnerType {
-    JavaScript = "javascript",
-    TypeScript = "typescript",
+    Production = "production",
+    Debug = "debug",
 }

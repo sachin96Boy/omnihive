@@ -53,7 +53,10 @@ export class GlobalObject extends WorkerSetterBase {
         const adminPassword = this.getEnvironmentVariable<string>("OH_ADMIN_PASSWORD");
         const serverGroupId = this.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID");
 
-        if (IsHelper.isNullOrUndefined(adminPassword) || IsHelper.isNullOrUndefined(serverGroupId)) {
+        if (
+            IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(adminPassword) ||
+            IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(serverGroupId)
+        ) {
             throw new Error("Admin password or server group ID is undefined");
         }
 
@@ -73,7 +76,7 @@ export class GlobalObject extends WorkerSetterBase {
 
         const serverGroupId = this.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID");
 
-        if (IsHelper.isNullOrUndefined(serverGroupId)) {
+        if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(serverGroupId)) {
             throw new Error("Server group ID is undefined");
         }
 

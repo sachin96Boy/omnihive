@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 6.2.31 (2021-06-14)
+
+
+### Code Maintenance
+
+* removing font awesome ([3e5e93b](https://github.com/WithOneVisionTechnologies/omnihive/commit/3e5e93bdab5e04bac997f7a9257c59f51defa1a9))
+
 ### 6.2.30 (2021-06-10)
 
 

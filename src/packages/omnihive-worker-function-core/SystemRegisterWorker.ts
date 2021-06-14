@@ -112,10 +112,7 @@ export default class SystemRegisterWorker extends HiveWorkerBase implements IRes
             body
         );
 
-        if (
-            IsHelper.isNullOrUndefined(bodyStructured.adminPassword) ||
-            IsHelper.isEmptyStringOrWhitespace(bodyStructured.adminPassword)
-        ) {
+        if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(bodyStructured.adminPassword)) {
             throw new Error(`Request Denied`);
         }
 

@@ -160,6 +160,7 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
 
 // Listr task helpers
 const buildRepo = () => {
+    execa.commandSync("yarn run build:webAdmin", { cwd: path.join(`.`, `src`, `packages`, `omnihive`) });
     execa.commandSync("npx tsc -b --force", { cwd: path.join(`.`) });
 };
 
@@ -195,6 +196,10 @@ const getPublishFolders = () => {
 const getRequiredFiles = () => {
     return [
         path.join(`omnihive`, `.npmignore`),
+        path.join(`omnihive`, `next-env.d.ts`),
+        path.join(`omnihive`, `next.config.js`),
+        path.join(`omnihive`, `postcss.config.js`),
+        path.join(`omnihive`, `tailwind.config.js`),
         path.join(`omnihive-worker-knex-mssql`, `.npmignore`),
         path.join(`omnihive-worker-knex-mssql`, `defaultProcFunctions.sql`),
         path.join(`omnihive-worker-knex-mssql`, `defaultTables.sql`),
@@ -210,7 +215,7 @@ const getRequiredFiles = () => {
 };
 
 const getRequiredFolders = () => {
-    return [path.join(`omnihive`, `app`, `public`), path.join(`omnihive`, `app`, `views`)];
+    return [path.join(`omnihive`, `.next`), path.join(`omnihive`, `public`)];
 };
 
 const publish = (directory: string, distTag: string) => {

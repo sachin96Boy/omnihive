@@ -75,6 +75,10 @@ export class IsHelper {
         return IsHelper.isNull(value) || IsHelper.isUndefined(value);
     };
 
+    public static isNullOrUndefinedOrEmptyStringOrWhitespace = (value: unknown): value is null | undefined | "" => {
+        return IsHelper.isNullOrUndefined(value) || IsHelper.isEmptyStringOrWhitespace(value);
+    };
+
     public static isObject = (value: unknown): value is object => {
         return !IsHelper.isNull(value) && (typeof value === "object" || IsHelper.isFunction(value));
     };

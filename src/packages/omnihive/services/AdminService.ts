@@ -16,6 +16,10 @@ import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
 import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
 import { AppSettings } from "@withonevision/omnihive-core/models/AppSettings";
 import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
+import cors from "cors";
+import express from "express";
+import helmet from "helmet";
+import next from "next";
 import ipc from "node-ipc";
 import redis from "redis";
 import * as socketio from "socket.io";
@@ -30,42 +34,52 @@ export class AdminService {
     private logWorker!: ILogWorker | undefined;
     private ioEmitter!: Emitter | undefined;
 
-    public run = async () => {
-        const adminPortNumber = global.omnihive.getEnvironmentVariable<number>("OH_ADMIN_PORT_NUMBER");
-        const serverGroupId = global.omnihive.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID");
-        const clusterEnabled = global.omnihive.getEnvironmentVariable<boolean>("OH_CLUSTER_ENABLE");
-        const clusterConnectionString = global.omnihive.getEnvironmentVariable<string>(
-            "OH_CLUSTER_REDIS_CONNECTION_STRING"
-        );
+    private adminSocketPortNumber =
+        global.omnihive.getEnvironmentVariable<number>("OH_ADMIN_SOCKET_PORT_NUMBER") ?? 7205;
+    private adminWebPortNumber = global.omnihive.getEnvironmentVariable<number>("OH_ADMIN_WEB_PORT_NUMBER") ?? 7206;
+    private clusterConnectionString = global.omnihive.getEnvironmentVariable<string>(
+        "OH_CLUSTER_REDIS_CONNECTION_STRING"
+    );
+    private clusterEnabled = global.omnihive.getEnvironmentVariable<boolean>("OH_CLUSTER_ENABLE") ?? false;
+    private productionMode = global.omnihive.getEnvironmentVariable<boolean>("OH_PRODUCTION_MODE") ?? true;
+    private serverGroupId = global.omnihive.getEnvironmentVariable<string>("OH_ADMIN_SERVER_GROUP_ID") ?? "";
 
-        if (IsHelper.isNullOrUndefined(serverGroupId) || IsHelper.isNullOrUndefined(adminPortNumber)) {
-            throw new Error("Server group ID or admin port is undefined");
+    public run = async () => {
+        if (
+            IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(this.serverGroupId) ||
+            IsHelper.isNullOrUndefined(this.adminSocketPortNumber) ||
+            IsHelper.isNullOrUndefined(this.adminWebPortNumber)
+        ) {
+            throw new Error("Server group ID or admin ports are undefined");
         }
 
         // Initiate log worker
         this.logWorker = global.omnihive.getWorker<ILogWorker>(HiveWorkerType.Log, "__ohBootLogWorker");
 
-        this.logWorker?.write(OmniHiveLogLevel.Info, `Setting up admin server on port ${adminPortNumber}...`);
+        // Setup Socket Server
 
-        // Start-up admin server
+        this.logWorker?.write(
+            OmniHiveLogLevel.Info,
+            `Setting up admin socket server on port ${this.adminSocketPortNumber}...`
+        );
 
         if (!IsHelper.isNullOrUndefined(global.omnihive.adminServer)) {
-            global.omnihive.adminServer.of(`/${serverGroupId}`).disconnectSockets(true);
+            global.omnihive.adminServer.of(`/${this.serverGroupId}`).disconnectSockets(true);
             global.omnihive.adminServer.close();
         }
 
-        global.omnihive.adminServer = new socketio.Server(adminPortNumber, {
+        global.omnihive.adminServer = new socketio.Server(this.adminSocketPortNumber, {
             cors: {
                 origin: "*",
                 methods: "*",
             },
         });
 
-        const namespace: socketio.Namespace = global.omnihive.adminServer.of(serverGroupId);
+        const namespace: socketio.Namespace = global.omnihive.adminServer.of(this.serverGroupId);
 
         // Enable Redis if necessary
-        if (clusterEnabled && !IsHelper.isNullOrUndefined(clusterConnectionString)) {
-            const pubClient = redis.createClient(clusterConnectionString);
+        if (this.clusterEnabled && !IsHelper.isNullOrUndefined(this.clusterConnectionString)) {
+            const pubClient = redis.createClient(this.clusterConnectionString);
             const subClient = pubClient.duplicate();
             const emitClient = pubClient.duplicate();
 
@@ -92,12 +106,12 @@ export class AdminService {
 
         // Admin Event : Connection
         namespace.on(AdminEventType.Connection, (socket: socketio.Socket) => {
-            socket.join(`${serverGroupId}-${AdminRoomType.Command}`);
+            socket.join(`${this.serverGroupId}-${AdminRoomType.Command}`);
 
             // Socket disconnect clear memory
             socket.on(AdminEventType.Disconnect, () => {
                 socket.removeAllListeners();
-                global.omnihive.adminServer?.of(serverGroupId).sockets.forEach((sck: socketio.Socket) => {
+                global.omnihive.adminServer?.of(this.serverGroupId).sockets.forEach((sck: socketio.Socket) => {
                     if (socket.id === sck.id) sck.disconnect(true);
                 });
             });
@@ -217,7 +231,7 @@ export class AdminService {
                 this.logWorker?.write(OmniHiveLogLevel.Info, "Broadcasting Restart...");
 
                 setTimeout(() => {
-                    if (!IsHelper.isNullOrUndefined(this.ioEmitter) && clusterEnabled) {
+                    if (!IsHelper.isNullOrUndefined(this.ioEmitter) && this.clusterEnabled) {
                         this.ioEmitter.serverSideEmit(AdminEventType.ServerResetRequest, message);
                         return;
                     }
@@ -248,7 +262,7 @@ export class AdminService {
                     return;
                 }
 
-                socket.join(`${serverGroupId}-${AdminRoomType.Log}`);
+                socket.join(`${this.serverGroupId}-${AdminRoomType.Log}`);
                 this.sendSuccessToSocket(AdminEventType.StartLogRequest, socket, { verified: true });
             });
 
@@ -258,7 +272,7 @@ export class AdminService {
                     return;
                 }
 
-                socket.leave(`${serverGroupId}-${AdminRoomType.Log}`);
+                socket.leave(`${this.serverGroupId}-${AdminRoomType.Log}`);
                 this.sendSuccessToSocket(AdminEventType.StopLogRequest, socket, { verified: true });
             });
 
@@ -274,7 +288,51 @@ export class AdminService {
             });
         });
 
-        this.logWorker?.write(OmniHiveLogLevel.Info, `Admin server listening on port ${adminPortNumber}...`);
+        this.logWorker?.write(
+            OmniHiveLogLevel.Info,
+            `Admin socket server listening on port ${this.adminSocketPortNumber}...`
+        );
+
+        // Setup Web Server
+
+        let adminServerPreparing: boolean = true;
+        const adminWeb = express();
+
+        adminWeb.use(helmet.dnsPrefetchControl());
+        adminWeb.use(helmet.expectCt());
+        adminWeb.use(helmet.frameguard());
+        adminWeb.use(helmet.hidePoweredBy());
+        adminWeb.use(helmet.hsts());
+        adminWeb.use(helmet.ieNoOpen());
+        adminWeb.use(helmet.noSniff());
+        adminWeb.use(helmet.permittedCrossDomainPolicies());
+        adminWeb.use(helmet.referrerPolicy());
+        adminWeb.use(helmet.xssFilter());
+
+        adminWeb.use(express.urlencoded({ extended: true }));
+        adminWeb.use(express.json());
+        adminWeb.use(cors());
+
+        const nextServer = next({ dev: !this.productionMode });
+        const handle = nextServer.getRequestHandler();
+        nextServer.prepare().then(() => {
+            adminServerPreparing = false;
+        });
+
+        adminWeb.all("*", (req: express.Request, res: express.Response) => {
+            if (adminServerPreparing) {
+                return res.status(200).json({ status: "OmniHive Admin Loading..." });
+            }
+            return handle(req, res);
+        });
+
+        adminWeb.listen(this.adminWebPortNumber, (err?: any) => {
+            if (err) throw err;
+            this.logWorker?.write(
+                OmniHiveLogLevel.Info,
+                `Admin web server listening on port ${this.adminWebPortNumber}...`
+            );
+        });
     };
 
     private checkRequest = (adminEvent: AdminEventType, request: AdminRequest, socket?: socketio.Socket): boolean => {

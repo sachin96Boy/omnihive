@@ -131,19 +131,24 @@ const init = async () => {
 
 // Child process spawner
 const createServerChild = async (commandLineArgs: CommandLineArgs) => {
-    let serverRunnerType: ServerRunnerType = ServerRunnerType.JavaScript;
+    let serverRunnerType: ServerRunnerType = ServerRunnerType.Production;
 
     if (
-        !IsHelper.isNullOrUndefined(process.env.OH_SERVER_RUNNER_TYPE) &&
-        process.env.OH_SERVER_RUNNER_TYPE === "typescript"
+        !IsHelper.isNullOrUndefined(process.env.OH_PRODUCTION_MODE) &&
+        IsHelper.isBoolean(process.env.OH_PRODUCTION_MODE) &&
+        process.env.OH_PRODUCTION_MODE === "false"
     ) {
-        serverRunnerType = ServerRunnerType.TypeScript;
+        serverRunnerType = ServerRunnerType.Debug;
     }
 
     child = new forever.Monitor(
         [
-            `${serverRunnerType === ServerRunnerType.JavaScript ? `node` : `ts-node`}`,
-            `serverRunner.${serverRunnerType === ServerRunnerType.JavaScript ? `js` : `ts`}`,
+            `${
+                serverRunnerType === ServerRunnerType.Production
+                    ? `node`
+                    : `node -r ts-node/register --inspect --inspect-port=0`
+            }`,
+            `serverRunner.${serverRunnerType === ServerRunnerType.Production ? `js` : `ts`}`,
             `${ipcId}`,
             `${
                 !IsHelper.isEmptyStringOrWhitespace(commandLineArgs.environmentFile)

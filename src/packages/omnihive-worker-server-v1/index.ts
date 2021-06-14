@@ -42,6 +42,13 @@ type BuilderDatabaseWorker = {
 export default class CoreServerWorker extends HiveWorkerBase implements IServerWorker {
     private metadata!: HiveWorkerMetadataServer;
 
+    private webRootUrl = global.omnihive.getEnvironmentVariable<string>("OH_WEB_ROOT_URL");
+    private graphIntrospection =
+        global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_INTROSPECTION") ?? false;
+    private graphTracing = global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_TRACING") ?? false;
+    private graphPlayground = global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_PLAYGROUND") ?? true;
+    private swagger = global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_SWAGGER");
+
     constructor() {
         super();
     }
@@ -60,9 +67,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
     }
 
     public buildServer = async (app: express.Express): Promise<express.Express> => {
-        const webRootUrl: string | undefined = global.omnihive.getEnvironmentVariable<string>("OH_WEB_ROOT_URL");
-
-        if (IsHelper.isNullOrUndefined(webRootUrl)) {
+        if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(this.webRootUrl)) {
             throw new Error("OH_WEB_ROOT_URL is not defined");
         }
 
@@ -309,6 +314,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         );
 
                         const graphDatabaseConfig: ApolloServerExpressConfig = {
+                            introspection: this.graphIntrospection,
+                            tracing: this.graphTracing,
                             schema: graphDatabaseSchema,
                             context: async ({ req }) => {
                                 const omnihive = {
@@ -321,15 +328,9 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             },
                         };
 
-                        graphDatabaseConfig.introspection =
-                            global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_INTROSPECTION") ?? false;
-
-                        graphDatabaseConfig.tracing =
-                            global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_TRACING") ?? false;
-
-                        if (global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_PLAYGROUND")) {
+                        if (this.graphPlayground) {
                             graphDatabaseConfig.playground = {
-                                endpoint: `${webRootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
+                                endpoint: `${this.webRootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
                             };
                         } else {
                             graphDatabaseConfig.playground = false;
@@ -342,7 +343,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         });
 
                         global.omnihive.registeredUrls.push({
-                            path: `${webRootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
+                            path: `${this.webRootUrl}/${this.metadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
                             type: RegisteredUrlType.GraphDatabase,
                             metadata: {},
                         });
@@ -366,6 +367,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 const graphFunctionSchema: any = functionDynamicModule.FederatedCustomFunctionQuerySchema;
 
                 const graphFunctionConfig: ApolloServerExpressConfig = {
+                    introspection: this.graphIntrospection,
+                    tracing: this.graphTracing,
                     schema: graphFunctionSchema,
                     context: async ({ req }) => {
                         const omnihive = {
@@ -378,15 +381,9 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     },
                 };
 
-                graphFunctionConfig.introspection =
-                    global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_INTROSPECTION") ?? false;
-
-                graphFunctionConfig.tracing =
-                    global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_TRACING") ?? false;
-
-                if (global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_PLAYGROUND")) {
+                if (this.graphPlayground) {
                     graphFunctionConfig.playground = {
-                        endpoint: `${webRootUrl}/${this.metadata.urlRoute}/custom/graphql`,
+                        endpoint: `${this.webRootUrl}/${this.metadata.urlRoute}/custom/graphql`,
                     };
                 } else {
                     graphFunctionConfig.playground = false;
@@ -399,7 +396,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 });
 
                 global.omnihive.registeredUrls.push({
-                    path: `${webRootUrl}/${this.metadata.urlRoute}/custom/graphql`,
+                    path: `${this.webRootUrl}/${this.metadata.urlRoute}/custom/graphql`,
                     type: RegisteredUrlType.GraphFunction,
                     metadata: {},
                 });
@@ -426,7 +423,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     openapi: "3.0.0",
                     servers: [
                         {
-                            url: `${webRootUrl}/${this.metadata.urlRoute}/custom/rest`,
+                            url: `${this.webRootUrl}/${this.metadata.urlRoute}/custom/rest`,
                         },
                     ],
                 };
@@ -477,8 +474,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                                     res.status(workerResponse.status).send(true);
                                 }
                             } catch (e) {
-                                return res.status(500).render("pages/500", {
-                                    rootUrl: webRootUrl,
+                                return res.status(500).render("500", {
+                                    rootUrl: this.webRootUrl,
                                     error: serializeError(e),
                                 });
                             }
@@ -486,7 +483,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     );
 
                     global.omnihive.registeredUrls.push({
-                        path: `${webRootUrl}/${this.metadata.urlRoute}/custom/rest/${workerMetaData.urlRoute}`,
+                        path: `${this.webRootUrl}/${this.metadata.urlRoute}/custom/rest/${workerMetaData.urlRoute}`,
                         type: RegisteredUrlType.RestFunction,
                         metadata: {},
                     });
@@ -502,10 +499,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     }
                 });
 
-                if (
-                    global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_SWAGGER") &&
-                    !IsHelper.isEmptyArray(restWorkers)
-                ) {
+                if (this.swagger && !IsHelper.isEmptyArray(restWorkers)) {
                     app.get(
                         `/${this.metadata.urlRoute}/custom/rest/api-docs/swagger.json`,
                         async (_req: express.Request, res: express.Response) => {
@@ -521,10 +515,10 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     );
 
                     global.omnihive.registeredUrls.push({
-                        path: `${webRootUrl}/${this.metadata.urlRoute}/custom/rest/api-docs`,
+                        path: `${this.webRootUrl}/${this.metadata.urlRoute}/custom/rest/api-docs`,
                         type: RegisteredUrlType.Swagger,
                         metadata: {
-                            swaggerJsonUrl: `${webRootUrl}/${this.metadata.urlRoute}/custom/rest/api-docs/swagger.json`,
+                            swaggerJsonUrl: `${this.webRootUrl}/${this.metadata.urlRoute}/custom/rest/api-docs/swagger.json`,
                         },
                     });
                 }

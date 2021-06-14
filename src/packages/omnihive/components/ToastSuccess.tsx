@@ -1,5 +1,3 @@
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { ToastContainer } from "./ToastContainer";
 
@@ -15,7 +13,7 @@ export const ToastSuccess: React.FC<ToastSuccessProps> = (props): React.ReactEle
                 <ToastContainer>
                     <div className="flex items-center bg-green-600 border-l-4 border-green-800 py-2 px-3 shadow-md mb-2">
                         <div className="mr-3">
-                            <FontAwesomeIcon color="white" icon={faCheckCircle} size="2x" />
+                            <img src="/images/success.png" alt="success" className="h-9" />
                         </div>
                         <div className="text-white max-w-xs ">{props.message}</div>
                     </div>

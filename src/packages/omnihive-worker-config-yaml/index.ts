@@ -40,19 +40,24 @@ export default class JsonConfigWorker extends HiveWorkerBase implements IConfigW
     }
 
     public get = async (): Promise<AppSettings> => {
-        return ObjectHelper.create<AppSettings>(AppSettings, yaml.parse(this.readFile(this.configPath)));
+        const loadedFile = ObjectHelper.create<AppSettings>(
+            AppSettings,
+            yaml.parse(fse.readFileSync(this.configPath, { encoding: "utf8" }))
+        );
+
+        loadedFile.environmentVariables.forEach((value) => {
+            value.isSystem = false;
+        });
+
+        return loadedFile;
     };
 
     public set = async (settings: AppSettings): Promise<boolean> => {
-        this.writeYamlToFile(this.configPath, settings);
+        settings.environmentVariables.forEach((value) => {
+            delete value.isSystem;
+        });
+
+        fse.writeFileSync(this.configPath, yaml.stringify(settings));
         return true;
-    };
-
-    private readFile = (path: string): string => {
-        return fse.readFileSync(path, { encoding: "utf8" });
-    };
-
-    private writeYamlToFile = (path: string, data: any): void => {
-        fse.writeFileSync(path, yaml.stringify(data));
     };
 }

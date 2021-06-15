@@ -158,7 +158,7 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
             database.run("BEGIN");
 
             try {
-                for (let variable of settings.environmentVariables) {
+                for (let variable of settings.environmentVariables.filter((value) => !value.isSystem)) {
                     const queryBuilder = new StringBuilder();
                     queryBuilder.appendLine(
                         `INSERT INTO oh_srv_config_environment(config_id, environment_key, environment_value, environment_datatype)`
@@ -221,7 +221,7 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
                     currentSettings.workers = filteredWorkers;
                 }
 
-                for (let variable of currentSettings.environmentVariables) {
+                for (let variable of currentSettings.environmentVariables.filter((value) => !value.isSystem)) {
                     const deleteConstantsQuery: string = `DELETE oh_srv_config_environment where config_id = ${this.configId} AND environment_key = '${variable.key}';`;
                     database.run(deleteConstantsQuery);
                 }

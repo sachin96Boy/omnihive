@@ -15,7 +15,6 @@ import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWork
 import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
 import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
 import { AppSettings } from "@withonevision/omnihive-core/models/AppSettings";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -23,6 +22,7 @@ import next from "next";
 import ipc from "node-ipc";
 import redis from "redis";
 import * as socketio from "socket.io";
+import { EnvironmentVariable } from "src/packages/omnihive-core/models/EnvironmentVariable";
 import { v4 as uuidv4 } from "uuid";
 
 let ipcId: string = uuidv4();
@@ -156,14 +156,11 @@ export class AdminService {
                 );
 
                 if (IsHelper.isNullOrUndefined(configWorker)) {
-                    appSettings = global.omnihive.appSettings;
-                } else {
-                    try {
-                        appSettings = await AwaitHelper.execute(configWorker.get());
-                    } catch {
-                        appSettings = global.omnihive.appSettings;
-                    }
+                    this.sendErrorToSocket(AdminEventType.ConfigSaveRequest, socket, "No valid config worker found");
+                    return;
                 }
+
+                appSettings = await AwaitHelper.execute(configWorker.get());
 
                 this.sendSuccessToSocket(AdminEventType.ConfigRequest, socket, {
                     config: appSettings,

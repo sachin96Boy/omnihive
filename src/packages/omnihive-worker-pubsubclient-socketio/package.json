@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-pubsubclient-socketio",
-    "version": "6.2.31",
+    "version": "6.2.32",
     "description": "OmniHive SocketIO PubSub Client Worker",
     "license": "MIT",
     "author": {

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 6.2.32 (2021-06-14)
+
+
+### Code Maintenance
+
+* **omnihive:** opening port on docker ([b46d394](https://github.com/WithOneVisionTechnologies/omnihive/commit/b46d394ddae30a34218dc73e709144bf7d17db16))
+
 ### 6.2.31 (2021-06-14)
 
 

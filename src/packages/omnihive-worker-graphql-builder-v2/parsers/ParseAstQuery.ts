@@ -132,6 +132,11 @@ export class ParseAstQuery {
             switch (knexFunction) {
                 case "where": {
                     this.buildWhere(args[knexFunction], this.builder, schema);
+                    break;
+                }
+                case "orderBy": {
+                    this.buildOrderBy(args[knexFunction], schema);
+                    break;
                 }
             }
         }
@@ -292,6 +297,22 @@ export class ParseAstQuery {
                 }
             }
         }
+    };
+
+    private buildOrderBy = (arg: any, schema: TableSchema[]): void => {
+        const orderByArgs: { column: string; order: "asc" | "desc" }[] = [];
+
+        for (const field of arg) {
+            Object.keys(field).map((key) => {
+                const dbName = schema.find((column) => column.columnNameEntity === key)?.columnNameDatabase;
+
+                if (dbName) {
+                    orderByArgs.push({ column: dbName, order: field[key] });
+                }
+            });
+        }
+
+        this.builder?.orderBy(orderByArgs);
     };
 
     private convertToGraph = (results: any, resolveInfo: GraphQLResolveInfo): any => {

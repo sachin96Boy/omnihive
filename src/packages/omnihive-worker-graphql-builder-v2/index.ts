@@ -153,7 +153,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         return `
             where: ${tableName}${this.whereSuffix}
-            orderBy: ${tableName}${this.orderBySuffix}
+            orderBy: [${tableName}${this.orderBySuffix}]
             distinctOn: ${tableName}${this.columnEnumSuffix}
             groupBy: ${tableName}${this.groupBySuffix}
         `;

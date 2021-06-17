@@ -131,11 +131,15 @@ export class ParseAstQuery {
         for (const knexFunction in args) {
             switch (knexFunction) {
                 case "where": {
-                    this.buildWhere(args[knexFunction], this.builder, schema);
+                    this.buildEqualities(args[knexFunction], this.builder, schema);
                     break;
                 }
                 case "orderBy": {
                     this.buildOrderBy(args[knexFunction], schema);
+                    break;
+                }
+                case "groupBy": {
+                    this.buildGroupBy(args[knexFunction], schema);
                     break;
                 }
             }
@@ -164,26 +168,30 @@ export class ParseAstQuery {
         }
     };
 
-    private buildWhere = (arg: any, builder: Knex.QueryBuilder<any, unknown[]>, schema: TableSchema[]): void => {
+    private buildEqualities = (
+        arg: any,
+        builder: Knex.QueryBuilder<any, unknown[]>,
+        schema: TableSchema[],
+        having: boolean = false
+    ): void => {
         if (!builder) {
             throw new Error("Knex Query Builder is not initialized");
         }
 
         for (const key in arg) {
             if (key === "and") {
-                builder.andWhere((subBuilder) => {
+                builder[having ? "andHaving" : "andWhere"]((subBuilder) => {
                     for (const innerArg of arg.and) {
-                        this.buildWhere(innerArg, subBuilder, schema);
+                        this.buildEqualities(innerArg, subBuilder, schema, having);
                     }
                 });
-
                 continue;
             }
 
             if (key === "or") {
-                builder.orWhere((subBuilder) => {
+                builder[having ? "orHaving" : "orWhere"]((subBuilder) => {
                     for (const innerArg of arg.or) {
-                        this.buildWhere(innerArg, subBuilder, schema);
+                        this.buildEqualities(innerArg, subBuilder, schema, having);
                     }
                 });
 
@@ -193,12 +201,17 @@ export class ParseAstQuery {
             const columnName = schema.find((c) => c.columnNameEntity === key)?.columnNameDatabase;
 
             if (columnName) {
-                this.buildWhereEquality(columnName, arg[key], builder);
+                this.buildRowEquality(columnName, arg[key], builder, having);
             }
         }
     };
 
-    private buildWhereEquality = (argName: string, arg: any, builder: Knex.QueryBuilder<any, unknown[]>): void => {
+    private buildRowEquality = (
+        argName: string,
+        arg: any,
+        builder: Knex.QueryBuilder<any, unknown[]>,
+        having: boolean = false
+    ): void => {
         if (!this.knex) {
             throw new Error("Knex is not initialized");
         }
@@ -216,83 +229,127 @@ export class ParseAstQuery {
 
             switch (equality) {
                 case "eq": {
-                    builder.where(argName, argValue);
+                    if (having) {
+                        builder.having(argName, "=", argValue);
+                    } else {
+                        builder.where(argName, argValue);
+                    }
                     break;
                 }
                 case "notEq": {
-                    builder.whereNot(argName, argValue);
+                    if (having) {
+                        builder.having(argName, "!=", argValue);
+                    } else {
+                        builder.whereNot(argName, argValue);
+                    }
                     break;
                 }
                 case "like": {
-                    builder.where(argName, "like", argValue);
+                    builder[having ? "having" : "where"](argName, "like", argValue);
                     break;
                 }
                 case "notLike": {
-                    builder.whereNot(argName, "like", argValue);
+                    if (having) {
+                        builder.having(argName, "not like", argValue);
+                    } else {
+                        builder.whereNot(argName, "like", argValue);
+                    }
                     break;
                 }
                 case "gt": {
-                    builder.where(argName, ">", argValue);
+                    builder[having ? "having" : "where"](argName, ">", argValue);
                     break;
                 }
                 case "gte": {
-                    builder.where(argName, ">=", argValue);
+                    builder[having ? "having" : "where"](argName, ">=", argValue);
                     break;
                 }
                 case "notGt": {
-                    builder.whereNot(argName, ">", argValue);
+                    if (having) {
+                        builder.having(argName, "<=", argValue);
+                    } else {
+                        builder.whereNot(argName, ">", argValue);
+                    }
                     break;
                 }
                 case "notGte": {
-                    builder.whereNot(argName, ">=", argValue);
+                    if (having) {
+                        builder.having(argName, "<", argValue);
+                    } else {
+                        builder.whereNot(argName, ">=", argValue);
+                    }
                     break;
                 }
                 case "lt": {
-                    builder.where(argName, "<", argValue);
+                    builder[having ? "having" : "where"](argName, "<", argValue);
                     break;
                 }
                 case "lte": {
-                    builder.where(argName, "<=", argValue);
+                    builder[having ? "having" : "where"](argName, "<=", argValue);
                     break;
                 }
                 case "notLt": {
-                    builder.whereNot(argName, "<", argValue);
+                    if (having) {
+                        builder.having(argName, ">=", argValue);
+                    } else {
+                        builder.whereNot(argName, "<", argValue);
+                    }
                     break;
                 }
                 case "notLte": {
-                    builder.whereNot(argName, "<=", argValue);
+                    if (having) {
+                        builder.having(argName, ">", argValue);
+                    } else {
+                        builder.whereNot(argName, "<=", argValue);
+                    }
                     break;
                 }
                 case "in": {
-                    builder.whereIn(argName, argValue);
+                    builder[having ? "havingIn" : "whereIn"](argName, argValue);
                     break;
                 }
                 case "notIn": {
-                    builder.whereNotIn(argName, argValue);
+                    builder[having ? "havingNotIn" : "whereNotIn"](argName, argValue);
                     break;
                 }
                 case "isNull": {
-                    builder.whereNull(argName);
+                    if (having) {
+                        builder.having(argName, "is", this.knex.raw("null"));
+                    } else {
+                        builder.whereNull(argName);
+                    }
                     break;
                 }
                 case "isNotNull": {
-                    builder.whereNotNull(argName);
+                    if (having) {
+                        builder.having(argName, "is not", this.knex.raw("null"));
+                    } else {
+                        builder.whereNotNull(argName);
+                    }
                     break;
                 }
                 case "exists": {
-                    builder.whereExists(argValue);
+                    if (having) {
+                        throw new Error("The Having function does not support the exists equality");
+                    } else {
+                        builder.whereExists(argValue);
+                    }
                     break;
                 }
                 case "notExists": {
-                    builder.whereNotExists(argValue);
+                    if (having) {
+                        throw new Error("The Having function does not support the notExists equality");
+                    } else {
+                        builder.whereNotExists(argValue);
+                    }
                     break;
                 }
                 case "between": {
-                    builder.whereBetween(argName, [argValue.start, argValue.end]);
+                    builder[having ? "havingBetween" : "whereBetween"](argName, [argValue.start, argValue.end]);
                     break;
                 }
                 case "notBetween": {
-                    builder.whereNotBetween(argName, [argValue.start, argValue.end]);
+                    builder[having ? "havingNotBetween" : "whereNotBetween"](argName, [argValue.start, argValue.end]);
                     break;
                 }
             }
@@ -313,6 +370,25 @@ export class ParseAstQuery {
         }
 
         this.builder?.orderBy(orderByArgs);
+    };
+
+    private buildGroupBy = (arg: { columns: string[]; having: any }, schema: TableSchema[]): void => {
+        if (!this.builder) {
+            throw new Error("Knex Query Builder is not initialized");
+        }
+
+        const dbNames: string[] = [];
+        arg.columns.forEach((x) => {
+            const name = schema.find((column) => column.columnNameEntity === x)?.columnNameDatabase;
+
+            if (name) {
+                dbNames.push(name);
+            }
+        });
+
+        this.builder.groupBy(dbNames);
+
+        this.buildEqualities(arg.having, this.builder, schema, true);
     };
 
     private convertToGraph = (results: any, resolveInfo: GraphQLResolveInfo): any => {

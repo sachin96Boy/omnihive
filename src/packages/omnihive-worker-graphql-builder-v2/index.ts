@@ -202,7 +202,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         return `
             input ${tableName}${this.groupBySuffix} {
-                column: ${tableName}${this.columnEnumSuffix}
+                columns: [${tableName}${this.columnEnumSuffix}]
                 having: ${tableName}${this.whereSuffix}
             }
         `;

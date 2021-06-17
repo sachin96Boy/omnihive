@@ -2,17 +2,17 @@
 
 import { FieldNode, GraphQLResolveInfo } from "graphql";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
-import { HiveWorkerType } from "src/packages/omnihive-core/enums/HiveWorkerType";
-import { ILogWorker } from "src/packages/omnihive-core/interfaces/ILogWorker";
-import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
-import { IDatabaseWorker } from "src/packages/omnihive-core/interfaces/IDatabaseWorker";
-import { IEncryptionWorker } from "src/packages/omnihive-core/interfaces/IEncryptionWorker";
-import { AwaitHelper } from "src/packages/omnihive-core/helpers/AwaitHelper";
-import { ITokenWorker } from "src/packages/omnihive-core/interfaces/ITokenWorker";
-// import { ICacheWorker } from "src/packages/omnihive-core/interfaces/ICacheWorker";
-// import { IDateWorker } from "src/packages/omnihive-core/interfaces/IDateWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
+// import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+// import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { Knex } from "knex";
-import { TableSchema } from "src/packages/omnihive-core/models/TableSchema";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 
 export class ParseAstQuery {
     private logWorker: ILogWorker | undefined;

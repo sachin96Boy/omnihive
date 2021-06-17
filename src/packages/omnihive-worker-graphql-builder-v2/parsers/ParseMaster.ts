@@ -2,7 +2,7 @@ import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { GraphQLResolveInfo } from "graphql";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ParseAstQuery } from "./ParseAstQuery";
-import { TableSchema } from "src/packages/omnihive-core/models/TableSchema";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 
 export class ParseMaster {
     public parseAstQuery = async (

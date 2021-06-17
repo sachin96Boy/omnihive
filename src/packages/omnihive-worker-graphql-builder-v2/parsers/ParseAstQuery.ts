@@ -126,7 +126,7 @@ export class ParseAstQuery {
         this.builder = this.knex.queryBuilder();
         this.builder.from(schema[0].tableName);
 
-        this.buildSelect(resolveInfo, schema);
+        this.buildSelect(resolveInfo, schema, args.distinct);
 
         for (const knexFunction in args) {
             switch (knexFunction) {
@@ -142,7 +142,7 @@ export class ParseAstQuery {
         }
     };
 
-    private buildSelect = (resolveInfo: GraphQLResolveInfo, schema: TableSchema[]): void => {
+    private buildSelect = (resolveInfo: GraphQLResolveInfo, schema: TableSchema[], distinct: boolean): void => {
         const fields = resolveInfo.fieldNodes[0].selectionSet?.selections.map(
             (field) => (field as FieldNode).name.value
         );
@@ -159,7 +159,7 @@ export class ParseAstQuery {
             const dbNames = this.selectionFields?.map((x) => x.columnNameDatabase);
 
             if (dbNames) {
-                this.builder?.select(dbNames);
+                this.builder?.[distinct ? "distinct" : "select"](dbNames);
             }
         }
     };

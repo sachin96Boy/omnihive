@@ -152,9 +152,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         const tableName = schema[0].tableNamePascalCase;
 
         return `
+            distinct: Boolean
             where: ${tableName}${this.whereSuffix}
             orderBy: [${tableName}${this.orderBySuffix}]
-            distinctOn: ${tableName}${this.columnEnumSuffix}
             groupBy: ${tableName}${this.groupBySuffix}
         `;
     };

@@ -1,5 +1,5 @@
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { IGraphStitchWorker } from "@withonevision/omnihive-core/interfaces/IGraphStitchWorker";
+import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
@@ -11,7 +11,7 @@ import { stitchSchemas } from "@graphql-tools/stitch";
 import GraphQLAny from "./scalarTypes/GraphQLAny";
 import { ParseMaster } from "./parsers/ParseMaster";
 
-export default class GraphBuilder extends HiveWorkerBase implements IGraphStitchWorker {
+export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildWorker {
     // Declare Helpers
     private graphHelper: GraphHelper = new GraphHelper();
     private parseMaster: ParseMaster = new ParseMaster();

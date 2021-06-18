@@ -1,6 +1,6 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { FieldNode, GraphQLResolveInfo } from "graphql";
+import { ArgumentNode, FieldNode, GraphQLResolveInfo, ObjectFieldNode, ObjectValueNode } from "graphql";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
@@ -24,24 +24,25 @@ export class ParseAstQuery {
     private builder: Knex.QueryBuilder<any, unknown[]> | undefined;
     private selectionFields: TableSchema[] = [];
 
+    private joinFieldSuffix: string = "_table";
+
     public parse = async (
         workerName: string,
-        args: any,
+        _args: any,
         resolveInfo: GraphQLResolveInfo,
         omniHiveContext: GraphContext,
-        schema: TableSchema[]
+        schema: { [tableName: string]: TableSchema[] }
     ): Promise<any> => {
         try {
             this.setRequiredWorkers(workerName);
             this.verifyToken(omniHiveContext);
-            this.buildQuery(args, resolveInfo, schema);
+            this.buildQuery(resolveInfo, schema);
 
             if (this.builder) {
                 const results = (await this.databaseWorker?.executeQuery(this.builder.toString()))?.[0];
 
                 if (results) {
-                    const graphObj = this.convertToGraph(results, resolveInfo);
-                    return graphObj[resolveInfo.fieldName];
+                    return this.convertToGraph(results);
                 }
 
                 return null;
@@ -118,42 +119,84 @@ export class ParseAstQuery {
         }
     };
 
-    private buildQuery = (args: any, resolveInfo: GraphQLResolveInfo, schema: TableSchema[]): void => {
+    private buildQuery = (resolveInfo: GraphQLResolveInfo, schema: { [tableName: string]: TableSchema[] }): void => {
         if (!this.knex) {
             throw new Error("Knex object is not initialized");
         }
 
+        const primaryTable = schema[resolveInfo.fieldName][0].tableName;
+        const primarySchemaProp = resolveInfo.fieldName;
+
         this.builder = this.knex.queryBuilder();
-        this.builder.from(schema[0].tableName);
+        this.builder.from(primaryTable);
 
-        this.buildSelect(resolveInfo, schema, args.distinct);
+        resolveInfo.operation.selectionSet.selections.forEach((field: any) =>
+            this.graphToKnex(field.arguments, field, schema, primarySchemaProp)
+        );
+    };
 
-        for (const knexFunction in args) {
+    private graphToKnex = (
+        args: readonly ArgumentNode[],
+        field: FieldNode,
+        schema: { [tableName: string]: TableSchema[] },
+        tableName: string
+    ) => {
+        if (!this.builder) {
+            throw new Error("Knex Query Builder not initialized");
+        }
+        // TODO: Iterate through each selectionSet to build the query. if (field.name.value.endsWith(this.joinFieldSuffix) === Repeat logic for new table)
+
+        const flattenedArgs = this.flattenArgs(args as unknown as readonly ObjectFieldNode[]);
+
+        this.buildSelect(field, schema, tableName, false);
+
+        for (const knexFunction in flattenedArgs) {
             switch (knexFunction) {
                 case "where": {
-                    this.buildEqualities(args[knexFunction], this.builder, schema);
+                    this.buildEqualities(flattenedArgs[knexFunction], this.builder, schema, tableName);
                     break;
                 }
                 case "orderBy": {
-                    this.buildOrderBy(args[knexFunction], schema);
+                    this.buildOrderBy(flattenedArgs[knexFunction], schema, tableName);
                     break;
                 }
                 case "groupBy": {
-                    this.buildGroupBy(args[knexFunction], schema);
+                    this.buildGroupBy(flattenedArgs[knexFunction], schema, tableName);
                     break;
                 }
             }
         }
     };
 
-    private buildSelect = (resolveInfo: GraphQLResolveInfo, schema: TableSchema[], distinct: boolean): void => {
-        const fields = resolveInfo.fieldNodes[0].selectionSet?.selections.map(
-            (field) => (field as FieldNode).name.value
-        );
+    private flattenArgs = (args: readonly ObjectFieldNode[]): any => {
+        const flattened: any = {};
+
+        args.forEach((x) => {
+            if ((x.value as ObjectValueNode).fields?.length > 0) {
+                flattened[x.name.value] = this.flattenArgs((x.value as ObjectValueNode).fields);
+            } else {
+                flattened[x.name.value] = (x.value as unknown as ObjectFieldNode).value;
+            }
+        });
+
+        return flattened;
+    };
+
+    private buildSelect = (
+        field: FieldNode,
+        schema: { [tableName: string]: TableSchema[] },
+        tableName: string,
+        distinct: boolean
+    ): void => {
+        const fields = field.selectionSet?.selections.map((field) => (field as FieldNode).name.value);
 
         if (fields) {
             fields.forEach((field) => {
-                const column = schema.find((column) => column.columnNameEntity === field);
+                if (field.endsWith(this.joinFieldSuffix)) {
+                    return;
+                }
+
+                const column = schema[tableName].find((column) => column.columnNameEntity === field);
 
                 if (column) {
                     this.selectionFields.push(column);
@@ -171,7 +214,8 @@ export class ParseAstQuery {
     private buildEqualities = (
         arg: any,
         builder: Knex.QueryBuilder<any, unknown[]>,
-        schema: TableSchema[],
+        schema: { [tableName: string]: TableSchema[] },
+        tableName: string,
         having: boolean = false
     ): void => {
         if (!builder) {
@@ -182,7 +226,7 @@ export class ParseAstQuery {
             if (key === "and") {
                 builder[having ? "andHaving" : "andWhere"]((subBuilder) => {
                     for (const innerArg of arg.and) {
-                        this.buildEqualities(innerArg, subBuilder, schema, having);
+                        this.buildEqualities(innerArg, subBuilder, schema, tableName, having);
                     }
                 });
                 continue;
@@ -191,14 +235,14 @@ export class ParseAstQuery {
             if (key === "or") {
                 builder[having ? "orHaving" : "orWhere"]((subBuilder) => {
                     for (const innerArg of arg.or) {
-                        this.buildEqualities(innerArg, subBuilder, schema, having);
+                        this.buildEqualities(innerArg, subBuilder, schema, tableName, having);
                     }
                 });
 
                 continue;
             }
 
-            const columnName = schema.find((c) => c.columnNameEntity === key)?.columnNameDatabase;
+            const columnName = schema[tableName].find((c) => c.columnNameEntity === key)?.columnNameDatabase;
 
             if (columnName) {
                 this.buildRowEquality(columnName, arg[key], builder, having);
@@ -356,12 +400,12 @@ export class ParseAstQuery {
         }
     };
 
-    private buildOrderBy = (arg: any, schema: TableSchema[]): void => {
+    private buildOrderBy = (arg: any, schema: { [tableName: string]: TableSchema[] }, tableName: string): void => {
         const orderByArgs: { column: string; order: "asc" | "desc" }[] = [];
 
         for (const field of arg) {
             Object.keys(field).map((key) => {
-                const dbName = schema.find((column) => column.columnNameEntity === key)?.columnNameDatabase;
+                const dbName = schema[tableName].find((column) => column.columnNameEntity === key)?.columnNameDatabase;
 
                 if (dbName) {
                     orderByArgs.push({ column: dbName, order: field[key] });
@@ -372,14 +416,18 @@ export class ParseAstQuery {
         this.builder?.orderBy(orderByArgs);
     };
 
-    private buildGroupBy = (arg: { columns: string[]; having: any }, schema: TableSchema[]): void => {
+    private buildGroupBy = (
+        arg: { columns: string[]; having: any },
+        schema: { [tableName: string]: TableSchema[] },
+        tableName: string
+    ): void => {
         if (!this.builder) {
             throw new Error("Knex Query Builder is not initialized");
         }
 
         const dbNames: string[] = [];
         arg.columns.forEach((x) => {
-            const name = schema.find((column) => column.columnNameEntity === x)?.columnNameDatabase;
+            const name = schema[tableName].find((column) => column.columnNameEntity === x)?.columnNameDatabase;
 
             if (name) {
                 dbNames.push(name);
@@ -388,11 +436,11 @@ export class ParseAstQuery {
 
         this.builder.groupBy(dbNames);
 
-        this.buildEqualities(arg.having, this.builder, schema, true);
+        this.buildEqualities(arg.having, this.builder, schema, tableName, true);
     };
 
-    private convertToGraph = (results: any, resolveInfo: GraphQLResolveInfo): any => {
-        const graphResult: any = { [resolveInfo.fieldName]: [] };
+    private convertToGraph = (results: any): any => {
+        const graphResult: any = [];
 
         results.map((r: any) => {
             const dbNames: string[] = Object.keys(r);
@@ -408,7 +456,7 @@ export class ParseAstQuery {
                 }
             });
 
-            graphResult[resolveInfo.fieldName].push(row);
+            graphResult.push(row);
         });
 
         return graphResult;

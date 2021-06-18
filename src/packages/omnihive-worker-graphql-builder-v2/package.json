@@ -23,8 +23,8 @@
         "build": "tsc"
     },
     "dependencies": {
+        "@graphql-tools/merge": "6.2.14",
         "@graphql-tools/schema": "7.1.5",
-        "@graphql-tools/stitch": "7.5.3",
         "@withonevision/omnihive-core": "workspace:*",
         "graphql": "15.5.0",
         "knex": "0.95.6",

@@ -10,7 +10,7 @@ export class ParseMaster {
         args: any,
         resolveInfo: GraphQLResolveInfo,
         omniHiveContext: GraphContext,
-        schema: TableSchema[]
+        schema: { [tableName: string]: TableSchema[] }
     ): Promise<any> => {
         const parser: ParseAstQuery = new ParseAstQuery();
         return await AwaitHelper.execute(parser.parse(workerName, args, resolveInfo, omniHiveContext, schema));

@@ -58,9 +58,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     };
 
     private buildExeSchema = (schema: TableSchema[], databaseWorker: IDatabaseWorker): GraphQLSchema => {
-        const { foreignColumns, tableLinks } = this.findForeignKeys(schema);
+        const foreignColumns = this.findForeignKeys(schema);
 
-        const typeDef = this.buildTypeDefinitions(schema, foreignColumns, tableLinks);
+        const typeDef = this.buildTypeDefinitions(schema, foreignColumns);
         const resolver = this.buildResolvers(schema, foreignColumns, databaseWorker);
 
         return makeExecutableSchema({
@@ -71,16 +71,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
     private buildTypeDefinitions = (
         schema: TableSchema[],
-        foreignColumns: { [tableName: string]: TableSchema[] },
-        tableLinks: {
-            table: { camel: string; pascal: string; db: string };
-            from?: { entity: string; db: string };
-            to?: { entity: string; db: string };
-        }[]
+        foreignColumns: { [tableName: string]: TableSchema[] }
     ): string => {
         return `
             ${this.buildStaticTypes()}
-            ${this.buildLinkingEnum(schema[0].tableNamePascalCase, tableLinks)}
+            ${this.buildLinkingEnum(schema[0].tableNameCamelCase, foreignColumns)}
             ${this.buildColumnEqualityType(schema, foreignColumns)}
             ${this.buildTableDef(schema, foreignColumns)}
             ${this.buildWhereType(schema, foreignColumns)}
@@ -91,28 +86,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         `;
     };
 
-    private findForeignKeys = (
-        schema: TableSchema[]
-    ): {
-        foreignColumns: { [tableName: string]: TableSchema[] };
-        tableLinks: {
-            table: { camel: string; pascal: string; db: string };
-            from?: { entity: string; db: string };
-            to?: { entity: string; db: string };
-        }[];
-    } => {
-        const currentTable: string = schema[0].tableNameCamelCase;
+    private findForeignKeys = (schema: TableSchema[]): { [tableName: string]: TableSchema[] } => {
         const foreignColumns: { [tableName: string]: TableSchema[] } = {};
-        const tableLinks: {
-            table: { camel: string; pascal: string; db: string };
-            from?: { entity: string; db: string };
-            to?: { entity: string; db: string };
-        }[] = [];
 
         schema.forEach((column) => {
-            const linkToColumn: TableSchema[] = this.tables[column.columnForeignKeyTableNameCamelCase]?.filter(
-                (x) => x.columnNameDatabase === column.columnForeignKeyColumnName
-            );
             const foreignLink: TableSchema[] = [];
 
             Object.keys(this.tables).forEach((tableName) => {
@@ -127,22 +104,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             });
 
             foreignLink?.forEach((key) => {
-                if (key && key.tableNameCamelCase !== currentTable) {
-                    if (
-                        !tableLinks.some(
-                            (x) =>
-                                x.table.camel === key.tableNameCamelCase && x.from?.entity === column.columnNameEntity
-                        )
-                    ) {
-                        tableLinks.push({
-                            table: {
-                                camel: key.tableNameCamelCase,
-                                pascal: key.tableNamePascalCase,
-                                db: key.tableName,
-                            },
-                            from: { entity: column.columnNameEntity, db: column.columnNameDatabase },
-                        });
-                    }
+                if (key) {
                     if (!foreignColumns[key.tableNameCamelCase]) {
                         foreignColumns[key.tableNameCamelCase] = [];
                     }
@@ -154,115 +116,111 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 }
             });
 
+            const linkToColumn: TableSchema[] = this.tables[column.columnForeignKeyTableNameCamelCase]?.filter(
+                (x) => x.columnNameDatabase === column.columnForeignKeyColumnName
+            );
+
             linkToColumn?.forEach((key) => {
-                if (key && key.tableNameCamelCase !== currentTable) {
-                    if (
-                        !tableLinks.some(
-                            (x) => x.table.camel === key.tableNameCamelCase && x.to?.entity === column.columnNameEntity
-                        )
-                    ) {
-                        tableLinks.push({
-                            table: {
-                                camel: key.tableNameCamelCase,
-                                pascal: key.tableNamePascalCase,
-                                db: key.tableName,
-                            },
-                            to: { entity: column.columnNameEntity, db: column.columnNameDatabase },
-                        });
-                    }
+                if (key) {
                     if (!foreignColumns[key.tableNameCamelCase]) {
                         foreignColumns[key.tableNameCamelCase] = [];
                     }
 
                     if (
                         !foreignColumns[key.tableNameCamelCase].some((x) => key.columnNameEntity === x.columnNameEntity)
-                    )
+                    ) {
                         foreignColumns[key.tableNameCamelCase].push(key);
+                    }
                 }
             });
         });
 
-        return { foreignColumns, tableLinks };
+        return foreignColumns;
     };
 
     private buildStaticTypes = (): string =>
         `
-        directive @linkingTable on OBJECT | ENUM | INPUT_OBJECT
+            scalar Any
 
-        scalar Any
+            enum OrderByOptions {
+                asc
+                desc
+            }
+            
+            input BetweenObject {
+                start: Any
+                end: Any
+            }
 
-        enum OrderByOptions {
-            asc
-            desc
-        }
-        
-        input BetweenObject {
-            start: Any
-            end: Any
-        }
+            enum JoinOptions {
+                inner
+                left
+                leftOuter
+                right
+                rightOuter
+                fullOuter
+                cross
+            }
 
-        input EqualityTypes {
-            eq: Any
-            notEq: Any
-            like: Any
-            notLike: Any
-            gt: Any
-            gte: Any
-            notGt: Any
-            notGte: Any
-            lt: Any
-            lte: Any
-            notLt: Any
-            notLte: Any
-            in: Any
-            notIn: Any
-            isNull: Boolean
-            isNotNull: Boolean
-            exists: Any
-            notExists: Any
-            between: BetweenObject
-            notBetween: BetweenObject
-        }
-    `.trim();
+            input EqualityTypes {
+                eq: Any
+                notEq: Any
+                like: Any
+                notLike: Any
+                gt: Any
+                gte: Any
+                notGt: Any
+                notGte: Any
+                lt: Any
+                lte: Any
+                notLt: Any
+                notLte: Any
+                in: Any
+                notIn: Any
+                isNull: Boolean
+                isNotNull: Boolean
+                exists: Any
+                notExists: Any
+                between: BetweenObject
+                notBetween: BetweenObject
+            }
+        `.trim();
 
     private buildLinkingEnum = (
         parentTable: string,
-        tableLinks: {
-            table: { camel: string; pascal: string; db: string };
-            from?: { entity: string; db: string };
-            to?: { entity: string; db: string };
-        }[]
+        foreignColumns: { [tableName: string]: TableSchema[] }
     ): string => {
-        const tableVariants: {
-            [tableName: string]: {
-                on: string[];
-            };
-        } = {};
+        let results: string = "";
 
-        tableLinks.forEach((item) => {
-            if (!tableVariants[item.table.camel]) {
-                tableVariants[item.table.camel] = { on: [] };
+        for (const tableName in foreignColumns) {
+            if (parentTable !== foreignColumns[tableName][0].tableNameCamelCase) {
+                results += `
+                    type ${this.uppercaseFirstLetter(tableName)}${this.objectSuffix} {
+                    ${foreignColumns[tableName].map((column) =>
+                        `${column.columnNameEntity}: ${this.graphHelper.getGraphTypeFromEntityType(
+                            column.columnTypeEntity
+                        )}`.trim()
+                    )}
+                    }
+                `.trim();
+
+                results += "\n";
             }
 
-            if (
-                item.from &&
-                !tableVariants[item.table.camel].on.some((x) => x === `${item.table.camel}_${item.from?.entity}`)
-            ) {
-                tableVariants[item.table.camel].on.push(`${item.table.camel}_${item.from.entity}`);
-            }
+            const foreignLinks = foreignColumns[tableName].filter((x) => x.columnIsForeignKey);
 
-            if (item.to && !tableVariants[item.table.camel].on.some((x) => x === item.to?.entity)) {
-                tableVariants[item.table.camel].on.push(item.to.entity);
+            if (foreignLinks?.length > 0) {
+                results += `
+                    enum ${this.uppercaseFirstLetter(parentTable)}${this.uppercaseFirstLetter(tableName)}${
+                    this.joiningSuffix
+                } {
+                        ${foreignLinks.map((column) => column.columnNameEntity).join("\n")}
+                    }
+                `.trim();
             }
-        });
+        }
 
-        return `
-            ${Object.keys(tableVariants).map(
-                (join) => `enum ${parentTable}${this.uppercaseFirstLetter(join)}${this.joiningSuffix} {
-                    ${tableVariants[join].on.join(", ")}
-                }`
-            )}
-        `;
+        return results;
     };
 
     private buildColumnEqualityType = (
@@ -276,13 +234,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 ${schema.map((column) => `${column.columnNameEntity}: EqualityTypes`.trim())}
             }
         
-            ${Object.keys(foreignColumns).map((table) =>
-                `
-                    input ${this.uppercaseFirstLetter(table)}${this.columnEqualitySuffix} @linkingTable {
-                        ${foreignColumns[table].map((column) => `${column.columnNameEntity}: EqualityTypes`)}
+            ${Object.keys(foreignColumns)
+                .map((table) => {
+                    if (table === schema[0].tableNameCamelCase) {
+                        return;
                     }
-                `.trim()
-            )}
+
+                    return `
+                        input ${this.uppercaseFirstLetter(table)}${this.columnEqualitySuffix} {
+                            ${foreignColumns[table].map((column) => `${column.columnNameEntity}: EqualityTypes`)}
+                        }
+                    `.trim();
+                })
+                .join("\n")}
         `.trim();
     };
 
@@ -291,31 +255,56 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         return `
             type ${tableName}${this.objectSuffix} {
-                ${schema.map((column) =>
-                    `${column.columnNameEntity}: ${this.graphHelper.getGraphTypeFromEntityType(
-                        column.columnTypeEntity
-                    )}`.trim()
-                )}
-                ${Object.keys(foreignColumns).map((table) =>
-                    `${table}${this.joinFieldSuffix}(on: ${tableName}${this.uppercaseFirstLetter(table)}${
-                        this.joiningSuffix
-                    } ${this.buildArgString(this.tables[table])}): [${this.uppercaseFirstLetter(table)}${
-                        this.objectSuffix
-                    }]`.trim()
-                )}
-            }
+                ${schema.map((column) => {
+                    let columnDef: string = "";
+                    let columnType: string = this.graphHelper.getGraphTypeFromEntityType(column.columnTypeEntity);
+                    let columnDefault: string = `${column.columnNameEntity}: ${columnType}`;
 
-            ${Object.keys(foreignColumns).map((table) =>
-                `
-                    type ${this.uppercaseFirstLetter(table)}${this.objectSuffix} @linkingTable {
-                    ${foreignColumns[table].map((column) =>
-                        `${column.columnNameEntity}: ${this.graphHelper.getGraphTypeFromEntityType(
-                            column.columnTypeEntity
-                        )}`.trim()
-                    )}
+                    if (column.columnIsForeignKey) {
+                        if (column.columnForeignKeyTableNameCamelCase === column.tableNameCamelCase) {
+                            columnDef = `${columnDefault} ${column.columnNameEntity}${
+                                this.joinFieldSuffix
+                            }(joinType: JoinOptions, ${this.buildArgString(schema)})`;
+                        } else {
+                            columnDef = `${columnDefault} ${column.columnNameEntity}${
+                                this.joinFieldSuffix
+                            }(joinType: JoinOptions, ${this.buildArgString(
+                                foreignColumns[column.columnForeignKeyTableNameCamelCase]
+                            )})`;
+                        }
+
+                        columnType = `: [${column.columnForeignKeyTableNamePascalCase}${this.objectSuffix}]`;
+                        columnDef += columnType;
+                    } else {
+                        columnDef = columnDefault;
                     }
-                `.trim()
-            )}
+
+                    return `${columnDef}`.trim();
+                })}
+
+                ${Object.keys(foreignColumns).map((table) => {
+                    const linkingSchema = schema.find((x) =>
+                        foreignColumns[table].find((y) => x.columnNameDatabase === y.columnForeignKeyColumnName)
+                    );
+                    let results = ``;
+
+                    if (
+                        !linkingSchema?.columnIsForeignKey &&
+                        linkingSchema?.columnForeignKeyTableNameCamelCase !== linkingSchema?.tableNameCamelCase
+                    ) {
+                        results += `
+                            ${table}${this.joinFieldSuffix}(
+                                joinType: JoinOptions 
+                                fromColumn: ${tableName}${this.uppercaseFirstLetter(table)}${
+                            this.joiningSuffix
+                        } ${this.buildArgString(this.tables[table])}): [${this.uppercaseFirstLetter(table)}${
+                            this.objectSuffix
+                        }]`.trim();
+                    }
+
+                    return results;
+                })}
+            }
         `;
     };
 
@@ -351,12 +340,17 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             input ${tableName}${this.whereSuffix}
             ${this.buildColumnEqualities(schema)}
 
-            ${Object.keys(foreignColumns).map((table) =>
-                `
-                    input ${this.uppercaseFirstLetter(table)}${this.whereSuffix} @linkingTable
-                    ${this.buildColumnEqualities(foreignColumns[table])}
-                `.trim()
-            )}
+            ${Object.keys(foreignColumns)
+                .map((table) => {
+                    if (table === schema[0].tableNameCamelCase) {
+                        return;
+                    }
+                    return `
+                        input ${this.uppercaseFirstLetter(table)}${this.whereSuffix}
+                        ${this.buildColumnEqualities(foreignColumns[table])}
+                    `.trim();
+                })
+                .join("\n")}
         `.trim();
     };
 
@@ -375,17 +369,24 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 )}
             }
 
-            ${Object.keys(foreignColumns).map((table) =>
-                `
-                    input ${this.uppercaseFirstLetter(table)}${this.orderBySuffix} @linkingTable {
-                        ${foreignColumns[table].map((column) =>
-                            `
-                            ${column.columnNameEntity}: OrderByOptions
-                        `.trim()
-                        )}
+            ${Object.keys(foreignColumns)
+                .map((table) => {
+                    if (table === schema[0].tableNameCamelCase) {
+                        return;
                     }
-                `.trim()
-            )}
+                    return `
+                        input ${this.uppercaseFirstLetter(table)}${this.orderBySuffix} {
+                            ${foreignColumns[table]
+                                .map((column) =>
+                                    `
+                                        ${column.columnNameEntity}: OrderByOptions
+                                    `.trim()
+                                )
+                                .join("\n")}
+                        }
+                    `.trim();
+                })
+                .join("\n")}
         `.trim();
     };
 
@@ -404,17 +405,23 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 )}
             }
 
-            ${Object.keys(foreignColumns).map((table) =>
-                `
-                    enum ${this.uppercaseFirstLetter(table)}${this.columnEnumSuffix} @linkingTable {
-                        ${foreignColumns[table].map((column) =>
-                            `
-                            ${column.columnNameEntity}
-                        `.trim()
-                        )}
+            ${Object.keys(foreignColumns)
+                .map((table) => {
+                    if (table === schema[0].tableNameCamelCase) {
+                        return;
                     }
-                `.trim()
-            )}
+
+                    return `
+                        enum ${this.uppercaseFirstLetter(table)}${this.columnEnumSuffix} {
+                            ${foreignColumns[table].map((column) =>
+                                `
+                                ${column.columnNameEntity}
+                            `.trim()
+                            )}
+                        }
+                    `.trim();
+                })
+                .join("\n")}
         `.trim();
     };
 
@@ -430,14 +437,20 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 having: ${tableName}${this.whereSuffix}
             }
 
-            ${Object.keys(foreignColumns).map((table) =>
-                `
-                    input ${this.uppercaseFirstLetter(table)}${this.groupBySuffix} @linkingTable {
-                        columns: [${this.uppercaseFirstLetter(table)}${this.columnEnumSuffix}]
-                        having: ${this.uppercaseFirstLetter(table)}${this.whereSuffix}
+            ${Object.keys(foreignColumns)
+                .map((table) => {
+                    if (table === schema[0].tableNameCamelCase) {
+                        return;
                     }
-            `.trim()
-            )}
+
+                    return `
+                        input ${this.uppercaseFirstLetter(table)}${this.groupBySuffix} {
+                            columns: [${this.uppercaseFirstLetter(table)}${this.columnEnumSuffix}]
+                            having: ${this.uppercaseFirstLetter(table)}${this.whereSuffix}
+                        }
+                    `.trim();
+                })
+                .join("\n")}
         `.trim();
     };
 

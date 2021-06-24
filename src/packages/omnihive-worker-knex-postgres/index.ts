@@ -47,12 +47,21 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
             };
 
             if (this.metadata.requireSsl) {
-                if (IsHelper.isEmptyStringOrWhitespace(this.metadata.sslCertPath)) {
-                    this.sqlConfig.ssl = this.metadata.requireSsl;
-                } else {
+                if (
+                    !IsHelper.isEmptyStringOrWhitespace(this.metadata.sslCertPath) &&
+                    fse.existsSync(this.metadata.sslCertPath)
+                ) {
                     this.sqlConfig.ssl = {
                         ca: fse.readFileSync(this.metadata.sslCertPath).toString(),
                     };
+                } else {
+                    if (fse.existsSync(path.join(__dirname, this.metadata.sslCertPath))) {
+                        this.sqlConfig.ssl = {
+                            ca: fse.readFileSync(this.metadata.sslCertPath).toString(),
+                        };
+                    } else {
+                        throw new Error(`Cannot find a ssl certification for ${this.config.name}`);
+                    }
                 }
             }
 

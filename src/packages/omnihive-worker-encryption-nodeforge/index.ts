@@ -7,6 +7,7 @@ import forge from "node-forge";
 
 export class NodeForgeEncryptionWorkerMetadata {
     public encryptionKey: string = "";
+    public randomCharacters: number = 5;
 }
 
 export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements IEncryptionWorker {
@@ -25,6 +26,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
     }
 
     public base64Encode = (toEncode: string): string => {
+        toEncode = `${toEncode}${this.generateRandomCharacters()}`;
         const bytes: string = forge.util.encodeUtf8(toEncode);
         const encoded: string = forge.util.encode64(bytes);
         return encoded;
@@ -33,7 +35,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
     public base64Decode = (toDecode: string): string => {
         const decodedBytes: string = forge.util.decode64(toDecode);
         const decoded: string = forge.util.decodeUtf8(decodedBytes);
-        return decoded;
+        return decoded.substring(0, decoded.length - this.metadata.randomCharacters);
     };
 
     public symmetricDecrypt = (message: string): string => {
@@ -95,10 +97,12 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
 
         // Get decrypted message
         const decrypted = decipher.output.data;
-        return decrypted;
+        return decrypted.substring(0, decrypted.length - this.metadata.randomCharacters);
     };
 
     public symmetricEncrypt = (message: string): string => {
+        message = `${message}${this.generateRandomCharacters()}`;
+
         // Get random iv
         const iv = forge.random.getBytesSync(16);
         const encodedIv = forge.util.encode64(iv);
@@ -113,5 +117,17 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
         // Build message
         message = encodedIv + ":" + forge.util.encode64(cipher.output.data);
         return message;
+    };
+
+    private generateRandomCharacters = (): string => {
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        let result = "";
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+
+        return result;
     };
 }

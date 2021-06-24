@@ -7,7 +7,6 @@ import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilde
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSetterBase";
-import objectHash from "object-hash";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { AppSettings } from "@withonevision/omnihive-core/models/AppSettings";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
@@ -240,20 +239,10 @@ export class OmniHiveClient extends WorkerSetterBase {
         });
     };
 
-    public runCustomSql = async (url: string, sql: string, encryptionWorkerName?: string): Promise<any> => {
-        let encryptionWorker: IEncryptionWorker | undefined = undefined;
-
-        if (
-            !IsHelper.isNullOrUndefined(encryptionWorkerName) &&
-            !IsHelper.isEmptyStringOrWhitespace(encryptionWorkerName)
-        ) {
-            encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(
-                HiveWorkerType.Encryption,
-                encryptionWorkerName
-            );
-        } else {
-            encryptionWorker = this.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
-        }
+    public runCustomSql = async (url: string, sql: string): Promise<any> => {
+        let encryptionWorker: IEncryptionWorker | undefined = this.getWorker<IEncryptionWorker>(
+            HiveWorkerType.Encryption
+        );
 
         if (IsHelper.isNullOrUndefined(encryptionWorker)) {
             throw new Error("No encryption worker found.  An encryption worker is required for custom SQL");
@@ -285,6 +274,14 @@ export class OmniHiveClient extends WorkerSetterBase {
     };
 
     private getNewToken = async (): Promise<string> => {
+        let encryptionWorker: IEncryptionWorker | undefined = this.getWorker<IEncryptionWorker>(
+            HiveWorkerType.Encryption
+        );
+
+        if (IsHelper.isNullOrUndefined(encryptionWorker)) {
+            throw new Error("[ohAccessError] Could not retrieve token");
+        }
+
         const tokenWorker = this.getWorker<ITokenWorker | undefined>(HiveWorkerType.Token);
         let newToken: string = "";
 
@@ -301,10 +298,7 @@ export class OmniHiveClient extends WorkerSetterBase {
             const restPromise = new Promise<AxiosResponse<{ token: string }>>((resolve, reject) => {
                 const config: AxiosRequestConfig = { url: `${this.rootUrl}/ohAdmin/rest/token` };
                 config.data = {
-                    generator: objectHash(this.tokenMetadata, {
-                        algorithm: this.tokenMetadata.hashAlgorithm,
-                        respectType: false,
-                    }),
+                    generator: encryptionWorker?.symmetricEncrypt(this.tokenMetadata),
                 };
                 config.method = "POST";
 

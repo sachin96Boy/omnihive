@@ -1,7 +1,7 @@
 {
     "name": "root",
     "private": true,
-    "version": "6.2.35",
+    "version": "6.2.36",
     "workspaces": [
         "src/packages/*",
         "src/custom/*"

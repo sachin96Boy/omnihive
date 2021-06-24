@@ -1,6 +1,6 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { ArgumentNode, FieldNode, GraphQLResolveInfo, ObjectFieldNode, ObjectValueNode } from "graphql";
+import { FieldNode, GraphQLResolveInfo, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
@@ -21,10 +21,14 @@ export class ParseAstQuery {
     // private cacheWorker!: ICacheWorker | undefined;
     // private dateWorker!: IDateWorker | undefined;
     private knex: Knex | undefined;
-    private builder: Knex.QueryBuilder<any, unknown[]> | undefined;
-    private selectionFields: TableSchema[] = [];
-
     private joinFieldSuffix: string = "_table";
+
+    private builder: Knex.QueryBuilder<any, unknown[]> | undefined;
+    private queryStructure: any = {};
+    private schema: { [tableName: string]: TableSchema[] } = {};
+    private parentCall: string = "";
+    private selectionFields: TableSchema[] = [];
+    private columnCount: number = 0;
 
     public parse = async (
         workerName: string,
@@ -34,12 +38,15 @@ export class ParseAstQuery {
         schema: { [tableName: string]: TableSchema[] }
     ): Promise<any> => {
         try {
+            this.schema = schema;
             this.setRequiredWorkers(workerName);
             this.verifyToken(omniHiveContext);
-            this.buildQuery(resolveInfo, schema);
+            this.buildQuery(resolveInfo);
 
             if (this.builder) {
-                const results = (await this.databaseWorker?.executeQuery(this.builder.toString()))?.[0];
+                const results: any = [];
+
+                results.push((await this.databaseWorker?.executeQuery(this.builder.toString()))?.[0]);
 
                 if (results) {
                     return this.convertToGraph(results);
@@ -119,61 +126,103 @@ export class ParseAstQuery {
         }
     };
 
-    private buildQuery = (resolveInfo: GraphQLResolveInfo, schema: { [tableName: string]: TableSchema[] }): void => {
+    private buildQuery = (resolveInfo: GraphQLResolveInfo): void => {
         if (!this.knex) {
             throw new Error("Knex object is not initialized");
         }
 
-        const primaryTable = schema[resolveInfo.fieldName][0].tableName;
-        const primarySchemaProp = resolveInfo.fieldName;
-
         this.builder = this.knex.queryBuilder();
-        this.builder.from(primaryTable);
+        this.parentCall = resolveInfo.fieldName;
 
-        resolveInfo.operation.selectionSet.selections.forEach((field: any) =>
-            this.graphToKnex(field.arguments, field, schema, primarySchemaProp)
+        this.queryStructure = this.getQueryStructure(
+            resolveInfo.operation.selectionSet.selections.filter(
+                (x) => (x as FieldNode).name.value === this.parentCall
+            ) as FieldNode[],
+            this.parentCall
         );
+
+        Object.keys(this.queryStructure).forEach((key) => {
+            if (!this.builder) {
+                throw new Error("Knex Query Builder did not initialize correctly");
+            }
+
+            const tableSchema: TableSchema[] = this.schema[key];
+            this.builder?.from(`${tableSchema[0].tableName} as t1`);
+
+            // Build queries
+            this.graphToKnex(this.queryStructure[key], this.parentCall);
+        });
     };
 
-    private graphToKnex = (
-        args: readonly ArgumentNode[],
-        field: FieldNode,
-        schema: { [tableName: string]: TableSchema[] },
-        tableName: string
-    ) => {
-        if (!this.builder) {
-            throw new Error("Knex Query Builder not initialized");
-        }
-        // TODO: Iterate through each selectionSet to build the query. if (field.name.value.endsWith(this.joinFieldSuffix) === Repeat logic for new table)
+    private getQueryStructure = (graphField: readonly FieldNode[], parentKey: string, tableCount: number = 0): any => {
+        let structure: any = {};
 
-        const flattenedArgs = this.flattenArgs(args as unknown as readonly ObjectFieldNode[]);
+        graphField.forEach((field) => {
+            const fieldSelections = field?.selectionSet?.selections;
 
-        this.buildSelect(field, schema, tableName, false);
-
-        for (const knexFunction in flattenedArgs) {
-            switch (knexFunction) {
-                case "where": {
-                    this.buildEqualities(flattenedArgs[knexFunction], this.builder, schema, tableName);
-                    break;
+            if (fieldSelections && fieldSelections.length > 0) {
+                if (!structure[field.name.value]) {
+                    structure[field.name.value] = {};
                 }
-                case "orderBy": {
-                    this.buildOrderBy(flattenedArgs[knexFunction], schema, tableName);
-                    break;
+
+                tableCount++;
+                structure[field.name.value] = this.getQueryStructure(
+                    fieldSelections as FieldNode[],
+                    field.name.value,
+                    tableCount
+                );
+
+                structure[field.name.value].tableAlias = `t${tableCount}`;
+            } else {
+                if (!structure.columns) {
+                    structure.columns = [];
                 }
-                case "groupBy": {
-                    this.buildGroupBy(flattenedArgs[knexFunction], schema, tableName);
-                    break;
+
+                structure.columns.push({ name: field.name.value, alias: `f${this.columnCount}` });
+                this.columnCount++;
+            }
+
+            if (field.name.value.endsWith(this.joinFieldSuffix) || field.name.value === this.parentCall) {
+                const tableKey = field.name.value.replace(this.joinFieldSuffix, "");
+
+                if (this.schema[tableKey]) {
+                    structure[field.name.value].tableKey = tableKey;
+                    structure[field.name.value].parentTableKey = parentKey.replace(this.joinFieldSuffix, "");
+                } else {
+                    structure[field.name.value].tableKey = this.schema[parentKey].find(
+                        (x) => field.name.value.replace(this.joinFieldSuffix, "") === x.columnNameEntity
+                    )?.columnForeignKeyTableNameCamelCase;
+                    structure[field.name.value].linkingTableKey = parentKey;
                 }
             }
-        }
+
+            const args = this.flattenArgs(field.arguments as unknown as readonly ObjectFieldNode[]);
+
+            if (args && Object.keys(args).length > 0) {
+                structure[field.name.value].args = args;
+            }
+        });
+
+        return structure;
     };
 
     private flattenArgs = (args: readonly ObjectFieldNode[]): any => {
         const flattened: any = {};
 
         args.forEach((x) => {
-            if ((x.value as ObjectValueNode).fields?.length > 0) {
+            if ((x.value as ObjectValueNode)?.fields?.length > 0) {
                 flattened[x.name.value] = this.flattenArgs((x.value as ObjectValueNode).fields);
+            } else if ((x.value as ListValueNode)?.values?.length > 0) {
+                flattened[x.name.value] = [];
+                (x.value as ListValueNode).values.forEach((y) => {
+                    if ((y as ObjectValueNode).fields?.length > 0) {
+                        flattened[x.name.value].push(
+                            this.flattenArgs((y as ObjectValueNode).fields as readonly ObjectFieldNode[])
+                        );
+                    } else {
+                        flattened[x.name.value].push((y as unknown as ObjectFieldNode).value);
+                    }
+                });
             } else {
                 flattened[x.name.value] = (x.value as unknown as ObjectFieldNode).value;
             }
@@ -182,41 +231,256 @@ export class ParseAstQuery {
         return flattened;
     };
 
+    private graphToKnex = (structure: any, parentKey: string) => {
+        if (!this.builder) {
+            throw new Error("Knex Query Builder not initialized");
+        }
+
+        if (!structure || Object.keys(structure).length <= 0) {
+            throw new Error("The Graph Query is not structured properly");
+        }
+
+        if (!this.builder) {
+            throw new Error("Knex Query Builder did not initialize correctly");
+        }
+
+        this.buildSelect(structure.columns, structure.tableAlias, parentKey, structure.args?.distinct);
+        this.buildJoins(structure, parentKey);
+
+        if (
+            !structure.args?.join ||
+            (structure.args?.join?.whereMode && structure.args?.join?.whereMode === "global")
+        ) {
+            this.buildConditions(structure.args, structure.tableAlias, this.builder, parentKey);
+        }
+
+        Object.keys(structure).forEach((key) => {
+            // Build inner queries
+            if (key.endsWith(this.joinFieldSuffix)) {
+                this.graphToKnex(structure[key], structure[key].tableKey);
+            }
+        });
+    };
+
+    private buildJoins = (structure: any, tableKey: string) => {
+        if (!this.builder) {
+            throw new Error("Knex Query Builder not initialized");
+        }
+
+        if (structure.args?.join) {
+            let joinTable: string = this.schema[tableKey]?.[0]?.tableName;
+            let primaryColumnName: string = "";
+            let linkingColumnName: string = "";
+            const schemaKey = structure.linkingTableKey ? structure.linkingTableKey : tableKey;
+
+            if (this.schema[schemaKey].some((x) => x.columnNameEntity === structure.args.join.from)) {
+                const primaryColumn: TableSchema | undefined = this.schema[schemaKey]?.find(
+                    (x) => x.columnNameEntity === structure.args.join.from
+                );
+
+                let parentAlias = "";
+
+                if (primaryColumn) {
+                    primaryColumnName = `${primaryColumn.columnNameDatabase}`;
+                    linkingColumnName = `${primaryColumn.columnForeignKeyColumnName}`;
+
+                    if (structure.linkingTableKey) {
+                        parentAlias = this.findParentAlias(this.queryStructure[this.parentCall], schemaKey);
+                        joinTable = primaryColumn.columnForeignKeyTableName;
+
+                        primaryColumnName = `${parentAlias}.${primaryColumnName}`;
+                        linkingColumnName = `${structure.tableAlias}.${linkingColumnName}`;
+                    } else {
+                        parentAlias = this.findParentAlias(
+                            this.queryStructure[this.parentCall],
+                            structure.parentTableKey
+                        );
+                        primaryColumnName = `${structure.tableAlias}.${primaryColumnName}`;
+                        linkingColumnName = `${parentAlias}.${linkingColumnName}`;
+                    }
+                }
+            }
+
+            const whereSpecific: boolean = structure.args?.join?.whereMode === "specific";
+
+            switch (structure.args.join.type) {
+                case "inner": {
+                    if (whereSpecific) {
+                        this.builder.innerJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                            builder.on(primaryColumnName, "=", linkingColumnName);
+                            this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                        });
+                    } else {
+                        this.builder.innerJoin(
+                            `${joinTable} as ${structure.tableAlias}`,
+                            primaryColumnName,
+                            linkingColumnName
+                        );
+                    }
+                    break;
+                }
+                case "left": {
+                    if (whereSpecific) {
+                        this.builder.leftJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                            builder.on(primaryColumnName, "=", linkingColumnName);
+                            this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                        });
+                    } else {
+                        this.builder.leftJoin(
+                            `${joinTable} as ${structure.tableAlias}`,
+                            primaryColumnName,
+                            linkingColumnName
+                        );
+                    }
+                    break;
+                }
+                case "leftOuter": {
+                    if (whereSpecific) {
+                        this.builder.leftOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                            builder.on(primaryColumnName, "=", linkingColumnName);
+                            this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                        });
+                    } else {
+                        this.builder.leftOuterJoin(
+                            `${joinTable} as ${structure.tableAlias}`,
+                            primaryColumnName,
+                            linkingColumnName
+                        );
+                    }
+                    break;
+                }
+                case "right": {
+                    if (whereSpecific) {
+                        this.builder.rightJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                            builder.on(primaryColumnName, "=", linkingColumnName);
+                            this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                        });
+                    } else {
+                        this.builder.rightJoin(
+                            `${joinTable} as ${structure.tableAlias}`,
+                            primaryColumnName,
+                            linkingColumnName
+                        );
+                    }
+                    break;
+                }
+                case "rightOuter": {
+                    if (whereSpecific) {
+                        this.builder.rightOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                            builder.on(primaryColumnName, "=", linkingColumnName);
+                            this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                        });
+                    } else {
+                        this.builder.rightOuterJoin(
+                            `${joinTable} as ${structure.tableAlias}`,
+                            primaryColumnName,
+                            linkingColumnName
+                        );
+                    }
+                    break;
+                }
+                case "fullOuter": {
+                    if (whereSpecific) {
+                        this.builder.fullOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                            builder.on(primaryColumnName, "=", linkingColumnName);
+                            this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                        });
+                    } else {
+                        this.builder.fullOuterJoin(
+                            `${joinTable} as ${structure.tableAlias}`,
+                            primaryColumnName,
+                            linkingColumnName
+                        );
+                    }
+                    break;
+                }
+                case "cross": {
+                    if (whereSpecific) {
+                        this.builder.crossJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                            builder.on(primaryColumnName, "=", linkingColumnName);
+                            this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                        });
+                    } else {
+                        this.builder.crossJoin(
+                            `${joinTable} as ${structure.tableAlias}`,
+                            primaryColumnName,
+                            linkingColumnName
+                        );
+                    }
+                    break;
+                }
+                default: {
+                    if (whereSpecific) {
+                        this.builder.join(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                            builder.on(primaryColumnName, "=", linkingColumnName);
+                            this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                        });
+                    } else {
+                        this.builder.join(
+                            `${joinTable} as ${structure.tableAlias}`,
+                            primaryColumnName,
+                            linkingColumnName
+                        );
+                    }
+                    break;
+                }
+            }
+        }
+    };
+
     private buildSelect = (
-        field: FieldNode,
-        schema: { [tableName: string]: TableSchema[] },
+        columns: { name: string; alias: string }[],
+        tableAlias: string,
         tableName: string,
         distinct: boolean
     ): void => {
-        const fields = field.selectionSet?.selections.map((field) => (field as FieldNode).name.value);
+        if (columns) {
+            columns.forEach((field) => {
+                const column = this.schema[tableName].find((column) => column.columnNameEntity === field.name);
 
-        if (fields) {
-            fields.forEach((field) => {
-                if (field.endsWith(this.joinFieldSuffix)) {
-                    return;
-                }
-
-                const column = schema[tableName].find((column) => column.columnNameEntity === field);
-
-                if (column) {
+                if (column && !this.selectionFields.some((x) => x.columnNameEntity === column.columnNameEntity)) {
                     this.selectionFields.push(column);
+
+                    this.builder?.[distinct ? "distinct" : "select"](
+                        `${tableAlias}.${column.columnNameDatabase} as ${field.alias}`
+                    );
                 }
             });
+        }
+    };
 
-            const dbNames = this.selectionFields?.map((x) => x.columnNameDatabase);
-
-            if (dbNames) {
-                this.builder?.[distinct ? "distinct" : "select"](dbNames);
+    private buildConditions = (
+        args: any,
+        tableAlias: string,
+        builder: Knex.QueryBuilder<any, unknown[]> | Knex.JoinClause,
+        tableName: string,
+        join: boolean = false
+    ) => {
+        for (const knexFunction in args) {
+            switch (knexFunction) {
+                case "where": {
+                    this.buildEqualities(args[knexFunction], tableAlias, builder, tableName, false, join);
+                    break;
+                }
+                case "orderBy": {
+                    this.buildOrderBy(args[knexFunction], tableAlias, tableName);
+                    break;
+                }
+                case "groupBy": {
+                    this.buildGroupBy(args[knexFunction], tableAlias, tableName);
+                    break;
+                }
             }
         }
     };
 
     private buildEqualities = (
         arg: any,
-        builder: Knex.QueryBuilder<any, unknown[]>,
-        schema: { [tableName: string]: TableSchema[] },
+        tableAlias: string,
+        builder: Knex.QueryBuilder<any, unknown[]> | Knex.JoinClause,
         tableName: string,
-        having: boolean = false
+        having: boolean = false,
+        join: boolean = false
     ): void => {
         if (!builder) {
             throw new Error("Knex Query Builder is not initialized");
@@ -224,28 +488,42 @@ export class ParseAstQuery {
 
         for (const key in arg) {
             if (key === "and") {
-                builder[having ? "andHaving" : "andWhere"]((subBuilder) => {
+                if (join) {
+                    (builder as Knex.JoinClause).orOn((subBuilder) => {
+                        for (const innerArg of arg.and) {
+                            this.buildEqualities(innerArg, tableAlias, subBuilder, tableName, false, join);
+                        }
+                    });
+                }
+                (builder as Knex.QueryBuilder)[having ? "andHaving" : "andWhere"]((subBuilder) => {
                     for (const innerArg of arg.and) {
-                        this.buildEqualities(innerArg, subBuilder, schema, tableName, having);
+                        this.buildEqualities(innerArg, tableAlias, subBuilder, tableName, having);
                     }
                 });
                 continue;
             }
 
             if (key === "or") {
-                builder[having ? "orHaving" : "orWhere"]((subBuilder) => {
+                if (join) {
+                    (builder as Knex.JoinClause).orOn((subBuilder) => {
+                        for (const innerArg of arg.or) {
+                            this.buildEqualities(innerArg, tableAlias, subBuilder, tableName, false, join);
+                        }
+                    });
+                }
+                (builder as Knex.QueryBuilder)[having ? "orHaving" : "orWhere"]((subBuilder) => {
                     for (const innerArg of arg.or) {
-                        this.buildEqualities(innerArg, subBuilder, schema, tableName, having);
+                        this.buildEqualities(innerArg, tableAlias, subBuilder, tableName, having);
                     }
                 });
 
                 continue;
             }
 
-            const columnName = schema[tableName].find((c) => c.columnNameEntity === key)?.columnNameDatabase;
+            const columnName = this.schema[tableName].find((c) => c.columnNameEntity === key)?.columnNameDatabase;
 
             if (columnName) {
-                this.buildRowEquality(columnName, arg[key], builder, having);
+                this.buildRowEquality(`${tableAlias}.${columnName}`, arg[key], builder, having, join);
             }
         }
     };
@@ -253,8 +531,9 @@ export class ParseAstQuery {
     private buildRowEquality = (
         argName: string,
         arg: any,
-        builder: Knex.QueryBuilder<any, unknown[]>,
-        having: boolean = false
+        builder: Knex.QueryBuilder<any, unknown[]> | Knex.JoinClause,
+        having: boolean = false,
+        join: boolean = false
     ): void => {
         if (!this.knex) {
             throw new Error("Knex is not initialized");
@@ -267,148 +546,222 @@ export class ParseAstQuery {
                 argValue = this.knex.raw(`${argValue.subquery}`);
             }
 
+            if (join) {
+                if (typeof argValue === "string") {
+                    argValue = this.knex.raw(`'${argValue}'`);
+                } else {
+                    argValue = this.knex.raw(argValue);
+                }
+            }
+
             if (typeof argValue === "boolean") {
                 argValue = argValue ? 1 : 0;
             }
 
             switch (equality) {
                 case "eq": {
-                    if (having) {
-                        builder.having(argName, "=", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, "=", argValue);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, "=", argValue);
                     } else {
-                        builder.where(argName, argValue);
+                        (builder as Knex.QueryBuilder).where(argName, argValue);
                     }
                     break;
                 }
                 case "notEq": {
-                    if (having) {
-                        builder.having(argName, "!=", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, "!=", argValue);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, "!=", argValue);
                     } else {
-                        builder.whereNot(argName, argValue);
+                        (builder as Knex.QueryBuilder).whereNot(argName, argValue);
                     }
                     break;
                 }
                 case "like": {
-                    builder[having ? "having" : "where"](argName, "like", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, "like", argValue);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, "like", argValue);
+                    }
                     break;
                 }
                 case "notLike": {
-                    if (having) {
-                        builder.having(argName, "not like", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, "not like", argValue);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, "not like", argValue);
                     } else {
-                        builder.whereNot(argName, "like", argValue);
+                        (builder as Knex.QueryBuilder).whereNot(argName, "like", argValue);
                     }
                     break;
                 }
                 case "gt": {
-                    builder[having ? "having" : "where"](argName, ">", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, ">", argValue);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, ">", argValue);
+                    }
                     break;
                 }
                 case "gte": {
-                    builder[having ? "having" : "where"](argName, ">=", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, ">=", argValue);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, ">=", argValue);
+                    }
                     break;
                 }
                 case "notGt": {
-                    if (having) {
-                        builder.having(argName, "<=", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, "<=", argValue);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, "<=", argValue);
                     } else {
-                        builder.whereNot(argName, ">", argValue);
+                        (builder as Knex.QueryBuilder).whereNot(argName, ">", argValue);
                     }
                     break;
                 }
                 case "notGte": {
-                    if (having) {
-                        builder.having(argName, "<", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, "<", argValue);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, "<", argValue);
                     } else {
-                        builder.whereNot(argName, ">=", argValue);
+                        (builder as Knex.QueryBuilder).whereNot(argName, ">=", argValue);
                     }
                     break;
                 }
                 case "lt": {
-                    builder[having ? "having" : "where"](argName, "<", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, "<", argValue);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, "<", argValue);
+                    }
                     break;
                 }
                 case "lte": {
-                    builder[having ? "having" : "where"](argName, "<=", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, "<=", argValue);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, "<=", argValue);
+                    }
                     break;
                 }
                 case "notLt": {
-                    if (having) {
-                        builder.having(argName, ">=", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, ">=", argValue);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, ">=", argValue);
                     } else {
-                        builder.whereNot(argName, "<", argValue);
+                        (builder as Knex.QueryBuilder).whereNot(argName, "<", argValue);
                     }
                     break;
                 }
                 case "notLte": {
-                    if (having) {
-                        builder.having(argName, ">", argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).on(argName, ">", argValue);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, ">", argValue);
                     } else {
-                        builder.whereNot(argName, "<=", argValue);
+                        (builder as Knex.QueryBuilder).whereNot(argName, "<=", argValue);
                     }
                     break;
                 }
                 case "in": {
-                    builder[having ? "havingIn" : "whereIn"](argName, argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).onIn(argName, argValue);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "havingIn" : "whereIn"](argName, argValue);
+                    }
                     break;
                 }
                 case "notIn": {
-                    builder[having ? "havingNotIn" : "whereNotIn"](argName, argValue);
+                    if (join) {
+                        (builder as Knex.JoinClause).onNotIn(argName, argValue);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "havingNotIn" : "whereNotIn"](argName, argValue);
+                    }
                     break;
                 }
                 case "isNull": {
-                    if (having) {
-                        builder.having(argName, "is", this.knex.raw("null"));
+                    if (join) {
+                        (builder as Knex.JoinClause).onNull(argName);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, "is", this.knex.raw("null"));
                     } else {
-                        builder.whereNull(argName);
+                        (builder as Knex.QueryBuilder).whereNull(argName);
                     }
                     break;
                 }
                 case "isNotNull": {
-                    if (having) {
-                        builder.having(argName, "is not", this.knex.raw("null"));
+                    if (join) {
+                        (builder as Knex.JoinClause).onNotNull(argName);
+                    } else if (having) {
+                        (builder as Knex.QueryBuilder).having(argName, "is not", this.knex.raw("null"));
                     } else {
-                        builder.whereNotNull(argName);
+                        (builder as Knex.QueryBuilder).whereNotNull(argName);
                     }
                     break;
                 }
                 case "exists": {
-                    if (having) {
+                    if (join) {
+                        (builder as Knex.JoinClause).onExists(argValue);
+                    } else if (having) {
                         throw new Error("The Having function does not support the exists equality");
                     } else {
-                        builder.whereExists(argValue);
+                        (builder as Knex.QueryBuilder).whereExists(argValue);
                     }
                     break;
                 }
                 case "notExists": {
-                    if (having) {
+                    if (join) {
+                        (builder as Knex.JoinClause).onNotExists(argValue);
+                    } else if (having) {
                         throw new Error("The Having function does not support the notExists equality");
                     } else {
-                        builder.whereNotExists(argValue);
+                        (builder as Knex.QueryBuilder).whereNotExists(argValue);
                     }
                     break;
                 }
                 case "between": {
-                    builder[having ? "havingBetween" : "whereBetween"](argName, [argValue.start, argValue.end]);
+                    if (join) {
+                        (builder as Knex.JoinClause).onBetween(argName, [argValue.start, argValue.end]);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "havingBetween" : "whereBetween"](argName, [
+                            argValue.start,
+                            argValue.end,
+                        ]);
+                    }
                     break;
                 }
                 case "notBetween": {
-                    builder[having ? "havingNotBetween" : "whereNotBetween"](argName, [argValue.start, argValue.end]);
+                    if (join) {
+                        (builder as Knex.JoinClause).onNotBetween(argName, [argValue.start, argValue.end]);
+                    } else {
+                        (builder as Knex.QueryBuilder)[having ? "havingNotBetween" : "whereNotBetween"](argName, [
+                            argValue.start,
+                            argValue.end,
+                        ]);
+                    }
                     break;
                 }
             }
         }
     };
 
-    private buildOrderBy = (arg: any, schema: { [tableName: string]: TableSchema[] }, tableName: string): void => {
+    private buildOrderBy = (arg: any, tableAlias: string, tableName: string): void => {
         const orderByArgs: { column: string; order: "asc" | "desc" }[] = [];
 
         for (const field of arg) {
             Object.keys(field).map((key) => {
-                const dbName = schema[tableName].find((column) => column.columnNameEntity === key)?.columnNameDatabase;
+                const dbName = this.schema[tableName].find(
+                    (column) => column.columnNameEntity === key
+                )?.columnNameDatabase;
 
                 if (dbName) {
-                    orderByArgs.push({ column: dbName, order: field[key] });
+                    orderByArgs.push({ column: `${tableAlias}.${dbName}`, order: field[key] });
                 }
             });
         }
@@ -416,27 +769,32 @@ export class ParseAstQuery {
         this.builder?.orderBy(orderByArgs);
     };
 
-    private buildGroupBy = (
-        arg: { columns: string[]; having: any },
-        schema: { [tableName: string]: TableSchema[] },
-        tableName: string
-    ): void => {
+    private buildGroupBy = (arg: { columns: string[]; having: any }, tableAlias: string, tableName: string): void => {
         if (!this.builder) {
             throw new Error("Knex Query Builder is not initialized");
         }
 
         const dbNames: string[] = [];
-        arg.columns.forEach((x) => {
-            const name = schema[tableName].find((column) => column.columnNameEntity === x)?.columnNameDatabase;
+
+        const findDbName = (fieldName: string) => {
+            const name = this.schema[tableName].find(
+                (column) => column.columnNameEntity === fieldName
+            )?.columnNameDatabase;
 
             if (name) {
-                dbNames.push(name);
+                dbNames.push(`${tableAlias}.${name}`);
             }
-        });
+        };
+
+        if (Array.isArray(arg.columns)) {
+            arg.columns.forEach((x) => findDbName(x));
+        } else {
+            findDbName(arg.columns);
+        }
 
         this.builder.groupBy(dbNames);
 
-        this.buildEqualities(arg.having, this.builder, schema, tableName, true);
+        this.buildEqualities(arg.having, tableAlias, this.builder, tableName, true);
     };
 
     private convertToGraph = (results: any): any => {
@@ -447,18 +805,37 @@ export class ParseAstQuery {
             const row: any = {};
 
             dbNames.forEach((column) => {
-                const entityName: string | undefined = this.selectionFields?.find(
+                const entityName: string | undefined = this.selectionFields.find(
                     (x) => x.columnNameDatabase === column
                 )?.columnNameEntity;
 
                 if (entityName) {
                     row[entityName] = r[column];
                 }
-            });
 
-            graphResult.push(row);
+                graphResult.push(row);
+            });
         });
 
         return graphResult;
+    };
+
+    private findParentAlias = (structure: any, tableKey: string): string => {
+        if (structure.tableKey === tableKey) {
+            return structure.tableAlias;
+        } else {
+            for (const key in structure) {
+                let alias: string = "";
+                if (key.endsWith(this.joinFieldSuffix)) {
+                    alias = this.findParentAlias(structure[key], tableKey);
+                }
+
+                if (alias) {
+                    return alias;
+                }
+            }
+
+            return "";
+        }
     };
 }

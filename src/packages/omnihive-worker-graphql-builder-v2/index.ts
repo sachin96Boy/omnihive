@@ -24,6 +24,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private groupBySuffix: string = "GroupByType";
     private columnEqualitySuffix: string = "ColumnEqualityType";
     private joiningSuffix: string = "LinkingEnum";
+    private joinTypeSuffix: string = "JoinType";
     private joinFieldSuffix: string = "_table";
 
     // Declare Global Variables
@@ -61,7 +62,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         const foreignColumns = this.findForeignKeys(schema);
 
         const typeDef = this.buildTypeDefinitions(schema, foreignColumns);
-        const resolver = this.buildResolvers(schema, foreignColumns, databaseWorker);
+        const resolver = this.buildResolvers(schema, databaseWorker);
 
         return makeExecutableSchema({
             typeDefs: typeDef,
@@ -162,6 +163,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 cross
             }
 
+            enum WhereMode {
+                global
+                specific
+            }
+
             input EqualityTypes {
                 eq: Any
                 notEq: Any
@@ -217,6 +223,31 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                         ${foreignLinks.map((column) => column.columnNameEntity).join("\n")}
                     }
                 `.trim();
+
+                results += "\n";
+            }
+
+            results += `input ${this.uppercaseFirstLetter(parentTable)}${this.uppercaseFirstLetter(tableName)}${
+                this.joinTypeSuffix
+            } {
+                type: JoinOptions
+                whereMode: WhereMode
+                ${
+                    foreignLinks?.length > 0
+                        ? `from: ${this.uppercaseFirstLetter(parentTable)}${this.uppercaseFirstLetter(tableName)}${
+                              this.joiningSuffix
+                          }`
+                        : ""
+                }
+            }`;
+
+            if (tableName !== parentTable) {
+                results += `input ${this.uppercaseFirstLetter(tableName)}${this.uppercaseFirstLetter(parentTable)}${
+                    this.joinTypeSuffix
+                } {
+                    type: JoinOptions
+                    whereMode: WhereMode
+                }`;
             }
         }
 
@@ -231,7 +262,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         return `
             input ${tableName}${this.columnEqualitySuffix} {
-                ${schema.map((column) => `${column.columnNameEntity}: EqualityTypes`.trim())}
+                ${schema.map((column) => `${column.columnNameEntity}: EqualityTypes`.trim()).join("\n")}
             }
         
             ${Object.keys(foreignColumns)
@@ -255,55 +286,62 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         return `
             type ${tableName}${this.objectSuffix} {
-                ${schema.map((column) => {
-                    let columnDef: string = "";
-                    let columnType: string = this.graphHelper.getGraphTypeFromEntityType(column.columnTypeEntity);
-                    let columnDefault: string = `${column.columnNameEntity}: ${columnType}`;
+                ${schema
+                    .map((column) => {
+                        let columnDef: string = "";
+                        let columnType: string = this.graphHelper.getGraphTypeFromEntityType(column.columnTypeEntity);
+                        let columnDefault: string = `${column.columnNameEntity}: ${columnType}`;
 
-                    if (column.columnIsForeignKey) {
-                        if (column.columnForeignKeyTableNameCamelCase === column.tableNameCamelCase) {
-                            columnDef = `${columnDefault} ${column.columnNameEntity}${
-                                this.joinFieldSuffix
-                            }(joinType: JoinOptions, ${this.buildArgString(schema)})`;
+                        if (column.columnIsForeignKey) {
+                            if (column.columnForeignKeyTableNameCamelCase === column.tableNameCamelCase) {
+                                columnDef = `${columnDefault} ${column.columnNameEntity}${
+                                    this.joinFieldSuffix
+                                }(join: ${this.uppercaseFirstLetter(
+                                    column.columnForeignKeyTableNamePascalCase
+                                )}${tableName}${this.joinTypeSuffix}!, ${this.buildArgString(schema)})`;
+                            } else {
+                                columnDef = `${columnDefault} ${column.columnNameEntity}${
+                                    this.joinFieldSuffix
+                                }(join: ${this.uppercaseFirstLetter(
+                                    column.columnForeignKeyTableNamePascalCase
+                                )}${tableName}${this.joinTypeSuffix}!, ${this.buildArgString(
+                                    foreignColumns[column.columnForeignKeyTableNameCamelCase]
+                                )})`;
+                            }
+
+                            columnType = `: [${column.columnForeignKeyTableNamePascalCase}${this.objectSuffix}]`;
+                            columnDef += columnType;
                         } else {
-                            columnDef = `${columnDefault} ${column.columnNameEntity}${
-                                this.joinFieldSuffix
-                            }(joinType: JoinOptions, ${this.buildArgString(
-                                foreignColumns[column.columnForeignKeyTableNameCamelCase]
-                            )})`;
+                            columnDef = columnDefault;
                         }
 
-                        columnType = `: [${column.columnForeignKeyTableNamePascalCase}${this.objectSuffix}]`;
-                        columnDef += columnType;
-                    } else {
-                        columnDef = columnDefault;
-                    }
+                        return `${columnDef}`.trim();
+                    })
+                    .join("\n")}
 
-                    return `${columnDef}`.trim();
-                })}
+                ${Object.keys(foreignColumns)
+                    .map((table) => {
+                        const linkingSchema = schema.find((x) =>
+                            foreignColumns[table].find((y) => x.columnNameDatabase === y.columnForeignKeyColumnName)
+                        );
+                        let results = ``;
 
-                ${Object.keys(foreignColumns).map((table) => {
-                    const linkingSchema = schema.find((x) =>
-                        foreignColumns[table].find((y) => x.columnNameDatabase === y.columnForeignKeyColumnName)
-                    );
-                    let results = ``;
-
-                    if (
-                        !linkingSchema?.columnIsForeignKey &&
-                        linkingSchema?.columnForeignKeyTableNameCamelCase !== linkingSchema?.tableNameCamelCase
-                    ) {
-                        results += `
+                        if (
+                            !linkingSchema?.columnIsForeignKey &&
+                            linkingSchema?.columnForeignKeyTableNameCamelCase !== linkingSchema?.tableNameCamelCase
+                        ) {
+                            results += `
                             ${table}${this.joinFieldSuffix}(
-                                joinType: JoinOptions 
-                                fromColumn: ${tableName}${this.uppercaseFirstLetter(table)}${
-                            this.joiningSuffix
-                        } ${this.buildArgString(this.tables[table])}): [${this.uppercaseFirstLetter(table)}${
-                            this.objectSuffix
-                        }]`.trim();
-                    }
+                                join: ${tableName}${this.uppercaseFirstLetter(table)}${
+                                this.joinTypeSuffix
+                            }! ${this.buildArgString(this.tables[table])}): [${this.uppercaseFirstLetter(table)}${
+                                this.objectSuffix
+                            }]`.trim();
+                        }
 
-                    return results;
-                })}
+                        return results;
+                    })
+                    .join("\n")}
             }
         `;
     };
@@ -362,11 +400,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         return `
             input ${tableName}${this.orderBySuffix} {
-                ${schema.map((column) =>
-                    `
+                ${schema
+                    .map((column) =>
+                        `
                     ${column.columnNameEntity}: OrderByOptions
                 `.trim()
-                )}
+                    )
+                    .join("\n")}
             }
 
             ${Object.keys(foreignColumns)
@@ -398,11 +438,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         return `
             enum ${tableName}${this.columnEnumSuffix} {
-                ${schema.map((column) =>
-                    `
+                ${schema
+                    .map((column) =>
+                        `
                         ${column.columnNameEntity}
                     `.trim()
-                )}
+                    )
+                    .join("\n")}
             }
 
             ${Object.keys(foreignColumns)
@@ -433,7 +475,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         return `
             input ${tableName}${this.groupBySuffix} {
-                columns: [${tableName}${this.columnEnumSuffix}]
+                columns: [${tableName}${this.columnEnumSuffix}!]!
                 having: ${tableName}${this.whereSuffix}
             }
 
@@ -445,7 +487,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                     return `
                         input ${this.uppercaseFirstLetter(table)}${this.groupBySuffix} {
-                            columns: [${this.uppercaseFirstLetter(table)}${this.columnEnumSuffix}]
+                            columns: [${this.uppercaseFirstLetter(table)}${this.columnEnumSuffix}!]!
                             having: ${this.uppercaseFirstLetter(table)}${this.whereSuffix}
                         }
                     `.trim();
@@ -457,10 +499,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private buildColumnEqualities = (schema: TableSchema[]): string => {
         const tableName = schema[0].tableNamePascalCase;
 
-        const colEqualities: string = `${schema.map((column) =>
-            `${column.columnNameEntity}: EqualityTypes
-            `.trim()
-        )}`.trim();
+        const colEqualities: string = `${schema
+            .map((column) => `${column.columnNameEntity}: EqualityTypes`)
+            .join("\n")}`.trim();
 
         return `
             {
@@ -471,18 +512,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         `.trim();
     };
 
-    private buildResolvers = (
-        schema: TableSchema[],
-        foreignColumns: { [tableName: string]: TableSchema[] },
-        databaseWorker: IDatabaseWorker
-    ): any => {
+    private buildResolvers = (schema: TableSchema[], databaseWorker: IDatabaseWorker): any => {
         const tableName: string = schema[0].tableNameCamelCase;
-        const completeForeignColumns: { [tableName: string]: TableSchema[] } = {};
-        Object.keys(foreignColumns).map((table) => (completeForeignColumns[table] = this.tables[table]));
-        const mergedSchema: { [tableName: string]: TableSchema[] } = {
-            [tableName]: schema,
-            ...completeForeignColumns,
-        };
 
         return {
             Query: {
@@ -493,7 +524,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                             args,
                             info,
                             context.omnihive,
-                            mergedSchema
+                            this.tables
                         )
                     );
                 },

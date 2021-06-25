@@ -47,7 +47,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
         // Validate message format
         if (
             IsHelper.isNullOrUndefined(message) ||
-            !IsHelper.isEmptyStringOrWhitespace(message) ||
+            IsHelper.isEmptyStringOrWhitespace(message) ||
             message.indexOf(":") < 0
         ) {
             throw new Error("Secure message data is not in the correct format");

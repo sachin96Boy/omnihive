@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-knex-mysql",
-    "version": "6.2.35",
+    "version": "6.2.36",
     "description": "OmniHive Knex MySQL Database Worker",
     "license": "MIT",
     "author": {

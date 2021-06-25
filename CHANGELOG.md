@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 6.2.39 (2021-06-25)
+
+
+### Bug Fixes
+
+* **omnihive:** bad boolean comparison ([07c1f2b](https://github.com/WithOneVisionTechnologies/omnihive/commit/07c1f2bcf3761ce361f1d4c831a3788822c0d540))
+
 ### 6.2.38 (2021-06-25)
 
 ### 6.2.37 (2021-06-25)

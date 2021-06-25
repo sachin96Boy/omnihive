@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-encryption-nodeforge",
-    "version": "6.2.38",
+    "version": "6.2.39",
     "description": "OmniHive NodeForge Encryption Worker",
     "license": "MIT",
     "author": {

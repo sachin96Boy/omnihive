@@ -54,7 +54,7 @@ export abstract class HiveWorkerBase implements IHiveWorker {
 
                 switch (environmentVariable.type) {
                     case EnvironmentVariableType.Boolean:
-                        this.metadata[metaKey] = environmentVariable.value === "true";
+                        this.metadata[metaKey] = environmentVariable.value === "true" || environmentVariable.value === true;
                         break;
                     case EnvironmentVariableType.Number:
                         this.metadata[metaKey] = Number(environmentVariable.value);

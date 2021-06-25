@@ -97,16 +97,11 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
             throw new Error("Request must have parameters");
         }
 
-        if (
-            IsHelper.isNullOrUndefined(this.tokenWorker) ||
-            IsHelper.isNullOrUndefined(this.tokenWorker.config.metadata)
-        ) {
+        if (IsHelper.isNullOrUndefined(this.tokenWorker) || IsHelper.isNullOrUndefined(this.tokenWorker.metadata)) {
             throw new Error("A token worker cannot be found");
         }
 
-        const encryptedMetadata = this.encryptionWorker.symmetricEncrypt(
-            JSON.stringify(this.tokenWorker.config.metadata)
-        );
+        const encryptedMetadata = this.encryptionWorker.symmetricEncrypt(JSON.stringify(this.tokenWorker.metadata));
 
         if (body.generator !== encryptedMetadata) {
             throw new Error("Token cannot be generated");

@@ -6,17 +6,16 @@ import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { WorkerSetterBase } from "@withonevision/omnihive-core/models/WorkerSetterBase";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { AppSettings } from "@withonevision/omnihive-core/models/AppSettings";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
+import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 
-export class OmniHiveClient extends WorkerSetterBase {
+export class OmniHiveClient {
     private static singleton: OmniHiveClient;
 
-    private constructor() {
-        super();
-    }
+    private constructor() {}
 
     public static getSingleton = (): OmniHiveClient => {
         if (IsHelper.isNullOrUndefined(OmniHiveClient.singleton)) {
@@ -28,31 +27,51 @@ export class OmniHiveClient extends WorkerSetterBase {
 
     public accessToken: string = "";
     public authToken: string = "";
-    private rootUrl: string = "";
-    private tokenMetadata: any = {};
+    public environmentVariables: EnvironmentVariable[] = [];
+    private registeredWorkers: RegisteredHiveWorker[] = [];
 
     public static getNew = (): OmniHiveClient => {
         return new OmniHiveClient();
     };
 
-    public init = async (rootUrl: string, appSettings: AppSettings): Promise<void> => {
-        this.rootUrl = rootUrl;
-        this.appSettings = appSettings;
+    public init = async (
+        environmentVariables: EnvironmentVariable[],
+        workers: RegisteredHiveWorker[]
+    ): Promise<void> => {
+        this.environmentVariables = environmentVariables;
 
-        if (
-            !IsHelper.isNullOrUndefined(appSettings) &&
-            !IsHelper.isNullOrUndefined(appSettings.workers) &&
-            !IsHelper.isEmptyArray(appSettings.workers)
-        ) {
-            await AwaitHelper.execute(this.initWorkers());
+        for (let worker of workers) {
+            this.pushWorker(worker);
+        }
 
-            const tokenWorker = this.getWorker<ITokenWorker | undefined>(HiveWorkerType.Token);
-
-            if (!IsHelper.isNullOrUndefined(tokenWorker)) {
-                this.tokenMetadata = tokenWorker.config.metadata;
-            }
+        for (let worker of this.registeredWorkers) {
+            (worker.instance as IHiveWorker).registeredWorkers;
         }
     };
+
+    public getWorker<T extends IHiveWorker | undefined>(type: string, name?: string): T | undefined {
+        if (!IsHelper.isNullOrUndefined(name)) {
+            const namedWorker: RegisteredHiveWorker | undefined = this.registeredWorkers.find(
+                (value: RegisteredHiveWorker) => value.name === name && value.type === type
+            );
+
+            if (!IsHelper.isNullOrUndefined(namedWorker)) {
+                return namedWorker.instance as T;
+            }
+
+            return undefined;
+        }
+
+        const anyWorkers: RegisteredHiveWorker[] | undefined = this.registeredWorkers.filter(
+            (value: RegisteredHiveWorker) => value.type === type
+        );
+
+        if (!IsHelper.isNullOrUndefined(anyWorkers) && !IsHelper.isEmptyArray(anyWorkers)) {
+            return anyWorkers[0].instance as T;
+        }
+
+        return undefined;
+    }
 
     public graphClient = async (
         graphUrl: string,
@@ -283,57 +302,39 @@ export class OmniHiveClient extends WorkerSetterBase {
         }
 
         const tokenWorker = this.getWorker<ITokenWorker | undefined>(HiveWorkerType.Token);
+
+        if (IsHelper.isNullOrUndefined(tokenWorker)) {
+            throw new Error("[ohAccessError] Could not retrieve token");
+        }
+
         let newToken: string = "";
 
         if (!IsHelper.isNullOrUndefined(tokenWorker)) {
             try {
                 newToken = await AwaitHelper.execute(tokenWorker.get());
-                return newToken;
             } catch (e) {
                 throw new Error("[ohAccessError] Could not retrieve token");
             }
         }
 
-        if (!IsHelper.isNullOrUndefined(this.tokenMetadata)) {
-            const restPromise = new Promise<AxiosResponse<{ token: string }>>((resolve, reject) => {
-                const config: AxiosRequestConfig = { url: `${this.rootUrl}/ohAdmin/rest/token` };
-                config.data = {
-                    generator: encryptionWorker?.symmetricEncrypt(this.tokenMetadata),
-                };
-                config.method = "POST";
+        return newToken;
+    };
 
-                axios(config)
-                    .then((response: AxiosResponse) => {
-                        if (
-                            !IsHelper.isNullOrUndefined(response.data.errors) &&
-                            !IsHelper.isEmptyArray(response.data.errors)
-                        ) {
-                            const errorString: StringBuilder = new StringBuilder();
-
-                            response.data.errors.forEach((err: any) => {
-                                errorString.appendLine(err.message);
-                            });
-
-                            throw new Error(errorString.outputString());
-                        }
-
-                        resolve(response);
-                    })
-                    .catch((error) => {
-                        reject(error);
-                    });
-            });
-
-            const restReturn: AxiosResponse<{ token: string }> = await AwaitHelper.execute(restPromise);
-
-            if (restReturn.status !== 200) {
-                throw new Error("[ohAccessError] Could not retrieve token");
-            }
-
-            newToken = restReturn.data.token;
-            return newToken;
+    private pushWorker = async (worker: RegisteredHiveWorker): Promise<void> => {
+        if (IsHelper.isNullOrUndefined(worker.instance)) {
+            throw new Error("Cannot register worker without an instance");
         }
 
-        throw new Error("[ohAccessError] Could not retrieve token");
+        if (
+            this.registeredWorkers.find((value: RegisteredHiveWorker) => {
+                return value.name === worker.name;
+            })
+        ) {
+            return;
+        }
+
+        (worker.instance as IHiveWorker).environmentVariables = this.environmentVariables;
+        await AwaitHelper.execute((worker.instance as IHiveWorker).init(worker.name, worker.metadata));
+        this.registeredWorkers.push(worker);
     };
 }

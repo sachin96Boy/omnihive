@@ -1,7 +1,6 @@
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
-import { HiveWorker } from "@withonevision/omnihive-core/models/HiveWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import forge from "node-forge";
 
@@ -11,17 +10,17 @@ export class NodeForgeEncryptionWorkerMetadata {
 }
 
 export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements IEncryptionWorker {
-    private metadata!: NodeForgeEncryptionWorkerMetadata;
+    private typedMetadata!: NodeForgeEncryptionWorkerMetadata;
 
     constructor() {
         super();
     }
 
-    public async init(config: HiveWorker): Promise<void> {
-        await AwaitHelper.execute(super.init(config));
-        this.metadata = this.checkObjectStructure<NodeForgeEncryptionWorkerMetadata>(
+    public async init(name: string, metadata?: any): Promise<void> {
+        await AwaitHelper.execute(super.init(name, metadata));
+        this.typedMetadata = this.checkObjectStructure<NodeForgeEncryptionWorkerMetadata>(
             NodeForgeEncryptionWorkerMetadata,
-            config.metadata
+            metadata
         );
     }
 
@@ -35,7 +34,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
     public base64Decode = (toDecode: string): string => {
         const decodedBytes: string = forge.util.decode64(toDecode);
         const decoded: string = forge.util.decodeUtf8(decodedBytes);
-        return decoded.substring(0, decoded.length - this.metadata.randomCharacters);
+        return decoded.substring(0, decoded.length - this.typedMetadata.randomCharacters);
     };
 
     public symmetricDecrypt = (message: string): string => {
@@ -79,7 +78,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
         }
 
         try {
-            decodedKey = forge.util.createBuffer(forge.util.binary.base64.decode(this.metadata.encryptionKey));
+            decodedKey = forge.util.createBuffer(forge.util.binary.base64.decode(this.typedMetadata.encryptionKey));
             decipher = forge.cipher.createDecipher("AES-CBC", decodedKey);
         } catch (e) {
             throw new Error("Secure message symmetric key not in the correct format");
@@ -97,7 +96,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
 
         // Get decrypted message
         const decrypted = decipher.output.data;
-        return decrypted.substring(0, decrypted.length - this.metadata.randomCharacters);
+        return decrypted.substring(0, decrypted.length - this.typedMetadata.randomCharacters);
     };
 
     public symmetricEncrypt = (message: string): string => {
@@ -108,7 +107,7 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
         const encodedIv = forge.util.encode64(iv);
 
         // Create and execute cipher
-        const cipher = forge.cipher.createCipher("AES-CBC", forge.util.decode64(this.metadata.encryptionKey));
+        const cipher = forge.cipher.createCipher("AES-CBC", forge.util.decode64(this.typedMetadata.encryptionKey));
 
         cipher.start({ iv });
         cipher.update(forge.util.createBuffer(message));

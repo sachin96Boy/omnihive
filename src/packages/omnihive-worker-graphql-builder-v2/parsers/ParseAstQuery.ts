@@ -154,7 +154,7 @@ export class ParseAstQuery {
             this.builder?.from(`${tableSchema[0].tableName} as t1`);
 
             // Build queries
-            this.graphToKnex(this.queryStructure[key], this.parentCall);
+            this.graphToKnex(this.queryStructure[key], this.parentCall, this.parentCall);
         });
     };
 
@@ -241,7 +241,7 @@ export class ParseAstQuery {
         return flattened;
     };
 
-    private graphToKnex = (structure: any, parentKey: string) => {
+    private graphToKnex = (structure: any, parentKey: string, queryKey: string) => {
         if (!this.builder) {
             throw new Error("Knex Query Builder not initialized");
         }
@@ -255,7 +255,7 @@ export class ParseAstQuery {
         }
 
         this.buildSelect(structure.columns, structure.tableAlias, parentKey);
-        this.buildJoins(structure, parentKey);
+        this.buildJoins(structure, parentKey, queryKey);
 
         if (
             !structure.args?.join ||
@@ -267,12 +267,12 @@ export class ParseAstQuery {
         Object.keys(structure).forEach((key) => {
             // Build inner queries
             if (key.endsWith(this.joinFieldSuffix)) {
-                this.graphToKnex(structure[key], structure[key].tableKey);
+                this.graphToKnex(structure[key], structure[key].tableKey, key);
             }
         });
     };
 
-    private buildJoins = (structure: any, tableKey: string) => {
+    private buildJoins = (structure: any, tableKey: string, queryKey: string) => {
         if (!this.builder) {
             throw new Error("Knex Query Builder not initialized");
         }
@@ -283,31 +283,31 @@ export class ParseAstQuery {
             let linkingColumnName: string = "";
             const schemaKey = structure.linkingTableKey ? structure.linkingTableKey : tableKey;
 
-            if (this.schema[schemaKey].some((x) => x.columnNameEntity === structure.args.join.from)) {
-                const primaryColumn: TableSchema | undefined = this.schema[schemaKey]?.find(
-                    (x) => x.columnNameEntity === structure.args.join.from
-                );
+            const primaryColumn: TableSchema | undefined = this.schema[schemaKey]?.find(
+                (x) =>
+                    x.columnNameEntity === structure.args.join.from ||
+                    (!structure.args.join.from && x.columnNameEntity === queryKey.replace(this.joinFieldSuffix, ""))
+            );
 
-                let parentAlias = "";
+            let parentAlias = "";
 
-                if (primaryColumn) {
-                    primaryColumnName = `${primaryColumn.columnNameDatabase}`;
-                    linkingColumnName = `${primaryColumn.columnForeignKeyColumnName}`;
+            if (primaryColumn) {
+                primaryColumnName = `${primaryColumn.columnNameDatabase}`;
+                linkingColumnName = `${primaryColumn.columnForeignKeyColumnName}`;
 
-                    if (structure.linkingTableKey) {
-                        parentAlias = this.findParentAlias(this.queryStructure[this.parentCall], schemaKey);
-                        joinTable = primaryColumn.columnForeignKeyTableName;
+                if (structure.linkingTableKey) {
+                    parentAlias = this.findParentAlias(this.queryStructure[this.parentCall], schemaKey);
+                    joinTable = primaryColumn.columnForeignKeyTableName;
 
-                        primaryColumnName = `${parentAlias}.${primaryColumnName}`;
-                        linkingColumnName = `${structure.tableAlias}.${linkingColumnName}`;
-                    } else {
-                        parentAlias = this.findParentAlias(
-                            this.queryStructure[this.parentCall],
-                            structure.parentTableKey
-                        );
-                        primaryColumnName = `${structure.tableAlias}.${primaryColumnName}`;
-                        linkingColumnName = `${parentAlias}.${linkingColumnName}`;
-                    }
+                    primaryColumnName = `${parentAlias}.${primaryColumnName}`;
+                    linkingColumnName = `${structure.tableAlias}.${linkingColumnName}`;
+                } else {
+                    parentAlias = this.findParentAlias(
+                        this.queryStructure[this.parentCall],
+                        primaryColumn.columnForeignKeyTableNameCamelCase
+                    );
+                    primaryColumnName = `${structure.tableAlias}.${primaryColumnName}`;
+                    linkingColumnName = `${parentAlias}.${linkingColumnName}`;
                 }
             }
 
@@ -435,6 +435,25 @@ export class ParseAstQuery {
                     break;
                 }
             }
+        }
+    };
+
+    private findParentAlias = (structure: any, tableKey: string): string => {
+        if (structure.tableKey === tableKey) {
+            return structure.tableAlias;
+        } else {
+            for (const key in structure) {
+                let alias: string = "";
+                if (key.endsWith(this.joinFieldSuffix)) {
+                    alias = this.findParentAlias(structure[key], tableKey);
+                }
+
+                if (alias) {
+                    return alias;
+                }
+            }
+
+            return "";
         }
     };
 
@@ -872,83 +891,6 @@ export class ParseAstQuery {
 
         return match;
     };
-    //     const columns = structure.columns;
-    //     if (columns) {
-    //         if (Array.isArray(data)) {
-    //             for (const item of data) {
-    //                 if (this.validateLevel(item, dbItem, structure)) {
-    //                     this.iterateDownStructure(item, dbItem, structure);
-    //                 } else {
-    //                     const graphData = this.convertDbItemToGraph(dbItem, columns);
-
-    //                     if (!data.some((x) => this.compareObject(x, graphData))) {
-    //                         data.push(graphData);
-    //                     }
-    //                 }
-    //             }
-    //         } else {
-    //             if (this.validateLevel(data, dbItem, structure)) {
-    //                 this.iterateDownStructure(data, dbItem, structure);
-    //             } else {
-    //                 const graphData = this.convertDbItemToGraph(dbItem, columns);
-    //                 data = graphData;
-    //             }
-    //         }
-    //     }
-
-    //     this.iterateDownStructure(data, dbItem, structure);
-
-    //     return data;
-    // };
-
-    // private iterateDownStructure = (data: any, dbItem: any, structure: any) => {
-    //     Object.keys(structure).forEach((key) => {
-    //         if (key.endsWith(this.joinFieldSuffix)) {
-    //             if (!Array.isArray(data)) {
-    //                 if (!data[key]) {
-    //                     data[key] = [];
-    //                 }
-
-    //                 this.processItem(data[key], dbItem, structure[key]);
-    //             } else {
-    //                 if (data.length <= 0) {
-    //                     data.push({ [key]: [] });
-    //                 }
-
-    //                 data.forEach((item: any) => {
-    //                     if (!item[key]) {
-    //                         item[key] = [];
-    //                     }
-
-    //                     this.processItem(item[key], dbItem, structure[key]);
-    //                 });
-    //             }
-    //         }
-    //     });
-    // };
-
-    // private convertDbItemToGraph = (item: any, columns: { name: string; alias: string }[]) => {
-    //     const convertedItem: any = {};
-
-    //     for (const col of columns) {
-    //         convertedItem[col.alias] = item[col.alias];
-    //     }
-
-    //     return convertedItem;
-    // };
-
-    // private validateLevel = (parentData: { [key: string]: any }, dbItem: any, structure: any) => {
-    //     const fieldKeys: string[] = structure.columns.map((x: { name: string; alias: string }) => x.alias);
-    //     const dbComparer: any = {};
-    //     const dataComparer: any = {};
-
-    //     for (const key of fieldKeys) {
-    //         dbComparer[key] = dbItem[key];
-    //         dataComparer[key] = parentData[key];
-    //     }
-
-    //     return this.compareObject(dbComparer, dataComparer);
-    // };
 
     private compareObject = (obj1: any, obj2: any) => {
         if (obj1 === obj2) {
@@ -976,24 +918,5 @@ export class ParseAstQuery {
         }
 
         return true;
-    };
-
-    private findParentAlias = (structure: any, tableKey: string): string => {
-        if (structure.tableKey === tableKey) {
-            return structure.tableAlias;
-        } else {
-            for (const key in structure) {
-                let alias: string = "";
-                if (key.endsWith(this.joinFieldSuffix)) {
-                    alias = this.findParentAlias(structure[key], tableKey);
-                }
-
-                if (alias) {
-                    return alias;
-                }
-            }
-
-            return "";
-        }
     };
 }

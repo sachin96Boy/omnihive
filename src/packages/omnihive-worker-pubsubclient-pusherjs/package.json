@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-pubsubclient-pusherjs",
-    "version": "6.2.39",
+    "version": "6.2.40",
     "description": "OmniHive Pusher JS Client Worker",
     "license": "MIT",
     "author": {

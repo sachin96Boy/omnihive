@@ -28,7 +28,7 @@ export class OmniHiveClient {
     public accessToken: string = "";
     public authToken: string = "";
     public environmentVariables: EnvironmentVariable[] = [];
-    private registeredWorkers: RegisteredHiveWorker[] = [];
+    public registeredWorkers: RegisteredHiveWorker[] = [];
 
     public static getNew = (): OmniHiveClient => {
         return new OmniHiveClient();
@@ -38,10 +38,10 @@ export class OmniHiveClient {
         workers: RegisteredHiveWorker[],
         environmentVariables?: EnvironmentVariable[]
     ): Promise<void> => {
-        if(IsHelper.isNullOrUndefined(environmentVariables)) {
+        if (IsHelper.isNullOrUndefined(environmentVariables)) {
             environmentVariables = [];
         }
-        
+
         this.environmentVariables = environmentVariables;
 
         for (let worker of workers) {

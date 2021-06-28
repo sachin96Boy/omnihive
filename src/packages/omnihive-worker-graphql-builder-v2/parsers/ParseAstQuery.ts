@@ -1,6 +1,6 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { FieldNode, GraphQLResolveInfo, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
+import { FieldNode, GraphQLResolveInfo } from "graphql";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
@@ -13,25 +13,30 @@ import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWork
 // import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { Knex } from "knex";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { GraphHelper } from "../helpers/GraphHelper";
 
 export class ParseAstQuery {
-    //
+    // Workers
     private logWorker: ILogWorker | undefined;
     private databaseWorker: IDatabaseWorker | undefined;
     private encryptionWorker: IEncryptionWorker | undefined;
     // private cacheWorker!: ICacheWorker | undefined;
     // private dateWorker!: IDateWorker | undefined;
-    private knex: Knex | undefined;
-    private joinFieldSuffix: string = "_table";
 
+    // Helpers
+    private graphHelper: GraphHelper = new GraphHelper();
+
+    // Global Values
+    private knex: Knex | undefined;
     private builder: Knex.QueryBuilder<any, unknown[]> | undefined;
     private queryStructure: any = {};
     private schema: { [tableName: string]: TableSchema[] } = {};
     private parentCall: string = "";
     private selectionFields: TableSchema[] = [];
-    private columnCount: number = 0;
     private fieldAliasMap: { name: string; alias: string }[] = [];
-    private graphReturn: any = [];
+
+    // Static Values
+    private joinFieldSuffix: string = "_table";
 
     /**
      * Parse a GraphQL query into a database query and return the results to graph
@@ -72,11 +77,12 @@ export class ParseAstQuery {
 
                 // If results are returned then hydrate the results back into graph
                 if (results) {
-                    this.buildGraphReturn(this.queryStructure[this.parentCall], results[0]);
+                    return this.graphHelper.buildGraphReturn(this.queryStructure[this.parentCall], results[0]);
                 }
 
-                // Return the rehydrated results
-                return this.graphReturn;
+                return {
+                    error: "An unexpected error occurred when transforming the database results back into the graph object structure",
+                };
             }
         } catch (err) {
             throw err;
@@ -195,13 +201,15 @@ export class ParseAstQuery {
         this.parentCall = resolveInfo.fieldName;
 
         // Generate the query structure from the graph object for the current parent value
-        this.queryStructure = this.getQueryStructure(
+        this.queryStructure = this.graphHelper.buildQueryStructure(
             resolveInfo.operation.selectionSet.selections.filter(
                 (x) => (x as FieldNode).name.value === this.parentCall
             ) as FieldNode[],
             this.parentCall,
             0,
-            this.fieldAliasMap
+            this.fieldAliasMap,
+            this.parentCall,
+            this.schema
         );
 
         // Iterate through each query structure's parent value found
@@ -218,163 +226,6 @@ export class ParseAstQuery {
             // Build queries for the current query structure
             this.graphToKnex(this.queryStructure[key], this.parentCall, this.parentCall);
         });
-    };
-
-    /**
-     * Generate a query structure from the graph query
-     *
-     * Structure Def:
-     *      {
-     *          [parentName: string]: {
-     *              [childStructure: string]: Recursive Structure Def,
-     *              columns: { name: string, alias: string },
-     *              tableKey: string (camel case name of database table),
-     *              tableAlias: string (database query alias),
-     *              parentTableKey: string (camel case name of database table this object is linking from),
-     *              linkingTableKey: string (camel case name of database table this object is linking to),
-     *              args: any (arguments declared in graph),
-     *          }
-     *      }
-     *
-     * @param graphField Selection Field Nodes from the GraphQL Query Object
-     * @param parentKey Current fields parent key
-     * @param tableCount Current number of tables being joined upon
-     * @param aliasKeys Alias keys of columns being selected
-     * @returns { any }
-     */
-    private getQueryStructure = (
-        graphField: readonly FieldNode[],
-        parentKey: string,
-        tableCount: number,
-        aliasKeys: any
-    ): any => {
-        // Initiate default object
-        let structure: any = {};
-
-        // Iterate through each field in the selection node
-        graphField.forEach((field) => {
-            // Get all selections in the set
-            const fieldSelections = field?.selectionSet?.selections;
-
-            // If this field has a selection set then it is a join property
-            if (fieldSelections && fieldSelections.length > 0) {
-                // If the structure property does not exist for this field create it
-                if (!structure[field.name.value]) {
-                    structure[field.name.value] = {};
-                }
-
-                // Increment the table count
-                tableCount++;
-
-                // Recurse through the query builder for the current field values
-                structure[field.name.value] = this.getQueryStructure(
-                    fieldSelections as FieldNode[],
-                    field.name.value,
-                    tableCount,
-                    aliasKeys
-                );
-
-                // Set the table alias
-                structure[field.name.value].tableAlias = `t${tableCount}`;
-            }
-
-            // Else this is a database column
-            else {
-                // If the current structure does not have a column property initialize it
-                if (!structure.columns) {
-                    structure.columns = [];
-                }
-
-                // Create the Column object
-                const fieldKeys: any = { name: field.name.value, alias: `f${this.columnCount}` };
-
-                // Store the created column object into the necessary objects for reference
-                aliasKeys.push(fieldKeys);
-                structure.columns.push(fieldKeys);
-
-                // Increment column count
-                this.columnCount++;
-            }
-
-            // If the field name has the join identifier or the field name is the primary query function set needed properties
-            if (field.name.value.endsWith(this.joinFieldSuffix) || field.name.value === this.parentCall) {
-                // Set the table key as the field name with the join identifier removed
-                const tableKey = field.name.value.replace(this.joinFieldSuffix, "");
-
-                // If the schema sub-object for the table key exists this is a join to the parent table
-                if (this.schema[tableKey]) {
-                    // Set the structure's tableKey value as the current tableKey value
-                    structure[field.name.value].tableKey = tableKey;
-
-                    // Set the structure's parentTableKey property as the current parentKey value with the join identifier removed
-                    structure[field.name.value].parentTableKey = parentKey.replace(this.joinFieldSuffix, "");
-                }
-                // Else this is a join to another table from the parent table
-                else {
-                    // Find the table being linked to and set the structure's tableKey property
-                    structure[field.name.value].tableKey = this.schema[parentKey].find(
-                        (x) => field.name.value.replace(this.joinFieldSuffix, "") === x.columnNameEntity
-                    )?.columnForeignKeyTableNameCamelCase;
-                    // Set the parent key as the linkingTableKey value
-                    structure[field.name.value].linkingTableKey = parentKey;
-                }
-            }
-
-            // Flatten the argument object to a readable form
-            const args = this.flattenArgs(field.arguments as unknown as readonly ObjectFieldNode[]);
-
-            // If arguments exists then store them in the structure's args property
-            if (args && Object.keys(args).length > 0) {
-                structure[field.name.value].args = args;
-            }
-        });
-
-        // Return what was built
-        return structure;
-    };
-
-    /**
-     * Flatten the Argument nodes of the GraphQL Field query into a readable form
-     *
-     * @param args GraphQLs Argument Object
-     * @returns { any }
-     */
-    private flattenArgs = (args: readonly ObjectFieldNode[]): any => {
-        // Create default return object
-        const flattened: any = {};
-
-        // For each object in the GraphQL Argument array
-        args.forEach((x) => {
-            // If the value has a field array then recursively retrieving the arguments for it's values
-            if ((x.value as ObjectValueNode)?.fields?.length > 0) {
-                flattened[x.name.value] = this.flattenArgs((x.value as ObjectValueNode).fields);
-            }
-            // If the value has a value array
-            else if ((x.value as ListValueNode)?.values?.length > 0) {
-                // Set a default blank array in the return object
-                flattened[x.name.value] = [];
-                // Iterate through each value
-                (x.value as ListValueNode).values.forEach((y) => {
-                    // If the value has a field property that contains an array then recursively retrieving the arguments for it's values
-                    if ((y as ObjectValueNode).fields?.length > 0) {
-                        flattened[x.name.value].push(
-                            this.flattenArgs((y as ObjectValueNode).fields as readonly ObjectFieldNode[])
-                        );
-                    }
-                    // Else store its value inside the return object
-                    else {
-                        flattened[x.name.value].push((y as unknown as ObjectFieldNode).value);
-                    }
-                });
-            }
-            // Else store its values inside the return object
-            else {
-                flattened[x.name.value] = (x.value as unknown as ObjectFieldNode).value;
-            }
-        });
-
-        // Return the flattened argument list
-        return flattened;
     };
 
     /**
@@ -408,7 +259,14 @@ export class ParseAstQuery {
             !structure.args?.join ||
             (structure.args?.join?.whereMode && structure.args?.join?.whereMode === "global")
         ) {
-            this.buildConditions(structure.args, structure.tableAlias, this.builder, parentKey);
+            this.graphHelper.buildConditions(
+                structure.args,
+                structure.tableAlias,
+                this.builder,
+                parentKey,
+                this.schema,
+                this.knex
+            );
         }
 
         // Iterate through each graph sub-query to recursively build the database query
@@ -511,7 +369,15 @@ export class ParseAstQuery {
                         if (whereSpecific) {
                             this.builder.innerJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
                                 builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                                this.graphHelper.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    this.schema,
+                                    this.knex,
+                                    true
+                                );
                             });
                         }
                         // Else add the standard join
@@ -529,7 +395,15 @@ export class ParseAstQuery {
                         if (whereSpecific) {
                             this.builder.leftJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
                                 builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                                this.graphHelper.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    this.schema,
+                                    this.knex,
+                                    true
+                                );
                             });
                         }
                         // Else add the standard join
@@ -547,7 +421,15 @@ export class ParseAstQuery {
                         if (whereSpecific) {
                             this.builder.leftOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
                                 builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                                this.graphHelper.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    this.schema,
+                                    this.knex,
+                                    true
+                                );
                             });
                         }
                         // Else add the standard join
@@ -565,7 +447,15 @@ export class ParseAstQuery {
                         if (whereSpecific) {
                             this.builder.rightJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
                                 builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                                this.graphHelper.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    this.schema,
+                                    this.knex,
+                                    true
+                                );
                             });
                         }
                         // Else add the standard join
@@ -583,7 +473,15 @@ export class ParseAstQuery {
                         if (whereSpecific) {
                             this.builder.rightOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
                                 builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                                this.graphHelper.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    this.schema,
+                                    this.knex,
+                                    true
+                                );
                             });
                         }
                         // Else add the standard join
@@ -601,7 +499,15 @@ export class ParseAstQuery {
                         if (whereSpecific) {
                             this.builder.fullOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
                                 builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                                this.graphHelper.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    this.schema,
+                                    this.knex,
+                                    true
+                                );
                             });
                         }
                         // Else add the standard join
@@ -619,7 +525,15 @@ export class ParseAstQuery {
                         if (whereSpecific) {
                             this.builder.crossJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
                                 builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                                this.graphHelper.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    this.schema,
+                                    this.knex,
+                                    true
+                                );
                             });
                         }
                         // Else add the standard join
@@ -637,7 +551,15 @@ export class ParseAstQuery {
                         if (whereSpecific) {
                             this.builder.join(`${joinTable} as ${structure.tableAlias}`, (builder) => {
                                 builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.buildConditions(structure.args, structure.tableAlias, builder, tableKey, true);
+                                this.graphHelper.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    this.schema,
+                                    this.knex,
+                                    true
+                                );
                             });
                         }
                         // Else add the standard join
@@ -685,651 +607,5 @@ export class ParseAstQuery {
             // Else return a blank string
             return "";
         }
-    };
-
-    /**
-     * Build the database query conditional structure
-     *
-     * @param args Flattened argument list
-     * @param tableAlias Table alias of the current table
-     * @param builder Current database query builder
-     * @param tableName Entity table name
-     * @param join Flag to dictate this should be added to an on statement and not a where statement
-     * @returns { void }
-     */
-    private buildConditions = (
-        args: any,
-        tableAlias: string,
-        builder: Knex.QueryBuilder<any, unknown[]> | Knex.JoinClause,
-        tableName: string,
-        join: boolean = false
-    ) => {
-        // Iterate through the args' keys
-        for (const knexFunction in args) {
-            // Perform the related function depending on the key's value
-            switch (knexFunction) {
-                case "where": {
-                    this.buildEqualities(args[knexFunction], tableAlias, builder, tableName, false, join);
-                    break;
-                }
-                case "orderBy": {
-                    this.buildOrderBy(args[knexFunction], tableAlias, tableName);
-                    break;
-                }
-                case "groupBy": {
-                    this.buildGroupBy(args[knexFunction], tableAlias, tableName);
-                    break;
-                }
-            }
-        }
-    };
-
-    /**
-     * Build the equality arguments based on the current need
-     *
-     * @param arg Flattened argument object (sub-object of the calling functions args object)
-     * @param tableAlias Table alias of the current table
-     * @param builder Current database query builder
-     * @param tableName Entity table name
-     * @param having Flag to indicate this should be added to a having statement
-     * @param join Flag to indicate this should be added to an on statement
-     * @returns { void }
-     */
-    private buildEqualities = (
-        arg: any,
-        tableAlias: string,
-        builder: Knex.QueryBuilder<any, unknown[]> | Knex.JoinClause,
-        tableName: string,
-        having: boolean = false,
-        join: boolean = false
-    ): void => {
-        // If the builder is not properly initialized then throw an error
-        if (!builder) {
-            throw new Error("Knex Query Builder is not initialized");
-        }
-
-        // Iterate through each key of the arg object
-        for (const key in arg) {
-            // If the key is "and" then call this function again with it's sub-object with a sub-builder
-            if (key === "and") {
-                // if the join flag is passed in use the andOn sub-builder
-                if (join) {
-                    // Call this function again using the sub-builder and the arguments sub-object
-                    (builder as Knex.JoinClause).andOn((subBuilder) => {
-                        for (const innerArg of arg.and) {
-                            this.buildEqualities(innerArg, tableAlias, subBuilder, tableName, false, join);
-                        }
-                    });
-                } else {
-                    // Call this function again using the and sub-builder and the arguments sub-object
-                    (builder as Knex.QueryBuilder)[having ? "andHaving" : "andWhere"]((subBuilder) => {
-                        for (const innerArg of arg.and) {
-                            this.buildEqualities(innerArg, tableAlias, subBuilder, tableName, having);
-                        }
-                    });
-                }
-                continue;
-            }
-
-            // If the key is "or" then call this function again with it's sub-object with a sub-builder
-            if (key === "or") {
-                // If the join flag is passed in use the orOn sub-builder
-                if (join) {
-                    // Call this function again using the sub-builder and the arguments sub-object
-                    (builder as Knex.JoinClause).orOn((subBuilder) => {
-                        for (const innerArg of arg.or) {
-                            this.buildEqualities(innerArg, tableAlias, subBuilder, tableName, false, join);
-                        }
-                    });
-                } else {
-                    // Call this function again using the or sub-builder and the arguments sub-object
-                    (builder as Knex.QueryBuilder)[having ? "orHaving" : "orWhere"]((subBuilder) => {
-                        for (const innerArg of arg.or) {
-                            this.buildEqualities(innerArg, tableAlias, subBuilder, tableName, having);
-                        }
-                    });
-                }
-                continue;
-            }
-
-            // Find the database column name to be used in the database query
-            const columnName = this.schema[tableName].find((c) => c.columnNameEntity === key)?.columnNameDatabase;
-
-            // If the columnName is found then build the equality line of the database query for this column
-            if (columnName) {
-                this.buildRowEquality(`${tableAlias}.${columnName}`, arg[key], builder, having, join);
-            }
-        }
-    };
-
-    /**
-     * Build the Equality check for the database query for this given column
-     *
-     * @param argName Database value for the column being compared
-     * @param arg Flattened Argument Object
-     * @param builder Current database query builder
-     * @param having Flag to indicate this should be added to a having statement
-     * @param join Flag to indicate this should be added to an on statement
-     * @returns { void }
-     */
-    private buildRowEquality = (
-        argName: string,
-        arg: any,
-        builder: Knex.QueryBuilder<any, unknown[]> | Knex.JoinClause,
-        having: boolean = false,
-        join: boolean = false
-    ): void => {
-        // If knex is not properly initialized then throw an error
-        if (!this.knex) {
-            throw new Error("Knex is not initialized");
-        }
-
-        // Iterate through each key in the arg object
-        for (const equality in arg) {
-            // Retrieve the value of the comparison
-            let argValue = arg[equality];
-
-            // If the argument value is an object that contains a subquery property then set the raw value as the argValue
-            if (argValue.subquery) {
-                argValue = this.knex.raw(`${argValue.subquery}`);
-            }
-
-            // If the join flag is set then use the raw values as the argValues
-            if (join) {
-                if (typeof argValue === "string") {
-                    argValue = this.knex.raw(`'${argValue}'`);
-                } else {
-                    argValue = this.knex.raw(argValue);
-                }
-            }
-
-            // If the argValue is a boolean then transform the value to their database equivalents
-            if (typeof argValue === "boolean") {
-                argValue = argValue ? 1 : 0;
-            }
-
-            // Build the equality segment of the database query
-            switch (equality) {
-                case "eq": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, "=", argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, "=", argValue);
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).where(argName, argValue);
-                    }
-                    break;
-                }
-                case "notEq": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, "!=", argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, "!=", argValue);
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNot(argName, argValue);
-                    }
-                    break;
-                }
-                case "like": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, "like", argValue);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, "like", argValue);
-                    }
-                    break;
-                }
-                case "notLike": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, "not like", argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, "not like", argValue);
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNot(argName, "like", argValue);
-                    }
-                    break;
-                }
-                case "gt": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, ">", argValue);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, ">", argValue);
-                    }
-                    break;
-                }
-                case "gte": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, ">=", argValue);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, ">=", argValue);
-                    }
-                    break;
-                }
-                case "notGt": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, "<=", argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, "<=", argValue);
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNot(argName, ">", argValue);
-                    }
-                    break;
-                }
-                case "notGte": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, "<", argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, "<", argValue);
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNot(argName, ">=", argValue);
-                    }
-                    break;
-                }
-                case "lt": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, "<", argValue);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, "<", argValue);
-                    }
-                    break;
-                }
-                case "lte": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, "<=", argValue);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "having" : "where"](argName, "<=", argValue);
-                    }
-                    break;
-                }
-                case "notLt": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, ">=", argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, ">=", argValue);
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNot(argName, "<", argValue);
-                    }
-                    break;
-                }
-                case "notLte": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).on(argName, ">", argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, ">", argValue);
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNot(argName, "<=", argValue);
-                    }
-                    break;
-                }
-                case "in": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).onIn(argName, argValue);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "havingIn" : "whereIn"](argName, argValue);
-                    }
-                    break;
-                }
-                case "notIn": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).onNotIn(argName, argValue);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "havingNotIn" : "whereNotIn"](argName, argValue);
-                    }
-                    break;
-                }
-                case "isNull": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).onNull(argName);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, "is", this.knex.raw("null"));
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNull(argName);
-                    }
-                    break;
-                }
-                case "isNotNull": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).onNotNull(argName);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        (builder as Knex.QueryBuilder).having(argName, "is not", this.knex.raw("null"));
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNotNull(argName);
-                    }
-                    break;
-                }
-                case "exists": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).onExists(argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        throw new Error("The Having function does not support the exists equality");
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereExists(argValue);
-                    }
-                    break;
-                }
-                case "notExists": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).onNotExists(argValue);
-                    }
-                    // If the having flag is set build the having equality segment
-                    else if (having) {
-                        throw new Error("The Having function does not support the notExists equality");
-                    }
-                    // Build the where equality segment by default
-                    else {
-                        (builder as Knex.QueryBuilder).whereNotExists(argValue);
-                    }
-                    break;
-                }
-                case "between": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).onBetween(argName, [argValue.start, argValue.end]);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "havingBetween" : "whereBetween"](argName, [
-                            argValue.start,
-                            argValue.end,
-                        ]);
-                    }
-                    break;
-                }
-                case "notBetween": {
-                    // If the join flag is set build the on equality segment
-                    if (join) {
-                        (builder as Knex.JoinClause).onNotBetween(argName, [argValue.start, argValue.end]);
-                    }
-                    // Build the having or where equality segment based on the having flag
-                    else {
-                        (builder as Knex.QueryBuilder)[having ? "havingNotBetween" : "whereNotBetween"](argName, [
-                            argValue.start,
-                            argValue.end,
-                        ]);
-                    }
-                    break;
-                }
-            }
-        }
-    };
-
-    /**
-     * Build the order by segment of the database query
-     *
-     * @param arg Flattened argument object
-     * @param tableAlias Table alias of the current table
-     * @param tableName Entity table name
-     * @returns { void }
-     */
-    private buildOrderBy = (arg: any, tableAlias: string, tableName: string): void => {
-        // Initiate an array to store the order by values in the given order
-        const orderByArgs: { column: string; order: "asc" | "desc" }[] = [];
-
-        // Iterate through each argument and build the order by array item
-        for (const field of arg) {
-            // Iterate through the argument item's keys
-            Object.keys(field).map((key) => {
-                // Retrieve the database name for the column
-                const dbName = this.findDbName(key, tableName);
-
-                // If the database name was found push the item into the order by array
-                if (dbName) {
-                    orderByArgs.push({ column: `${tableAlias}.${dbName}`, order: field[key] });
-                }
-            });
-        }
-
-        // Populate the order by segment in the database query
-        this.builder?.orderBy(orderByArgs);
-    };
-
-    /**
-     * Build the group by segment of the database query
-     *
-     * @param arg Flattened argument object
-     * @param tableAlias Table alias of the current table
-     * @param tableName Entity table name
-     * @returns { void }
-     */
-    private buildGroupBy = (arg: { columns: string[]; having: any }, tableAlias: string, tableName: string): void => {
-        // If the database query builder is not initialized properly then throw an error
-        if (!this.builder) {
-            throw new Error("Knex Query Builder is not initialized");
-        }
-
-        const dbNames: string[] = [];
-
-        // if the the columns property is an array the iterate through each item
-        // populating the dbNames array with the column's database name
-        if (Array.isArray(arg.columns)) {
-            arg.columns.forEach((x) => {
-                const name = this.findDbName(x, tableName);
-                if (name) {
-                    dbNames.push(name);
-                }
-            });
-        }
-        // Else find the values database name and push the value into the dbNames array
-        else {
-            const name = this.findDbName(arg.columns, tableName);
-
-            if (name) {
-                dbNames.push(name);
-            }
-        }
-
-        // Build the group by section of the database query
-        this.builder.groupBy(dbNames);
-
-        // If the arguments has the having property then build the having equalities
-        if (arg.having) {
-            this.buildEqualities(arg.having, tableAlias, this.builder, tableName, true);
-        }
-    };
-
-    /**
-     * Find the database name for a given column's entity name and table name
-     *
-     * @param fieldName Column's entity name
-     * @param tableName The Column's table entity name
-     * @returns
-     */
-    private findDbName = (fieldName: string, tableName: string) => {
-        const name = this.schema[tableName].find((column) => column.columnNameEntity === fieldName)?.columnNameDatabase;
-
-        return name;
-    };
-
-    /**
-     * Build the graph object from the database return set
-     *
-     * @param structure Structure of the graph query object
-     * @param results Sql result set
-     * @returns { void }
-     */
-    private buildGraphReturn = (structure: any, results: any): void => {
-        const condensedResults: any = [];
-
-        // Iterate through each database result and build the graph return object
-        results.forEach((dbItem: any) => {
-            this.processRow(condensedResults, dbItem, structure);
-        });
-
-        this.graphReturn = condensedResults;
-    };
-
-    /**
-     * Process a single database row result
-     *
-     * @param results Final result object
-     * @param dbItem Single database result row
-     * @param structure Structure of the graph query object
-     * @returns { void }
-     */
-    private processRow = (results: any, dbItem: any, structure: any) => {
-        let parent: any;
-
-        // Get the return columns of the current structure level
-        const columns: { name: string; alias: string }[] = structure.columns ?? [];
-
-        // Get the joins of the current structure level
-        const linkingKeys: string[] = Object.keys(structure).filter((x: string) => x.endsWith(this.joinFieldSuffix));
-
-        if (results.length <= 0) {
-            results.push({});
-        }
-
-        // Find any matching data at this structure level
-        for (const item of results) {
-            if (this.compareParentData(columns, item, dbItem)) {
-                parent = item;
-            }
-        }
-
-        // If a match exists then build onto the matching object
-        if (parent) {
-            this.buildDataFromRow(parent, dbItem, columns, linkingKeys, structure);
-        }
-
-        // Else create a new array entry
-        else {
-            if (Object.keys(results[results.length - 1]).length > 0) {
-                results.push({});
-            }
-
-            this.buildDataFromRow(results[results.length - 1], dbItem, columns, linkingKeys, structure);
-        }
-    };
-
-    /**
-     * Build the Graph result object from the database result row
-     *
-     * @param item Matching results sub-object
-     * @param dbItem Database result row
-     * @param columns Desired return columns object array
-     * @param linkingKeys Linking Property name of structure object
-     * @param structure Structure of the graph query object
-     * @returns { void }
-     */
-    private buildDataFromRow = (
-        item: any,
-        dbItem: any,
-        columns: { name: string; alias: string }[],
-        linkingKeys: string[],
-        structure: any
-    ): void => {
-        // Build the graph return item for this structure level
-        for (const col of columns) {
-            if (!item[col.name]) {
-                item[col.name] = dbItem[col.alias];
-            }
-        }
-
-        // If a join exists then create a new property that is an empty array
-        for (const key of linkingKeys) {
-            if (!item[key]) {
-                item[key] = [];
-            }
-
-            // Process the join on the next object level
-            this.processRow(item[key], dbItem, structure[key]);
-        }
-    };
-
-    /**
-     * Find matching data for the database result row
-     *
-     * @param columns Desired return columns object array
-     * @param item Current graph return object for this structure level and array index
-     * @param dbItem
-     * @returns { boolean }
-     */
-    private compareParentData = (columns: { name: string; alias: string }[], item: any, dbItem: any) => {
-        // Iterate through each returning column
-        for (const col of columns) {
-            // if the item does not have that column property return false
-            if (!item[col.name]) {
-                return false;
-            }
-            // If the current return object does not match the database return object
-            // for the given column then return false
-            else if (item[col.name] !== dbItem[col.alias]) {
-                return false;
-            }
-        }
-
-        // If all conditions pass return true
-        return true;
     };
 }

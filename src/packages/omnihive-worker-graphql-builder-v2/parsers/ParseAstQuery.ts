@@ -202,9 +202,7 @@ export class ParseAstQuery {
 
         // Generate the query structure from the graph object for the current parent value
         this.queryStructure = this.graphHelper.buildQueryStructure(
-            resolveInfo.operation.selectionSet.selections.filter(
-                (x) => (x as FieldNode).name.value === this.parentCall
-            ) as FieldNode[],
+            resolveInfo.fieldNodes.filter((x) => (x as FieldNode).name.value === this.parentCall) as FieldNode[],
             this.parentCall,
             0,
             this.fieldAliasMap,

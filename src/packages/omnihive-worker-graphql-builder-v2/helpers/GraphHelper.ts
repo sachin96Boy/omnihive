@@ -6,16 +6,46 @@ export class GraphHelper {
     private columnCount: number = 0;
     private joinFieldSuffix: string = "_table";
 
-    public getGraphTypeFromEntityType = (entityType: string): string => {
-        switch (entityType) {
-            case "string":
-                return `String`;
-            case "number":
+    public getGraphTypeFromDbType = (dbType: string): string => {
+        switch (dbType) {
+            case "money":
                 return `Float`;
-            case "boolean":
-                return `Boolean`;
-            case "Date":
+            case "bigint":
+                return "Int";
+            case "int":
+                return `Int`;
+            case "smallint":
+                return `Int`;
+            case "tinyint":
+                return `Int`;
+            case "float":
+                return `Float`;
+            case "decimal":
+                return `Float`;
+            case "numeric":
+                return `Float`;
+            case "nvarchar":
+                return "String";
+            case "varchar":
                 return `String`;
+            case "nchar":
+                return `String`;
+            case "text":
+                return `String`;
+            case "varbinary":
+                return `String`;
+            case "binary":
+                return `String`;
+            case "datetime":
+                return `String`;
+            case "date":
+                return "String";
+            case "time":
+                return `String`;
+            case "uniqueidentifier":
+                return `String`;
+            case "bit":
+                return "Boolean";
             default:
                 return `String`;
         }

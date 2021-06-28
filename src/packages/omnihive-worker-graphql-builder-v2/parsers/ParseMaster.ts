@@ -3,6 +3,9 @@ import { GraphQLResolveInfo } from "graphql";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ParseAstQuery } from "./ParseAstQuery";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { ParseInsert } from "./ParseInsert";
+import { ParseDelete } from "./ParseDelete";
+import { ParseUpdate } from "./ParseUpdate";
 
 export class ParseMaster {
     public parseAstQuery = async (
@@ -25,23 +28,26 @@ export class ParseMaster {
     };
 
     public parseDelete = async (
-        _workerName: string,
-        _tableName: string,
-        _whereObject: any,
-        _customDmlArgs: any,
-        _omniHiveContext: GraphContext
+        workerName: string,
+        tableKey: string,
+        args: any,
+        omniHiveContext: GraphContext,
+        schema: { [tableName: string]: TableSchema[] }
     ): Promise<number> => {
-        return 0;
+        const parser: ParseDelete = new ParseDelete();
+
+        return await AwaitHelper.execute(parser.parse(workerName, tableKey, args, omniHiveContext, schema));
     };
 
     public parseInsert = async (
-        _workerName: string,
-        _tableName: string,
-        _insertObjects: any[],
-        _customDmlArgs: any,
-        _omniHiveContext: GraphContext
+        workerName: string,
+        tableKey: string,
+        resolveInfo: GraphQLResolveInfo,
+        omniHiveContext: GraphContext,
+        schema: { [tableName: string]: TableSchema[] }
     ): Promise<any[]> => {
-        return [];
+        const parser: ParseInsert = new ParseInsert();
+        return await AwaitHelper.execute(parser.parse(workerName, tableKey, resolveInfo, omniHiveContext, schema));
     };
 
     public parseProcedure = async (
@@ -53,13 +59,13 @@ export class ParseMaster {
     };
 
     public parseUpdate = async (
-        _workerName: string,
-        _tableName: string,
-        _updateObject: any,
-        _whereObject: any,
-        _customDmlArgs: any,
-        _omniHiveContext: GraphContext
-    ): Promise<number> => {
-        return 0;
+        workerName: string,
+        tableKey: string,
+        resolveInfo: any,
+        omniHiveContext: GraphContext,
+        schema: { [tableName: string]: TableSchema[] }
+    ): Promise<any[]> => {
+        const parser: ParseUpdate = new ParseUpdate();
+        return await AwaitHelper.execute(parser.parse(workerName, tableKey, resolveInfo, omniHiveContext, schema));
     };
 }

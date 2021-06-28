@@ -28,6 +28,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private joiningSuffix: string = "LinkingEnum";
     private joinTypeSuffix: string = "JoinType";
     private joinFieldSuffix: string = "_table";
+    private mutationReturnTypeSuffix: string = "MutationReturnType";
+    private insertTypeSuffix: string = "InsertType";
+    private updateTypeSuffix: string = "UpdateType";
+    private deleteTypeSuffix: string = "DeleteType";
 
     // Declare Global Variables
     private graphSchemas: GraphQLSchema[] = [];
@@ -69,6 +73,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             schemas: this.graphSchemas,
         });
     };
+
+    //#region Builder
 
     /**
      * Build the GraphQL Schema for a specific table
@@ -167,7 +173,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         schema: TableSchema[],
         foreignColumns: { [tableName: string]: TableSchema[] }
     ): void => {
+        // Build static types
         this.buildStaticTypes();
+
+        // Build query types
         this.buildLinkingEnum(schema[0].tableNameCamelCase, foreignColumns);
         this.buildColumnEqualityType(schema, foreignColumns);
         this.buildTableDef(schema, foreignColumns);
@@ -175,8 +184,20 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.buildOrderByType(schema, foreignColumns);
         this.buildColumnEnum(schema, foreignColumns);
         this.buildGroupByType(schema, foreignColumns);
+
+        // Build mutation types
+        this.buildMutationReturnTableDef(schema);
+        this.buildInsertType(schema);
+        this.buildUpdateType(schema);
+        this.buildDeleteType(schema);
+
+        // Build parent types
         this.buildQueryDef(schema);
+        this.buildMutationDef(schema);
     };
+    //#endregion
+
+    //#region Static Types
 
     /**
      * Build all the static types for all schemas
@@ -253,6 +274,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         this.builder.appendLine();
     };
+    //#endregion
+
+    //#region Query Types
 
     /**
      * Build the table linking types
@@ -271,7 +295,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 foreignColumns[tableName].forEach((column) => {
                     this.builder.append(`\t${column.columnNameEntity}`);
                     this.builder.append(": ");
-                    this.builder.appendLine(this.graphHelper.getGraphTypeFromEntityType(column.columnTypeEntity));
+                    this.builder.appendLine(this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase));
                 });
                 this.builder.appendLine("}");
                 this.builder.appendLine();
@@ -382,7 +406,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         this.builder.appendLine(`type ${tableName}${this.objectSuffix} {`);
         schema.map((column) => {
-            let columnType: string = this.graphHelper.getGraphTypeFromEntityType(column.columnTypeEntity);
+            let columnType: string = this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase);
             let columnDefault: string = `\t${column.columnNameEntity}: ${columnType}`;
 
             // Build all foreign linking declarations with argument typing
@@ -447,29 +471,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 this.builder.append("]");
             }
         });
-        this.builder.appendLine("}");
-
-        this.builder.appendLine();
-    };
-
-    /**
-     * Build main Query type
-     *
-     * @param schema
-     * @returns { void }
-     */
-    private buildQueryDef = (schema: TableSchema[]): void => {
-        const tableName = schema[0].tableNameCamelCase;
-        const typeName = schema[0].tableNamePascalCase + this.objectSuffix;
-
-        this.builder.appendLine("type Query {");
-        this.builder.append("\t");
-        this.builder.append(tableName);
-        this.builder.appendLine(" (");
-        this.buildArgString(schema);
-        this.builder.append("\t): [");
-        this.builder.append(typeName);
-        this.builder.appendLine("]");
         this.builder.appendLine("}");
 
         this.builder.appendLine();
@@ -658,7 +659,157 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         this.builder.appendLine();
     };
+    //#endregion
 
+    //#region Mutation Types
+
+    /**
+     * Build main type definitions for the current table
+     *
+     * @param schema
+     * @param foreignColumns
+     * @returns { void }
+     */
+    private buildMutationReturnTableDef = (schema: TableSchema[]): void => {
+        const tableName: string = schema[0].tableNamePascalCase;
+
+        this.builder.appendLine(`type ${tableName}${this.mutationReturnTypeSuffix} {`);
+        schema.map((column) => {
+            let columnType: string = this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase);
+            // Add standard field declaration
+            this.builder.appendLine(`\t${column.columnNameEntity}: ${columnType}`);
+        });
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+    };
+
+    /**
+     * Build Insert Input Type
+     *
+     * @param schema
+     * @returns { void }
+     */
+    private buildInsertType = (schema: TableSchema[]): void => {
+        const tableName = schema[0].tableNamePascalCase;
+
+        this.builder.appendLine(`input ${tableName}${this.insertTypeSuffix} {`);
+        schema.forEach((column) => {
+            // If the column is an identity it can not be changed so ignore it
+            if (!column.columnIsIdentity) {
+                this.builder.append(`\t${column.columnNameEntity}: `);
+                this.builder.append(`${this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase)}`);
+
+                // If the column is not nullable then it is required
+                if (!column.columnIsNullable) {
+                    this.builder.append("!");
+                }
+
+                this.builder.appendLine();
+            }
+        });
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+    };
+
+    /**
+     * Build Update Input Type
+     *
+     * @param schema
+     */
+    private buildUpdateType = (schema: TableSchema[]): void => {
+        const tableName = schema[0].tableNamePascalCase;
+
+        this.builder.appendLine(`input ${tableName}${this.updateTypeSuffix} {`);
+        schema.forEach((column) => {
+            if (!column.columnIsIdentity) {
+                this.builder.append(`\t${column.columnNameEntity}: `);
+                this.builder.append(`${this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase)}`);
+                this.builder.appendLine();
+            }
+        });
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+    };
+
+    /**
+     * Build Delete Input Type
+     *
+     * @param schema
+     */
+    private buildDeleteType = (schema: TableSchema[]): void => {
+        const tableName = schema[0].tableNamePascalCase;
+
+        this.builder.appendLine(`input ${tableName}${this.deleteTypeSuffix} {`);
+        schema.forEach((column) => {
+            if (!column.columnIsIdentity) {
+                this.builder.append(`\t${column.columnNameEntity}: `);
+                this.builder.append(`${this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase)}`);
+                this.builder.appendLine();
+            }
+        });
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+    };
+    //#endregion
+
+    //#region
+
+    /**
+     * Build Parent Types
+     *
+     * @param schema
+     * @returns { void }
+     */
+    private buildQueryDef = (schema: TableSchema[]): void => {
+        const tableName = schema[0].tableNameCamelCase;
+        const typeName = schema[0].tableNamePascalCase + this.objectSuffix;
+
+        this.builder.appendLine("type Query {");
+        this.builder.append("\t");
+        this.builder.append(tableName);
+        this.builder.appendLine(" (");
+        this.buildArgString(schema);
+        this.builder.append("\t): [");
+        this.builder.append(typeName);
+        this.builder.appendLine("]");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+    };
+
+    private buildMutationDef = (schema: TableSchema[]): void => {
+        const tableName = schema[0].tableNameCamelCase;
+        const typeNamePrefix = schema[0].tableNamePascalCase;
+
+        this.builder.appendLine("type Mutation {");
+
+        // Build insert type
+        this.builder.append(`\tinsert_${tableName} (`);
+        this.builder.append(`insert: [${typeNamePrefix}${this.insertTypeSuffix}]`);
+        this.builder.appendLine(`): ${typeNamePrefix}${this.mutationReturnTypeSuffix}`);
+
+        // Build update type
+        this.builder.appendLine(`\tupdate_${tableName} (`);
+        this.builder.appendLine(`\t\tupdateTo: [${typeNamePrefix}${this.updateTypeSuffix}]`);
+        this.builder.appendLine(`\t\twhere: ${typeNamePrefix}${this.whereSuffix}`);
+        this.builder.appendLine(`\t): ${typeNamePrefix}${this.mutationReturnTypeSuffix}`);
+
+        // Build delete type
+        this.builder.append(`\tdelete_${tableName} (`);
+        this.builder.append(`where: ${typeNamePrefix}${this.whereSuffix}`);
+        this.builder.appendLine("): Int");
+
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+    };
+    //#endregion
+
+    //#region Resolvers
     /**
      * Build resolver for the current table and static scalar type
      *
@@ -683,9 +834,45 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     );
                 },
             },
+            Mutation: {
+                [`insert_${tableName}`]: async (_obj: any, _args: any, context: any, info: any) => {
+                    return await AwaitHelper.execute(
+                        this.parseMaster.parseInsert(
+                            databaseWorker.config.name,
+                            tableName,
+                            info,
+                            context.omnihive,
+                            this.tables
+                        )
+                    );
+                },
+                [`update_${tableName}`]: async (_obj: any, _args: any, context: any, info: any) => {
+                    return await AwaitHelper.execute(
+                        this.parseMaster.parseUpdate(
+                            databaseWorker.config.name,
+                            tableName,
+                            info,
+                            context.omnihive,
+                            this.tables
+                        )
+                    );
+                },
+                [`delete_${tableName}`]: async (_obj: any, args: any, context: any, _info: any) => {
+                    return await AwaitHelper.execute(
+                        this.parseMaster.parseDelete(
+                            databaseWorker.config.name,
+                            tableName,
+                            args,
+                            context.omnihive,
+                            this.tables
+                        )
+                    );
+                },
+            },
             Any: GraphQLAny,
         };
     };
+    //#endregion
 
     /**
      * Generic helper function to uppercase the first letter of a string

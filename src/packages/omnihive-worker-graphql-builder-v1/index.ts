@@ -1167,7 +1167,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             let procFunctions: ProcFunctionSchema[];
 
             if (dbWorkerMeta.ignoreSchema) {
-                procFunctions = _.uniqBy(connectionSchema.procFunctions, "procName");
+                procFunctions = _.uniqBy(connectionSchema.procFunctions, "name");
             } else {
                 procFunctions = _.uniqBy(connectionSchema.procFunctions, (p) => [p.schemaName, p.name].join("."));
             }

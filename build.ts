@@ -203,6 +203,7 @@ const getRequiredFiles = () => {
         path.join(`omnihive`, `pages`, `404.ejs`),
         path.join(`omnihive`, `pages`, `500.ejs`),
         path.join(`omnihive`, `pages`, `index.ejs`),
+        path.join(`omnihive`, `components`, `head.ejs`),
         path.join(`omnihive-worker-knex-mssql`, `.npmignore`),
         path.join(`omnihive-worker-knex-mssql`, `defaultProcFunctions.sql`),
         path.join(`omnihive-worker-knex-mssql`, `defaultTables.sql`),

@@ -57,16 +57,14 @@ export class ParseDelete {
             }
 
             const mockStructure = {
-                [tableKey]: {
-                    args: args,
-                    columns: [
-                        {
-                            name: countingColumn.columnNameEntity,
-                            alias: "f0",
-                            dbName: countingColumn.columnNameDatabase,
-                        },
-                    ],
-                },
+                args: args,
+                columns: [
+                    {
+                        name: countingColumn.columnNameEntity,
+                        alias: "f0",
+                        dbName: countingColumn.columnNameDatabase,
+                    },
+                ],
             };
 
             if (countingColumn) {
@@ -79,7 +77,7 @@ export class ParseDelete {
 
                     const graphResults = this.graphHelper.buildGraphReturn(
                         mockStructure,
-                        dbResults,
+                        dbResults[0],
                         this.dateWorker,
                         false
                     );

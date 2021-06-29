@@ -10,8 +10,8 @@ import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker
 import { Knex } from "knex";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { GraphHelper } from "../helpers/GraphHelper";
-import { OmniHiveLogLevel } from "src/packages/omnihive-core/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "src/packages/omnihive-core/helpers/AwaitHelper";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 
 export class ParseAstQuery {
     // Workers
@@ -540,14 +540,14 @@ export class ParseAstQuery {
             // If results are not stored in the cache run the query
             if (!results && this.databaseWorker) {
                 // Execute the database queries
-                results = (await AwaitHelper.execute(this.databaseWorker.executeQuery(sql)))?.[0];
+                results = await AwaitHelper.execute(this.databaseWorker.executeQuery(sql));
             }
 
             // If results are returned then hydrate the results back into graph
             if (results) {
                 const graphResult = this.graphHelper.buildGraphReturn(
                     this.queryStructure[this.parentCall],
-                    results,
+                    results[0],
                     this.dateWorker
                 );
 

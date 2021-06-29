@@ -789,14 +789,14 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         // Build insert type
         this.builder.append(`\tinsert_${tableName} (`);
-        this.builder.append(`insert: [${typeNamePrefix}${this.insertTypeSuffix}]`);
-        this.builder.appendLine(`): ${typeNamePrefix}${this.mutationReturnTypeSuffix}`);
+        this.builder.append(`insert: [${typeNamePrefix}${this.insertTypeSuffix}!]!`);
+        this.builder.appendLine(`): [${typeNamePrefix}${this.mutationReturnTypeSuffix}]`);
 
         // Build update type
         this.builder.appendLine(`\tupdate_${tableName} (`);
-        this.builder.appendLine(`\t\tupdateTo: [${typeNamePrefix}${this.updateTypeSuffix}]`);
+        this.builder.appendLine(`\t\tupdateTo: ${typeNamePrefix}${this.updateTypeSuffix}!`);
         this.builder.appendLine(`\t\twhere: ${typeNamePrefix}${this.whereSuffix}`);
-        this.builder.appendLine(`\t): ${typeNamePrefix}${this.mutationReturnTypeSuffix}`);
+        this.builder.appendLine(`\t): [${typeNamePrefix}${this.mutationReturnTypeSuffix}]`);
 
         // Build delete type
         this.builder.append(`\tdelete_${tableName} (`);

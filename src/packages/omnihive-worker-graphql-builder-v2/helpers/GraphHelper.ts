@@ -241,7 +241,11 @@ export class GraphHelper {
                 }
 
                 // Create the Column object
-                const fieldKeys: any = { name: field.name.value, alias: `f${this.columnCount}` };
+                const fieldKeys: any = {
+                    name: field.name.value,
+                    alias: `f${this.columnCount}`,
+                    dbName: schema[parentCall].find((x) => x.columnNameEntity === field.name.value)?.columnNameDatabase,
+                };
 
                 // Store the created column object into the necessary objects for reference
                 aliasKeys.push(fieldKeys);
@@ -335,6 +339,55 @@ export class GraphHelper {
 
     /**
      *
+     * Database Helpers
+     *
+     */
+    //#region Database Helpers
+
+    /**
+     * Convert an object with entity property names to an object with db property names
+     *
+     * @param entityObject
+     * @param columns
+     * @returns { any }
+     */
+    public convertEntityObjectToDbObject = (entityObject: any, columns: TableSchema[]): any => {
+        // If the object is an array iterate through the array converting property names
+        if (IsHelper.isArray(entityObject)) {
+            return entityObject.map((x) => this.convertEntityObjectToDbObject(x, columns));
+        }
+
+        // Initiate return object
+        const dbObject: any = {};
+
+        // Iterate through each key
+        for (const entityName in entityObject) {
+            // Find the TableSchema for the matching property
+            const schemaColumn: TableSchema | undefined = columns.find((x) => x.columnNameEntity === entityName);
+
+            if (schemaColumn) {
+                // Transform the entities value to the proper database equivalent
+                let entityValue = entityObject[entityName];
+
+                if (IsHelper.isBoolean(entityValue) && schemaColumn.columnTypeEntity === "boolean") {
+                    entityValue = entityValue ? 1 : 0;
+                }
+
+                if (IsHelper.isString(entityValue) && schemaColumn.columnTypeEntity === "number") {
+                    entityValue = Number.parseFloat(entityValue);
+                }
+
+                // Set the database object property
+                dbObject[schemaColumn.columnNameDatabase] = entityValue;
+            }
+        }
+
+        return dbObject;
+    };
+    //#endregion
+
+    /**
+     *
      * Hydrator
      *
      */
@@ -348,12 +401,17 @@ export class GraphHelper {
      * @param results Sql result set
      * @returns { any }
      */
-    public buildGraphReturn = (structure: any, results: any, dateWorker: IDateWorker | undefined): any => {
+    public buildGraphReturn = (
+        structure: any,
+        results: any,
+        dateWorker: IDateWorker | undefined,
+        useAlias: boolean = true
+    ): any => {
         const condensedResults: any = [];
 
         // Iterate through each database result and build the graph return object
         results.forEach((dbItem: any) => {
-            this.processRow(condensedResults, dbItem, structure, dateWorker);
+            this.processRow(condensedResults, dbItem, structure, dateWorker, useAlias);
         });
 
         return condensedResults;
@@ -367,11 +425,17 @@ export class GraphHelper {
      * @param structure Structure of the graph query object
      * @returns { void }
      */
-    private processRow = (results: any, dbItem: any, structure: any, dateWorker: IDateWorker | undefined) => {
+    private processRow = (
+        results: any,
+        dbItem: any,
+        structure: any,
+        dateWorker: IDateWorker | undefined,
+        useAlias: boolean
+    ) => {
         let parent: any;
 
         // Get the return columns of the current structure level
-        const columns: { name: string; alias: string }[] = structure.columns ?? [];
+        const columns: { name: string; alias: string; dbName: string }[] = structure.columns ?? [];
 
         // Get the joins of the current structure level
         const linkingKeys: string[] = Object.keys(structure).filter((x: string) => x.endsWith(this.joinFieldSuffix));
@@ -382,14 +446,14 @@ export class GraphHelper {
 
         // Find any matching data at this structure level
         for (const item of results) {
-            if (this.compareParentData(columns, item, dbItem)) {
+            if (this.compareParentData(columns, item, dbItem, useAlias)) {
                 parent = item;
             }
         }
 
         // If a match exists then build onto the matching object
         if (parent) {
-            this.buildDataFromRow(parent, dbItem, columns, linkingKeys, structure, dateWorker);
+            this.buildDataFromRow(parent, dbItem, columns, linkingKeys, structure, dateWorker, useAlias);
         }
 
         // Else create a new array entry
@@ -398,7 +462,15 @@ export class GraphHelper {
                 results.push({});
             }
 
-            this.buildDataFromRow(results[results.length - 1], dbItem, columns, linkingKeys, structure, dateWorker);
+            this.buildDataFromRow(
+                results[results.length - 1],
+                dbItem,
+                columns,
+                linkingKeys,
+                structure,
+                dateWorker,
+                useAlias
+            );
         }
     };
 
@@ -415,15 +487,20 @@ export class GraphHelper {
     private buildDataFromRow = (
         item: any,
         dbItem: any,
-        columns: { name: string; alias: string }[],
+        columns: { name: string; alias: string; dbName: string }[],
         linkingKeys: string[],
         structure: any,
-        dateWorker: IDateWorker | undefined
+        dateWorker: IDateWorker | undefined,
+        useAlias: boolean
     ): void => {
         // Build the graph return item for this structure level
         for (const col of columns) {
             if (!item[col.name]) {
                 let dbItemValue: any = dbItem[col.alias];
+
+                if (!useAlias) {
+                    dbItemValue = dbItem[col.dbName];
+                }
 
                 if (IsHelper.isDate(dbItemValue) && dateWorker) {
                     dbItemValue = dateWorker.getFormattedDateString(dbItemValue);
@@ -440,7 +517,7 @@ export class GraphHelper {
             }
 
             // Process the join on the next object level
-            this.processRow(item[key], dbItem, structure[key], dateWorker);
+            this.processRow(item[key], dbItem, structure[key], dateWorker, useAlias);
         }
     };
 
@@ -452,16 +529,24 @@ export class GraphHelper {
      * @param dbItem
      * @returns { boolean }
      */
-    private compareParentData = (columns: { name: string; alias: string }[], item: any, dbItem: any) => {
+    private compareParentData = (
+        columns: { name: string; alias: string; dbName: string }[],
+        item: any,
+        dbItem: any,
+        useAlias: boolean
+    ) => {
         // Iterate through each returning column
         for (const col of columns) {
             // if the item does not have that column property return false
             if (!item[col.name]) {
                 return false;
             }
+
             // If the current return object does not match the database return object
             // for the given column then return false
-            else if (item[col.name] !== dbItem[col.alias]) {
+            let dbComparer: any = useAlias ? dbItem[col.alias] : dbItem[col.name];
+
+            if (item[col.name] !== dbComparer) {
                 return false;
             }
         }
@@ -632,7 +717,8 @@ export class GraphHelper {
 
             // If the columnName is found then build the equality line of the database query for this column
             if (columnName) {
-                this.buildRowEquality(`${tableAlias}.${columnName}`, arg[key], builder, knex, having, join);
+                const argName: string = tableAlias ? `${tableAlias}.${columnName}` : columnName;
+                this.buildRowEquality(argName, arg[key], builder, knex, having, join);
             }
         }
     };

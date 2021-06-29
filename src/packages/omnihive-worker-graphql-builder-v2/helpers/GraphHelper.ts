@@ -1,6 +1,16 @@
 import { FieldNode, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
 import { Knex } from "knex";
-import { TableSchema } from "src/packages/omnihive-core/models/TableSchema";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 
 export class GraphHelper {
     private columnCount: number = 0;
@@ -50,6 +60,108 @@ export class GraphHelper {
                 return `String`;
         }
     };
+
+    /**
+     *
+     * Setup Helpers
+     *
+     */
+    //#region Setup Helpers
+
+    /**
+     * Set the required workers for the parser
+     *
+     * @param workerName
+     * @returns { any }
+     */
+    public getRequiredWorkers = (workerName: string): any => {
+        let logWorker, databaseWorker, knex, encryptionWorker, cacheWorker, dateWorker;
+
+        // Set the log worker
+        logWorker = global.omnihive.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
+
+        // If the log worker does not exist then throw an error
+        if (IsHelper.isNullOrUndefined(logWorker)) {
+            throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
+        }
+
+        // Set the database worker
+        databaseWorker = global.omnihive.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName);
+
+        // If the database worker does not exist then throw an error
+        if (IsHelper.isNullOrUndefined(databaseWorker)) {
+            throw new Error(
+                "Database Worker Not Defined.  This graph converter will not work without a Database worker."
+            );
+        }
+        // Set the knex object from the database worker
+        knex = databaseWorker.connection as Knex;
+
+        // Set the encryption worker
+        encryptionWorker = global.omnihive.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
+
+        // If the encryption worker does not exist then throw an error
+        if (IsHelper.isNullOrUndefined(encryptionWorker)) {
+            throw new Error(
+                "Encryption Worker Not Defined.  This graph converter with Cache worker enabled will not work without an Encryption worker."
+            );
+        }
+
+        cacheWorker = global.omnihive.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache);
+        dateWorker = global.omnihive.getWorker<IDateWorker | undefined>(HiveWorkerType.Date);
+
+        return { logWorker, databaseWorker, knex, encryptionWorker, cacheWorker, dateWorker };
+    };
+
+    /**
+     * Verify the access token provided is valid
+     *
+     * @param omniHiveContext GraphQL Custom Headers
+     * @returns { Promise<void> }
+     */
+    public verifyToken = async (omniHiveContext: GraphContext): Promise<void> => {
+        // Retrieve the token worker
+        const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
+            HiveWorkerType.Token
+        );
+
+        // Gather the security flag
+        let disableSecurity: boolean =
+            global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_DISABLE_TOKEN_CHECK") ?? false;
+
+        // If security is enabled and no worker is found then throw an error
+        if (!disableSecurity && IsHelper.isNullOrUndefined(tokenWorker)) {
+            throw new Error("[ohAccessError] No token worker defined.");
+        }
+
+        // If security is enabled but the access token is blank then throw an error
+        if (
+            !disableSecurity &&
+            !IsHelper.isNullOrUndefined(tokenWorker) &&
+            (IsHelper.isNullOrUndefined(omniHiveContext) ||
+                IsHelper.isNullOrUndefined(omniHiveContext.access) ||
+                IsHelper.isEmptyStringOrWhitespace(omniHiveContext.access))
+        ) {
+            throw new Error("[ohAccessError] Access token is invalid or expired.");
+        }
+
+        // If security is enabled and the access token is provided then verify the token
+        if (
+            !disableSecurity &&
+            !IsHelper.isNullOrUndefined(tokenWorker) &&
+            !IsHelper.isNullOrUndefined(omniHiveContext) &&
+            !IsHelper.isNullOrUndefined(omniHiveContext.access) &&
+            !IsHelper.isEmptyStringOrWhitespace(omniHiveContext.access)
+        ) {
+            const verifyToken: boolean = await AwaitHelper.execute(tokenWorker.verify(omniHiveContext.access));
+
+            // If the token is invalid then throw an error
+            if (!verifyToken) {
+                throw new Error("[ohAccessError] Access token is invalid or expired.");
+            }
+        }
+    };
+    //#endregion
 
     /**
      *
@@ -236,12 +348,12 @@ export class GraphHelper {
      * @param results Sql result set
      * @returns { any }
      */
-    public buildGraphReturn = (structure: any, results: any): any => {
+    public buildGraphReturn = (structure: any, results: any, dateWorker: IDateWorker | undefined): any => {
         const condensedResults: any = [];
 
         // Iterate through each database result and build the graph return object
         results.forEach((dbItem: any) => {
-            this.processRow(condensedResults, dbItem, structure);
+            this.processRow(condensedResults, dbItem, structure, dateWorker);
         });
 
         return condensedResults;
@@ -255,7 +367,7 @@ export class GraphHelper {
      * @param structure Structure of the graph query object
      * @returns { void }
      */
-    private processRow = (results: any, dbItem: any, structure: any) => {
+    private processRow = (results: any, dbItem: any, structure: any, dateWorker: IDateWorker | undefined) => {
         let parent: any;
 
         // Get the return columns of the current structure level
@@ -277,7 +389,7 @@ export class GraphHelper {
 
         // If a match exists then build onto the matching object
         if (parent) {
-            this.buildDataFromRow(parent, dbItem, columns, linkingKeys, structure);
+            this.buildDataFromRow(parent, dbItem, columns, linkingKeys, structure, dateWorker);
         }
 
         // Else create a new array entry
@@ -286,7 +398,7 @@ export class GraphHelper {
                 results.push({});
             }
 
-            this.buildDataFromRow(results[results.length - 1], dbItem, columns, linkingKeys, structure);
+            this.buildDataFromRow(results[results.length - 1], dbItem, columns, linkingKeys, structure, dateWorker);
         }
     };
 
@@ -305,12 +417,19 @@ export class GraphHelper {
         dbItem: any,
         columns: { name: string; alias: string }[],
         linkingKeys: string[],
-        structure: any
+        structure: any,
+        dateWorker: IDateWorker | undefined
     ): void => {
         // Build the graph return item for this structure level
         for (const col of columns) {
             if (!item[col.name]) {
-                item[col.name] = dbItem[col.alias];
+                let dbItemValue: any = dbItem[col.alias];
+
+                if (IsHelper.isDate(dbItemValue) && dateWorker) {
+                    dbItemValue = dateWorker.getFormattedDateString(dbItemValue);
+                }
+
+                item[col.name] = dbItemValue;
             }
         }
 
@@ -321,7 +440,7 @@ export class GraphHelper {
             }
 
             // Process the join on the next object level
-            this.processRow(item[key], dbItem, structure[key]);
+            this.processRow(item[key], dbItem, structure[key], dateWorker);
         }
     };
 

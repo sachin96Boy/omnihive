@@ -2,26 +2,24 @@
 
 import { FieldNode, GraphQLResolveInfo } from "graphql";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-// import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
-// import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { Knex } from "knex";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { GraphHelper } from "../helpers/GraphHelper";
+import { OmniHiveLogLevel } from "src/packages/omnihive-core/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "src/packages/omnihive-core/helpers/AwaitHelper";
 
 export class ParseAstQuery {
     // Workers
     private logWorker: ILogWorker | undefined;
     private databaseWorker: IDatabaseWorker | undefined;
     private encryptionWorker: IEncryptionWorker | undefined;
-    // private cacheWorker!: ICacheWorker | undefined;
-    // private dateWorker!: IDateWorker | undefined;
+    private cacheWorker!: ICacheWorker | undefined;
+    private dateWorker!: IDateWorker | undefined;
 
     // Helpers
     private graphHelper: GraphHelper = new GraphHelper();
@@ -60,125 +58,26 @@ export class ParseAstQuery {
             this.schema = schema;
 
             // Set the required worker values
-            this.setRequiredWorkers(workerName);
+            const { logWorker, databaseWorker, knex, encryptionWorker, cacheWorker, dateWorker } =
+                this.graphHelper.getRequiredWorkers(workerName);
+            this.logWorker = logWorker;
+            this.databaseWorker = databaseWorker;
+            this.knex = knex;
+            this.encryptionWorker = encryptionWorker;
+            this.cacheWorker = cacheWorker;
+            this.dateWorker = dateWorker;
 
             // Verify the authenticity of the access token
-            this.verifyToken(omniHiveContext);
+            // TODO: UNCOMMENT THIS LINE
+            // await AwaitHelper.execute(this.graphHelper.verifyToken(omniHiveContext));
 
             // Build the database query
             this.buildQuery(resolveInfo);
 
-            // If the database query builder exists
-            if (this.builder) {
-                const results: any = [];
-
-                // Execute the database queries
-                results.push((await this.databaseWorker?.executeQuery(this.builder.toString()))?.[0]);
-
-                // If results are returned then hydrate the results back into graph
-                if (results) {
-                    return this.graphHelper.buildGraphReturn(this.queryStructure[this.parentCall], results[0]);
-                }
-
-                return {
-                    error: "An unexpected error occurred when transforming the database results back into the graph object structure",
-                };
-            }
+            // Process the built query
+            return await AwaitHelper.execute(this.processQuery(workerName, omniHiveContext));
         } catch (err) {
             throw err;
-        }
-    };
-
-    /**
-     * Set the required workers for the parser
-     *
-     * @param workerName
-     * @returns { void }
-     */
-    private setRequiredWorkers = (workerName: string): void => {
-        // Set the log worker
-        this.logWorker = global.omnihive.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
-
-        // If the log worker does not exist then throw an error
-        if (IsHelper.isNullOrUndefined(this.logWorker)) {
-            throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
-        }
-
-        // Set the database worker
-        this.databaseWorker = global.omnihive.getWorker<IDatabaseWorker | undefined>(
-            HiveWorkerType.Database,
-            workerName
-        );
-
-        // If the database worker does not exist then throw an error
-        if (IsHelper.isNullOrUndefined(this.databaseWorker)) {
-            throw new Error(
-                "Database Worker Not Defined.  This graph converter will not work without a Database worker."
-            );
-        }
-        // Set the knex object from the database worker
-        this.knex = this.databaseWorker.connection as Knex;
-
-        // Set the encryption worker
-        this.encryptionWorker = global.omnihive.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
-
-        // If the encryption worker does not exist then throw an error
-        if (IsHelper.isNullOrUndefined(this.encryptionWorker)) {
-            throw new Error(
-                "Encryption Worker Not Defined.  This graph converter with Cache worker enabled will not work without an Encryption worker."
-            );
-        }
-
-        // this.cacheWorker = global.omnihive.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache);
-        // this.dateWorker = global.omnihive.getWorker<IDateWorker | undefined>(HiveWorkerType.Date);
-    };
-
-    /**
-     * Verify the access token provided is valid
-     *
-     * @param omniHiveContext GraphQL Custom Headers
-     * @returns { Promise<void> }
-     */
-    private verifyToken = async (omniHiveContext: GraphContext): Promise<void> => {
-        // Retrieve the token worker
-        const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
-            HiveWorkerType.Token
-        );
-
-        // Gather the security flag
-        let disableSecurity: boolean =
-            global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_DISABLE_TOKEN_CHECK") ?? false;
-
-        // If security is enabled and no worker is found then throw an error
-        if (!disableSecurity && IsHelper.isNullOrUndefined(tokenWorker)) {
-            // throw new Error("[ohAccessError] No token worker defined.");
-        }
-
-        // If security is enabled but the access token is blank then throw an error
-        if (
-            !disableSecurity &&
-            !IsHelper.isNullOrUndefined(tokenWorker) &&
-            (IsHelper.isNullOrUndefined(omniHiveContext) ||
-                IsHelper.isNullOrUndefined(omniHiveContext.access) ||
-                IsHelper.isEmptyStringOrWhitespace(omniHiveContext.access))
-        ) {
-            // throw new Error("[ohAccessError] Access token is invalid or expired.");
-        }
-
-        // If security is enabled and the access token is provided then verify the token
-        if (
-            !disableSecurity &&
-            !IsHelper.isNullOrUndefined(tokenWorker) &&
-            !IsHelper.isNullOrUndefined(omniHiveContext) &&
-            !IsHelper.isNullOrUndefined(omniHiveContext.access) &&
-            !IsHelper.isEmptyStringOrWhitespace(omniHiveContext.access)
-        ) {
-            const verifyToken: boolean = await AwaitHelper.execute(tokenWorker.verify(omniHiveContext.access));
-
-            // If the token is invalid then throw an error
-            if (!verifyToken) {
-                // throw new Error("[ohAccessError] Access token is invalid or expired.");
-            }
         }
     };
 
@@ -604,6 +503,134 @@ export class ParseAstQuery {
 
             // Else return a blank string
             return "";
+        }
+    };
+
+    /**
+     * Process the query that was generated
+     *
+     * @param workerName
+     * @param omniHiveContext
+     * @returns { Promise<any> }
+     */
+    private processQuery = async (workerName: string, omniHiveContext: any): Promise<any> => {
+        // If the database query builder exists
+        if (this.builder) {
+            let cacheKey: string | undefined = "";
+            let cacheSeconds: number = -1;
+            const sql = this.builder.toString();
+
+            // Retrieve the cache seconds from the OmniHive Context
+            if (omniHiveContext?.cacheSeconds) {
+                try {
+                    cacheSeconds = +omniHiveContext.cacheSeconds;
+                } catch {
+                    cacheSeconds = -1;
+                }
+            }
+
+            // If the caching level is not set to none retrieve the cache key for the query
+            if (omniHiveContext?.cache && omniHiveContext.cache !== "none") {
+                cacheKey = this.encryptionWorker?.base64Encode(workerName + "||||" + sql);
+            }
+
+            // Check the cache to see if results are stored
+            let results: any = await AwaitHelper.execute(this.checkCache(workerName, omniHiveContext, sql, cacheKey));
+
+            // If results are not stored in the cache run the query
+            if (!results && this.databaseWorker) {
+                // Execute the database queries
+                results = (await AwaitHelper.execute(this.databaseWorker.executeQuery(sql)))?.[0];
+            }
+
+            // If results are returned then hydrate the results back into graph
+            if (results) {
+                const graphResult = this.graphHelper.buildGraphReturn(
+                    this.queryStructure[this.parentCall],
+                    results,
+                    this.dateWorker
+                );
+
+                // Store the results in the cache
+                await AwaitHelper.execute(
+                    this.setCache(workerName, omniHiveContext, sql, cacheKey, cacheSeconds, graphResult)
+                );
+
+                // Return the results
+                return graphResult;
+            }
+
+            // If this point is reached an error occurred on the parsing of the sql results
+            return {
+                error: "An unexpected error occurred when transforming the database results back into the graph object structure",
+            };
+        }
+    };
+
+    /**
+     * See if the sql query has been saved in the cache
+     *
+     * @param workerName
+     * @param omniHiveContext
+     * @param sql
+     * @param cacheKey
+     * @returns { Promise<any> }
+     */
+    private checkCache = async (
+        workerName: string,
+        omniHiveContext: any,
+        sql: string,
+        cacheKey: string | undefined
+    ): Promise<any> => {
+        if (this.cacheWorker) {
+            // Check the context to see if caching flags are set
+            if (omniHiveContext?.cache && omniHiveContext.cache === "cache" && cacheKey) {
+                // Verify the key exists
+                const keyExists: boolean = await AwaitHelper.execute(this.cacheWorker.exists(cacheKey));
+
+                // If the key exists retrieve the results
+                if (keyExists) {
+                    this.logWorker?.write(OmniHiveLogLevel.Info, `(Retrieved from Cache) => ${workerName} => ${sql}`);
+                    const cacheResults: string | undefined = await AwaitHelper.execute(this.cacheWorker.get(cacheKey));
+
+                    try {
+                        // If results are not falsy then return the Object
+                        if (cacheResults) {
+                            return JSON.parse(cacheResults);
+                        }
+                    } catch {
+                        omniHiveContext.cache = "cacheRefresh";
+                    }
+                }
+            }
+        }
+    };
+
+    /**
+     * Set the results in the cache
+     *
+     * @param workerName
+     * @param omniHiveContext
+     * @param sql
+     * @param cacheKey
+     * @param cacheSeconds
+     * @param results
+     * @returns { Promise<void> }
+     */
+    private setCache = async (
+        workerName: string,
+        omniHiveContext: any,
+        sql: string,
+        cacheKey: string | undefined,
+        cacheSeconds: number,
+        results: any
+    ): Promise<void> => {
+        if (this.cacheWorker) {
+            // If the no caching flag is not set save the results to cache
+            if (omniHiveContext?.cache && omniHiveContext.cache !== "none" && cacheKey) {
+                this.logWorker?.write(OmniHiveLogLevel.Info, `(Written to Cache) => ${workerName} => ${sql}`);
+                this.cacheWorker.set(cacheKey, JSON.stringify(results), cacheSeconds);
+            }
         }
     };
 }

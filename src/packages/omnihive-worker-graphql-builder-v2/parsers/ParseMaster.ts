@@ -6,6 +6,8 @@ import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ParseInsert } from "./ParseInsert";
 import { ParseDelete } from "./ParseDelete";
 import { ParseUpdate } from "./ParseUpdate";
+import { ProcFunctionSchema } from "src/packages/omnihive-core/models/ProcFunctionSchema";
+import { ParseProcedure } from "./ParseProcedure";
 
 export class ParseMaster {
     public parseAstQuery = async (
@@ -54,11 +56,13 @@ export class ParseMaster {
     };
 
     public parseProcedure = async (
-        _workerName: string,
-        _resolveInfo: GraphQLResolveInfo,
-        _omniHiveContext: GraphContext
-    ): Promise<{ procName: string; results: any[][] }[]> => {
-        return [];
+        workerName: string,
+        resolveInfo: GraphQLResolveInfo,
+        omniHiveContext: GraphContext,
+        procedureData: ProcFunctionSchema[]
+    ): Promise<any[][]> => {
+        const parser: ParseProcedure = new ParseProcedure();
+        return await AwaitHelper.execute(parser.parse(workerName, resolveInfo, omniHiveContext, procedureData));
     };
 
     public parseCustomSql = async (

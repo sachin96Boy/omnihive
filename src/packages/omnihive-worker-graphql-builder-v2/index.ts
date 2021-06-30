@@ -74,6 +74,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             this.graphSchemas.push(this.buildExeSchema(this.tables[tableName], databaseWorker));
         }
 
+        // Build procedure object
+        // Type: { [procedureName: string]: ProcFunctionSchema[] }
         for (const parameter of connectionSchema.procFunctions) {
             const procKey: string = parameter.schemaName + "_" + parameter.name;
             if (!this.storedProcs[procKey] || this.storedProcs[procKey]?.length <= 0) {
@@ -85,10 +87,15 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             }
         }
 
+        // Iterate through each procedure and build it's graph schema
         for (const proc in this.storedProcs) {
-            this.graphSchemas.push(this.buildStoredProc(this.storedProcs[proc], databaseWorker));
+            this.graphSchemas.push(this.buildProcSchema(this.storedProcs[proc], databaseWorker));
         }
 
+        // Build static custom sql schema
+        this.graphSchemas.push(this.buildCustomSqlSchema(databaseWorker));
+
+        // Merge all the schemas into one master schema to rule them all
         return mergeSchemas({
             schemas: this.graphSchemas,
         });
@@ -926,7 +933,14 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
     //#region Store Procedure Types
 
-    private buildStoredProc = (proc: ProcFunctionSchema[], databaseWorker: IDatabaseWorker): GraphQLSchema => {
+    /**
+     * Build Procedure Schemas
+     *
+     * @param proc
+     * @param databaseWorker
+     * @returns { GraphQLSchema }
+     */
+    private buildProcSchema = (proc: ProcFunctionSchema[], databaseWorker: IDatabaseWorker): GraphQLSchema => {
         // Clear string builder for new table processing
         this.builder.clear();
 
@@ -934,6 +948,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.buildProcTypeDefinitions(proc);
         this.buildQueryTypeDefinition();
 
+        // Build resolvers
         const resolver = this.buildProcResolvers(proc, databaseWorker);
 
         return makeExecutableSchema({
@@ -942,24 +957,36 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         });
     };
 
+    /**
+     * Build Procedure types
+     *
+     * @param proc
+     * @returns { void }
+     */
     private buildProcTypeDefinitions = (proc: ProcFunctionSchema[]): void => {
+        // Build name with the schema name
         const typeName = `${proc[0].schemaName}_${proc[0].name}`;
 
+        // Define custom return scalar type
         this.builder.appendLine("scalar JSON");
 
         this.builder.appendLine();
 
+        // Build procedure type
         this.builder.appendLine(`type Procedure {`);
         this.builder.appendLine(`\t${typeName}`);
 
+        // If parameters exist then build the procedures arguments
         if (proc.filter((x) => x.parameterName).length > 0) {
             this.builder.appendLine("(");
 
+            // Iterate through each parameter for the given procedure and build the arguments
             proc.forEach((param) => {
                 if (!param.parameterName) {
                     return;
                 }
                 this.builder.append("\t\t");
+                // Remove the @ decorator from the parameter name
                 this.builder.append(param.parameterName.replace("@", ""));
                 this.builder.append(": ");
                 this.builder.appendLine(this.graphHelper.getGraphTypeFromDbType(param.parameterTypeDatabase));
@@ -974,12 +1001,24 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.appendLine();
     };
 
+    /**
+     * Build the Query type for the given procedure
+     *
+     * @returns { void }
+     */
     private buildQueryTypeDefinition = (): void => {
         this.builder.appendLine("type Query {");
         this.builder.appendLine(`\tprocedure: Procedure`);
         this.builder.appendLine("}");
     };
 
+    /**
+     * Build the Procedure's resolver
+     *
+     * @param proc
+     * @param databaseWorker
+     * @returns { any }
+     */
     private buildProcResolvers = (proc: ProcFunctionSchema[], databaseWorker: IDatabaseWorker): any => {
         const typeName = `${proc[0].schemaName}_${proc[0].name}`;
 
@@ -999,6 +1038,63 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 },
             },
             JSON: GraphQLJSON,
+        };
+    };
+    //#endregion
+
+    //#region Custom SQL
+
+    /**
+     * Build the Custom Sql Schema
+     *
+     * @returns { GraphQLSchema }
+     */
+    private buildCustomSqlSchema = (databaseWorker: IDatabaseWorker): GraphQLSchema => {
+        // Clear string builder for new table processing
+        this.builder.clear();
+
+        // Build GraphQL Type Definitions
+        this.buildCustomSqlType();
+
+        // Build resolvers
+        const resolver = this.buildCustomSqlResolvers(databaseWorker);
+
+        return makeExecutableSchema({
+            typeDefs: this.builder.outputString(),
+            resolvers: resolver,
+        });
+    };
+
+    /**
+     * Build the Query type for the customSql call
+     *
+     * @returns { void }
+     */
+    private buildCustomSqlType = (): void => {
+        this.builder.appendLine("scalar JSON");
+        this.builder.appendLine();
+        this.builder.appendLine("type Query {");
+        this.builder.appendLine("\tcustomSql(encryptedSql: String): JSON");
+        this.builder.appendLine("}");
+    };
+
+    /**
+     * Build the custom Sql resolver
+     *
+     * @returns { any }
+     */
+    private buildCustomSqlResolvers = (databaseWorker: IDatabaseWorker): any => {
+        return {
+            Query: {
+                customSql: async (_obj: any, args: any, context: any, _info: any) => {
+                    const graphParser = new ParseMaster();
+                    const dbResponse = await AwaitHelper.execute(
+                        graphParser.parseCustomSql(databaseWorker.config.name, args.encryptedSql, context.omnihive)
+                    );
+
+                    return [{ recordset: dbResponse }];
+                },
+            },
         };
     };
     //#endregion

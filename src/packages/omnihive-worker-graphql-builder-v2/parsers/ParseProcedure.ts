@@ -22,6 +22,14 @@ export class ParseProcedure {
     ): Promise<any[][]> => {
         // Set the required worker values
         const { databaseWorker } = this.graphHelper.getRequiredWorkers(workerName);
+
+        // If the database worker does not exist then throw an error
+        if (!databaseWorker) {
+            throw new Error(
+                "Database Worker Not Defined.  This graph converter will not work without a Database worker."
+            );
+        }
+
         this.databaseWorker = databaseWorker;
 
         // Verify the authenticity of the access token

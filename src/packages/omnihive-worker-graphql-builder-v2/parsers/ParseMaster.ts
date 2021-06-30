@@ -8,6 +8,7 @@ import { ParseDelete } from "./ParseDelete";
 import { ParseUpdate } from "./ParseUpdate";
 import { ProcFunctionSchema } from "src/packages/omnihive-core/models/ProcFunctionSchema";
 import { ParseProcedure } from "./ParseProcedure";
+import { ParseCustomSql } from "./ParseCustomSql";
 
 export class ParseMaster {
     public parseAstQuery = async (
@@ -66,10 +67,11 @@ export class ParseMaster {
     };
 
     public parseCustomSql = async (
-        _workerName: string,
-        _encryptedSql: string,
-        _omniHiveContext: GraphContext
+        workerName: string,
+        encryptedSql: string,
+        omniHiveContext: GraphContext
     ): Promise<any[][]> => {
-        return [];
+        const parser: ParseCustomSql = new ParseCustomSql();
+        return await AwaitHelper.execute(parser.parse(workerName, encryptedSql, omniHiveContext));
     };
 }

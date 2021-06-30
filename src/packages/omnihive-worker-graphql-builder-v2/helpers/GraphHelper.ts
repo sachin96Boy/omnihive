@@ -80,32 +80,14 @@ export class GraphHelper {
         // Set the log worker
         logWorker = global.omnihive.getWorker<ILogWorker | undefined>(HiveWorkerType.Log);
 
-        // If the log worker does not exist then throw an error
-        if (IsHelper.isNullOrUndefined(logWorker)) {
-            throw new Error("Log Worker Not Defined.  This graph converter will not work without a Log worker.");
-        }
-
         // Set the database worker
         databaseWorker = global.omnihive.getWorker<IDatabaseWorker | undefined>(HiveWorkerType.Database, workerName);
 
-        // If the database worker does not exist then throw an error
-        if (IsHelper.isNullOrUndefined(databaseWorker)) {
-            throw new Error(
-                "Database Worker Not Defined.  This graph converter will not work without a Database worker."
-            );
-        }
         // Set the knex object from the database worker
-        knex = databaseWorker.connection as Knex;
+        knex = databaseWorker?.connection as Knex;
 
         // Set the encryption worker
         encryptionWorker = global.omnihive.getWorker<IEncryptionWorker | undefined>(HiveWorkerType.Encryption);
-
-        // If the encryption worker does not exist then throw an error
-        if (IsHelper.isNullOrUndefined(encryptionWorker)) {
-            throw new Error(
-                "Encryption Worker Not Defined.  This graph converter with Cache worker enabled will not work without an Encryption worker."
-            );
-        }
 
         cacheWorker = global.omnihive.getWorker<ICacheWorker | undefined>(HiveWorkerType.Cache);
         dateWorker = global.omnihive.getWorker<IDateWorker | undefined>(HiveWorkerType.Date);
@@ -130,29 +112,17 @@ export class GraphHelper {
             global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_DISABLE_TOKEN_CHECK") ?? false;
 
         // If security is enabled and no worker is found then throw an error
-        if (!disableSecurity && IsHelper.isNullOrUndefined(tokenWorker)) {
+        if (!disableSecurity && !tokenWorker) {
             throw new Error("[ohAccessError] No token worker defined.");
         }
 
         // If security is enabled but the access token is blank then throw an error
-        if (
-            !disableSecurity &&
-            !IsHelper.isNullOrUndefined(tokenWorker) &&
-            (IsHelper.isNullOrUndefined(omniHiveContext) ||
-                IsHelper.isNullOrUndefined(omniHiveContext.access) ||
-                IsHelper.isEmptyStringOrWhitespace(omniHiveContext.access))
-        ) {
+        if (!disableSecurity && tokenWorker && !omniHiveContext?.access) {
             throw new Error("[ohAccessError] Access token is invalid or expired.");
         }
 
         // If security is enabled and the access token is provided then verify the token
-        if (
-            !disableSecurity &&
-            !IsHelper.isNullOrUndefined(tokenWorker) &&
-            !IsHelper.isNullOrUndefined(omniHiveContext) &&
-            !IsHelper.isNullOrUndefined(omniHiveContext.access) &&
-            !IsHelper.isEmptyStringOrWhitespace(omniHiveContext.access)
-        ) {
+        if (!disableSecurity && tokenWorker && omniHiveContext?.access) {
             const verifyToken: boolean = await AwaitHelper.execute(tokenWorker.verify(omniHiveContext.access));
 
             // If the token is invalid then throw an error

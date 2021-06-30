@@ -41,6 +41,14 @@ export class ParseDelete {
 
             // Set the required worker values
             const { databaseWorker, knex, dateWorker } = this.graphHelper.getRequiredWorkers(workerName);
+
+            // If the database worker does not exist then throw an error
+            if (!databaseWorker) {
+                throw new Error(
+                    "Database Worker Not Defined.  This graph converter will not work without a Database worker."
+                );
+            }
+
             this.databaseWorker = databaseWorker;
             this.knex = knex;
             this.dateWorker = dateWorker;
@@ -49,13 +57,16 @@ export class ParseDelete {
             // TODO: UNCOMMENT THIS LINE
             // await AwaitHelper.execute(this.graphHelper.verifyToken(omniHiveContext));
 
+            // Retrieve the TableSchema values fro the parent table
             const schemaColumns: TableSchema[] = this.schema[tableKey];
-            let countingColumn = schemaColumns.find((x) => x.columnIsPrimaryKey);
 
+            // Determine a proper value to return for the count
+            let countingColumn = schemaColumns.find((x) => x.columnIsPrimaryKey);
             if (!countingColumn) {
                 countingColumn = schemaColumns[0];
             }
 
+            // Build a mock structure for the hydrator to run against
             const mockStructure = {
                 args: args,
                 columns: [
@@ -68,13 +79,16 @@ export class ParseDelete {
             };
 
             if (countingColumn) {
-                this.buildProc(args, tableKey, countingColumn.columnNameDatabase);
+                // Build the delete query
+                this.buildProc(args, tableKey, countingColumn.columnNameDatabase, schemaColumns[0].tableName);
 
                 if (this.builder && this.databaseWorker) {
+                    // Run the delete query
                     const dbResults = await AwaitHelper.execute(
                         this.databaseWorker.executeQuery(this.builder.toString())
                     );
 
+                    // Hydrate the database response
                     const graphResults = this.graphHelper.buildGraphReturn(
                         mockStructure,
                         dbResults[0],
@@ -82,30 +96,40 @@ export class ParseDelete {
                         false
                     );
 
+                    // Return the count of the items deleted
                     return graphResults.length;
                 }
             }
 
+            // If this point is reached then nothing was deleted
             return 0;
         } catch (err) {
             throw err;
         }
     };
 
-    private buildProc = (args: any, tableKey: string, columnName: string): void => {
+    /**
+     * Build the delete query
+     *
+     * @param args
+     * @param tableKey
+     * @param columnName
+     * @returns { void }
+     */
+    private buildProc = (args: any, structureKey: string, columnName: string, tableName: string): void => {
+        // Initialize the builder
         if (!this.knex) {
             throw new Error("Knex object is not initialized");
         }
-
         this.builder = this.knex.queryBuilder();
 
-        const schemaColumns: TableSchema[] = this.schema[tableKey];
-        const tableName = schemaColumns[0].tableName;
-
+        // Set primary table
         this.builder.from(`${tableName}`);
 
-        this.graphHelper.buildConditions(args, "", this.builder, tableKey, this.schema, this.knex);
+        // Build the conditions for the delete query
+        this.graphHelper.buildConditions(args, "", this.builder, structureKey, this.schema, this.knex);
 
+        // Set the delete command the the designated return column
         this.builder.delete([columnName], { includeTriggerModifications: true });
     };
 }

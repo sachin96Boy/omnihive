@@ -60,6 +60,14 @@ export class ParseAstQuery {
             // Set the required worker values
             const { logWorker, databaseWorker, knex, encryptionWorker, cacheWorker, dateWorker } =
                 this.graphHelper.getRequiredWorkers(workerName);
+
+            // If the database worker does not exist then throw an error
+            if (!databaseWorker) {
+                throw new Error(
+                    "Database Worker Not Defined.  This graph converter will not work without a Database worker."
+                );
+            }
+
             this.logWorker = logWorker;
             this.databaseWorker = databaseWorker;
             this.knex = knex;
@@ -530,8 +538,8 @@ export class ParseAstQuery {
             }
 
             // If the caching level is not set to none retrieve the cache key for the query
-            if (omniHiveContext?.cache && omniHiveContext.cache !== "none") {
-                cacheKey = this.encryptionWorker?.base64Encode(workerName + "||||" + sql);
+            if (this.encryptionWorker && omniHiveContext?.cache && omniHiveContext.cache !== "none") {
+                cacheKey = this.encryptionWorker.base64Encode(workerName + "||||" + sql);
             }
 
             // Check the cache to see if results are stored

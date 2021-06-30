@@ -58,12 +58,14 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Build table object
         //  Type: { [ tableNameCamelCase: string ]: TableSchema[] }
         for (const column of connectionSchema.tables) {
-            if (!this.tables[column.tableNameCamelCase] || this.tables[column.tableNameCamelCase]?.length <= 0) {
-                this.tables[column.tableNameCamelCase] = [];
+            const tableKey: string = column.schemaName + column.tableNamePascalCase;
+
+            if (!this.tables[tableKey] || this.tables[tableKey]?.length <= 0) {
+                this.tables[tableKey] = [];
             }
 
-            if (!this.tables[column.tableNameCamelCase].some((t) => t.columnNameEntity == column.columnNameEntity)) {
-                this.tables[column.tableNameCamelCase].push(column);
+            if (!this.tables[tableKey].some((t) => t.columnNameEntity == column.columnNameEntity)) {
+                this.tables[tableKey].push(column);
             }
         }
 
@@ -73,12 +75,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         }
 
         for (const parameter of connectionSchema.procFunctions) {
-            if (!this.storedProcs[parameter.name] || this.storedProcs[parameter.name]?.length <= 0) {
-                this.storedProcs[parameter.name] = [];
+            const procKey: string = parameter.schemaName + "_" + parameter.name;
+            if (!this.storedProcs[procKey] || this.storedProcs[procKey]?.length <= 0) {
+                this.storedProcs[procKey] = [];
             }
 
-            if (!this.storedProcs[parameter.name].some((t) => t.parameterName == parameter.parameterName)) {
-                this.storedProcs[parameter.name].push(parameter);
+            if (!this.storedProcs[procKey].some((t) => t.parameterName == parameter.parameterName)) {
+                this.storedProcs[procKey].push(parameter);
             }
         }
 
@@ -155,8 +158,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 });
             });
 
+            const foreignTableKey = column.schemaName + column.columnForeignKeyTableNamePascalCase;
             // Get the foreign links from the parent column to another table
-            const linkToColumn: TableSchema[] = this.tables[column.columnForeignKeyTableNameCamelCase]?.filter(
+            const linkToColumn: TableSchema[] = this.tables[foreignTableKey]?.filter(
                 (x) => x.columnNameDatabase === column.columnForeignKeyColumnName
             );
 
@@ -488,14 +492,16 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 !linkingSchema?.columnIsForeignKey &&
                 linkingSchema?.columnForeignKeyTableNameCamelCase !== linkingSchema?.tableNameCamelCase
             ) {
-                this.builder.appendLine(`\t${table}${this.joinFieldSuffix}(`);
+                const tableKey: string = linkingSchema?.schemaName + this.uppercaseFirstLetter(table);
+
+                this.builder.appendLine(`\t${tableKey}${this.joinFieldSuffix}(`);
                 this.builder.append("\t\tjoin: ");
                 this.builder.append(schemaType);
                 this.builder.append(tableName);
                 this.builder.append(this.uppercaseFirstLetter(table));
                 this.builder.append(this.joinTypeSuffix);
                 this.builder.appendLine("!");
-                this.buildArgString(this.tables[table]);
+                this.buildArgString(this.tables[tableKey]);
                 this.builder.appendLine("\t): [");
                 this.builder.append(schemaType);
                 this.builder.append(this.uppercaseFirstLetter(table));

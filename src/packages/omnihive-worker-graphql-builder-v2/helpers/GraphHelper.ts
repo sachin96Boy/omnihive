@@ -265,15 +265,24 @@ export class GraphHelper {
                     // Set the structure's tableKey value as the current tableKey value
                     structure[field.name.value].tableKey = tableKey;
 
+                    const tempName: string = parentKey.replace(this.joinFieldSuffix, "");
+
                     // Set the structure's parentTableKey property as the current parentKey value with the join identifier removed
-                    structure[field.name.value].parentTableKey = parentKey.replace(this.joinFieldSuffix, "");
+                    structure[field.name.value].parentTableKey =
+                        schema[tableKey][0].schemaName + tempName[0].toUpperCase() + tempName.slice(1);
                 }
                 // Else this is a join to another table from the parent table
                 else {
-                    // Find the table being linked to and set the structure's tableKey property
-                    structure[field.name.value].tableKey = schema[parentKey].find(
+                    const columnSchema = schema[parentKey].find(
                         (x) => field.name.value.replace(this.joinFieldSuffix, "") === x.columnNameEntity
-                    )?.columnForeignKeyTableNameCamelCase;
+                    );
+
+                    if (columnSchema) {
+                        // Find the table being linked to and set the structure's tableKey property
+                        structure[field.name.value].tableKey =
+                            columnSchema.schemaName + columnSchema.columnForeignKeyTableNamePascalCase;
+                    }
+
                     // Set the parent key as the linkingTableKey value
                     structure[field.name.value].linkingTableKey = parentKey;
                 }

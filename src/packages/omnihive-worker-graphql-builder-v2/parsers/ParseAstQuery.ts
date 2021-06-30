@@ -250,7 +250,7 @@ export class ParseAstQuery {
                 } else {
                     parentAlias = this.findParentAlias(
                         this.queryStructure[this.parentCall],
-                        primaryColumn.columnForeignKeyTableNameCamelCase
+                        primaryColumn.schemaName + primaryColumn.columnForeignKeyTableNamePascalCase
                     );
                     primaryColumnName = `${structure.tableAlias}.${primaryColumnName}`;
                     linkingColumnName = `${parentAlias}.${linkingColumnName}`;

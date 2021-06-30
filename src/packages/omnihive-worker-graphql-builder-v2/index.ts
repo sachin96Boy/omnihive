@@ -868,7 +868,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @returns { any }
      */
     private buildResolvers = (schema: TableSchema[], databaseWorker: IDatabaseWorker): any => {
-        const tableName: string = schema[0].tableNameCamelCase;
         const propertyName: string = schema[0].schemaName + schema[0].tableNamePascalCase;
 
         return {
@@ -890,7 +889,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     return await AwaitHelper.execute(
                         this.parseMaster.parseInsert(
                             databaseWorker.config.name,
-                            tableName,
+                            propertyName,
                             info,
                             context.omnihive,
                             this.tables
@@ -901,7 +900,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     return await AwaitHelper.execute(
                         this.parseMaster.parseUpdate(
                             databaseWorker.config.name,
-                            tableName,
+                            propertyName,
                             info,
                             context.omnihive,
                             this.tables
@@ -912,7 +911,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     return await AwaitHelper.execute(
                         this.parseMaster.parseDelete(
                             databaseWorker.config.name,
-                            tableName,
+                            propertyName,
                             args,
                             context.omnihive,
                             this.tables

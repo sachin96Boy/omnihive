@@ -13,6 +13,20 @@ import { mergeSchemas } from "@graphql-tools/merge";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { GraphQLJSON } from "@withonevision/omnihive-core/models/GraphQLJSON";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataLifecycleFunction";
+import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
+import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
+
+type LifecycleData = {
+    schema: string;
+    tables: string[];
+    order: number;
+    action: LifecycleWorkerAction;
+    stage: LifecycleWorkerStage;
+    function: Function;
+};
 
 export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildWorker {
     // Declare Helpers
@@ -39,6 +53,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private graphSchemas: GraphQLSchema[] = [];
     private tables: { [tableName: string]: TableSchema[] } = {};
     private storedProcs: { [procName: string]: ProcFunctionSchema[] } = {};
+    private lifecycleWorkers: LifecycleData[] = [];
 
     /**
      * Build Database Worker GraphQL Schema
@@ -54,6 +69,26 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         if (!connectionSchema) {
             return;
         }
+
+        const lifecycleRegisteredWorkers: RegisteredHiveWorker[] = this.registeredWorkers.filter(
+            (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.DataLifecycleFunction
+        );
+
+        lifecycleRegisteredWorkers.forEach((worker) => {
+            const metadata: HiveWorkerMetadataLifecycleFunction = worker.metadata;
+            if (worker.metadata.databaseWorker === databaseWorker.name) {
+                this.lifecycleWorkers.push({
+                    schema: metadata.schema,
+                    tables: metadata.tables.map((x) =>
+                        x === "*" ? "*" : metadata.schema + this.uppercaseFirstLetter(x)
+                    ),
+                    order: metadata.order,
+                    action: metadata.action,
+                    stage: metadata.stage,
+                    function: worker.instance.execute,
+                });
+            }
+        });
 
         // Build table object
         //  Type: { [ tableNameCamelCase: string ]: TableSchema[] }
@@ -842,22 +877,53 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         const typeNamePrefix = schema[0].tableNamePascalCase;
         const propertyName: string = schema[0].schemaName + typeNamePrefix;
 
+        // Get mutation lifecycle customizations for this table
+        const insertFunctions = this.getValidWorkers(
+            schema[0].schemaName + schema[0].tableNamePascalCase,
+            LifecycleWorkerAction.Insert
+        );
+        const updateFunctions = this.getValidWorkers(
+            schema[0].schemaName + schema[0].tableNamePascalCase,
+            LifecycleWorkerAction.Update
+        );
+        const deleteFunctions = this.getValidWorkers(
+            schema[0].schemaName + schema[0].tableNamePascalCase,
+            LifecycleWorkerAction.Delete
+        );
+
+        // Set relevant flags
+        const insertLifecycle =
+            insertFunctions.before.length > 0 || insertFunctions.instead.length > 0 || insertFunctions.after.length > 0;
+        const updateLifecycle =
+            updateFunctions.before.length > 0 || updateFunctions.instead.length > 0 || updateFunctions.after.length > 0;
+        const deleteLifecycle =
+            deleteFunctions.before.length > 0 || deleteFunctions.instead.length > 0 || deleteFunctions.after.length > 0;
+
         this.builder.appendLine("type Mutation {");
 
         // Build insert type
         this.builder.append(`\tinsert_${propertyName} (`);
         this.builder.append(`insert: [${this.uppercaseFirstLetter(propertyName)}${this.insertTypeSuffix}!]!`);
+        if (insertLifecycle) {
+            this.builder.append(`lifecycleArgs: Any`);
+        }
         this.builder.appendLine(`): [${this.uppercaseFirstLetter(propertyName)}${this.mutationReturnTypeSuffix}]`);
 
         // Build update type
         this.builder.appendLine(`\tupdate_${propertyName} (`);
         this.builder.appendLine(`\t\tupdateTo: ${this.uppercaseFirstLetter(propertyName)}${this.updateTypeSuffix}!`);
         this.builder.appendLine(`\t\twhere: ${this.uppercaseFirstLetter(propertyName)}${this.whereSuffix}`);
+        if (updateLifecycle) {
+            this.builder.append(`lifecycleArgs: Any`);
+        }
         this.builder.appendLine(`\t): [${this.uppercaseFirstLetter(propertyName)}${this.mutationReturnTypeSuffix}]`);
 
         // Build delete type
         this.builder.append(`\tdelete_${propertyName} (`);
         this.builder.append(`where: ${this.uppercaseFirstLetter(propertyName)}${this.whereSuffix}`);
+        if (deleteLifecycle) {
+            this.builder.append(`lifecycleArgs: Any`);
+        }
         this.builder.appendLine("): Int");
 
         this.builder.appendLine("}");
@@ -877,57 +943,148 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private buildResolvers = (schema: TableSchema[], databaseWorker: IDatabaseWorker): any => {
         const propertyName: string = schema[0].schemaName + schema[0].tableNamePascalCase;
 
+        // Build mutation functions with any lifecycle custom changes
+        const insertFunction = this.buildInsertFunction(databaseWorker, propertyName);
+        const updateFunction = this.buildUpdateFunction(databaseWorker, propertyName);
+        const deleteFunction = this.buildDeleteFunction(databaseWorker, propertyName);
+
         return {
             Query: {
                 [propertyName]: async (_obj: any, args: any, context: any, info: any) => {
                     return await AwaitHelper.execute(
-                        this.parseMaster.parseAstQuery(
-                            databaseWorker.config.name,
-                            args,
-                            info,
-                            context.omnihive,
-                            this.tables
-                        )
+                        this.parseMaster.parseAstQuery(databaseWorker.name, args, info, context.omnihive, this.tables)
                     );
                 },
             },
             Mutation: {
-                [`insert_${propertyName}`]: async (_obj: any, _args: any, context: any, info: any) => {
-                    return await AwaitHelper.execute(
-                        this.parseMaster.parseInsert(
-                            databaseWorker.config.name,
-                            propertyName,
-                            info,
-                            context.omnihive,
-                            this.tables
-                        )
-                    );
-                },
-                [`update_${propertyName}`]: async (_obj: any, _args: any, context: any, info: any) => {
-                    return await AwaitHelper.execute(
-                        this.parseMaster.parseUpdate(
-                            databaseWorker.config.name,
-                            propertyName,
-                            info,
-                            context.omnihive,
-                            this.tables
-                        )
-                    );
-                },
-                [`delete_${propertyName}`]: async (_obj: any, args: any, context: any, _info: any) => {
-                    return await AwaitHelper.execute(
-                        this.parseMaster.parseDelete(
-                            databaseWorker.config.name,
-                            propertyName,
-                            args,
-                            context.omnihive,
-                            this.tables
-                        )
-                    );
-                },
+                [`insert_${propertyName}`]: insertFunction,
+                [`update_${propertyName}`]: updateFunction,
+                [`delete_${propertyName}`]: deleteFunction,
             },
             Any: GraphQLAny,
         };
+    };
+
+    /**
+     * Build the insert function
+     *
+     * @param databaseWorker
+     * @param propertyName
+     * @returns { Function }
+     */
+    private buildInsertFunction = (databaseWorker: IDatabaseWorker, propertyName: string): Function => {
+        // Set default insert function
+        const defaultInsert = async (_obj: any, _args: any, context: any, info: any) => {
+            return await AwaitHelper.execute(
+                this.parseMaster.parseInsert(databaseWorker.name, propertyName, info, context.omnihive, this.tables)
+            );
+        };
+
+        // Build insert function with any custom lifecycle functions added in
+        return this.buildMutationResolver(propertyName, LifecycleWorkerAction.Insert, defaultInsert);
+    };
+
+    /**
+     * Build the update function
+     *
+     * @param databaseWorker
+     * @param propertyName
+     * @returns { Function }
+     */
+    private buildUpdateFunction = (databaseWorker: IDatabaseWorker, propertyName: string): Function => {
+        // Set default update function
+        const defaultUpdate = async (_obj: any, _args: any, context: any, info: any) => {
+            return await AwaitHelper.execute(
+                this.parseMaster.parseUpdate(databaseWorker.name, propertyName, info, context.omnihive, this.tables)
+            );
+        };
+
+        // Build update function with any custom lifecycle functions added in
+        return this.buildMutationResolver(propertyName, LifecycleWorkerAction.Update, defaultUpdate);
+    };
+
+    /**
+     * Build the delete function
+     *
+     * @param databaseWorker
+     * @param propertyName
+     * @returns { Function }
+     */
+    private buildDeleteFunction = (databaseWorker: IDatabaseWorker, propertyName: string): Function => {
+        // Set default delete function
+        const defaultDelete = async (_obj: any, args: any, context: any, _info: any) => {
+            return await AwaitHelper.execute(
+                this.parseMaster.parseDelete(databaseWorker.name, propertyName, args, context.omnihive, this.tables)
+            );
+        };
+
+        // Build delete function with any custom lifecycle functions added in
+        return this.buildMutationResolver(propertyName, LifecycleWorkerAction.Delete, defaultDelete);
+    };
+
+    /**
+     * Build the mutation resolver function
+     *
+     * @param tableKey
+     * @param action
+     * @param defaultFunction
+     * @returns { Function }
+     */
+    private buildMutationResolver = (
+        tableKey: string,
+        action: LifecycleWorkerAction,
+        defaultFunction: Function
+    ): Function => {
+        // Gather the valid lifecycle workers for the given table and action
+        const validWorkers = this.getValidWorkers(tableKey, action);
+
+        // If no custom workers were found return the default function
+        if (validWorkers.before.length <= 0 && validWorkers.instead.length <= 0 && validWorkers.after.length <= 0) {
+            return defaultFunction;
+        }
+
+        // Build the resolver function with the lifecycle functions in the correct place and order
+        return async (obj: any, args: any, context: any, info: any) => {
+            // Iterate through each before lifecycle worker
+            validWorkers.before.forEach((worker) => {
+                worker.function(obj, args, context, info);
+            });
+
+            // Iterate through each instead of lifecycle worker
+            if (validWorkers.instead) {
+                validWorkers.instead.forEach((worker) => {
+                    worker.function(obj, args, context, info);
+                });
+            }
+            // If no instead of lifecycle workers were present add the default function
+            else {
+                defaultFunction;
+            }
+
+            // Iterate through each after lifecycle worker
+            validWorkers.after.forEach((worker) => {
+                worker.function(obj, args, context, info);
+            });
+        };
+    };
+
+    /**
+     * Get the lifecycle stage string
+     *
+     * @param stage
+     * @returns
+     */
+    private getStageString = (stage: LifecycleWorkerStage): string => {
+        switch (stage) {
+            case LifecycleWorkerStage.Before:
+                return "before";
+            case LifecycleWorkerStage.InsteadOf:
+                return "instead";
+            case LifecycleWorkerStage.After:
+                return "after";
+            case LifecycleWorkerStage.None:
+                return "none";
+        }
     };
     //#endregion
 
@@ -1030,7 +1187,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             },
             Procedure: {
                 [typeName]: async (_obj: any, _args: any, context: any, info: any) => {
-                    const workerName = databaseWorker.config.name;
+                    const workerName = databaseWorker.name;
 
                     return await AwaitHelper.execute(
                         this.parseMaster.parseProcedure(workerName, info, context.omnihive, proc)
@@ -1089,7 +1246,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 customSql: async (_obj: any, args: any, context: any, _info: any) => {
                     const graphParser = new ParseMaster();
                     const dbResponse = await AwaitHelper.execute(
-                        graphParser.parseCustomSql(databaseWorker.config.name, args.encryptedSql, context.omnihive)
+                        graphParser.parseCustomSql(databaseWorker.name, args.encryptedSql, context.omnihive)
                     );
 
                     return [{ recordset: dbResponse }];
@@ -1107,5 +1264,50 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      */
     private uppercaseFirstLetter = (value: string): string => {
         return value[0].toUpperCase() + value.substr(1);
+    };
+
+    /**
+     * Gets the valid worker for the given action and schema/table
+     *
+     * @param tableKey
+     * @param action
+     * @returns { before: LifecycleData[], instead: LifecycleData[], after: LifecycleData[] }
+     */
+    private getValidWorkers = (
+        tableKey: string,
+        action: LifecycleWorkerAction
+    ): { [stage: string]: LifecycleData[] } => {
+        // Initiate return object
+        let validWorkers: { [stage: string]: LifecycleData[] } = {
+            before: [],
+            instead: [],
+            after: [],
+        };
+
+        // Iterate through each lifecycle worker for the server
+        this.lifecycleWorkers.forEach((worker) => {
+            // If the worker is valid for the given action and table
+            if (worker.action === action && worker.tables.some((x) => x === tableKey || x === "*")) {
+                let index: number = 0;
+                let key: string = this.getStageString(worker.stage);
+
+                if (worker.stage === LifecycleWorkerStage.None) {
+                    return;
+                }
+
+                // Find the proper index the worker should live based on it's order
+                validWorkers[key].forEach((item, i) => {
+                    if (item.order > worker.order && i < index) {
+                        index = i;
+                    }
+                });
+
+                // Insert the worker into its proper location
+                validWorkers[key] = [...validWorkers[key].slice(0, index), worker, ...validWorkers[key].slice(index)];
+            }
+        });
+
+        // Return the built object
+        return validWorkers;
     };
 }

@@ -54,7 +54,8 @@ export abstract class HiveWorkerBase implements IHiveWorker {
 
                 switch (environmentVariable.type) {
                     case EnvironmentVariableType.Boolean:
-                        this.metadata[metaKey] = environmentVariable.value === "true" || environmentVariable.value === true;
+                        this.metadata[metaKey] =
+                            environmentVariable.value === "true" || environmentVariable.value === true;
                         break;
                     case EnvironmentVariableType.Number:
                         this.metadata[metaKey] = Number(environmentVariable.value);
@@ -65,6 +66,22 @@ export abstract class HiveWorkerBase implements IHiveWorker {
                 }
             }
         });
+    };
+
+    public getEnvironmentVariable = <T extends string | number | boolean>(name: string): T | undefined => {
+        const envVariable: EnvironmentVariable | undefined = this.environmentVariables.find(
+            (variable: EnvironmentVariable) => variable.key === name
+        );
+
+        if (IsHelper.isNullOrUndefined(envVariable)) {
+            return undefined;
+        }
+
+        try {
+            return envVariable.value as T;
+        } catch {
+            return undefined;
+        }
     };
 
     public getWorker<T extends IHiveWorker | undefined>(type: string, name?: string): T | undefined {

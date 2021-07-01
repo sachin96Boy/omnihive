@@ -18,6 +18,7 @@ import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/Regist
 import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataLifecycleFunction";
 import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
 import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
+import { IsHelper } from "../omnihive-core/helpers/IsHelper";
 
 type LifecycleData = {
     schema: string;
@@ -54,6 +55,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private tables: { [tableName: string]: TableSchema[] } = {};
     private storedProcs: { [procName: string]: ProcFunctionSchema[] } = {};
     private lifecycleWorkers: LifecycleData[] = [];
+    private currentLifecycleWorkers: {
+        [action: string]: { [stage: string]: LifecycleData[] };
+    } = {};
 
     /**
      * Build Database Worker GraphQL Schema
@@ -79,9 +83,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             if (worker.metadata.databaseWorker === databaseWorker.name) {
                 this.lifecycleWorkers.push({
                     schema: metadata.schema,
-                    tables: metadata.tables.map((x) =>
-                        x === "*" ? "*" : metadata.schema + this.uppercaseFirstLetter(x)
-                    ),
+                    tables: IsHelper.isArray(metadata.tables) ? metadata.tables : [metadata.tables],
                     order: metadata.order,
                     action: metadata.action,
                     stage: metadata.stage,
@@ -149,6 +151,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Clear string builder for new table processing
         this.builder.clear();
 
+        this.getCurrentLifecycleWorkers(schema[0].tableName);
+
         // Get all the foreign keys
         const foreignColumns = this.findForeignKeys(schema);
 
@@ -160,6 +164,94 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             typeDefs: this.builder.outputString(),
             resolvers: resolver,
         });
+    };
+
+    /**
+     * Gets the valid worker for the given action and schema/table
+     *
+     * @param tableKey
+     * @param action
+     * @returns { void }
+     */
+    private getCurrentLifecycleWorkers = (tableKey: string): void => {
+        // Reset object for new table
+        this.currentLifecycleWorkers = {};
+
+        // Iterate through each lifecycle worker for the server
+        this.lifecycleWorkers.forEach((worker) => {
+            // If the worker is valid for the given action and table
+            if (worker.tables.some((x) => x === tableKey || x === "*")) {
+                let index: number = 0;
+                let action: string = this.getActionString(worker.action);
+                let stage: string = this.getStageString(worker.stage);
+
+                if (worker.stage === LifecycleWorkerStage.None) {
+                    return;
+                }
+
+                if (!this.currentLifecycleWorkers[action]) {
+                    this.currentLifecycleWorkers[action] = {};
+                }
+
+                if (!this.currentLifecycleWorkers[action][stage]) {
+                    this.currentLifecycleWorkers[action][stage] = [];
+                }
+
+                // Find the proper index the worker should live based on it's order
+                this.currentLifecycleWorkers[action][stage].forEach((item, i) => {
+                    if (item.order > worker.order && i < index) {
+                        index = i;
+                    } else {
+                        index = ++i;
+                    }
+                });
+
+                // Insert the worker into its proper location
+                this.currentLifecycleWorkers[action][stage] = [
+                    ...this.currentLifecycleWorkers[action][stage].slice(0, index),
+                    worker,
+                    ...this.currentLifecycleWorkers[action][stage].slice(index),
+                ];
+            }
+        });
+    };
+
+    /**
+     * Get the lifecycle action string
+     *
+     * @param action
+     * @returns
+     */
+    private getActionString = (action: LifecycleWorkerAction): string => {
+        switch (action) {
+            case LifecycleWorkerAction.Insert:
+                return "insert";
+            case LifecycleWorkerAction.Update:
+                return "update";
+            case LifecycleWorkerAction.Delete:
+                return "delete";
+            case LifecycleWorkerAction.None:
+                return "none";
+        }
+    };
+
+    /**
+     * Get the lifecycle stage string
+     *
+     * @param stage
+     * @returns
+     */
+    private getStageString = (stage: LifecycleWorkerStage): string => {
+        switch (stage) {
+            case LifecycleWorkerStage.Before:
+                return "before";
+            case LifecycleWorkerStage.InsteadOf:
+                return "instead";
+            case LifecycleWorkerStage.After:
+                return "after";
+            case LifecycleWorkerStage.None:
+                return "none";
+        }
     };
 
     /**
@@ -877,27 +969,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         const typeNamePrefix = schema[0].tableNamePascalCase;
         const propertyName: string = schema[0].schemaName + typeNamePrefix;
 
-        // Get mutation lifecycle customizations for this table
-        const insertFunctions = this.getValidWorkers(
-            schema[0].schemaName + schema[0].tableNamePascalCase,
-            LifecycleWorkerAction.Insert
-        );
-        const updateFunctions = this.getValidWorkers(
-            schema[0].schemaName + schema[0].tableNamePascalCase,
-            LifecycleWorkerAction.Update
-        );
-        const deleteFunctions = this.getValidWorkers(
-            schema[0].schemaName + schema[0].tableNamePascalCase,
-            LifecycleWorkerAction.Delete
-        );
-
         // Set relevant flags
-        const insertLifecycle =
-            insertFunctions.before.length > 0 || insertFunctions.instead.length > 0 || insertFunctions.after.length > 0;
-        const updateLifecycle =
-            updateFunctions.before.length > 0 || updateFunctions.instead.length > 0 || updateFunctions.after.length > 0;
-        const deleteLifecycle =
-            deleteFunctions.before.length > 0 || deleteFunctions.instead.length > 0 || deleteFunctions.after.length > 0;
+        const insertLifecycle = this.currentLifecycleWorkers["insert"] ? true : false;
+        const updateLifecycle = this.currentLifecycleWorkers["update"] ? true : false;
+        const deleteLifecycle = this.currentLifecycleWorkers["delete"] ? true : false;
 
         this.builder.appendLine("type Mutation {");
 
@@ -981,7 +1056,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         };
 
         // Build insert function with any custom lifecycle functions added in
-        return this.buildMutationResolver(propertyName, LifecycleWorkerAction.Insert, defaultInsert);
+        return this.buildMutationResolver(LifecycleWorkerAction.Insert, defaultInsert);
     };
 
     /**
@@ -1000,7 +1075,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         };
 
         // Build update function with any custom lifecycle functions added in
-        return this.buildMutationResolver(propertyName, LifecycleWorkerAction.Update, defaultUpdate);
+        return this.buildMutationResolver(LifecycleWorkerAction.Update, defaultUpdate);
     };
 
     /**
@@ -1019,7 +1094,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         };
 
         // Build delete function with any custom lifecycle functions added in
-        return this.buildMutationResolver(propertyName, LifecycleWorkerAction.Delete, defaultDelete);
+        return this.buildMutationResolver(LifecycleWorkerAction.Delete, defaultDelete);
     };
 
     /**
@@ -1030,30 +1105,45 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @param defaultFunction
      * @returns { Function }
      */
-    private buildMutationResolver = (
-        tableKey: string,
-        action: LifecycleWorkerAction,
-        defaultFunction: Function
-    ): Function => {
-        // Gather the valid lifecycle workers for the given table and action
-        const validWorkers = this.getValidWorkers(tableKey, action);
-
+    private buildMutationResolver = (action: string, defaultFunction: Function): Function => {
         // If no custom workers were found return the default function
-        if (validWorkers.before.length <= 0 && validWorkers.instead.length <= 0 && validWorkers.after.length <= 0) {
+        if (!this.currentLifecycleWorkers[action]) {
             return defaultFunction;
+        }
+
+        const beforeFunctions: Function[] = [];
+
+        if (this.currentLifecycleWorkers[action].before) {
+            this.currentLifecycleWorkers[action].before.forEach((worker) => {
+                beforeFunctions.push(worker.function);
+            });
+        }
+
+        const insteadFunctions: Function[] = [];
+
+        if (this.currentLifecycleWorkers[action].instead) {
+            this.currentLifecycleWorkers[action].instead.forEach((worker) => {
+                insteadFunctions.push(worker.function);
+            });
+        }
+
+        const afterFunctions: Function[] = [];
+
+        if (this.currentLifecycleWorkers[action].after) {
+            this.currentLifecycleWorkers[action].after.forEach((worker) => {
+                afterFunctions.push(worker.function);
+            });
         }
 
         // Build the resolver function with the lifecycle functions in the correct place and order
         return async (obj: any, args: any, context: any, info: any) => {
             // Iterate through each before lifecycle worker
-            validWorkers.before.forEach((worker) => {
-                worker.function(obj, args, context, info);
-            });
+            beforeFunctions.forEach((f) => f(obj, args, context, info));
 
             // Iterate through each instead of lifecycle worker
-            if (validWorkers.instead) {
-                validWorkers.instead.forEach((worker) => {
-                    worker.function(obj, args, context, info);
+            if (insteadFunctions && insteadFunctions.length > 0) {
+                insteadFunctions.forEach((f) => {
+                    f(obj, args, context, info);
                 });
             }
             // If no instead of lifecycle workers were present add the default function
@@ -1062,29 +1152,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             }
 
             // Iterate through each after lifecycle worker
-            validWorkers.after.forEach((worker) => {
-                worker.function(obj, args, context, info);
+            afterFunctions.forEach((f) => {
+                f(obj, args, context, info);
             });
         };
-    };
-
-    /**
-     * Get the lifecycle stage string
-     *
-     * @param stage
-     * @returns
-     */
-    private getStageString = (stage: LifecycleWorkerStage): string => {
-        switch (stage) {
-            case LifecycleWorkerStage.Before:
-                return "before";
-            case LifecycleWorkerStage.InsteadOf:
-                return "instead";
-            case LifecycleWorkerStage.After:
-                return "after";
-            case LifecycleWorkerStage.None:
-                return "none";
-        }
     };
     //#endregion
 
@@ -1264,50 +1335,5 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      */
     private uppercaseFirstLetter = (value: string): string => {
         return value[0].toUpperCase() + value.substr(1);
-    };
-
-    /**
-     * Gets the valid worker for the given action and schema/table
-     *
-     * @param tableKey
-     * @param action
-     * @returns { before: LifecycleData[], instead: LifecycleData[], after: LifecycleData[] }
-     */
-    private getValidWorkers = (
-        tableKey: string,
-        action: LifecycleWorkerAction
-    ): { [stage: string]: LifecycleData[] } => {
-        // Initiate return object
-        let validWorkers: { [stage: string]: LifecycleData[] } = {
-            before: [],
-            instead: [],
-            after: [],
-        };
-
-        // Iterate through each lifecycle worker for the server
-        this.lifecycleWorkers.forEach((worker) => {
-            // If the worker is valid for the given action and table
-            if (worker.action === action && worker.tables.some((x) => x === tableKey || x === "*")) {
-                let index: number = 0;
-                let key: string = this.getStageString(worker.stage);
-
-                if (worker.stage === LifecycleWorkerStage.None) {
-                    return;
-                }
-
-                // Find the proper index the worker should live based on it's order
-                validWorkers[key].forEach((item, i) => {
-                    if (item.order > worker.order && i < index) {
-                        index = i;
-                    }
-                });
-
-                // Insert the worker into its proper location
-                validWorkers[key] = [...validWorkers[key].slice(0, index), worker, ...validWorkers[key].slice(index)];
-            }
-        });
-
-        // Return the built object
-        return validWorkers;
     };
 }

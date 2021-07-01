@@ -1137,24 +1137,29 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         // Build the resolver function with the lifecycle functions in the correct place and order
         return async (obj: any, args: any, context: any, info: any) => {
-            // Iterate through each before lifecycle worker
-            beforeFunctions.forEach((f) => f(obj, args, context, info));
+            // Initialize return object
+            let response: any;
 
-            // Iterate through each instead of lifecycle worker
+            // Iterate through each before lifecycle worker and set the response object
+            beforeFunctions.forEach((f) => (response = f(response, obj, args, context, info)));
+
+            // Iterate through each instead of lifecycle worker and set the response object
             if (insteadFunctions && insteadFunctions.length > 0) {
                 insteadFunctions.forEach((f) => {
-                    f(obj, args, context, info);
+                    response = f(response, obj, args, context, info);
                 });
             }
-            // If no instead of lifecycle workers were present add the default function
+            // If no instead of lifecycle workers were present add the default function and set the response object
             else {
-                defaultFunction;
+                response = defaultFunction;
             }
 
-            // Iterate through each after lifecycle worker
+            // Iterate through each after lifecycle worker and set the response object
             afterFunctions.forEach((f) => {
-                f(obj, args, context, info);
+                response = f(response, obj, args, context, info);
             });
+
+            return response;
         };
     };
     //#endregion

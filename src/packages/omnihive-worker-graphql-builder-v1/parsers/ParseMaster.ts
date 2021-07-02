@@ -10,8 +10,6 @@ import { ParseInsert } from "./ParseInsert";
 import { ParseProcedure } from "./ParseProcedure";
 import { ParseUpdate } from "./ParseUpdate";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { RegisteredHiveWorker } from "src/packages/omnihive-core/models/RegisteredHiveWorker";
-import { IGraphEndpointWorker } from "src/packages/omnihive-core/interfaces/IGraphEndpointWorker";
 
 export class ParseMaster {
     public parseAstQuery = async (
@@ -22,20 +20,6 @@ export class ParseMaster {
     ): Promise<any> => {
         const parser: ParseAstQuery = new ParseAstQuery();
         return await AwaitHelper.execute(parser.parse(workerName, args, resolveInfo, omniHiveContext));
-    };
-
-    public parseCustomGraph = async (workerName: string, customArgs: any): Promise<any> => {
-        const worker: RegisteredHiveWorker | undefined = global.omnihive.registeredWorkers.find(
-            (w: RegisteredHiveWorker) => w.name === workerName
-        );
-
-        if (IsHelper.isNullOrUndefined(worker)) {
-            throw new Error(`Worker ${workerName} cannot be found`);
-        }
-
-        const workerInstace = worker.instance as IGraphEndpointWorker;
-        const customFunctionReturn = await AwaitHelper.execute(workerInstace.execute(customArgs));
-        return customFunctionReturn;
     };
 
     public parseCustomSql = async (

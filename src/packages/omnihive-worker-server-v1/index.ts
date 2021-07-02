@@ -227,7 +227,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     `var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`
                 );
                 builder.appendLine(
-                    `var { ParseMaster } = require("@withonevision/omnihive-worker-graphql-builder-v1/parsers/ParseMaster");`
+                    `var { CustomGraphHelper } = require("@withonevision/omnihive-worker-server-v1/helpers/CustomGraphHelper");`
                 );
                 builder.appendLine();
 
@@ -248,9 +248,9 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     builder.appendLine(`\t\t\t\t\tcustomArgs: { type: GraphQLJSONObject },`);
                     builder.appendLine(`\t\t\t\t},`);
                     builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
-                    builder.appendLine(`\t\t\t\t\tvar graphParser = new ParseMaster();`);
+                    builder.appendLine(`\t\t\t\t\tvar graphHelper = new CustomGraphHelper();`);
                     builder.appendLine(
-                        `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(graphParser.parseCustomGraph("${worker.name}", args.customArgs));`
+                        `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(graphHelper.parseCustomGraph("${worker.name}", args.customArgs, context.omnihive));`
                     );
                     builder.appendLine(`\t\t\t\t\treturn customFunctionReturn;`);
                     builder.appendLine(`\t\t\t\t},`);

@@ -62,7 +62,7 @@ export class ParseUpdate {
             // Build the mutation structure object
             const structure = this.graphHelper.buildQueryStructure(
                 resolveInfo.fieldNodes,
-                tableKey,
+                { key: tableKey, alias: "" },
                 0,
                 this.aliasKeyMapping,
                 tableKey,
@@ -78,9 +78,11 @@ export class ParseUpdate {
                     this.databaseWorker.executeQuery(this.builder.toString())
                 );
 
+                const parentAlias: string | undefined = resolveInfo.fieldNodes[0].alias?.value;
+
                 // Convert the database proc return back into it's graph equivalent
                 const graphReturn: any = this.graphHelper.buildGraphReturn(
-                    structure[resolveInfo.fieldName],
+                    structure[parentAlias ?? tableKey],
                     results[0],
                     this.dateWorker,
                     false

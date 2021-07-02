@@ -9,6 +9,7 @@ import { ParseUpdate } from "./ParseUpdate";
 import { ProcFunctionSchema } from "src/packages/omnihive-core/models/ProcFunctionSchema";
 import { ParseProcedure } from "./ParseProcedure";
 import { ParseCustomSql } from "./ParseCustomSql";
+import { ParseAggregate } from "./ParseAggregate";
 
 export class ParseMaster {
     public parseAstQuery = async (
@@ -19,6 +20,17 @@ export class ParseMaster {
         schema: { [tableName: string]: TableSchema[] }
     ): Promise<any> => {
         const parser: ParseAstQuery = new ParseAstQuery();
+        return await AwaitHelper.execute(parser.parse(workerName, args, resolveInfo, omniHiveContext, schema));
+    };
+
+    public parseAggregate = async (
+        workerName: string,
+        args: any,
+        resolveInfo: GraphQLResolveInfo,
+        omniHiveContext: GraphContext,
+        schema: { [tableName: string]: TableSchema[] }
+    ) => {
+        const parser: ParseAggregate = new ParseAggregate();
         return await AwaitHelper.execute(parser.parse(workerName, args, resolveInfo, omniHiveContext, schema));
     };
 

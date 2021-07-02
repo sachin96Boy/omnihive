@@ -62,7 +62,7 @@ export class ParseInsert {
             // Build the mutation structure object
             const structure = this.graphHelper.buildQueryStructure(
                 resolveInfo.fieldNodes,
-                tableKey,
+                { key: tableKey, alias: "" },
                 0,
                 this.aliasKeyMapping,
                 tableKey,

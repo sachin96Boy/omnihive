@@ -15,6 +15,7 @@ import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWork
 export class GraphHelper {
     private columnCount: number = 0;
     private joinFieldSuffix: string = "_table";
+    private aggregateFieldSuffix: string = "_aggregate";
 
     public getGraphTypeFromDbType = (dbType: string): string => {
         switch (dbType) {
@@ -165,7 +166,7 @@ export class GraphHelper {
      */
     public buildQueryStructure = (
         graphField: readonly FieldNode[],
-        parentKey: string,
+        parentKey: { key: string; alias: string },
         tableCount: number,
         aliasKeys: any,
         parentCall: string,
@@ -179,20 +180,31 @@ export class GraphHelper {
             // Get all selections in the set
             const fieldSelections = field?.selectionSet?.selections;
 
+            const structureKeyObj: { key: string; alias: string } = {
+                key: field.name.value,
+                alias: field.alias?.value ?? "",
+            };
+
+            let structureKey: string = field.name.value;
+
+            if (field.alias?.value) {
+                structureKey = field.alias.value;
+            }
+
             // If this field has a selection set then it is a join property
             if (fieldSelections && fieldSelections.length > 0) {
                 // If the structure property does not exist for this field create it
-                if (!structure[field.name.value]) {
-                    structure[field.name.value] = {};
+                if (!structure[structureKey]) {
+                    structure[structureKey] = {};
                 }
 
                 // Increment the table count
                 tableCount++;
-
                 // Recurse through the query builder for the current field values
-                structure[field.name.value] = this.buildQueryStructure(
+
+                structure[structureKey] = this.buildQueryStructure(
                     fieldSelections as FieldNode[],
-                    field.name.value,
+                    structureKeyObj,
                     tableCount,
                     aliasKeys,
                     parentCall,
@@ -200,75 +212,178 @@ export class GraphHelper {
                 );
 
                 // Set the table alias
-                structure[field.name.value].tableAlias = `t${tableCount}`;
-            }
+                structure[structureKey].tableAlias = `t${tableCount}`;
 
+                // Set original Query Prop
+                structure[structureKey].queryKey = field.name.value;
+
+                // Set aggregate flag
+                structure[structureKey].aggregate = field.name.value.endsWith(this.aggregateFieldSuffix);
+            }
             // Else this is a database column
             else {
-                // If the current structure does not have a column property initialize it
-                if (!structure.columns) {
-                    structure.columns = [];
-                }
-
-                // Create the Column object
-                const fieldKeys: any = {
-                    name: field.name.value,
-                    alias: `f${this.columnCount}`,
-                    dbName: schema[parentCall].find((x) => x.columnNameEntity === field.name.value)?.columnNameDatabase,
-                };
-
-                // Store the created column object into the necessary objects for reference
-                aliasKeys.push(fieldKeys);
-                structure.columns.push(fieldKeys);
-
-                // Increment column count
-                this.columnCount++;
+                this.buildColumnStructure(
+                    structure,
+                    aliasKeys,
+                    field,
+                    parentKey.key,
+                    parentCall.replace(this.aggregateFieldSuffix, "").replace(this.joinFieldSuffix, ""),
+                    schema
+                );
             }
 
-            // If the field name has the join identifier or the field name is the primary query function set needed properties
-            if (field.name.value.endsWith(this.joinFieldSuffix) || field.name.value === parentCall) {
-                // Set the table key as the field name with the join identifier removed
-                const tableKey = field.name.value.replace(this.joinFieldSuffix, "");
+            this.buildJoinStructure(structure, field, parentKey.key, parentCall, schema);
 
-                // If the schema sub-object for the table key exists this is a join to the parent table
-                if (schema[tableKey]) {
-                    // Set the structure's tableKey value as the current tableKey value
-                    structure[field.name.value].tableKey = tableKey;
-
-                    const tempName: string = parentKey.replace(this.joinFieldSuffix, "");
-
-                    // Set the structure's parentTableKey property as the current parentKey value with the join identifier removed
-                    structure[field.name.value].parentTableKey =
-                        schema[tableKey][0].schemaName + tempName[0].toUpperCase() + tempName.slice(1);
-                }
-                // Else this is a join to another table from the parent table
-                else {
-                    const columnSchema = schema[parentKey].find(
-                        (x) => field.name.value.replace(this.joinFieldSuffix, "") === x.columnNameEntity
-                    );
-
-                    if (columnSchema) {
-                        // Find the table being linked to and set the structure's tableKey property
-                        structure[field.name.value].tableKey =
-                            columnSchema.schemaName + columnSchema.columnForeignKeyTableNamePascalCase;
-                    }
-
-                    // Set the parent key as the linkingTableKey value
-                    structure[field.name.value].linkingTableKey = parentKey;
-                }
-            }
-
-            // Flatten the argument object to a readable form
-            const args = this.flattenArgs(field.arguments as unknown as readonly ObjectFieldNode[]);
-
-            // If arguments exists then store them in the structure's args property
-            if (args && Object.keys(args).length > 0) {
-                structure[field.name.value].args = args;
-            }
+            this.buildArgumentStructure(structure, field, parentKey.key, schema);
         });
 
         // Return what was built
         return structure;
+    };
+
+    /**
+     * Build the column data of the query structure
+     *
+     * @param structure
+     * @param aliasKeys
+     * @param field
+     * @param parentKey
+     * @param parentCall
+     * @param schema
+     * @returns { void }
+     */
+    private buildColumnStructure = (
+        structure: any,
+        aliasKeys: any,
+        field: FieldNode,
+        parentKey: string,
+        parentCall: string,
+        schema: { [tableName: string]: TableSchema[] }
+    ): void => {
+        // If the current structure does not have a column property initialize it
+        if (!structure.columns) {
+            structure.columns = [];
+        }
+
+        // Create the Column object
+        let fieldKeys: any = {
+            name: field.name.value,
+            alias: `f${this.columnCount}`,
+            dbName: schema[parentCall].find((x) => x.columnNameEntity === field.name.value)?.columnNameDatabase,
+        };
+
+        // Add aggregate data if needed
+        if (parentKey.endsWith(this.aggregateFieldSuffix)) {
+            fieldKeys.parent = parentKey.replace(this.aggregateFieldSuffix, "");
+        }
+
+        // Store the created column object into the necessary objects for reference
+        aliasKeys.push(fieldKeys);
+        structure.columns.push(fieldKeys);
+
+        // Increment column count
+        this.columnCount++;
+    };
+
+    /**
+     * Build the join data into the query structure
+     *
+     * @param structure
+     * @param field
+     * @param parentKey
+     * @param parentCall
+     * @param schema
+     * @returns { void }
+     */
+    private buildJoinStructure = (
+        structure: any,
+        field: FieldNode,
+        parentKey: string,
+        parentCall: string,
+        schema: { [tableName: string]: TableSchema[] }
+    ): void => {
+        // If the field name has the join identifier or the field name is the primary query function set needed properties
+        if (
+            field.name.value.endsWith(this.joinFieldSuffix) ||
+            field.name.value.endsWith(this.aggregateFieldSuffix) ||
+            field.name.value === parentCall
+        ) {
+            // Set the table key as the field name with the join identifier removed
+            let tableKey = field.name.value.replace(this.joinFieldSuffix, "").replace(this.aggregateFieldSuffix, "");
+            let structureKey: string = field.name.value;
+
+            if (field.alias?.value) {
+                structureKey = field.alias?.value;
+            }
+
+            // If the schema sub-object for the table key exists this is a join to the parent table
+            if (schema[tableKey]) {
+                // Set the structure's tableKey value as the current tableKey value
+                structure[structureKey].tableKey = tableKey;
+
+                let tempName: string = parentKey
+                    .replace(this.joinFieldSuffix, "")
+                    .replace(this.aggregateFieldSuffix, "");
+
+                // Set the structure's parentTableKey property as the current parentKey value with the join identifier removed
+                structure[structureKey].parentTableKey = tempName;
+            }
+            // Else this is a join to another table from the parent table
+            else {
+                const columnSchema = schema[parentKey].find(
+                    (x) =>
+                        field.name.value.replace(this.joinFieldSuffix, "").replace(this.aggregateFieldSuffix, "") ===
+                        x.columnNameEntity
+                );
+
+                if (columnSchema) {
+                    // Find the table being linked to and set the structure's tableKey property
+                    structure[structureKey].tableKey =
+                        columnSchema.schemaName + columnSchema.columnForeignKeyTableNamePascalCase;
+                }
+
+                // Set the parent key as the linkingTableKey value
+                structure[structureKey].linkingTableKey = parentKey;
+            }
+        }
+    };
+
+    /**
+     * Build the argument data for the query structure
+     *
+     * @param structure
+     * @param field
+     * @param parentKey
+     * @param parentCall
+     * @param schema
+     * @returns { void }
+     */
+    private buildArgumentStructure = (
+        structure: any,
+        field: FieldNode,
+        parentKey: string,
+        schema: { [tableName: string]: TableSchema[] }
+    ): void => {
+        // Flatten the argument object to a readable form
+        const args = this.flattenArgs(field.arguments as unknown as readonly ObjectFieldNode[]);
+
+        // If arguments exists then store them in the structure's args property
+        if (args && Object.keys(args).length > 0) {
+            if (parentKey.endsWith(this.aggregateFieldSuffix)) {
+                const column: any = structure.columns.find((x: any) => x.name === field.name.value);
+                const baseAggName: string = parentKey.replace(this.aggregateFieldSuffix, "");
+
+                if (column) {
+                    column.args = args;
+
+                    column.dbName = schema[baseAggName].find(
+                        (x: TableSchema) => x.columnNameEntity === args.column
+                    )?.columnNameDatabase;
+                }
+            } else {
+                structure[field.alias?.value ?? field.name.value].args = args;
+            }
+        }
     };
 
     /**
@@ -313,6 +428,30 @@ export class GraphHelper {
 
         // Return the flattened argument list
         return flattened;
+    };
+
+    /**
+     * Find the field name from the user defined alias
+     *
+     * @param fields
+     * @returns { string }
+     */
+    public findFieldNameFromAlias = (fields: readonly FieldNode[], value: string): string => {
+        for (const field of fields) {
+            if (field.alias?.value === value || field.name.value === value) {
+                return field.name.value;
+            } else if (field.selectionSet?.selections && field.selectionSet.selections.length > 0) {
+                const result = this.findFieldNameFromAlias(field.selectionSet.selections as FieldNode[], value);
+
+                if (result) {
+                    return result;
+                }
+
+                continue;
+            }
+        }
+
+        return "";
     };
     //#endregion
 
@@ -417,7 +556,7 @@ export class GraphHelper {
         const columns: { name: string; alias: string; dbName: string }[] = structure.columns ?? [];
 
         // Get the joins of the current structure level
-        const linkingKeys: string[] = Object.keys(structure).filter((x: string) => x.endsWith(this.joinFieldSuffix));
+        const linkingKeys: string[] = Object.keys(structure).filter((x: string) => structure[x].args?.join);
 
         if (results.length <= 0) {
             results.push({});
@@ -491,12 +630,12 @@ export class GraphHelper {
 
         // If a join exists then create a new property that is an empty array
         for (const key of linkingKeys) {
-            if (!item[key]) {
-                item[key] = [];
+            if (!item[structure[key].queryKey]) {
+                item[structure[key].queryKey] = [];
             }
 
             // Process the join on the next object level
-            this.processRow(item[key], dbItem, structure[key], dateWorker, useAlias);
+            this.processRow(item[structure[key].queryKey], dbItem, structure[key], dateWorker, useAlias);
         }
     };
 
@@ -726,8 +865,8 @@ export class GraphHelper {
             let argValue = arg[equality];
 
             // If the argument value is an object that contains a subquery property then set the raw value as the argValue
-            if (argValue.subquery) {
-                argValue = knex.raw(`${argValue.subquery}`);
+            if (argValue.raw) {
+                argValue = knex.raw(`${argValue.raw}`);
             }
 
             // If the join flag is set then use the raw values as the argValues
@@ -1118,6 +1257,320 @@ export class GraphHelper {
         const name = schema[tableName].find((column) => column.columnNameEntity === fieldName)?.columnNameDatabase;
 
         return name;
+    };
+
+    /**
+     * Build joins into foreign tables
+     *
+     * @param structure Structure of the graph query object
+     * @param tableKey Parent key of the calling structure level
+     * @param queryKey Structure's key for joining to foreign tables from the parent table
+     * @returns { void }
+     */
+    public buildJoins = (
+        builder: Knex.QueryBuilder<any, unknown[]>,
+        structure: any,
+        tableKey: string,
+        queryKey: string,
+        schema: { [tableName: string]: TableSchema[] },
+        knex: Knex,
+        masterStructure: any,
+        masterKey: string
+    ): void => {
+        // If the builder is not initialized properly then throw an error
+        if (!builder) {
+            throw new Error("Knex Query Builder not initialized");
+        }
+
+        // If the current structure level has an argument that contains a join property then this is a proper join
+        if (structure.args?.join) {
+            // Retrieve the table the query is joining to
+            let joinTable: string = schema[tableKey]?.[0]?.tableName;
+
+            let primaryColumnName: string = "";
+            let linkingColumnName: string = "";
+
+            // Set schema key based on directionality of the join
+            const schemaKey = structure.linkingTableKey ? structure.linkingTableKey : tableKey;
+
+            // Retrieve the TableSchema of the column in the parent table
+            const primaryColumn: TableSchema | undefined = schema[schemaKey]?.find(
+                (x) =>
+                    x.columnNameEntity === structure.args.join.from ||
+                    (!structure.args.join.from && x.columnNameEntity === queryKey.replace(this.joinFieldSuffix, ""))
+            );
+
+            let parentAlias = "";
+
+            // If the primary column was found this is a proper join
+            if (primaryColumn) {
+                primaryColumnName = `${primaryColumn.columnNameDatabase}`;
+                linkingColumnName = `${primaryColumn.columnForeignKeyColumnName}`;
+
+                // Get the table aliases and all joining information for the database joins
+                if (structure.linkingTableKey) {
+                    parentAlias = this.findParentAlias(masterStructure[masterKey], schemaKey);
+                    joinTable = primaryColumn.columnForeignKeyTableName;
+
+                    primaryColumnName = `${parentAlias}.${primaryColumnName}`;
+                    linkingColumnName = `${structure.tableAlias}.${linkingColumnName}`;
+                } else {
+                    parentAlias = this.findParentAlias(
+                        masterStructure[masterKey],
+                        primaryColumn.schemaName + primaryColumn.columnForeignKeyTableNamePascalCase
+                    );
+                    primaryColumnName = `${structure.tableAlias}.${primaryColumnName}`;
+                    linkingColumnName = `${parentAlias}.${linkingColumnName}`;
+                }
+
+                // Get the join's whereMode property
+                const whereSpecific: boolean = structure.args?.join?.whereMode === "specific";
+
+                // Build the database query segment for the specified join
+                switch (structure.args.join.type) {
+                    case "inner": {
+                        // If whereMode is specific then add the conditions on the join
+                        if (whereSpecific) {
+                            builder.innerJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                                builder.on(primaryColumnName, "=", linkingColumnName);
+                                this.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    schema,
+                                    knex,
+                                    true
+                                );
+                            });
+                        }
+                        // Else add the standard join
+                        else {
+                            builder.innerJoin(
+                                `${joinTable} as ${structure.tableAlias}`,
+                                primaryColumnName,
+                                linkingColumnName
+                            );
+                        }
+                        break;
+                    }
+                    case "left": {
+                        // If whereMode is specific then add the conditions on the join
+                        if (whereSpecific) {
+                            builder.leftJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                                builder.on(primaryColumnName, "=", linkingColumnName);
+                                this.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    schema,
+                                    knex,
+                                    true
+                                );
+                            });
+                        }
+                        // Else add the standard join
+                        else {
+                            builder.leftJoin(
+                                `${joinTable} as ${structure.tableAlias}`,
+                                primaryColumnName,
+                                linkingColumnName
+                            );
+                        }
+                        break;
+                    }
+                    case "leftOuter": {
+                        // If whereMode is specific then add the conditions on the join
+                        if (whereSpecific) {
+                            builder.leftOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                                builder.on(primaryColumnName, "=", linkingColumnName);
+                                this.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    schema,
+                                    knex,
+                                    true
+                                );
+                            });
+                        }
+                        // Else add the standard join
+                        else {
+                            builder.leftOuterJoin(
+                                `${joinTable} as ${structure.tableAlias}`,
+                                primaryColumnName,
+                                linkingColumnName
+                            );
+                        }
+                        break;
+                    }
+                    case "right": {
+                        // If whereMode is specific then add the conditions on the join
+                        if (whereSpecific) {
+                            builder.rightJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                                builder.on(primaryColumnName, "=", linkingColumnName);
+                                this.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    schema,
+                                    knex,
+                                    true
+                                );
+                            });
+                        }
+                        // Else add the standard join
+                        else {
+                            builder.rightJoin(
+                                `${joinTable} as ${structure.tableAlias}`,
+                                primaryColumnName,
+                                linkingColumnName
+                            );
+                        }
+                        break;
+                    }
+                    case "rightOuter": {
+                        // If whereMode is specific then add the conditions on the join
+                        if (whereSpecific) {
+                            builder.rightOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                                builder.on(primaryColumnName, "=", linkingColumnName);
+                                this.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    schema,
+                                    knex,
+                                    true
+                                );
+                            });
+                        }
+                        // Else add the standard join
+                        else {
+                            builder.rightOuterJoin(
+                                `${joinTable} as ${structure.tableAlias}`,
+                                primaryColumnName,
+                                linkingColumnName
+                            );
+                        }
+                        break;
+                    }
+                    case "fullOuter": {
+                        // If whereMode is specific then add the conditions on the join
+                        if (whereSpecific) {
+                            builder.fullOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                                builder.on(primaryColumnName, "=", linkingColumnName);
+                                this.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    schema,
+                                    knex,
+                                    true
+                                );
+                            });
+                        }
+                        // Else add the standard join
+                        else {
+                            builder.fullOuterJoin(
+                                `${joinTable} as ${structure.tableAlias}`,
+                                primaryColumnName,
+                                linkingColumnName
+                            );
+                        }
+                        break;
+                    }
+                    case "cross": {
+                        // If whereMode is specific then add the conditions on the join
+                        if (whereSpecific) {
+                            builder.crossJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                                builder.on(primaryColumnName, "=", linkingColumnName);
+                                this.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    schema,
+                                    knex,
+                                    true
+                                );
+                            });
+                        }
+                        // Else add the standard join
+                        else {
+                            builder.crossJoin(
+                                `${joinTable} as ${structure.tableAlias}`,
+                                primaryColumnName,
+                                linkingColumnName
+                            );
+                        }
+                        break;
+                    }
+                    default: {
+                        // If whereMode is specific then add the conditions on the join
+                        if (whereSpecific) {
+                            builder.join(`${joinTable} as ${structure.tableAlias}`, (builder) => {
+                                builder.on(primaryColumnName, "=", linkingColumnName);
+                                this.buildConditions(
+                                    structure.args,
+                                    structure.tableAlias,
+                                    builder,
+                                    tableKey,
+                                    schema,
+                                    knex,
+                                    true
+                                );
+                            });
+                        }
+                        // Else add the standard join
+                        else {
+                            builder.join(
+                                `${joinTable} as ${structure.tableAlias}`,
+                                primaryColumnName,
+                                linkingColumnName
+                            );
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    };
+
+    /**
+     * Find the given tableKey's database query alias
+     *
+     * @param structure Structure of the graph query object
+     * @param tableKey Table Key to search on
+     * @returns { string }
+     */
+    private findParentAlias = (structure: any, tableKey: string): string => {
+        // If the structure tableKey is the search tableKey then return the structure's tableAlias value
+        if (structure.tableKey === tableKey) {
+            return structure.tableAlias;
+        }
+        // Else recursively iterate down the structure's definition until the desired value is found
+        // or there are no more values to search upon
+        else {
+            for (const key in structure) {
+                let alias: string = "";
+                if (structure[key].args?.join) {
+                    alias = this.findParentAlias(structure[key], tableKey);
+                }
+
+                // If a value was found return it
+                if (alias) {
+                    return alias;
+                }
+            }
+
+            // Else return a blank string
+            return "";
+        }
     };
     //#endregion
 }

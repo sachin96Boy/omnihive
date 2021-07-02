@@ -10,8 +10,8 @@ import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker
 import { Knex } from "knex";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { GraphHelper } from "../helpers/GraphHelper";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { CacheHelper } from "../helpers/CacheHelper";
 
 export class ParseAstQuery {
     // Workers
@@ -29,12 +29,12 @@ export class ParseAstQuery {
     private builder: Knex.QueryBuilder<any, unknown[]> | undefined;
     private queryStructure: any = {};
     private schema: { [tableName: string]: TableSchema[] } = {};
-    private parentCall: string = "";
+    private parentCall: { key: string; alias: string } | undefined;
     private selectionFields: TableSchema[] = [];
     private fieldAliasMap: { name: string; alias: string }[] = [];
 
     // Static Values
-    private joinFieldSuffix: string = "_table";
+    private aggregateFieldSuffix: string = "_aggregate";
 
     /**
      * Parse a GraphQL query into a database query and return the results to graph
@@ -54,6 +54,10 @@ export class ParseAstQuery {
         schema: { [tableName: string]: TableSchema[] }
     ): Promise<any> => {
         try {
+            if (resolveInfo.fieldName.endsWith(this.aggregateFieldSuffix)) {
+                return [];
+            }
+
             // Store the schema for global use
             this.schema = schema;
 
@@ -105,15 +109,15 @@ export class ParseAstQuery {
         this.builder = this.knex.queryBuilder();
 
         // Retrieve the primary table being accessed
-        this.parentCall = resolveInfo.fieldName;
+        this.parentCall = { key: resolveInfo.fieldName, alias: "" };
 
         // Generate the query structure from the graph object for the current parent value
         this.queryStructure = this.graphHelper.buildQueryStructure(
-            resolveInfo.fieldNodes.filter((x) => (x as FieldNode).name.value === this.parentCall) as FieldNode[],
+            resolveInfo.fieldNodes.filter((x) => (x as FieldNode).name.value === this.parentCall?.key) as FieldNode[],
             this.parentCall,
             0,
             this.fieldAliasMap,
-            this.parentCall,
+            this.parentCall.key,
             this.schema
         );
 
@@ -128,8 +132,10 @@ export class ParseAstQuery {
             const tableSchema: TableSchema[] = this.schema[key];
             this.builder?.from(`${tableSchema[0].tableName} as t1`);
 
-            // Build queries for the current query structure
-            this.graphToKnex(this.queryStructure[key], this.parentCall, this.parentCall);
+            if (this.parentCall) {
+                // Build queries for the current query structure
+                this.graphToKnex(this.queryStructure[key], this.parentCall.key);
+            }
         });
     };
 
@@ -141,10 +147,14 @@ export class ParseAstQuery {
      * @param queryKey Structure's key for joining to foreign tables from the parent table
      * @returns { void }
      */
-    private graphToKnex = (structure: any, parentKey: string, queryKey: string): void => {
+    private graphToKnex = (structure: any, parentKey: string): void => {
         // If the query builder is not initialized properly then throw an error
         if (!this.builder) {
             throw new Error("Knex Query Builder not initialized");
+        }
+
+        if (!this.knex) {
+            throw new Error("Knex not initialized");
         }
 
         // If the query structure is not built properly then throw an error
@@ -155,8 +165,19 @@ export class ParseAstQuery {
         // Build the select values
         this.buildSelect(structure.columns, structure.tableAlias, parentKey);
 
-        // Build the joining values
-        this.buildJoins(structure, parentKey, queryKey);
+        if (this.parentCall) {
+            // Build the joining values
+            this.graphHelper.buildJoins(
+                this.builder,
+                structure,
+                parentKey,
+                structure.queryKey,
+                this.schema,
+                this.knex,
+                this.queryStructure,
+                this.parentCall.key
+            );
+        }
 
         // if arguments exist on the structure level and are not a join that is set to specific
         //  then build the conditional query specifications
@@ -177,8 +198,8 @@ export class ParseAstQuery {
         // Iterate through each graph sub-query to recursively build the database query
         Object.keys(structure).forEach((key) => {
             // Build inner queries
-            if (key.endsWith(this.joinFieldSuffix)) {
-                this.graphToKnex(structure[key], structure[key].tableKey, key);
+            if (structure[key].args?.join) {
+                this.graphToKnex(structure[key], structure[key].tableKey);
             }
         });
     };
@@ -210,311 +231,6 @@ export class ParseAstQuery {
     };
 
     /**
-     * Build joins into foreign tables
-     *
-     * @param structure Structure of the graph query object
-     * @param tableKey Parent key of the calling structure level
-     * @param queryKey Structure's key for joining to foreign tables from the parent table
-     * @returns { void }
-     */
-    private buildJoins = (structure: any, tableKey: string, queryKey: string): void => {
-        // If the builder is not initialized properly then throw an error
-        if (!this.builder) {
-            throw new Error("Knex Query Builder not initialized");
-        }
-
-        // If the current structure level has an argument that contains a join property then this is a proper join
-        if (structure.args?.join) {
-            // Retrieve the table the query is joining to
-            let joinTable: string = this.schema[tableKey]?.[0]?.tableName;
-
-            let primaryColumnName: string = "";
-            let linkingColumnName: string = "";
-
-            // Set schema key based on directionality of the join
-            const schemaKey = structure.linkingTableKey ? structure.linkingTableKey : tableKey;
-
-            // Retrieve the TableSchema of the column in the parent table
-            const primaryColumn: TableSchema | undefined = this.schema[schemaKey]?.find(
-                (x) =>
-                    x.columnNameEntity === structure.args.join.from ||
-                    (!structure.args.join.from && x.columnNameEntity === queryKey.replace(this.joinFieldSuffix, ""))
-            );
-
-            let parentAlias = "";
-
-            // If the primary column was found this is a proper join
-            if (primaryColumn) {
-                primaryColumnName = `${primaryColumn.columnNameDatabase}`;
-                linkingColumnName = `${primaryColumn.columnForeignKeyColumnName}`;
-
-                // Get the table aliases and all joining information for the database joins
-                if (structure.linkingTableKey) {
-                    parentAlias = this.findParentAlias(this.queryStructure[this.parentCall], schemaKey);
-                    joinTable = primaryColumn.columnForeignKeyTableName;
-
-                    primaryColumnName = `${parentAlias}.${primaryColumnName}`;
-                    linkingColumnName = `${structure.tableAlias}.${linkingColumnName}`;
-                } else {
-                    parentAlias = this.findParentAlias(
-                        this.queryStructure[this.parentCall],
-                        primaryColumn.schemaName + primaryColumn.columnForeignKeyTableNamePascalCase
-                    );
-                    primaryColumnName = `${structure.tableAlias}.${primaryColumnName}`;
-                    linkingColumnName = `${parentAlias}.${linkingColumnName}`;
-                }
-
-                // Get the join's whereMode property
-                const whereSpecific: boolean = structure.args?.join?.whereMode === "specific";
-
-                // Build the database query segment for the specified join
-                switch (structure.args.join.type) {
-                    case "inner": {
-                        // If whereMode is specific then add the conditions on the join
-                        if (whereSpecific) {
-                            this.builder.innerJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.graphHelper.buildConditions(
-                                    structure.args,
-                                    structure.tableAlias,
-                                    builder,
-                                    tableKey,
-                                    this.schema,
-                                    this.knex,
-                                    true
-                                );
-                            });
-                        }
-                        // Else add the standard join
-                        else {
-                            this.builder.innerJoin(
-                                `${joinTable} as ${structure.tableAlias}`,
-                                primaryColumnName,
-                                linkingColumnName
-                            );
-                        }
-                        break;
-                    }
-                    case "left": {
-                        // If whereMode is specific then add the conditions on the join
-                        if (whereSpecific) {
-                            this.builder.leftJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.graphHelper.buildConditions(
-                                    structure.args,
-                                    structure.tableAlias,
-                                    builder,
-                                    tableKey,
-                                    this.schema,
-                                    this.knex,
-                                    true
-                                );
-                            });
-                        }
-                        // Else add the standard join
-                        else {
-                            this.builder.leftJoin(
-                                `${joinTable} as ${structure.tableAlias}`,
-                                primaryColumnName,
-                                linkingColumnName
-                            );
-                        }
-                        break;
-                    }
-                    case "leftOuter": {
-                        // If whereMode is specific then add the conditions on the join
-                        if (whereSpecific) {
-                            this.builder.leftOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.graphHelper.buildConditions(
-                                    structure.args,
-                                    structure.tableAlias,
-                                    builder,
-                                    tableKey,
-                                    this.schema,
-                                    this.knex,
-                                    true
-                                );
-                            });
-                        }
-                        // Else add the standard join
-                        else {
-                            this.builder.leftOuterJoin(
-                                `${joinTable} as ${structure.tableAlias}`,
-                                primaryColumnName,
-                                linkingColumnName
-                            );
-                        }
-                        break;
-                    }
-                    case "right": {
-                        // If whereMode is specific then add the conditions on the join
-                        if (whereSpecific) {
-                            this.builder.rightJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.graphHelper.buildConditions(
-                                    structure.args,
-                                    structure.tableAlias,
-                                    builder,
-                                    tableKey,
-                                    this.schema,
-                                    this.knex,
-                                    true
-                                );
-                            });
-                        }
-                        // Else add the standard join
-                        else {
-                            this.builder.rightJoin(
-                                `${joinTable} as ${structure.tableAlias}`,
-                                primaryColumnName,
-                                linkingColumnName
-                            );
-                        }
-                        break;
-                    }
-                    case "rightOuter": {
-                        // If whereMode is specific then add the conditions on the join
-                        if (whereSpecific) {
-                            this.builder.rightOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.graphHelper.buildConditions(
-                                    structure.args,
-                                    structure.tableAlias,
-                                    builder,
-                                    tableKey,
-                                    this.schema,
-                                    this.knex,
-                                    true
-                                );
-                            });
-                        }
-                        // Else add the standard join
-                        else {
-                            this.builder.rightOuterJoin(
-                                `${joinTable} as ${structure.tableAlias}`,
-                                primaryColumnName,
-                                linkingColumnName
-                            );
-                        }
-                        break;
-                    }
-                    case "fullOuter": {
-                        // If whereMode is specific then add the conditions on the join
-                        if (whereSpecific) {
-                            this.builder.fullOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.graphHelper.buildConditions(
-                                    structure.args,
-                                    structure.tableAlias,
-                                    builder,
-                                    tableKey,
-                                    this.schema,
-                                    this.knex,
-                                    true
-                                );
-                            });
-                        }
-                        // Else add the standard join
-                        else {
-                            this.builder.fullOuterJoin(
-                                `${joinTable} as ${structure.tableAlias}`,
-                                primaryColumnName,
-                                linkingColumnName
-                            );
-                        }
-                        break;
-                    }
-                    case "cross": {
-                        // If whereMode is specific then add the conditions on the join
-                        if (whereSpecific) {
-                            this.builder.crossJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.graphHelper.buildConditions(
-                                    structure.args,
-                                    structure.tableAlias,
-                                    builder,
-                                    tableKey,
-                                    this.schema,
-                                    this.knex,
-                                    true
-                                );
-                            });
-                        }
-                        // Else add the standard join
-                        else {
-                            this.builder.crossJoin(
-                                `${joinTable} as ${structure.tableAlias}`,
-                                primaryColumnName,
-                                linkingColumnName
-                            );
-                        }
-                        break;
-                    }
-                    default: {
-                        // If whereMode is specific then add the conditions on the join
-                        if (whereSpecific) {
-                            this.builder.join(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
-                                this.graphHelper.buildConditions(
-                                    structure.args,
-                                    structure.tableAlias,
-                                    builder,
-                                    tableKey,
-                                    this.schema,
-                                    this.knex,
-                                    true
-                                );
-                            });
-                        }
-                        // Else add the standard join
-                        else {
-                            this.builder.join(
-                                `${joinTable} as ${structure.tableAlias}`,
-                                primaryColumnName,
-                                linkingColumnName
-                            );
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    };
-
-    /**
-     * Find the given tableKey's database query alias
-     *
-     * @param structure Structure of the graph query object
-     * @param tableKey Table Key to search on
-     * @returns { string }
-     */
-    private findParentAlias = (structure: any, tableKey: string): string => {
-        // If the structure tableKey is the search tableKey then return the structure's tableAlias value
-        if (structure.tableKey === tableKey) {
-            return structure.tableAlias;
-        }
-        // Else recursively iterate down the structure's definition until the desired value is found
-        // or there are no more values to search upon
-        else {
-            for (const key in structure) {
-                let alias: string = "";
-                if (key.endsWith(this.joinFieldSuffix)) {
-                    alias = this.findParentAlias(structure[key], tableKey);
-                }
-
-                // If a value was found return it
-                if (alias) {
-                    return alias;
-                }
-            }
-
-            // Else return a blank string
-            return "";
-        }
-    };
-
-    /**
      * Process the query that was generated
      *
      * @param workerName
@@ -524,26 +240,13 @@ export class ParseAstQuery {
     private processQuery = async (workerName: string, omniHiveContext: any): Promise<any> => {
         // If the database query builder exists
         if (this.builder) {
-            let cacheKey: string | undefined = "";
-            let cacheSeconds: number = -1;
+            const cacheHelper: CacheHelper = new CacheHelper(this.cacheWorker, this.logWorker, this.encryptionWorker);
             const sql = this.builder.toString();
 
-            // Retrieve the cache seconds from the OmniHive Context
-            if (omniHiveContext?.cacheSeconds) {
-                try {
-                    cacheSeconds = +omniHiveContext.cacheSeconds;
-                } catch {
-                    cacheSeconds = -1;
-                }
-            }
-
-            // If the caching level is not set to none retrieve the cache key for the query
-            if (this.encryptionWorker && omniHiveContext?.cache && omniHiveContext.cache !== "none") {
-                cacheKey = this.encryptionWorker.base64Encode(workerName + "||||" + sql);
-            }
+            cacheHelper.updateCacheValues(omniHiveContext, workerName, sql);
 
             // Check the cache to see if results are stored
-            let results: any = await AwaitHelper.execute(this.checkCache(workerName, omniHiveContext, sql, cacheKey));
+            let results: any = await AwaitHelper.execute(cacheHelper.checkCache(workerName, omniHiveContext, sql));
 
             // If results are not stored in the cache run the query
             if (!results && this.databaseWorker) {
@@ -552,17 +255,15 @@ export class ParseAstQuery {
             }
 
             // If results are returned then hydrate the results back into graph
-            if (results) {
+            if (results && this.parentCall) {
                 const graphResult = this.graphHelper.buildGraphReturn(
-                    this.queryStructure[this.parentCall],
+                    this.queryStructure[this.parentCall.key],
                     results[0],
                     this.dateWorker
                 );
 
                 // Store the results in the cache
-                await AwaitHelper.execute(
-                    this.setCache(workerName, omniHiveContext, sql, cacheKey, cacheSeconds, graphResult)
-                );
+                await AwaitHelper.execute(cacheHelper.setCache(workerName, omniHiveContext, sql, graphResult));
 
                 // Return the results
                 return graphResult;
@@ -572,73 +273,6 @@ export class ParseAstQuery {
             return {
                 error: "An unexpected error occurred when transforming the database results back into the graph object structure",
             };
-        }
-    };
-
-    /**
-     * See if the sql query has been saved in the cache
-     *
-     * @param workerName
-     * @param omniHiveContext
-     * @param sql
-     * @param cacheKey
-     * @returns { Promise<any> }
-     */
-    private checkCache = async (
-        workerName: string,
-        omniHiveContext: any,
-        sql: string,
-        cacheKey: string | undefined
-    ): Promise<any> => {
-        if (this.cacheWorker) {
-            // Check the context to see if caching flags are set
-            if (omniHiveContext?.cache && omniHiveContext.cache === "cache" && cacheKey) {
-                // Verify the key exists
-                const keyExists: boolean = await AwaitHelper.execute(this.cacheWorker.exists(cacheKey));
-
-                // If the key exists retrieve the results
-                if (keyExists) {
-                    this.logWorker?.write(OmniHiveLogLevel.Info, `(Retrieved from Cache) => ${workerName} => ${sql}`);
-                    const cacheResults: string | undefined = await AwaitHelper.execute(this.cacheWorker.get(cacheKey));
-
-                    try {
-                        // If results are not falsy then return the Object
-                        if (cacheResults) {
-                            return JSON.parse(cacheResults);
-                        }
-                    } catch {
-                        omniHiveContext.cache = "cacheRefresh";
-                    }
-                }
-            }
-        }
-    };
-
-    /**
-     * Set the results in the cache
-     *
-     * @param workerName
-     * @param omniHiveContext
-     * @param sql
-     * @param cacheKey
-     * @param cacheSeconds
-     * @param results
-     * @returns { Promise<void> }
-     */
-    private setCache = async (
-        workerName: string,
-        omniHiveContext: any,
-        sql: string,
-        cacheKey: string | undefined,
-        cacheSeconds: number,
-        results: any
-    ): Promise<void> => {
-        if (this.cacheWorker) {
-            // If the no caching flag is not set save the results to cache
-            if (omniHiveContext?.cache && omniHiveContext.cache !== "none" && cacheKey) {
-                this.logWorker?.write(OmniHiveLogLevel.Info, `(Written to Cache) => ${workerName} => ${sql}`);
-                this.cacheWorker.set(cacheKey, JSON.stringify(results), cacheSeconds);
-            }
         }
     };
 }

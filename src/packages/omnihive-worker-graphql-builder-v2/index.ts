@@ -44,6 +44,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private columnEqualitySuffix: string = "ColumnEqualityType";
     private joiningSuffix: string = "LinkingEnum";
     private joinTypeSuffix: string = "JoinType";
+    private aggregateTypeSuffix: string = "AggregateType";
+    private aggregateQuerySuffix: string = "_aggregate";
     private joinFieldSuffix: string = "_table";
     private mutationReturnTypeSuffix: string = "MutationReturnType";
     private insertTypeSuffix: string = "InsertType";
@@ -158,7 +160,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         // Build GraphQL Type Definitions
         this.buildTypeDefinitions(schema, foreignColumns);
-        const resolver = this.buildResolvers(schema, databaseWorker);
+        const resolver = this.buildResolvers(schema, databaseWorker, foreignColumns);
 
         return makeExecutableSchema({
             typeDefs: this.builder.outputString(),
@@ -277,17 +279,14 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
                 // Store the foreign column link if it is not already stored
                 match.forEach((item) => {
+                    const tableKey: string = item.schemaName + item.tableNamePascalCase;
                     if (item) {
-                        if (!foreignColumns[item.tableNameCamelCase]) {
-                            foreignColumns[item.tableNameCamelCase] = [];
+                        if (!foreignColumns[tableKey]) {
+                            foreignColumns[tableKey] = [];
                         }
 
-                        if (
-                            !foreignColumns[item.tableNameCamelCase].some(
-                                (x) => item.columnNameEntity === x.columnNameEntity
-                            )
-                        )
-                            foreignColumns[item.tableNameCamelCase].push(item);
+                        if (!foreignColumns[tableKey].some((x) => item.columnNameEntity === x.columnNameEntity))
+                            foreignColumns[tableKey].push(item);
                     }
                 });
             });
@@ -300,15 +299,15 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Store any links from the parent column to another table if it is not stored already
             linkToColumn?.forEach((key) => {
+                const tableKey: string = key.schemaName + key.tableNamePascalCase;
+
                 if (key) {
-                    if (!foreignColumns[key.tableNameCamelCase]) {
-                        foreignColumns[key.tableNameCamelCase] = [];
+                    if (!foreignColumns[tableKey]) {
+                        foreignColumns[tableKey] = [];
                     }
 
-                    if (
-                        !foreignColumns[key.tableNameCamelCase].some((x) => key.columnNameEntity === x.columnNameEntity)
-                    ) {
-                        foreignColumns[key.tableNameCamelCase].push(key);
+                    if (!foreignColumns[tableKey].some((x) => key.columnNameEntity === x.columnNameEntity)) {
+                        foreignColumns[tableKey].push(key);
                     }
                 }
             });
@@ -332,8 +331,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.buildStaticTypes();
 
         // Build query types
-        this.buildLinkingEnum(schema[0].tableNameCamelCase, foreignColumns);
+        this.buildLinkingEnum(schema[0].schemaName + schema[0].tableNamePascalCase, foreignColumns);
         this.buildColumnEqualityType(schema, foreignColumns);
+        this.buildAggregateType(schema, foreignColumns);
         this.buildTableDef(schema, foreignColumns);
         this.buildWhereType(schema, foreignColumns);
         this.buildOrderByType(schema, foreignColumns);
@@ -443,14 +443,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private buildLinkingEnum = (parentTable: string, foreignColumns: { [tableName: string]: TableSchema[] }): void => {
         // Iterate through each foreign table link
         for (const tableName in foreignColumns) {
-            const schemaType = this.uppercaseFirstLetter(foreignColumns[tableName][0].schemaName);
-
             // If this table does not link to itself
-            if (parentTable !== foreignColumns[tableName][0].tableNameCamelCase) {
+            if (parentTable !== tableName) {
                 // Generate a placeholder type so the sub-schema can build correctly
-                this.builder.appendLine(
-                    `type ${schemaType}${this.uppercaseFirstLetter(tableName)}${this.objectSuffix} {`
-                );
+                this.builder.appendLine(`type ${this.uppercaseFirstLetter(tableName)}${this.objectSuffix} {`);
                 foreignColumns[tableName].forEach((column) => {
                     this.builder.append(`\t${column.columnNameEntity}`);
                     this.builder.append(": ");
@@ -467,7 +463,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 this.builder.append("enum ");
 
                 // Build dynamic name for table linking enum
-                this.builder.append(schemaType);
                 this.builder.append(this.uppercaseFirstLetter(parentTable));
                 this.builder.append(this.uppercaseFirstLetter(tableName));
                 this.builder.append(this.joiningSuffix);
@@ -481,7 +476,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Building linking join input type
             this.builder.append("input ");
-            this.builder.append(schemaType);
             this.builder.append(this.uppercaseFirstLetter(parentTable));
             this.builder.append(this.uppercaseFirstLetter(tableName));
             this.builder.append(this.joinTypeSuffix);
@@ -492,7 +486,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             // If this link is linking to this table then provide a from property
             if (foreignLinks?.length > 0) {
                 this.builder.append("\tfrom: ");
-                this.builder.append(schemaType);
                 this.builder.append(this.uppercaseFirstLetter(parentTable));
                 this.builder.append(this.uppercaseFirstLetter(tableName));
                 this.builder.appendLine(this.joiningSuffix);
@@ -505,7 +498,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             // If this is not a table linking to itself then provide a join input type
             if (tableName !== parentTable) {
                 this.builder.append("input ");
-                this.builder.append(schemaType);
                 this.builder.append(this.uppercaseFirstLetter(tableName));
                 this.builder.append(this.uppercaseFirstLetter(parentTable));
                 this.builder.append(this.joinTypeSuffix);
@@ -532,6 +524,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     ): void => {
         const schemaType = this.uppercaseFirstLetter(schema[0].schemaName);
         const tableName = schemaType + schema[0].tableNamePascalCase;
+        const tableKey = schema[0].schemaName + schema[0].tableNamePascalCase;
 
         this.builder.appendLine(`input ${tableName}${this.columnEqualitySuffix} {`);
         schema.map((column) => this.builder.appendLine(`\t${column.columnNameEntity}: EqualityTypes`));
@@ -541,17 +534,91 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         // Build temp foreign link equality input types so sub-schema builds properly
         Object.keys(foreignColumns).map((table) => {
-            if (table === schema[0].tableNameCamelCase) {
+            if (table === tableKey) {
                 return;
             }
 
             this.builder.append("input ");
-            this.builder.append(schemaType + this.uppercaseFirstLetter(table));
+            this.builder.append(this.uppercaseFirstLetter(table));
             this.builder.append(this.columnEqualitySuffix);
             this.builder.appendLine(" {");
             foreignColumns[table].map((column) =>
                 this.builder.appendLine(`\t${column.columnNameEntity}: EqualityTypes`)
             );
+            this.builder.appendLine("}");
+
+            this.builder.appendLine();
+        });
+    };
+
+    private buildAggregateType = (
+        schema: TableSchema[],
+        foreignColumns: { [tableName: string]: TableSchema[] }
+    ): void => {
+        const schemaType = this.uppercaseFirstLetter(schema[0].schemaName);
+        const tableName = schemaType + schema[0].tableNamePascalCase;
+        const tableKey = schema[0].schemaName + schema[0].tableNamePascalCase;
+
+        this.builder.appendLine(`type ${tableName}${this.aggregateTypeSuffix} {`);
+        this.builder.append("\tcount(column: ");
+        this.builder.append(tableName + this.columnEnumSuffix);
+        this.builder.appendLine("!");
+        this.builder.appendLine("\t\tdistinct: Boolean");
+        this.builder.appendLine("\t): Int");
+        this.builder.append("\tmin(column: ");
+        this.builder.append(tableName + this.columnEnumSuffix);
+        this.builder.appendLine("!");
+        this.builder.appendLine("\t): Any");
+        this.builder.append("\tmax(column: ");
+        this.builder.append(tableName + this.columnEnumSuffix);
+        this.builder.appendLine("!");
+        this.builder.appendLine("\t): Any");
+        this.builder.append("\tsum(column: ");
+        this.builder.append(tableName + this.columnEnumSuffix);
+        this.builder.appendLine("!");
+        this.builder.appendLine("\t\tdistinct: Boolean");
+        this.builder.appendLine("\t): Any");
+        this.builder.append("\tavg(column: ");
+        this.builder.append(tableName + this.columnEnumSuffix);
+        this.builder.appendLine("!");
+        this.builder.appendLine("\t\tdistinct: Boolean");
+        this.builder.appendLine("\t): Any");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+
+        // Build temp foreign link equality input types so sub-schema builds properly
+        Object.keys(foreignColumns).map((table) => {
+            if (table === tableKey) {
+                return;
+            }
+
+            const tableTypeName: string = this.uppercaseFirstLetter(table);
+
+            this.builder.appendLine(`type ${tableTypeName}${this.aggregateTypeSuffix} {`);
+            this.builder.append("\tcount(column: ");
+            this.builder.append(tableTypeName + this.columnEnumSuffix);
+            this.builder.appendLine("!");
+            this.builder.appendLine("\t\tdistinct: Boolean");
+            this.builder.appendLine("\t): Int");
+            this.builder.append("\tmin(column: ");
+            this.builder.append(tableTypeName + this.columnEnumSuffix);
+            this.builder.appendLine("!");
+            this.builder.appendLine("\t): Any");
+            this.builder.append("\tmax(column: ");
+            this.builder.append(tableTypeName + this.columnEnumSuffix);
+            this.builder.appendLine("!");
+            this.builder.appendLine("\t): Any");
+            this.builder.append("\tsum(column: ");
+            this.builder.append(tableTypeName + this.columnEnumSuffix);
+            this.builder.appendLine("!");
+            this.builder.appendLine("\t\tdistinct: Boolean");
+            this.builder.appendLine("\t): Any");
+            this.builder.append("\tavg(column: ");
+            this.builder.append(tableTypeName + this.columnEnumSuffix);
+            this.builder.appendLine("!");
+            this.builder.appendLine("\t\tdistinct: Boolean");
+            this.builder.appendLine("\t): Any");
             this.builder.appendLine("}");
 
             this.builder.appendLine();
@@ -567,9 +634,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      */
     private buildTableDef = (schema: TableSchema[], foreignColumns: { [tableName: string]: TableSchema[] }): void => {
         const schemaType = this.uppercaseFirstLetter(schema[0].schemaName);
-        const tableName = schema[0].tableNamePascalCase;
+        const tableName = schemaType + schema[0].tableNamePascalCase;
 
-        this.builder.appendLine(`type ${schemaType}${tableName}${this.objectSuffix} {`);
+        this.builder.appendLine(`type ${tableName}${this.objectSuffix} {`);
         schema.map((column) => {
             let columnType: string = this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase);
             let columnDefault: string = `\t${column.columnNameEntity}: ${columnType}`;
@@ -595,12 +662,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     this.builder.append(this.joinFieldSuffix);
                     this.builder.appendLine("(");
                     this.builder.append("\t\tjoin: ");
-                    this.builder.append(schemaType);
                     this.builder.append(tableName);
+                    this.builder.append(schemaType);
                     this.builder.append(this.uppercaseFirstLetter(column.columnForeignKeyTableNamePascalCase));
                     this.builder.append(this.joinTypeSuffix);
                     this.builder.appendLine("!");
-                    this.buildArgString(foreignColumns[column.columnForeignKeyTableNameCamelCase]);
+                    this.buildArgString(foreignColumns[column.schemaName + column.columnForeignKeyTableNamePascalCase]);
                     this.builder.append("\t)");
                 }
 
@@ -626,23 +693,34 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 !linkingSchema?.columnIsForeignKey &&
                 linkingSchema?.columnForeignKeyTableNameCamelCase !== linkingSchema?.tableNameCamelCase
             ) {
-                const tableKey: string = linkingSchema?.schemaName + this.uppercaseFirstLetter(table);
-
-                this.builder.appendLine(`\t${tableKey}${this.joinFieldSuffix}(`);
+                // Standard Join
+                this.builder.appendLine(`\t${table}${this.joinFieldSuffix}(`);
                 this.builder.append("\t\tjoin: ");
-                this.builder.append(schemaType);
                 this.builder.append(tableName);
                 this.builder.append(this.uppercaseFirstLetter(table));
                 this.builder.append(this.joinTypeSuffix);
                 this.builder.appendLine("!");
-                this.buildArgString(this.tables[tableKey]);
+                this.buildArgString(this.tables[table]);
                 this.builder.appendLine("\t): [");
-                this.builder.append(schemaType);
                 this.builder.append(this.uppercaseFirstLetter(table));
                 this.builder.append(this.objectSuffix);
                 this.builder.append("]");
+
+                // Aggregate Join
+                this.builder.appendLine(`\t${table}${this.aggregateQuerySuffix}(`);
+                this.builder.append("\t\tjoin: ");
+                this.builder.append(tableName);
+                this.builder.append(this.uppercaseFirstLetter(table));
+                this.builder.append(this.joinTypeSuffix);
+                this.builder.appendLine("!");
+                this.buildArgString(this.tables[table]);
+                this.builder.appendLine("\t): ");
+                this.builder.append(this.uppercaseFirstLetter(table));
+                this.builder.append(this.aggregateTypeSuffix);
+                this.builder.append("");
             }
         });
+
         this.builder.appendLine("}");
 
         this.builder.appendLine();
@@ -673,18 +751,18 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private buildWhereType = (schema: TableSchema[], foreignColumns: { [tableName: string]: TableSchema[] }): void => {
         const schemaType = this.uppercaseFirstLetter(schema[0].schemaName);
         const tableName = schemaType + schema[0].tableNamePascalCase;
+        const tableKey = schema[0].schemaName + schema[0].tableNamePascalCase;
 
         this.builder.append(`input ${tableName}${this.whereSuffix}`);
         this.buildColumnEqualities(schema);
 
         // Add foreign link temp types so the sub-schema builds correctly
         Object.keys(foreignColumns).forEach((table) => {
-            if (table === schema[0].tableNameCamelCase) {
+            if (table === tableKey) {
                 return;
             }
 
             this.builder.append("input ");
-            this.builder.append(schemaType);
             this.builder.append(this.uppercaseFirstLetter(table));
             this.builder.append(this.whereSuffix);
             this.buildColumnEqualities(foreignColumns[table]);
@@ -704,6 +782,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     ): void => {
         const schemaType = this.uppercaseFirstLetter(schema[0].schemaName);
         const tableName = schemaType + schema[0].tableNamePascalCase;
+        const tableKey = schema[0].schemaName + schema[0].tableNamePascalCase;
 
         this.builder.appendLine(`input ${tableName}${this.orderBySuffix} {`);
         schema.map((column) => this.builder.appendLine(`\t${column.columnNameEntity}: OrderByOptions`));
@@ -713,12 +792,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         // Add foreign link temp types so the sub-schema builds correctly
         Object.keys(foreignColumns).map((table) => {
-            if (table === schema[0].tableNameCamelCase) {
+            if (table === tableKey) {
                 return;
             }
 
             this.builder.append("input ");
-            this.builder.append(schemaType + this.uppercaseFirstLetter(table));
+            this.builder.append(this.uppercaseFirstLetter(table));
             this.builder.append(this.orderBySuffix);
             this.builder.appendLine(" {");
 
@@ -741,6 +820,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private buildColumnEnum = (schema: TableSchema[], foreignColumns: { [tableName: string]: TableSchema[] }): void => {
         const schemaType = this.uppercaseFirstLetter(schema[0].schemaName);
         const tableName = schemaType + schema[0].tableNamePascalCase;
+        const tableKey = schema[0].schemaName + schema[0].tableNamePascalCase;
 
         this.builder.appendLine(`enum ${tableName}${this.columnEnumSuffix} {`);
         schema.map((column) => this.builder.appendLine(`\t${column.columnNameEntity}`));
@@ -750,12 +830,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         // Add foreign link temp types so the sub-schema builds correctly
         Object.keys(foreignColumns).map((table) => {
-            if (table === schema[0].tableNameCamelCase) {
+            if (table === tableKey) {
                 return;
             }
 
             this.builder.append("enum ");
-            this.builder.append(schemaType + this.uppercaseFirstLetter(table));
+            this.builder.append(this.uppercaseFirstLetter(table));
             this.builder.append(this.columnEnumSuffix);
             this.builder.appendLine(" {");
             foreignColumns[table].map((column) => this.builder.appendLine(`\t${column.columnNameEntity}`));
@@ -778,6 +858,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     ): void => {
         const schemaType = this.uppercaseFirstLetter(schema[0].schemaName);
         const tableName = schemaType + schema[0].tableNamePascalCase;
+        const tableKey = schema[0].schemaName + schema[0].tableNamePascalCase;
 
         this.builder.appendLine(`input ${tableName}${this.groupBySuffix} {`);
         this.builder.append("\tcolumns: [");
@@ -793,20 +874,20 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         // Add foreign link temp types so the sub-schema builds correctly
         Object.keys(foreignColumns).map((table) => {
-            if (table === schema[0].tableNameCamelCase) {
+            if (table === tableKey) {
                 return;
             }
 
             this.builder.append("input ");
-            this.builder.append(schemaType + this.uppercaseFirstLetter(table));
+            this.builder.append(this.uppercaseFirstLetter(table));
             this.builder.append(this.groupBySuffix);
             this.builder.appendLine(" {");
             this.builder.append("\tcolumns: [");
-            this.builder.append(schemaType + this.uppercaseFirstLetter(table));
+            this.builder.append(this.uppercaseFirstLetter(table));
             this.builder.append(this.columnEnumSuffix);
             this.builder.appendLine("!]!");
             this.builder.append("\thaving: ");
-            this.builder.append(schemaType + this.uppercaseFirstLetter(table));
+            this.builder.append(this.uppercaseFirstLetter(table));
             this.builder.appendLine(this.whereSuffix);
             this.builder.appendLine("}");
 
@@ -960,6 +1041,14 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.append(this.uppercaseFirstLetter(propertyName));
         this.builder.append(this.objectSuffix);
         this.builder.appendLine("]");
+        this.builder.append("\t");
+        this.builder.append(propertyName);
+        this.builder.append(this.aggregateQuerySuffix);
+        this.builder.appendLine(" (");
+        this.buildArgString(schema);
+        this.builder.append("\t): ");
+        this.builder.append(this.uppercaseFirstLetter(propertyName));
+        this.builder.append(this.aggregateTypeSuffix);
         this.builder.appendLine("}");
 
         this.builder.appendLine();
@@ -1015,7 +1104,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @param databaseWorker
      * @returns { any }
      */
-    private buildResolvers = (schema: TableSchema[], databaseWorker: IDatabaseWorker): any => {
+    private buildResolvers = (
+        schema: TableSchema[],
+        databaseWorker: IDatabaseWorker,
+        foreignColumns: {
+            [tableName: string]: TableSchema[];
+        }
+    ): any => {
         const propertyName: string = schema[0].schemaName + schema[0].tableNamePascalCase;
 
         // Build mutation functions with any lifecycle custom changes
@@ -1023,11 +1118,16 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         const updateFunction = this.buildUpdateFunction(databaseWorker, propertyName);
         const deleteFunction = this.buildDeleteFunction(databaseWorker, propertyName);
 
-        return {
+        const resolver: any = {
             Query: {
                 [propertyName]: async (_obj: any, args: any, context: any, info: any) => {
                     return await AwaitHelper.execute(
                         this.parseMaster.parseAstQuery(databaseWorker.name, args, info, context.omnihive, this.tables)
+                    );
+                },
+                [propertyName + this.aggregateQuerySuffix]: async (_obj: any, args: any, context: any, info: any) => {
+                    return await AwaitHelper.execute(
+                        this.parseMaster.parseAggregate(databaseWorker.name, args, info, context, this.tables)
                     );
                 },
             },
@@ -1038,6 +1138,34 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             },
             Any: GraphQLAny,
         };
+
+        for (const column in foreignColumns) {
+            const tableName: string =
+                foreignColumns[column][0].schemaName + foreignColumns[column][0].tableNamePascalCase;
+
+            const resolverKey: string = this.uppercaseFirstLetter(propertyName) + this.objectSuffix;
+
+            if (!foreignColumns[column].some((x) => x.columnIsForeignKey)) {
+                continue;
+            }
+
+            if (!resolver[resolverKey]) {
+                resolver[resolverKey] = {};
+            }
+
+            resolver[resolverKey][tableName + this.aggregateQuerySuffix] = async (
+                _obj: any,
+                args: any,
+                context: any,
+                info: any
+            ) => {
+                return await AwaitHelper.execute(
+                    this.parseMaster.parseAggregate(databaseWorker.name, args, info, context, this.tables)
+                );
+            };
+        }
+
+        return resolver;
     };
 
     /**

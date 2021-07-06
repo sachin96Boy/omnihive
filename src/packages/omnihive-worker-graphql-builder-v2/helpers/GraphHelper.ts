@@ -296,6 +296,20 @@ export class GraphHelper {
         // Flatten the argument object to a readable form
         const args = this.flattenArgs(field.arguments as unknown as readonly ObjectFieldNode[]);
 
+        if (
+            args.groupBy?.columns &&
+            args.groupBy?.columns?.length > 0 &&
+            !args.groupBy.columns.some((group: string) =>
+                structure[field.alias?.value ?? field.name.value].columns.some(
+                    (x: { name: string; alias: string; dbName: string }) => x.name === group
+                )
+            )
+        ) {
+            throw new Error(
+                "All returning column values must be included in the group by columns section if group by function is going to be used."
+            );
+        }
+
         // If arguments exists then store them in the structure's args property
         if (args && Object.keys(args).length > 0) {
             // If this is an aggregate field then store the aggregate arguments in the column definition

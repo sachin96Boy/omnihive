@@ -735,7 +735,7 @@ export class DatabaseHelper {
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
-                                    builder,
+                                    subBuilder,
                                     tableKey,
                                     schema,
                                     knex,
@@ -762,7 +762,7 @@ export class DatabaseHelper {
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
-                                    builder,
+                                    subBuilder,
                                     tableKey,
                                     schema,
                                     knex,
@@ -789,7 +789,7 @@ export class DatabaseHelper {
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
-                                    builder,
+                                    subBuilder,
                                     tableKey,
                                     schema,
                                     knex,
@@ -816,7 +816,7 @@ export class DatabaseHelper {
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
-                                    builder,
+                                    subBuilder,
                                     tableKey,
                                     schema,
                                     knex,
@@ -843,7 +843,7 @@ export class DatabaseHelper {
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
-                                    builder,
+                                    subBuilder,
                                     tableKey,
                                     schema,
                                     knex,
@@ -870,7 +870,7 @@ export class DatabaseHelper {
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
-                                    builder,
+                                    subBuilder,
                                     tableKey,
                                     schema,
                                     knex,
@@ -897,7 +897,7 @@ export class DatabaseHelper {
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
-                                    builder,
+                                    subBuilder,
                                     tableKey,
                                     schema,
                                     knex,

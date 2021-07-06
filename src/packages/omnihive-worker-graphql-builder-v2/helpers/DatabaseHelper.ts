@@ -73,7 +73,8 @@ export class DatabaseHelper {
         tableName: string,
         schema: { [tableName: string]: TableSchema[] },
         knex: Knex | undefined,
-        join: boolean = false
+        join: boolean = false,
+        joinParentBuilder?: Knex.QueryBuilder<any, unknown[]>
     ) => {
         // If knex is not properly initialized then throw an error
         if (!knex) {
@@ -93,7 +94,7 @@ export class DatabaseHelper {
                         args[knexFunction],
                         tableAlias,
                         tableName,
-                        builder as Knex.QueryBuilder<any, unknown[]>,
+                        join && joinParentBuilder ? joinParentBuilder : (builder as Knex.QueryBuilder<any, unknown[]>),
                         schema
                     );
                     break;
@@ -103,7 +104,7 @@ export class DatabaseHelper {
                         args[knexFunction],
                         tableAlias,
                         tableName,
-                        builder as Knex.QueryBuilder<any, unknown[]>,
+                        join && joinParentBuilder ? joinParentBuilder : (builder as Knex.QueryBuilder<any, unknown[]>),
                         schema,
                         knex
                     );
@@ -702,16 +703,17 @@ export class DatabaseHelper {
                     case "inner": {
                         // If whereMode is specific then add the conditions on the join
                         if (whereSpecific) {
-                            builder.innerJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
+                            builder.innerJoin(`${joinTable} as ${structure.tableAlias}`, (subBuilder) => {
+                                subBuilder.on(primaryColumnName, "=", linkingColumnName);
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
-                                    builder,
+                                    subBuilder,
                                     tableKey,
                                     schema,
                                     knex,
-                                    true
+                                    true,
+                                    builder
                                 );
                             });
                         }
@@ -728,8 +730,8 @@ export class DatabaseHelper {
                     case "left": {
                         // If whereMode is specific then add the conditions on the join
                         if (whereSpecific) {
-                            builder.leftJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
+                            builder.leftJoin(`${joinTable} as ${structure.tableAlias}`, (subBuilder) => {
+                                subBuilder.on(primaryColumnName, "=", linkingColumnName);
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
@@ -737,7 +739,8 @@ export class DatabaseHelper {
                                     tableKey,
                                     schema,
                                     knex,
-                                    true
+                                    true,
+                                    builder
                                 );
                             });
                         }
@@ -754,8 +757,8 @@ export class DatabaseHelper {
                     case "leftOuter": {
                         // If whereMode is specific then add the conditions on the join
                         if (whereSpecific) {
-                            builder.leftOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
+                            builder.leftOuterJoin(`${joinTable} as ${structure.tableAlias}`, (subBuilder) => {
+                                subBuilder.on(primaryColumnName, "=", linkingColumnName);
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
@@ -763,7 +766,8 @@ export class DatabaseHelper {
                                     tableKey,
                                     schema,
                                     knex,
-                                    true
+                                    true,
+                                    builder
                                 );
                             });
                         }
@@ -780,8 +784,8 @@ export class DatabaseHelper {
                     case "right": {
                         // If whereMode is specific then add the conditions on the join
                         if (whereSpecific) {
-                            builder.rightJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
+                            builder.rightJoin(`${joinTable} as ${structure.tableAlias}`, (subBuilder) => {
+                                subBuilder.on(primaryColumnName, "=", linkingColumnName);
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
@@ -789,7 +793,8 @@ export class DatabaseHelper {
                                     tableKey,
                                     schema,
                                     knex,
-                                    true
+                                    true,
+                                    builder
                                 );
                             });
                         }
@@ -806,8 +811,8 @@ export class DatabaseHelper {
                     case "rightOuter": {
                         // If whereMode is specific then add the conditions on the join
                         if (whereSpecific) {
-                            builder.rightOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
+                            builder.rightOuterJoin(`${joinTable} as ${structure.tableAlias}`, (subBuilder) => {
+                                subBuilder.on(primaryColumnName, "=", linkingColumnName);
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
@@ -815,7 +820,8 @@ export class DatabaseHelper {
                                     tableKey,
                                     schema,
                                     knex,
-                                    true
+                                    true,
+                                    builder
                                 );
                             });
                         }
@@ -832,8 +838,8 @@ export class DatabaseHelper {
                     case "fullOuter": {
                         // If whereMode is specific then add the conditions on the join
                         if (whereSpecific) {
-                            builder.fullOuterJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
+                            builder.fullOuterJoin(`${joinTable} as ${structure.tableAlias}`, (subBuilder) => {
+                                subBuilder.on(primaryColumnName, "=", linkingColumnName);
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
@@ -841,7 +847,8 @@ export class DatabaseHelper {
                                     tableKey,
                                     schema,
                                     knex,
-                                    true
+                                    true,
+                                    builder
                                 );
                             });
                         }
@@ -858,8 +865,8 @@ export class DatabaseHelper {
                     case "cross": {
                         // If whereMode is specific then add the conditions on the join
                         if (whereSpecific) {
-                            builder.crossJoin(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
+                            builder.crossJoin(`${joinTable} as ${structure.tableAlias}`, (subBuilder) => {
+                                subBuilder.on(primaryColumnName, "=", linkingColumnName);
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
@@ -867,7 +874,8 @@ export class DatabaseHelper {
                                     tableKey,
                                     schema,
                                     knex,
-                                    true
+                                    true,
+                                    builder
                                 );
                             });
                         }
@@ -884,8 +892,8 @@ export class DatabaseHelper {
                     default: {
                         // If whereMode is specific then add the conditions on the join
                         if (whereSpecific) {
-                            builder.join(`${joinTable} as ${structure.tableAlias}`, (builder) => {
-                                builder.on(primaryColumnName, "=", linkingColumnName);
+                            builder.join(`${joinTable} as ${structure.tableAlias}`, (subBuilder) => {
+                                subBuilder.on(primaryColumnName, "=", linkingColumnName);
                                 this.buildConditions(
                                     structure.args,
                                     structure.tableAlias,
@@ -893,7 +901,8 @@ export class DatabaseHelper {
                                     tableKey,
                                     schema,
                                     knex,
-                                    true
+                                    true,
+                                    builder
                                 );
                             });
                         }

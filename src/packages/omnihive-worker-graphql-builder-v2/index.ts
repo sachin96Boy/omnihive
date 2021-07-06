@@ -760,18 +760,15 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @param schema
      * @returns { void }
      */
-    private buildArgString = (schema: TableSchema[], queryDef: boolean = false): void => {
+    private buildArgString = (schema: TableSchema[]): void => {
         const schemaType = this.uppercaseFirstLetter(schema[0].schemaName);
         const tableName = schemaType + schema[0].tableNamePascalCase;
 
         this.builder.appendLine(`\t\twhere: ${tableName}${this.whereSuffix}`);
         this.builder.appendLine(`\t\torderBy: [${tableName}${this.orderBySuffix}]`);
         this.builder.appendLine(`\t\tgroupBy: ${tableName}${this.groupBySuffix}`);
-
-        if (queryDef) {
-            this.builder.appendLine(`\t\tlimit: Int = ${this.metadata.rowLimit ?? 10000}`);
-            this.builder.appendLine(`\t\tpage: Int = ${this.metadata.rowLimit ?? 1}`);
-        }
+        this.builder.appendLine(`\t\tlimit: Int = ${this.metadata.rowLimit ?? 10000}`);
+        this.builder.appendLine(`\t\tpage: Int = ${this.metadata.rowLimit ?? 1}`);
     };
 
     /**
@@ -1069,7 +1066,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.append("\t");
         this.builder.append(propertyName);
         this.builder.appendLine(" (");
-        this.buildArgString(schema, true);
+        this.buildArgString(schema);
         this.builder.append("\t): [");
         this.builder.append(this.uppercaseFirstLetter(propertyName));
         this.builder.append(this.objectSuffix);
@@ -1078,7 +1075,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.append(propertyName);
         this.builder.append(this.aggregateQuerySuffix);
         this.builder.appendLine(" (");
-        this.buildArgString(schema, true);
+        this.buildArgString(schema);
         this.builder.append("\t): ");
         this.builder.append(this.uppercaseFirstLetter(propertyName));
         this.builder.append(this.aggregateTypeSuffix);

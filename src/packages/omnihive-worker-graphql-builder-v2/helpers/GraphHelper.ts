@@ -408,13 +408,25 @@ export class GraphHelper {
         dateWorker: IDateWorker | undefined,
         useAlias: boolean = true
     ): any => {
-        const condensedResults: any = [];
+        let condensedResults: any = [];
 
         // Iterate through each database result and build the graph return object
         results.forEach((dbItem: any) => {
             this.processRow(condensedResults, dbItem, structure, dateWorker, useAlias);
         });
 
+        // Paginate Results
+        if (structure.args?.page || structure.args?.limit) {
+            const page: number = structure.args.page ?? 1;
+            const limit: number = structure.args.limit ?? 10000;
+
+            condensedResults = condensedResults.slice((page - 1) * limit, page * limit);
+        }
+
+        // Paginate each sub-object
+        this.paginateResults(structure, condensedResults, []);
+
+        // Return transformed object
         return condensedResults;
     };
 
@@ -554,6 +566,55 @@ export class GraphHelper {
 
         // If all conditions pass return true
         return true;
+    };
+
+    /**
+     * Paginate the results
+     *
+     * @param structure
+     * @param results
+     * @param keys
+     * @returns { void }
+     */
+    private paginateResults = (structure: any, results: any, keys: string[]): void => {
+        // Iterate through each structure key
+        for (const key in structure) {
+            // If the key is a join key push the key value to iterate through and recursively call the next structure layer
+            if (structure[key].args?.join) {
+                keys.push(key);
+                this.paginateResults(structure[key], results, keys);
+            }
+
+            // If there are pagination arguments then paginate the sub-object
+            if (structure[key].args?.page || structure[key].args?.limit) {
+                const page: number = structure[key].args.page ?? 1;
+                const limit: number = structure[key].args.limit ?? 10000;
+
+                results.forEach((item: any) => {
+                    this.paginateSubResultItem(keys, item, page, limit);
+                });
+            }
+        }
+    };
+
+    /**
+     * Paginate the sub-objects
+     *
+     * @param keys
+     * @param item
+     * @param page
+     * @param limit
+     * @returns { void }
+     */
+    private paginateSubResultItem = (keys: string[], item: any, page: number = 1, limit: number = 10000): void => {
+        // If this is the correct level then paginate as defined
+        if (keys.length === 1) {
+            item[keys[0]] = item[keys[0]].slice((page - 1) * limit, page * limit);
+        }
+        // Else iterate down the key list until the desired object level is reached
+        else {
+            item[keys[0]].forEach((x: any) => this.paginateSubResultItem(keys.slice(1), x, page, limit));
+        }
     };
 
     //#endregion

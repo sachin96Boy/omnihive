@@ -6,6 +6,8 @@ import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDataba
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { Knex } from "knex";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { WorkerHelper } from "../helpers/WorkerHelper";
+import { DatabaseHelper } from "../helpers/DatabaseHelper";
 
 export class ParseInsert {
     // Workers
@@ -42,7 +44,8 @@ export class ParseInsert {
             this.schema = schema;
 
             // Set the required worker values
-            const { databaseWorker, knex, dateWorker } = this.graphHelper.getRequiredWorkers(workerName);
+            const workerHelper: WorkerHelper = new WorkerHelper();
+            const { databaseWorker, knex, dateWorker } = workerHelper.getRequiredWorkers(workerName);
 
             // If the database worker does not exist then throw an error
             if (!databaseWorker) {
@@ -115,7 +118,8 @@ export class ParseInsert {
             this.builder.from(tableDbName);
 
             if (structure[key]?.args?.insert) {
-                const dbInsertObject = this.graphHelper.convertEntityObjectToDbObject(
+                const databaseHelper: DatabaseHelper = new DatabaseHelper();
+                const dbInsertObject = databaseHelper.convertEntityObjectToDbObject(
                     structure[key].args.insert,
                     columns
                 );

@@ -12,6 +12,8 @@ import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { GraphHelper } from "../helpers/GraphHelper";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { CacheHelper } from "../helpers/CacheHelper";
+import { WorkerHelper } from "../helpers/WorkerHelper";
+import { DatabaseHelper } from "../helpers/DatabaseHelper";
 
 export class ParseAstQuery {
     // Workers
@@ -62,8 +64,9 @@ export class ParseAstQuery {
             this.schema = schema;
 
             // Set the required worker values
+            const workerHelper: WorkerHelper = new WorkerHelper();
             const { logWorker, databaseWorker, knex, encryptionWorker, cacheWorker, dateWorker } =
-                this.graphHelper.getRequiredWorkers(workerName);
+                workerHelper.getRequiredWorkers(workerName);
 
             // If the database worker does not exist then throw an error
             if (!databaseWorker) {
@@ -109,7 +112,10 @@ export class ParseAstQuery {
         this.builder = this.knex.queryBuilder();
 
         // Retrieve the primary table being accessed
-        this.parentCall = { key: resolveInfo.fieldName, alias: "" };
+        this.parentCall = {
+            key: resolveInfo.fieldNodes[0].name.value,
+            alias: resolveInfo.fieldNodes[0].alias?.value ?? "",
+        };
 
         // Generate the query structure from the graph object for the current parent value
         this.queryStructure = this.graphHelper.buildQueryStructure(
@@ -123,18 +129,21 @@ export class ParseAstQuery {
 
         // Iterate through each query structure's parent value found
         Object.keys(this.queryStructure).forEach((key) => {
+            // Retrieve the database schema key value
+            const dbKey: string = this.queryStructure[key].queryKey;
+
             // If the builder was not initialized properly throw an error
             if (!this.builder) {
                 throw new Error("Knex Query Builder did not initialize correctly");
             }
 
             // Retrieve the parent values TableSchema values
-            const tableSchema: TableSchema[] = this.schema[key];
+            const tableSchema: TableSchema[] = this.schema[dbKey];
             this.builder?.from(`${tableSchema[0].tableName} as t1`);
 
             if (this.parentCall) {
                 // Build queries for the current query structure
-                this.graphToKnex(this.queryStructure[key], this.parentCall.key);
+                this.graphToKnex(this.queryStructure[key], this.parentCall.key, key);
             }
         });
     };
@@ -147,7 +156,7 @@ export class ParseAstQuery {
      * @param queryKey Structure's key for joining to foreign tables from the parent table
      * @returns { void }
      */
-    private graphToKnex = (structure: any, parentKey: string): void => {
+    private graphToKnex = (structure: any, parentKey: string, masterKey: string): void => {
         // If the query builder is not initialized properly then throw an error
         if (!this.builder) {
             throw new Error("Knex Query Builder not initialized");
@@ -165,9 +174,11 @@ export class ParseAstQuery {
         // Build the select values
         this.buildSelect(structure.columns, structure.tableAlias, parentKey);
 
+        const databaseHelper: DatabaseHelper = new DatabaseHelper();
+
         if (this.parentCall) {
             // Build the joining values
-            this.graphHelper.buildJoins(
+            databaseHelper.buildJoins(
                 this.builder,
                 structure,
                 parentKey,
@@ -175,7 +186,7 @@ export class ParseAstQuery {
                 this.schema,
                 this.knex,
                 this.queryStructure,
-                this.parentCall.key
+                masterKey
             );
         }
 
@@ -185,7 +196,7 @@ export class ParseAstQuery {
             !structure.args?.join ||
             (structure.args?.join?.whereMode && structure.args?.join?.whereMode === "global")
         ) {
-            this.graphHelper.buildConditions(
+            databaseHelper.buildConditions(
                 structure.args,
                 structure.tableAlias,
                 this.builder,
@@ -199,7 +210,7 @@ export class ParseAstQuery {
         Object.keys(structure).forEach((key) => {
             // Build inner queries
             if (structure[key].args?.join) {
-                this.graphToKnex(structure[key], structure[key].tableKey);
+                this.graphToKnex(structure[key], structure[key].tableKey, masterKey);
             }
         });
     };
@@ -256,8 +267,12 @@ export class ParseAstQuery {
 
             // If results are returned then hydrate the results back into graph
             if (results && this.parentCall) {
+                let topKey: string = this.parentCall.key;
+                if (this.parentCall.alias) {
+                    topKey = this.parentCall.alias;
+                }
                 const graphResult = this.graphHelper.buildGraphReturn(
-                    this.queryStructure[this.parentCall.key],
+                    this.queryStructure[topKey],
                     results[0],
                     this.dateWorker
                 );

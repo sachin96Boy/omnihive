@@ -5,6 +5,8 @@ import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDataba
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { GraphHelper } from "../helpers/GraphHelper";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { WorkerHelper } from "../helpers/WorkerHelper";
+import { DatabaseHelper } from "../helpers/DatabaseHelper";
 
 export class ParseDelete {
     // Workers
@@ -40,7 +42,8 @@ export class ParseDelete {
             this.schema = schema;
 
             // Set the required worker values
-            const { databaseWorker, knex, dateWorker } = this.graphHelper.getRequiredWorkers(workerName);
+            const workerHelper: WorkerHelper = new WorkerHelper();
+            const { databaseWorker, knex, dateWorker } = workerHelper.getRequiredWorkers(workerName);
 
             // If the database worker does not exist then throw an error
             if (!databaseWorker) {
@@ -127,7 +130,8 @@ export class ParseDelete {
         this.builder.from(`${tableName}`);
 
         // Build the conditions for the delete query
-        this.graphHelper.buildConditions(args, "", this.builder, structureKey, this.schema, this.knex);
+        const databaseHelper: DatabaseHelper = new DatabaseHelper();
+        databaseHelper.buildConditions(args, "", this.builder, structureKey, this.schema, this.knex);
 
         // Set the delete command the the designated return column
         this.builder.delete([columnName], { includeTriggerModifications: true });

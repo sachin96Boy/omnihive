@@ -12,6 +12,8 @@ import { GraphHelper } from "../helpers/GraphHelper";
 import { CacheHelper } from "../helpers/CacheHelper";
 import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
 import { Path } from "graphql/jsutils/Path";
+import { WorkerHelper } from "../helpers/WorkerHelper";
+import { DatabaseHelper } from "../helpers/DatabaseHelper";
 
 export class ParseAggregate {
     // Workers
@@ -47,8 +49,9 @@ export class ParseAggregate {
             this.schema = schema;
 
             // Set the required worker values
+            const workerHelper: WorkerHelper = new WorkerHelper();
             const { logWorker, databaseWorker, knex, encryptionWorker, cacheWorker, dateWorker } =
-                this.graphHelper.getRequiredWorkers(workerName);
+                workerHelper.getRequiredWorkers(workerName);
 
             // If the database worker does not exist then throw an error
             if (!databaseWorker) {
@@ -115,6 +118,12 @@ export class ParseAggregate {
 
         // Iterate through each query structure's parent value found
         Object.keys(this.queryStructure).forEach((key) => {
+            // If this key is not the current parent of the aggregate being calculated
+            if (key !== topParent?.key && key !== topParent?.alias) {
+                // Skip
+                return;
+            }
+
             // If the builder was not initialized properly throw an error
             if (!this.builder) {
                 throw new Error("Knex Query Builder did not initialize correctly");
@@ -124,21 +133,14 @@ export class ParseAggregate {
                 throw new Error("Query Structure was not formed properly");
             }
 
-            let tableKey: string = key;
-            if (topParent.alias === key) {
-                tableKey = topParent.key;
-            }
-
-            if (tableKey.endsWith(this.aggregateFieldSuffix)) {
-                tableKey = tableKey.replace(this.aggregateFieldSuffix, "");
-            }
+            const tableKey: string = this.queryStructure[key].queryKey;
 
             // Retrieve the parent values TableSchema values
             const tableSchema: TableSchema[] = this.schema[tableKey];
             this.builder?.from(`${tableSchema[0].tableName} as t1`);
 
             // Build queries for the current query structure
-            this.graphToKnex(this.queryStructure[key], topParent.key, topParent.key);
+            this.graphToKnex(this.queryStructure[key], topParent.key, key);
 
             // Build the aggregate section of the query
             this.buildAggregateCall(this.queryStructure);
@@ -215,8 +217,10 @@ export class ParseAggregate {
             throw new Error("The Graph Query is not structured properly");
         }
 
+        const databaseHelper: DatabaseHelper = new DatabaseHelper();
+
         // Build the joining values
-        this.graphHelper.buildJoins(
+        databaseHelper.buildJoins(
             this.builder,
             structure,
             structureKey,
@@ -230,7 +234,7 @@ export class ParseAggregate {
         // if arguments exist on the structure level and are not a join that is set to specific
         //  then build the conditional query specifications
         if (!structure.args?.join || !structure.args?.join?.whereMode || structure.args.join.whereMode === "global") {
-            this.graphHelper.buildConditions(
+            databaseHelper.buildConditions(
                 structure.args,
                 structure.tableAlias,
                 this.builder,

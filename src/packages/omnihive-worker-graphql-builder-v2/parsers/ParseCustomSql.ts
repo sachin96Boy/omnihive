@@ -1,10 +1,8 @@
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
-import { GraphHelper } from "../helpers/GraphHelper";
+import { WorkerHelper } from "../helpers/WorkerHelper";
 
 export class ParseCustomSql {
-    private graphHelper: GraphHelper = new GraphHelper();
-
     /**
      * Parse the encrypted sql into a graph result
      *
@@ -20,7 +18,8 @@ export class ParseCustomSql {
     ): Promise<any[][]> => {
         try {
             // Set the required worker values
-            const { databaseWorker, encryptionWorker } = this.graphHelper.getRequiredWorkers(workerName);
+            const workerHelper: WorkerHelper = new WorkerHelper();
+            const { databaseWorker, encryptionWorker } = workerHelper.getRequiredWorkers(workerName);
 
             // If the database worker does not exist then throw an error
             if (!databaseWorker) {

@@ -6,6 +6,8 @@ import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDataba
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
 import { Knex } from "knex";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { WorkerHelper } from "../helpers/WorkerHelper";
+import { DatabaseHelper } from "../helpers/DatabaseHelper";
 
 export class ParseUpdate {
     // Workers
@@ -42,7 +44,8 @@ export class ParseUpdate {
             this.schema = schema;
 
             // Set the required worker values
-            const { databaseWorker, knex, dateWorker } = this.graphHelper.getRequiredWorkers(workerName);
+            const workerHelper: WorkerHelper = new WorkerHelper();
+            const { databaseWorker, knex, dateWorker } = workerHelper.getRequiredWorkers(workerName);
 
             // If the database worker does not exist then throw an error
             if (!databaseWorker) {
@@ -115,10 +118,12 @@ export class ParseUpdate {
 
         for (const key in structure) {
             this.builder.from(tableDbName);
-            this.graphHelper.buildConditions(structure[key].args, "", this.builder, tableKey, this.schema, this.knex);
+
+            const databaseHelper: DatabaseHelper = new DatabaseHelper();
+            databaseHelper.buildConditions(structure[key].args, "", this.builder, tableKey, this.schema, this.knex);
 
             if (structure[key]?.args?.updateTo) {
-                const dbObject = this.graphHelper.convertEntityObjectToDbObject(structure[key].args.updateTo, columns);
+                const dbObject = databaseHelper.convertEntityObjectToDbObject(structure[key].args.updateTo, columns);
                 const returnArray = structure[key].columns.map(
                     (x: { name: string; alias: string; dbName: string }) => x.dbName
                 );

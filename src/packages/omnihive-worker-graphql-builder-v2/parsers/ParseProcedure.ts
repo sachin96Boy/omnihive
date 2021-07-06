@@ -1,16 +1,13 @@
 import { FieldNode, GraphQLResolveInfo, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
-import { GraphHelper } from "../helpers/GraphHelper";
 import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { AwaitHelper } from "src/packages/omnihive-core/helpers/AwaitHelper";
+import { WorkerHelper } from "../helpers/WorkerHelper";
 
 export class ParseProcedure {
     // Workers
     private databaseWorker: IDatabaseWorker | undefined;
-
-    // Helpers
-    private graphHelper: GraphHelper = new GraphHelper();
 
     // Global Variables
 
@@ -21,7 +18,8 @@ export class ParseProcedure {
         procedureData: ProcFunctionSchema[]
     ): Promise<any[][]> => {
         // Set the required worker values
-        const { databaseWorker } = this.graphHelper.getRequiredWorkers(workerName);
+        const workerHelper: WorkerHelper = new WorkerHelper();
+        const { databaseWorker } = workerHelper.getRequiredWorkers(workerName);
 
         // If the database worker does not exist then throw an error
         if (!databaseWorker) {

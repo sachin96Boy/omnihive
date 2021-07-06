@@ -29,6 +29,34 @@ type LifecycleData = {
     function: Function;
 };
 
+/** Notes for future:
+ *
+ * Linking File declared in metadata
+ *
+ * New building methodology
+ *  1) Iterate asynchronously through each database worker and asynchronously generate the typeDefinitions and resolvers for each table
+ *      1.1) Build columns for linking to other databases declared in the linking file provided by the database worker metadata
+ *      1.2) Object holding typeDefinitions and resolvers:
+ *              {
+ *                  [name: string]: {
+ *                      primary: {
+ *                          dbWorkerName: string
+ *                          table: string,
+ *                          schema: string,
+ *                          column: string,
+ *                      },
+ *                      linking: {
+ *                          dbWorkerName: string
+ *                          table: string,
+ *                          schema: string,
+ *                          column: string,
+ *                      },
+ *                  },
+ *              }
+ *  2) Iterate through each database worker generating the Graph Schema for that given worker using the types for each table
+ *
+ */
+
 export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildWorker {
     // Declare Helpers
     private graphHelper: GraphHelper = new GraphHelper();

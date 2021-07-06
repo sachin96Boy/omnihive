@@ -299,14 +299,23 @@ export class GraphHelper {
         if (
             args.groupBy?.columns &&
             args.groupBy?.columns?.length > 0 &&
-            !args.groupBy.columns.some((group: string) =>
-                structure[field.alias?.value ?? field.name.value].columns.some(
-                    (x: { name: string; alias: string; dbName: string }) => x.name === group
-                )
+            structure[field.alias?.value ?? field.name.value].columns.some(
+                (x: { name: string; alias: string; dbName: string }) =>
+                    !args.groupBy.columns.some((group: string) => x.name === group)
             )
         ) {
+            const missingKeys: { name: string; alias: string; dbName: string }[] = structure[
+                field.alias?.value ?? field.name.value
+            ].columns.filter(
+                (x: { name: string; alias: string; dbName: string }) =>
+                    !args.groupBy.columns.some((group: string) => x.name === group)
+            );
             throw new Error(
-                "All returning column values must be included in the group by columns section if group by function is going to be used."
+                `Missing return values from groupBy: ${missingKeys
+                    .map((x: { name: string; alias: string; dbName: string }) => x.name)
+                    .join(
+                        ", "
+                    )} ==> Note: When using the groupBy function all return values must be included in the groupBy columns argument.`
             );
         }
 

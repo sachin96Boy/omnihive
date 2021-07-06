@@ -34,6 +34,8 @@ export class ParseAstQuery {
     private parentCall: { key: string; alias: string } | undefined;
     private selectionFields: TableSchema[] = [];
     private fieldAliasMap: { name: string; alias: string }[] = [];
+    private limit: number = 10000;
+    private page: number = 1;
 
     // Static Values
     private aggregateFieldSuffix: string = "_aggregate";
@@ -129,6 +131,15 @@ export class ParseAstQuery {
 
         // Iterate through each query structure's parent value found
         Object.keys(this.queryStructure).forEach((key) => {
+            // Set limit value if it exists
+            if (this.queryStructure[key].args.limit) {
+                this.limit = this.queryStructure[key].args.limit;
+            }
+
+            // Set page value if it exists
+            if (this.queryStructure[key].args.page) {
+                this.page = this.queryStructure[key].args.page;
+            }
             // Retrieve the database schema key value
             const dbKey: string = this.queryStructure[key].queryKey;
 
@@ -271,7 +282,7 @@ export class ParseAstQuery {
                 if (this.parentCall.alias) {
                     topKey = this.parentCall.alias;
                 }
-                const graphResult = this.graphHelper.buildGraphReturn(
+                let graphResult = this.graphHelper.buildGraphReturn(
                     this.queryStructure[topKey],
                     results[0],
                     this.dateWorker
@@ -279,6 +290,8 @@ export class ParseAstQuery {
 
                 // Store the results in the cache
                 await AwaitHelper.execute(cacheHelper.setCache(workerName, omniHiveContext, sql, graphResult));
+
+                graphResult = graphResult.slice((this.page - 1) * this.limit, this.page * this.limit);
 
                 // Return the results
                 return graphResult;

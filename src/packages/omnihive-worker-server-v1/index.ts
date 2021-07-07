@@ -16,7 +16,6 @@ import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRe
 import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
@@ -236,16 +235,10 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 builder.appendLine(
                     `var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`
                 );
+                builder.appendLine(
+                    `var { CustomGraphHelper } = require("@withonevision/omnihive-worker-server-v1/helpers/CustomGraphHelper");`
+                );
                 builder.appendLine();
-
-                customGraphWorkers.forEach((worker: RegisteredHiveWorker) => {
-                    const hiveWorkerConfig: HiveWorkerConfig | undefined = global.omnihive.serverConfig.workers.find(
-                        (hwc: HiveWorkerConfig) => hwc.name === worker.name && hwc.type === worker.type
-                    );
-                    if (hiveWorkerConfig) {
-                        builder.appendLine(`var ${hiveWorkerConfig.name} = require("${hiveWorkerConfig.importPath}");`);
-                    }
-                });
 
                 // Build main graph schema
                 builder.appendLine(`exports.FederatedCustomFunctionQuerySchema = new GraphQLSchema({`);
@@ -264,11 +257,9 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     builder.appendLine(`\t\t\t\t\tcustomArgs: { type: GraphQLJSONObject },`);
                     builder.appendLine(`\t\t\t\t},`);
                     builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
+                    builder.appendLine(`\t\t\t\t\tvar graphHelper = new CustomGraphHelper();`);
                     builder.appendLine(
-                        `\t\t\t\t\tvar customFunctionInstance = global.omnihive.registeredWorkers.find((worker) => worker.name === "${worker.name}").instance;`
-                    );
-                    builder.appendLine(
-                        `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(customFunctionInstance.execute(args.customArgs));`
+                        `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(graphHelper.parseCustomGraph("${worker.name}", args.customArgs, context.omnihive));`
                     );
                     builder.appendLine(`\t\t\t\t\treturn customFunctionReturn;`);
                     builder.appendLine(`\t\t\t\t},`);

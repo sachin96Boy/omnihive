@@ -604,7 +604,7 @@ export class GraphHelper {
         for (const key in structure) {
             // If the key is a join key push the key value to iterate through and recursively call the next structure layer
             if (structure[key].args?.join) {
-                keys.push(key);
+                keys.push(structure[key].queryKey);
                 this.paginateResults(structure[key], results, keys);
             }
 

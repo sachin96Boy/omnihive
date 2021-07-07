@@ -139,6 +139,7 @@ export class ParseAstQuery {
 
             // Retrieve the parent values TableSchema values
             const tableSchema: TableSchema[] = this.schema[dbKey];
+            this.builder.limit(this.databaseWorker?.metadata.rowLimit ?? 10000);
             this.builder?.from(`${tableSchema[0].tableName} as t1`);
 
             if (this.parentCall) {

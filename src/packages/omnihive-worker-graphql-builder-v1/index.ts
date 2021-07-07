@@ -697,19 +697,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.Before &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.Before &&
+                    metadata.action == LifecycleWorkerAction.Insert &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     beforeInsertArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });
@@ -739,19 +739,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.InsteadOf &&
+                    metadata.action == LifecycleWorkerAction.Insert &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     insteadOfInsertArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });
@@ -799,19 +799,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.After &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Insert &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.After &&
+                    metadata.action == LifecycleWorkerAction.Insert &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     afterInsertArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });
@@ -869,19 +869,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.Before &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Update &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.Before &&
+                    metadata.action == LifecycleWorkerAction.Update &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     beforeUpdateArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });
@@ -907,19 +907,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Update &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.InsteadOf &&
+                    metadata.action == LifecycleWorkerAction.Update &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     insteadOfUpdateArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });
@@ -955,19 +955,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.After &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Update &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.After &&
+                    metadata.action == LifecycleWorkerAction.Update &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     afterUpdateArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });
@@ -1020,19 +1020,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.Before &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.Before &&
+                    metadata.action == LifecycleWorkerAction.Delete &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     beforeDeleteArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });
@@ -1058,19 +1058,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.InsteadOf &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.InsteadOf &&
+                    metadata.action == LifecycleWorkerAction.Delete &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     insteadOfDeleteArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });
@@ -1106,19 +1106,19 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     lifecycleWorker.metadata as HiveWorkerMetadataLifecycleFunction;
                 if (
                     lifecycleWorker.type == HiveWorkerType.DataLifecycleFunction &&
-                    metadata.lifecycleStage == LifecycleWorkerStage.After &&
-                    metadata.lifecycleAction == LifecycleWorkerAction.Delete &&
-                    metadata.lifecycleWorker === databaseWorker.name &&
-                    metadata.lifecycleTables.some(
+                    metadata.stage == LifecycleWorkerStage.After &&
+                    metadata.action == LifecycleWorkerAction.Delete &&
+                    metadata.databaseWorker === databaseWorker.name &&
+                    metadata.tables.some(
                         (lifecycleTable) =>
                             (lifecycleTable === tableSchema[0].tableName &&
-                                metadata.lifecycleSchema === tableSchema[0].schemaName) ||
+                                metadata.schema === tableSchema[0].schemaName) ||
                             lifecycleTable === "*"
                     )
                 ) {
                     afterDeleteArray.push({
                         worker: lifecycleWorker,
-                        order: metadata.lifecycleOrder,
+                        order: metadata.order,
                     });
                 }
             });

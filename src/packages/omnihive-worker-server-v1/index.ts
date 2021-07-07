@@ -198,8 +198,17 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         (value: ConnectionSchema) => value.workerName === dbWorker.registeredWorker.name
                     );
 
-                    const fileString = buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
-                    const dbWorkerModule = this.importFromString(fileString);
+                    const graphWorkerReturn = buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
+                    let dbWorkerModule = undefined;
+
+                    if (typeof graphWorkerReturn === "string") {
+                        dbWorkerModule = this.importFromString(graphWorkerReturn);
+                    } else {
+                        dbWorkerModule = {
+                            FederatedGraphQuerySchema: graphWorkerReturn,
+                        };
+                    }
+
                     dbWorkerModules.push({ workerName: dbWorker.registeredWorker.name, dbModule: dbWorkerModule });
                 }
             }

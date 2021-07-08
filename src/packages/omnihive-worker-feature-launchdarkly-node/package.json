@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-feature-launchdarkly-node",
-    "version": "6.2.49",
+    "version": "6.2.50",
     "description": "OmniHive Launch Darkly Node Feature Worker",
     "license": "MIT",
     "author": {

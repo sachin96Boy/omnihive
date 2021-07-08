@@ -37,7 +37,7 @@ export class ParseInsert {
         workerName: string,
         tableKey: string,
         resolveInfo: GraphQLResolveInfo,
-        _omniHiveContext: GraphContext,
+        omniHiveContext: GraphContext,
         schema: { [tableName: string]: TableSchema[] }
     ): Promise<any[]> => {
         try {
@@ -59,8 +59,7 @@ export class ParseInsert {
             this.dateWorker = dateWorker;
 
             // Verify the authenticity of the access token
-            // TODO: UNCOMMENT THIS LINE
-            // await AwaitHelper.execute(this.graphHelper.verifyToken(omniHiveContext));
+            await AwaitHelper.execute(workerHelper.verifyToken(omniHiveContext));
 
             // Build the mutation structure object
             const structure = this.graphHelper.buildQueryStructure(

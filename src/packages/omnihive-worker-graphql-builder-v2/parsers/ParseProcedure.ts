@@ -14,7 +14,7 @@ export class ParseProcedure {
     public parse = async (
         workerName: string,
         resolveInfo: GraphQLResolveInfo,
-        _omniHiveContext: GraphContext,
+        omniHiveContext: GraphContext,
         procedureData: ProcFunctionSchema[]
     ): Promise<any[][]> => {
         // Set the required worker values
@@ -31,8 +31,7 @@ export class ParseProcedure {
         this.databaseWorker = databaseWorker;
 
         // Verify the authenticity of the access token
-        // TODO: UNCOMMENT THIS LINE
-        // await AwaitHelper.execute(this.graphHelper.verifyToken(omniHiveContext));
+        await AwaitHelper.execute(workerHelper.verifyToken(omniHiveContext));
 
         const structure: any = this.buildQueryStructure(resolveInfo.fieldNodes, procedureData);
 

@@ -83,8 +83,7 @@ export class ParseAstQuery {
             this.dateWorker = dateWorker;
 
             // Verify the authenticity of the access token
-            // TODO: UNCOMMENT THIS LINE
-            // await AwaitHelper.execute(this.graphHelper.verifyToken(omniHiveContext));
+            await AwaitHelper.execute(workerHelper.verifyToken(omniHiveContext));
 
             // Build the database query
             this.buildQuery(resolveInfo);

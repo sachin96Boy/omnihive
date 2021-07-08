@@ -14,7 +14,7 @@ export class ParseCustomSql {
     public parse = async (
         workerName: string,
         encryptedSql: string,
-        _omniHiveContext: GraphContext
+        omniHiveContext: GraphContext
     ): Promise<any[][]> => {
         try {
             // Set the required worker values
@@ -36,8 +36,7 @@ export class ParseCustomSql {
             }
 
             // Verify the authenticity of the access token
-            // TODO: UNCOMMENT THIS LINE
-            // await AwaitHelper.execute(this.graphHelper.verifyToken(omniHiveContext));
+            await AwaitHelper.execute(workerHelper.verifyToken(omniHiveContext));
 
             // Decrypt the given encrypted sql
             const decryptedSql = encryptionWorker.symmetricDecrypt(encryptedSql);

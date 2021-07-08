@@ -35,7 +35,7 @@ export class ParseDelete {
         workerName: string,
         tableKey: string,
         args: any,
-        _omniHiveContext: GraphContext,
+        omniHiveContext: GraphContext,
         schema: { [tableName: string]: TableSchema[] }
     ): Promise<number> => {
         try {
@@ -57,8 +57,7 @@ export class ParseDelete {
             this.dateWorker = dateWorker;
 
             // Verify the authenticity of the access token
-            // TODO: UNCOMMENT THIS LINE
-            // await AwaitHelper.execute(this.graphHelper.verifyToken(omniHiveContext));
+            await AwaitHelper.execute(workerHelper.verifyToken(omniHiveContext));
 
             // Retrieve the TableSchema values fro the parent table
             const schemaColumns: TableSchema[] = this.schema[tableKey];

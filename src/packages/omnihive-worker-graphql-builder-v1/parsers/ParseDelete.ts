@@ -34,7 +34,7 @@ export class ParseDelete {
         }
 
         let disableSecurity: boolean =
-            global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_DISABLE_TOKEN_CHECK") ?? false;
+            global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_TOKEN_VERIFY") ?? false;
 
         const tokenWorker: ITokenWorker | undefined = global.omnihive.getWorker<ITokenWorker | undefined>(
             HiveWorkerType.Token

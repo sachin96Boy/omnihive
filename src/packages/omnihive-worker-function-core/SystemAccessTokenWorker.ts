@@ -101,10 +101,16 @@ export default class SystemAccessTokenWorker extends HiveWorkerBase implements I
             throw new Error("A token worker cannot be found");
         }
 
-        const encryptedMetadata = this.encryptionWorker.symmetricEncrypt(JSON.stringify(this.tokenWorker.metadata));
+        const decryptedGenerator = JSON.parse(this.encryptionWorker.symmetricDecrypt(body.generator));
 
-        if (body.generator !== encryptedMetadata) {
-            throw new Error("Token cannot be generated");
+        if (decryptedGenerator === this.tokenWorker.metadata) {
+            return;
+        }
+
+        for (const key in this.tokenWorker.metadata) {
+            if (decryptedGenerator[key] !== this.tokenWorker.metadata[key]) {
+                throw new Error("Token cannot be generated");
+            }
         }
     };
 }

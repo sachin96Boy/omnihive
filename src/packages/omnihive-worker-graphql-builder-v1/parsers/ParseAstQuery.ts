@@ -85,7 +85,7 @@ export class ParseAstQuery {
         );
 
         let disableSecurity: boolean =
-            global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_DISABLE_TOKEN_CHECK") ?? false;
+            global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_TOKEN_VERIFY") ?? false;
 
         if (!disableSecurity && IsHelper.isNullOrUndefined(tokenWorker)) {
             throw new Error("[ohAccessError] No token worker defined.");

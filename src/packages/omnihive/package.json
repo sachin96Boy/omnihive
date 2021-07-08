@@ -386,7 +386,7 @@
                     "audience": "${OH_SECURITY_TOKEN_AUDIENCE}",
                     "tokenSecret": "${OH_SECURITY_TOKEN_SECRET}",
                     "expiresIn": "${OH_SECURITY_TOKEN_EXPIRES_IN}",
-                    "verifyOn": false
+                    "verifyOn": "${OH_SECURITY_TOKEN_VERIFY}"
                 }
             }
         ]

@@ -51,7 +51,7 @@ export class WorkerHelper {
 
         // Gather the security flag
         let disableSecurity: boolean =
-            global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_TOKEN_VERIFY") ?? false;
+            !global.omnihive.getEnvironmentVariable<boolean>("OH_SECURITY_TOKEN_VERIFY") ?? false;
 
         // If security is enabled and no worker is found then throw an error
         if (!disableSecurity && !tokenWorker) {

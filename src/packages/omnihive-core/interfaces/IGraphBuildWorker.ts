@@ -7,5 +7,5 @@ export interface IGraphBuildWorker extends IHiveWorker {
     buildDatabaseWorkerSchema: (
         databaseWorker: IDatabaseWorker,
         connectionSchema: ConnectionSchema | undefined
-    ) => string | GraphQLSchema | undefined;
+    ) => Promise<string | GraphQLSchema | undefined>;
 }

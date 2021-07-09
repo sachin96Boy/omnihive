@@ -29,10 +29,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.checkObjectStructure<HiveWorkerMetadataGraphBuilder>(HiveWorkerMetadataGraphBuilder, metadata);
     }
 
-    public buildDatabaseWorkerSchema = (
+    public buildDatabaseWorkerSchema = async (
         databaseWorker: IDatabaseWorker,
         connectionSchema: ConnectionSchema | undefined
-    ): string => {
+    ): Promise<string> => {
         if (IsHelper.isNullOrUndefined(connectionSchema)) {
             throw new Error("Connection Schema is Undefined.");
         }

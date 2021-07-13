@@ -1204,7 +1204,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 },
                 [propertyName + this.aggregateQuerySuffix]: async (_obj: any, args: any, context: any, info: any) => {
                     return await AwaitHelper.execute(
-                        this.parseMaster.parseAggregate(databaseWorker.name, args, info, context, this.tables)
+                        this.parseMaster.parseAggregate(databaseWorker.name, args, info, context.omnihive, this.tables)
                     );
                 },
             },
@@ -1240,7 +1240,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 info: any
             ) => {
                 return await AwaitHelper.execute(
-                    this.parseMaster.parseAggregate(databaseWorker.name, args, info, context, this.tables)
+                    this.parseMaster.parseAggregate(databaseWorker.name, args, info, context.omnihive, this.tables)
                 );
             };
         }

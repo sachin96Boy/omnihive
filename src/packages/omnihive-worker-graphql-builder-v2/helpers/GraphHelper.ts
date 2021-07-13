@@ -127,16 +127,48 @@ export class GraphHelper {
 
                 // Increment the table count
                 tableCount++;
-                // Recurse through the query builder for the current field values
 
-                structure[structureKey] = this.buildQueryStructure(
-                    fieldSelections as FieldNode[],
-                    structureKeyObj,
-                    tableCount,
-                    aliasKeys,
-                    parentCall,
-                    schema
-                );
+                // Recurse through the query builder for the current field values
+                const callingTableKey: string = structureKeyObj.key
+                    .replace(this.joinFieldSuffix, "")
+                    .replace(this.aggregateFieldSuffix, "");
+
+                // If the field is linking to a table that links to the parent call
+                if (schema[callingTableKey]) {
+                    // Re-call the function with sub-object with the parent key of the linking table
+                    structure[structureKey] = this.buildQueryStructure(
+                        fieldSelections as FieldNode[],
+                        structureKeyObj,
+                        tableCount,
+                        aliasKeys,
+                        callingTableKey,
+                        schema
+                    );
+                } else {
+                    // Find the table the current field is linking to
+                    const strippedParentCall = parentCall
+                        .replace(this.joinFieldSuffix, "")
+                        .replace(this.aggregateFieldSuffix, "");
+
+                    const newParentSchema: TableSchema | undefined = schema[strippedParentCall].find(
+                        (x) => callingTableKey === x.columnNameEntity
+                    );
+
+                    // If the field is found then re-call the function with sub-object with the parent key of the table being linked to.
+                    if (newParentSchema) {
+                        const newParentTableName: string | undefined =
+                            newParentSchema?.schemaName + newParentSchema?.columnForeignKeyTableNamePascalCase;
+
+                        structure[structureKey] = this.buildQueryStructure(
+                            fieldSelections as FieldNode[],
+                            structureKeyObj,
+                            tableCount,
+                            aliasKeys,
+                            newParentTableName,
+                            schema
+                        );
+                    }
+                }
 
                 // Set the table alias
                 structure[structureKey].tableAlias = `t${tableCount}`;
@@ -259,7 +291,8 @@ export class GraphHelper {
             }
             // Else this is a join to another table from the parent table
             else {
-                const columnSchema = schema[parentKey].find(
+                let parentTable = parentCall.replace(this.joinFieldSuffix, "").replace(this.aggregateFieldSuffix, "");
+                const columnSchema = schema[parentTable].find(
                     (x) =>
                         field.name.value.replace(this.joinFieldSuffix, "").replace(this.aggregateFieldSuffix, "") ===
                         x.columnNameEntity
@@ -272,7 +305,9 @@ export class GraphHelper {
                 }
 
                 // Set the parent key as the linkingTableKey value
-                structure[structureKey].linkingTableKey = parentKey;
+                structure[structureKey].linkingTableKey = parentKey
+                    .replace(this.joinFieldSuffix, "")
+                    .replace(this.aggregateFieldSuffix, "");
             }
         }
     };

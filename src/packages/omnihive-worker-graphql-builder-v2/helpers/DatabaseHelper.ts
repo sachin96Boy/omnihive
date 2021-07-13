@@ -549,6 +549,10 @@ export class DatabaseHelper {
         // Initiate an array to store the order by values in the given order
         const orderByArgs: { column: string; order: "asc" | "desc" }[] = [];
 
+        if (!IsHelper.isArray(arg)) {
+            arg = [arg];
+        }
+
         // Iterate through each argument and build the order by array item
         for (const field of arg) {
             // Iterate through the argument item's keys

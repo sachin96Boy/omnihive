@@ -160,7 +160,6 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
 
 // Listr task helpers
 const buildRepo = () => {
-    execa.commandSync("yarn run build:webAdmin", { cwd: path.join(`.`, `src`, `packages`, `omnihive`) });
     execa.commandSync("npx tsc -b --force", { cwd: path.join(`.`) });
 };
 

@@ -19,6 +19,10 @@ import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-cor
 import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
 import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
 import { IsHelper } from "../omnihive-core/helpers/IsHelper";
+import GraphBooleanDb from "./scalarTypes/GraphBooleanDb";
+import GraphFloatDb from "./scalarTypes/GraphFloatDb";
+import GraphIntDb from "./scalarTypes/GraphIntDb";
+import GraphStringDb from "./scalarTypes/GraphStringDb";
 
 type LifecycleData = {
     schema: string;
@@ -424,6 +428,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private buildStaticTypes = (): void => {
         // Custom Scalar type to allow any input for equality checks
         this.builder.appendLine("scalar Any");
+        this.builder.appendLine("scalar DbBoolean");
+        this.builder.appendLine("scalar DbFloat");
+        this.builder.appendLine("scalar DbInt");
+        this.builder.appendLine("scalar DbString");
 
         this.builder.appendLine();
 
@@ -431,14 +439,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.appendLine("enum OrderByOptions {");
         this.builder.appendLine("\tasc");
         this.builder.appendLine("\tdesc");
-        this.builder.appendLine("}");
-
-        this.builder.appendLine();
-
-        // Between Equality object
-        this.builder.appendLine("input BetweenObject {");
-        this.builder.appendLine("\tstart: Any!");
-        this.builder.appendLine("\tend: Any!");
         this.builder.appendLine("}");
 
         this.builder.appendLine();
@@ -465,28 +465,142 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         this.builder.appendLine();
 
+        // Booleans
         // Equality options
-        this.builder.appendLine("input EqualityTypes {");
-        this.builder.appendLine("\teq: Any");
-        this.builder.appendLine("\tnotEq: Any");
-        this.builder.appendLine("\tlike: Any");
-        this.builder.appendLine("\tnotLike: Any");
-        this.builder.appendLine("\tgt: Any");
-        this.builder.appendLine("\tgte: Any");
-        this.builder.appendLine("\tnotGt: Any");
-        this.builder.appendLine("\tnotGte: Any");
-        this.builder.appendLine("\tlt: Any");
-        this.builder.appendLine("\tlte: Any");
-        this.builder.appendLine("\tnotLt: Any");
-        this.builder.appendLine("\tnotLte: Any");
-        this.builder.appendLine("\tin: Any");
-        this.builder.appendLine("\tnotIn: Any");
+        this.builder.appendLine("input EqualityTypesBoolean {");
+        this.builder.appendLine("\teq: DbBoolean");
+        this.builder.appendLine("\tnotEq: DbBoolean");
+        this.builder.appendLine("\tlike: DbBoolean");
+        this.builder.appendLine("\tnotLike: DbBoolean");
+        this.builder.appendLine("\tgt: DbBoolean");
+        this.builder.appendLine("\tgte: DbBoolean");
+        this.builder.appendLine("\tnotGt: DbBoolean");
+        this.builder.appendLine("\tnotGte: DbBoolean");
+        this.builder.appendLine("\tlt: DbBoolean");
+        this.builder.appendLine("\tlte: DbBoolean");
+        this.builder.appendLine("\tnotLt: DbBoolean");
+        this.builder.appendLine("\tnotLte: DbBoolean");
+        this.builder.appendLine("\tin: DbBoolean");
+        this.builder.appendLine("\tnotIn: DbBoolean");
         this.builder.appendLine("\tisNull: Boolean");
         this.builder.appendLine("\tisNotNull: Boolean");
-        this.builder.appendLine("\texists: Any");
-        this.builder.appendLine("\tnotExists: Any");
-        this.builder.appendLine("\tbetween: BetweenObject");
-        this.builder.appendLine("\tnotBetween: BetweenObject");
+        this.builder.appendLine("\texists: DbBoolean");
+        this.builder.appendLine("\tnotExists: DbBoolean");
+        this.builder.appendLine("\tbetween: BetweenObjectBoolean");
+        this.builder.appendLine("\tnotBetween: BetweenObjectBoolean");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+
+        // Between Equality object
+        this.builder.appendLine("input BetweenObjectBoolean {");
+        this.builder.appendLine("\tstart: DbBoolean!");
+        this.builder.appendLine("\tend: DbBoolean!");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+
+        // Float
+        // Equality options
+        this.builder.appendLine("input EqualityTypesFloat {");
+        this.builder.appendLine("\teq: DbFloat");
+        this.builder.appendLine("\tnotEq: DbFloat");
+        this.builder.appendLine("\tlike: DbFloat");
+        this.builder.appendLine("\tnotLike: DbFloat");
+        this.builder.appendLine("\tgt: DbFloat");
+        this.builder.appendLine("\tgte: DbFloat");
+        this.builder.appendLine("\tnotGt: DbFloat");
+        this.builder.appendLine("\tnotGte: DbFloat");
+        this.builder.appendLine("\tlt: DbFloat");
+        this.builder.appendLine("\tlte: DbFloat");
+        this.builder.appendLine("\tnotLt: DbFloat");
+        this.builder.appendLine("\tnotLte: DbFloat");
+        this.builder.appendLine("\tin: DbFloat");
+        this.builder.appendLine("\tnotIn: DbFloat");
+        this.builder.appendLine("\tisNull: Boolean");
+        this.builder.appendLine("\tisNotNull: Boolean");
+        this.builder.appendLine("\texists: DbFloat");
+        this.builder.appendLine("\tnotExists: DbFloat");
+        this.builder.appendLine("\tbetween: BetweenObjectFloat");
+        this.builder.appendLine("\tnotBetween: BetweenObjectFloat");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+
+        // Between Equality object
+        this.builder.appendLine("input BetweenObjectFloat {");
+        this.builder.appendLine("\tstart: DbFloat!");
+        this.builder.appendLine("\tend: DbFloat!");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+
+        // Int
+        // Equality options
+        this.builder.appendLine("input EqualityTypesInt {");
+        this.builder.appendLine("\teq: DbInt");
+        this.builder.appendLine("\tnotEq: DbInt");
+        this.builder.appendLine("\tlike: DbInt");
+        this.builder.appendLine("\tnotLike: DbInt");
+        this.builder.appendLine("\tgt: DbInt");
+        this.builder.appendLine("\tgte: DbInt");
+        this.builder.appendLine("\tnotGt: DbInt");
+        this.builder.appendLine("\tnotGte: DbInt");
+        this.builder.appendLine("\tlt: DbInt");
+        this.builder.appendLine("\tlte: DbInt");
+        this.builder.appendLine("\tnotLt: DbInt");
+        this.builder.appendLine("\tnotLte: DbInt");
+        this.builder.appendLine("\tin: DbInt");
+        this.builder.appendLine("\tnotIn: DbInt");
+        this.builder.appendLine("\tisNull: Boolean");
+        this.builder.appendLine("\tisNotNull: Boolean");
+        this.builder.appendLine("\texists: DbInt");
+        this.builder.appendLine("\tnotExists: DbInt");
+        this.builder.appendLine("\tbetween: BetweenObjectInt");
+        this.builder.appendLine("\tnotBetween: BetweenObjectInt");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+
+        // Between Equality object
+        this.builder.appendLine("input BetweenObjectInt {");
+        this.builder.appendLine("\tstart: DbInt!");
+        this.builder.appendLine("\tend: DbInt!");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+
+        // String
+        // Equality options
+        this.builder.appendLine("input EqualityTypesString {");
+        this.builder.appendLine("\teq: DbString");
+        this.builder.appendLine("\tnotEq: DbString");
+        this.builder.appendLine("\tlike: DbString");
+        this.builder.appendLine("\tnotLike: DbString");
+        this.builder.appendLine("\tgt: DbString");
+        this.builder.appendLine("\tgte: DbString");
+        this.builder.appendLine("\tnotGt: DbString");
+        this.builder.appendLine("\tnotGte: DbString");
+        this.builder.appendLine("\tlt: DbString");
+        this.builder.appendLine("\tlte: DbString");
+        this.builder.appendLine("\tnotLt: DbString");
+        this.builder.appendLine("\tnotLte: DbString");
+        this.builder.appendLine("\tin: DbString");
+        this.builder.appendLine("\tnotIn: DbString");
+        this.builder.appendLine("\tisNull: Boolean");
+        this.builder.appendLine("\tisNotNull: Boolean");
+        this.builder.appendLine("\texists: DbString");
+        this.builder.appendLine("\tnotExists: DbString");
+        this.builder.appendLine("\tbetween: BetweenObjectString");
+        this.builder.appendLine("\tnotBetween: BetweenObjectString");
+        this.builder.appendLine("}");
+
+        this.builder.appendLine();
+
+        // Between Equality object
+        this.builder.appendLine("input BetweenObjectString {");
+        this.builder.appendLine("\tstart: DbString!");
+        this.builder.appendLine("\tend: DbString!");
         this.builder.appendLine("}");
 
         this.builder.appendLine();
@@ -512,7 +626,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 foreignColumns[tableName].forEach((column) => {
                     this.builder.append(`\t${column.columnNameEntity}`);
                     this.builder.append(": ");
-                    this.builder.appendLine(this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase));
+                    this.builder.appendLine(this.graphHelper.getGraphReturnTypeFromDbType(column.columnTypeDatabase));
                 });
                 this.builder.appendLine("}");
                 this.builder.appendLine();
@@ -589,7 +703,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         const tableKey = schema[0].schemaName + schema[0].tableNamePascalCase;
 
         this.builder.appendLine(`input ${tableName}${this.columnEqualitySuffix} {`);
-        schema.map((column) => this.builder.appendLine(`\t${column.columnNameEntity}: EqualityTypes`));
+        schema.map((column) =>
+            this.builder.appendLine(
+                `\t${column.columnNameEntity}: ${this.graphHelper.getGraphEqualityTypeFromDbType(
+                    column.columnTypeDatabase
+                )}`
+            )
+        );
         this.builder.appendLine("}");
 
         this.builder.appendLine();
@@ -605,7 +725,11 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             this.builder.append(this.columnEqualitySuffix);
             this.builder.appendLine(" {");
             foreignColumns[table].map((column) =>
-                this.builder.appendLine(`\t${column.columnNameEntity}: EqualityTypes`)
+                this.builder.appendLine(
+                    `\t${column.columnNameEntity}: ${this.graphHelper.getGraphEqualityTypeFromDbType(
+                        column.columnTypeDatabase
+                    )}`
+                )
             );
             this.builder.appendLine("}");
 
@@ -700,7 +824,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         this.builder.appendLine(`type ${tableName}${this.objectSuffix} {`);
         schema.map((column) => {
-            let columnType: string = this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase);
+            let columnType: string = this.graphHelper.getGraphReturnTypeFromDbType(column.columnTypeDatabase);
             let columnDefault: string = `\t${column.columnNameEntity}: ${columnType}`;
 
             // Build all foreign linking declarations with argument typing
@@ -970,7 +1094,13 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         const tableName = schemaType + schema[0].tableNamePascalCase;
 
         this.builder.appendLine(" {");
-        schema.forEach((column) => this.builder.appendLine(`\t${column.columnNameEntity}: EqualityTypes`));
+        schema.forEach((column) =>
+            this.builder.appendLine(
+                `\t${column.columnNameEntity}: ${this.graphHelper.getGraphEqualityTypeFromDbType(
+                    column.columnTypeDatabase
+                )}`
+            )
+        );
         this.builder.append("\tand: [");
         this.builder.append(tableName);
         this.builder.append(this.columnEqualitySuffix);
@@ -1000,7 +1130,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
         this.builder.appendLine(`type ${tableName}${this.mutationReturnTypeSuffix} {`);
         schema.map((column) => {
-            let columnType: string = this.graphHelper.getGraphTypeFromDbType(column.columnTypeDatabase);
+            let columnType: string = this.graphHelper.getGraphReturnTypeFromDbType(column.columnTypeDatabase);
             // Add standard field declaration
             this.builder.appendLine(`\t${column.columnNameEntity}: ${columnType}`);
         });
@@ -1212,6 +1342,10 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 [`delete_${propertyName}`]: deleteFunction,
             },
             Any: GraphQLAny,
+            DbBoolean: GraphBooleanDb,
+            DbFloat: GraphFloatDb,
+            DbInt: GraphIntDb,
+            DbString: GraphStringDb,
         };
 
         if (!identityOnly) {
@@ -1430,7 +1564,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 // Remove the @ decorator from the parameter name
                 this.builder.append(param.parameterName.replace("@", ""));
                 this.builder.append(": ");
-                this.builder.appendLine(this.graphHelper.getGraphTypeFromDbType(param.parameterTypeDatabase));
+                this.builder.appendLine(this.graphHelper.getGraphReturnTypeFromDbType(param.parameterTypeDatabase));
             });
 
             this.builder.appendLine("\t)");

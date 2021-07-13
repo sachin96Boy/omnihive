@@ -12,10 +12,10 @@ export class DatabaseHelper {
      * @param columns
      * @returns { any }
      */
-    public convertEntityObjectToDbObject = (entityObject: any, columns: TableSchema[]): any => {
+    public convertEntityObjectToDbObject = (entityObject: any, columns: TableSchema[], knex: Knex): any => {
         // If the object is an array iterate through the array converting property names
         if (IsHelper.isArray(entityObject)) {
-            return entityObject.map((x) => this.convertEntityObjectToDbObject(x, columns));
+            return entityObject.map((x) => this.convertEntityObjectToDbObject(x, columns, knex));
         }
 
         // Initiate return object
@@ -29,6 +29,10 @@ export class DatabaseHelper {
             if (schemaColumn) {
                 // Transform the entities value to the proper database equivalent
                 let entityValue = entityObject[entityName];
+
+                if (entityObject[entityName].raw) {
+                    entityValue = knex.raw(entityObject[entityName].raw);
+                }
 
                 if (IsHelper.isBoolean(entityValue) && schemaColumn.columnTypeEntity === "boolean") {
                     entityValue = entityValue ? 1 : 0;

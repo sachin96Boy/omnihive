@@ -84,7 +84,7 @@ export class ParseUpdate {
 
                 // Convert the database proc return back into it's graph equivalent
                 const graphReturn: any = this.graphHelper.buildGraphReturn(
-                    structure[parentAlias ?? tableKey],
+                    structure[parentAlias ?? resolveInfo.fieldName],
                     results[0],
                     this.dateWorker,
                     false
@@ -122,7 +122,11 @@ export class ParseUpdate {
             databaseHelper.buildConditions(structure[key].args, "", this.builder, tableKey, this.schema, this.knex);
 
             if (structure[key]?.args?.updateTo) {
-                const dbObject = databaseHelper.convertEntityObjectToDbObject(structure[key].args.updateTo, columns);
+                const dbObject = databaseHelper.convertEntityObjectToDbObject(
+                    structure[key].args.updateTo,
+                    columns,
+                    this.knex
+                );
                 const returnArray = structure[key].columns.map(
                     (x: { name: string; alias: string; dbName: string }) => x.dbName
                 );

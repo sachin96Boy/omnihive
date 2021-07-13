@@ -27,7 +27,7 @@
         "@graphql-tools/schema": "7.1.5",
         "@withonevision/omnihive-core": "workspace:*",
         "graphql": "15.5.0",
-        "knex": "0.95.6",
+        "knex": "0.95.7",
         "lodash": "4.17.21",
         "pluralize": "8.0.0"
     },

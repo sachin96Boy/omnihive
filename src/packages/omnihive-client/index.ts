@@ -36,13 +36,19 @@ export class OmniHiveClient {
 
     public init = async (
         workers: RegisteredHiveWorker[],
-        environmentVariables?: EnvironmentVariable[]
+        environmentVariables?: EnvironmentVariable[],
+        serverClient?: boolean
     ): Promise<void> => {
         if (IsHelper.isNullOrUndefined(environmentVariables)) {
             environmentVariables = [];
         }
 
         this.environmentVariables = environmentVariables;
+
+        if (!IsHelper.isNullOrUndefined(serverClient) && serverClient === true) {
+            this.registeredWorkers = workers;
+            return;
+        }
 
         for (let worker of workers) {
             this.pushWorker(worker);

@@ -383,7 +383,8 @@ export class CommonService {
         await AwaitHelper.execute(
             global.omnihive.serverClient.init(
                 global.omnihive.registeredWorkers,
-                global.omnihive.serverConfig.environmentVariables
+                global.omnihive.serverConfig.environmentVariables,
+                true
             )
         );
         logWorker?.write(OmniHiveLogLevel.Info, "Server client Initiated...");

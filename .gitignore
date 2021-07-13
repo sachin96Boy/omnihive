@@ -35,12 +35,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-#exclusions
-!.commitlintrc.js
-!.eslintrc.js
-!.prettierrc.js
-!.versionrc.js
-
 #settings
 /settings/**
 !/settings/default_omnihive_server_config.json

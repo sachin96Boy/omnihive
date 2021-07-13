@@ -5,8 +5,6 @@ export interface IFileSystemWorker extends IHiveWorker {
     copyFile: (sourceFile: string, destFile: string) => void;
     directoryHasFiles: (path: string) => boolean;
     ensureFolderExists: (path: string) => void;
-    getCurrentExecutionDirectory: () => string;
-    getCurrentFileDirectory: () => string;
     readFile: (path: string) => string;
     readFileNamesFromDirectory: (path: string) => string[];
     removeFile: (path: string) => void;

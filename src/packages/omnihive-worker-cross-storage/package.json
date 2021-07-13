@@ -28,11 +28,7 @@
     },
     "devDependencies": {
         "@types/cross-storage": "0.8.29",
-        "@types/sinon": "10.0.1",
         "chai": "4.3.4",
-        "jsdom": "16.6.0",
-        "jsdom-global": "3.0.2",
-        "sinon": "11.1.1",
         "typescript": "4.2.4"
     }
 }

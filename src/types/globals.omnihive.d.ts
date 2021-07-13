@@ -1,6 +1,7 @@
 import express from "express";
 import { Server } from "http";
 import socketio from "socket.io";
+import { OmniHiveClient } from "src/packages/omnihive-client";
 import { AdminEventType } from "src/packages/omnihive-core/enums/AdminEventType";
 import { AdminRoomType } from "src/packages/omnihive-core/enums/AdminRoomType";
 import { RegisteredHiveWorkerSection } from "src/packages/omnihive-core/enums/RegisteredHiveWorkerSection";
@@ -19,7 +20,6 @@ declare global {
             omnihive: {
                 adminServer: socketio.Server | undefined;
                 appServer: express.Express | undefined;
-                serverConfig: ServerConfig;
                 checkWorkerImportPath: (hiveWorker: HiveWorkerConfig) => void;
                 commandLineArgs: CommandLineArgs;
                 emitToCluster: (event: AdminEventType, message?: any) => Promise<void>;
@@ -33,6 +33,8 @@ declare global {
                 registeredSchemas: ConnectionSchema[];
                 registeredUrls: RegisteredUrl[];
                 registeredWorkers: RegisteredHiveWorker[];
+                serverClient: OmniHiveClient;
+                serverConfig: ServerConfig;
                 serverError: any;
                 serverStatus: ServerStatus;
                 webServer: Server | undefined;

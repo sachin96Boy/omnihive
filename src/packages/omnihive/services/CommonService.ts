@@ -377,5 +377,15 @@ export class CommonService {
         logWorker?.write(OmniHiveLogLevel.Info, "Working on hive workers...");
         await AwaitHelper.execute(global.omnihive.initWorkers());
         logWorker?.write(OmniHiveLogLevel.Info, "Hive Workers Initiated...");
+
+        // Register server client
+        logWorker?.write(OmniHiveLogLevel.Info, "Working on server client...");
+        await AwaitHelper.execute(
+            global.omnihive.serverClient.init(
+                global.omnihive.registeredWorkers,
+                global.omnihive.serverConfig.environmentVariables
+            )
+        );
+        logWorker?.write(OmniHiveLogLevel.Info, "Server client Initiated...");
     };
 }

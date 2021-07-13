@@ -196,14 +196,6 @@ const getPublishFolders = () => {
 const getRequiredFiles = () => {
     return [
         path.join(`omnihive`, `.npmignore`),
-        path.join(`omnihive`, `next-env.d.ts`),
-        path.join(`omnihive`, `next.config.js`),
-        path.join(`omnihive`, `postcss.config.js`),
-        path.join(`omnihive`, `tailwind.config.js`),
-        path.join(`omnihive`, `pages`, `404.ejs`),
-        path.join(`omnihive`, `pages`, `500.ejs`),
-        path.join(`omnihive`, `pages`, `index.ejs`),
-        path.join(`omnihive`, `components`, `head.ejs`),
         path.join(`omnihive-worker-knex-mssql`, `.npmignore`),
         path.join(`omnihive-worker-knex-mssql`, `defaultProcFunctions.sql`),
         path.join(`omnihive-worker-knex-mssql`, `defaultTables.sql`),
@@ -219,7 +211,7 @@ const getRequiredFiles = () => {
 };
 
 const getRequiredFolders = () => {
-    return [path.join(`omnihive`, `.next`), path.join(`omnihive`, `public`)];
+    return [path.join(`omnihive`, `app`)];
 };
 
 const publish = (directory: string, distTag: string) => {

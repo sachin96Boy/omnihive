@@ -71,20 +71,14 @@ export class ServerService {
             );
 
             for (const server of servers) {
-                try {
-                    app = await AwaitHelper.execute((server.instance as IServerWorker).buildServer(app));
-                } catch (e) {
-                    logWorker?.write(
-                        OmniHiveLogLevel.Error,
-                        `Skipping server worker ${server.name} due to error: ${serializeError(e)}`
-                    );
-                }
+                app = await AwaitHelper.execute((server.instance as IServerWorker).buildServer(app));
             }
 
             app.get("/", (_req, res) => {
                 res.status(200).render("index", {
                     rootUrl: this.webRootUrl,
                     status: global.omnihive.serverStatus,
+                    serverError: global.omnihive.serverError,
                 });
             });
 
@@ -98,6 +92,7 @@ export class ServerService {
                 return res.status(500).render("500", {
                     rootUrl: this.webRootUrl,
                     status: global.omnihive.serverStatus,
+                    serverError: global.omnihive.serverError,
                 });
             });
 
@@ -242,8 +237,8 @@ export class ServerService {
 
         // Setup View Engine
         app.set("view engine", "ejs");
-        app.set("views", path.join(global.omnihive.ohDirName, `pages`));
-        app.use("/public", express.static(path.join(global.omnihive.ohDirName, `public`)));
+        app.set("views", path.join(global.omnihive.ohDirName, `app`, `pages`));
+        app.use("/public", express.static(path.join(global.omnihive.ohDirName, `app`, `public`)));
 
         // Register system REST endpoints
 

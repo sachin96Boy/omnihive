@@ -4,6 +4,11 @@
         <%- include('../components/head') -%>
         <script>
             var status = "<%= status %>";
+            var serverError = "<%= serverError %>";
+
+            if (serverError) {
+                console.log(serverError);
+            }
         </script>
     </head>
     <body>

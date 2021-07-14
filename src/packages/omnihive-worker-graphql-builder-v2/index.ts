@@ -480,8 +480,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.appendLine("\tlte: DbBoolean");
         this.builder.appendLine("\tnotLt: DbBoolean");
         this.builder.appendLine("\tnotLte: DbBoolean");
-        this.builder.appendLine("\tin: DbBoolean");
-        this.builder.appendLine("\tnotIn: DbBoolean");
+        this.builder.appendLine("\tin: [DbBoolean!]");
+        this.builder.appendLine("\tnotIn: [DbBoolean!]");
         this.builder.appendLine("\tisNull: Boolean");
         this.builder.appendLine("\tisNotNull: Boolean");
         this.builder.appendLine("\texists: DbBoolean");
@@ -515,8 +515,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.appendLine("\tlte: DbFloat");
         this.builder.appendLine("\tnotLt: DbFloat");
         this.builder.appendLine("\tnotLte: DbFloat");
-        this.builder.appendLine("\tin: DbFloat");
-        this.builder.appendLine("\tnotIn: DbFloat");
+        this.builder.appendLine("\tin: [DbFloat!]");
+        this.builder.appendLine("\tnotIn: [DbFloat!]");
         this.builder.appendLine("\tisNull: Boolean");
         this.builder.appendLine("\tisNotNull: Boolean");
         this.builder.appendLine("\texists: DbFloat");
@@ -550,8 +550,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.appendLine("\tlte: DbInt");
         this.builder.appendLine("\tnotLt: DbInt");
         this.builder.appendLine("\tnotLte: DbInt");
-        this.builder.appendLine("\tin: DbInt");
-        this.builder.appendLine("\tnotIn: DbInt");
+        this.builder.appendLine("\tin: [DbInt!]");
+        this.builder.appendLine("\tnotIn: [DbInt!]");
         this.builder.appendLine("\tisNull: Boolean");
         this.builder.appendLine("\tisNotNull: Boolean");
         this.builder.appendLine("\texists: DbInt");
@@ -585,8 +585,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         this.builder.appendLine("\tlte: DbString");
         this.builder.appendLine("\tnotLt: DbString");
         this.builder.appendLine("\tnotLte: DbString");
-        this.builder.appendLine("\tin: DbString");
-        this.builder.appendLine("\tnotIn: DbString");
+        this.builder.appendLine("\tin: [DbString!]");
+        this.builder.appendLine("\tnotIn: [DbString!]");
         this.builder.appendLine("\tisNull: Boolean");
         this.builder.appendLine("\tisNotNull: Boolean");
         this.builder.appendLine("\texists: DbString");

@@ -245,6 +245,11 @@ export class DatabaseHelper {
                 argValue = knex.raw(`${argValue.raw}`);
             }
 
+            // If the argValue is a boolean then transform the value to their database equivalents
+            if (typeof argValue === "boolean") {
+                argValue = argValue ? "true" : "false";
+            }
+
             // If the join flag is set then use the raw values as the argValues
             if (join) {
                 if (typeof argValue === "string") {
@@ -252,11 +257,6 @@ export class DatabaseHelper {
                 } else {
                     argValue = knex.raw(argValue);
                 }
-            }
-
-            // If the argValue is a boolean then transform the value to their database equivalents
-            if (typeof argValue === "boolean") {
-                argValue = argValue ? 1 : 0;
             }
 
             // Build the equality segment of the database query

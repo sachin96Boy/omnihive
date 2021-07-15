@@ -15,14 +15,13 @@ import knex, { Knex } from "knex";
 import { serializeError } from "serialize-error";
 import fse from "fs-extra";
 import path from "path";
-import mysql from "mysql2";
-import { Pool } from "mysql2/promise";
+import mysql from "mysql";
 import orderBy from "lodash.orderby";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 export default class MySqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
-    private connectionPool!: Pool;
+    private connectionPool!: mysql.Pool;
     private sqlConfig!: any;
     private typedMetadata!: HiveWorkerMetadataDatabase;
 
@@ -56,19 +55,19 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
                 }
             }
 
-            this.connectionPool = mysql
-                .createPool({
-                    ...this.sqlConfig,
-                    connectionLimit: this.typedMetadata.connectionPoolLimit,
-                    multipleStatements: true,
-                })
-                .promise();
+            this.connectionPool = mysql.createPool({
+                ...this.sqlConfig,
+                connectionLimit: this.typedMetadata.connectionPoolLimit,
+                multipleStatements: true,
+            });
+
+            await AwaitHelper.execute(this.executeQuery("select 1 as dummy"));
 
             const connectionOptions: Knex.Config = {
                 connection: {},
                 pool: { min: 0, max: this.typedMetadata.connectionPoolLimit },
             };
-            connectionOptions.client = "mysql2";
+            connectionOptions.client = "mysql";
             connectionOptions.connection = this.sqlConfig;
             this.connection = knex(connectionOptions);
         } catch (err) {
@@ -82,22 +81,41 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
             logWorker?.write(OmniHiveLogLevel.Info, query);
         }
 
-        const result: any = await AwaitHelper.execute(this.connectionPool.query(query));
+        return new Promise<any[][]>((resolve, reject) => {
+            this.connectionPool.query(query, (error, results, _fields) => {
+                let arrayResults: any[][] = [];
 
-        const returnResults: any[][] = [];
-        let currentResultIndex: number = 0;
+                if (!IsHelper.isNullOrUndefined(error)) {
+                    return reject(error);
+                }
 
-        if (!Array.isArray(result[0][0])) {
-            returnResults[currentResultIndex] = result[0];
-            return returnResults;
-        }
+                if (!IsHelper.isArray(results)) {
+                    arrayResults[0] = [];
+                    arrayResults[0][0] = results;
+                    return resolve(arrayResults);
+                }
 
-        for (let r of result[0]) {
-            returnResults[currentResultIndex] = r;
-            currentResultIndex++;
-        }
+                if (IsHelper.isArray(results) && !results.some((value) => IsHelper.isArray(value))) {
+                    arrayResults[0] = results;
+                    return resolve(arrayResults);
+                }
 
-        return returnResults;
+                let setCounter: number = 0;
+
+                for (let resultSet of results) {
+                    if (IsHelper.isArray(resultSet)) {
+                        arrayResults[setCounter] = resultSet;
+                    } else {
+                        arrayResults[setCounter] = [];
+                        arrayResults[setCounter][0] = resultSet;
+                    }
+
+                    setCounter++;
+                }
+
+                return resolve(arrayResults);
+            });
+        });
     };
 
     public executeProcedure = async (
@@ -205,7 +223,7 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
             throw new Error("Schema SQL File Location not found: " + JSON.stringify(serializeError(err)));
         }
 
-        tableResult[tableResult.length - 1].forEach((row) => {
+        tableResult[0].forEach((row) => {
             if (
                 !this.typedMetadata.ignoreSchema &&
                 !this.typedMetadata.schemas.includes("*") &&
@@ -232,7 +250,7 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
             result.tables.push(schemaRow);
         });
 
-        procResult[procResult.length - 1].forEach((row) => {
+        procResult[0].forEach((row) => {
             if (
                 !this.typedMetadata.ignoreSchema &&
                 !this.typedMetadata.schemas.includes("*") &&

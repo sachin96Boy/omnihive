@@ -8,7 +8,7 @@ import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunc
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import MssqlDatabaseWorker from "..";
+import MySqlDatabaseWorker from "..";
 import { GlobalTestObject } from "../../../tests/GlobalTestObject";
 import ConsoleLogWorker from "../../omnihive-worker-log-console";
 
@@ -22,22 +22,22 @@ const testValues = {
         getProcFunctionSqlFile: "",
         requireSsl: false,
         rowLimit: 10000,
-        schemas: ["dbo"],
+        schemas: ["testing"],
         serverAddress: "localhost",
-        serverPort: 1433,
+        serverPort: 3306,
         sslCertPath: "",
         getSchemaSqlFile: "",
         urlRoute: "test",
-        userName: "sa",
+        userName: "root",
     },
-    workerName: "testMssqlDatabaseWorker",
+    workerName: "testMySqlDatabaseWorker",
 };
 
-const initWorker = async (metadata?: HiveWorkerMetadataDatabase): Promise<MssqlDatabaseWorker> => {
+const initWorker = async (metadata?: HiveWorkerMetadataDatabase): Promise<MySqlDatabaseWorker> => {
     if (IsHelper.isNullOrUndefined(metadata)) {
         metadata = testValues.metadata;
     }
-    const worker: MssqlDatabaseWorker = new MssqlDatabaseWorker();
+    const worker: MySqlDatabaseWorker = new MySqlDatabaseWorker();
     await AwaitHelper.execute(worker.init(testValues.workerName, metadata));
     return worker;
 };
@@ -57,7 +57,7 @@ const buildWorkers = async (): Promise<void> => {
 
 const createDatabase = async () => {
     const masterWorker = await AwaitHelper.execute(
-        initWorker({ ...Object.assign({}, testValues.metadata), databaseName: "master" })
+        initWorker({ ...Object.assign({}, testValues.metadata), databaseName: "mysql" })
     );
     const sqlContentsDb: string = fs.readFileSync(path.join(__dirname, "initializeDatabase.sql"), {
         encoding: "utf8",
@@ -92,7 +92,7 @@ const createDatabase = async () => {
     await AwaitHelper.execute(testingWorker.executeQuery(sqlContentsSprocWithParams));
 };
 
-describe("Worker Test - Knex - MSSQL", () => {
+describe("Worker Test - Knex - MySQL", () => {
     before(async () => {
         // @ts-ignore
         global.omnihive = new GlobalTestObject();
@@ -306,7 +306,7 @@ describe("Worker Test - Knex - MSSQL", () => {
                 encoding: "utf8",
             });
             const result = await worker.executeQuery(sqlContents);
-            expect(result[0][0].test_data).to.equal("Testing Values 1");
+            expect(result[1][0].test_data).to.equal("Testing Values 1");
         });
 
         it("Execute Query - With Log Worker", async () => {
@@ -318,7 +318,7 @@ describe("Worker Test - Knex - MSSQL", () => {
                 encoding: "utf8",
             });
             const result = await worker.executeQuery(sqlContents);
-            expect(result[0][0].test_data).to.equal("Testing Values 1");
+            expect(result[1][0].test_data).to.equal("Testing Values 1");
         });
 
         it("Execute Query - Without Log", async () => {
@@ -327,7 +327,7 @@ describe("Worker Test - Knex - MSSQL", () => {
                 encoding: "utf8",
             });
             const result = await worker.executeQuery(sqlContents, true);
-            expect(result[0][0].test_data).to.equal("Testing Values 1");
+            expect(result[1][0].test_data).to.equal("Testing Values 1");
         });
 
         it("Execute Bad Query", async () => {

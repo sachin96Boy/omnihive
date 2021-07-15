@@ -43,3 +43,4 @@ yarn-error.log*
 
 #custom types
 !**/globals.omnihive.d.ts
+!**/globals.omnihive.test.d.ts

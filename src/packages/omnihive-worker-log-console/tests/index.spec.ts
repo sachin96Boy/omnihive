@@ -1,30 +1,34 @@
 import { expect } from "chai";
-import { AwaitHelper } from "../../omnihive-core/helpers/AwaitHelper";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import faker from "faker";
 import ConsoleLogWorker from "..";
 import sinon from "sinon";
-import { OmniHiveLogLevel } from "../../omnihive-core/enums/OmniHiveLogLevel";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 
-class TestSetup {
-    public logOutput: string = faker.datatype.string();
-    public worker: ConsoleLogWorker = new ConsoleLogWorker();
-    public workerName: string = "testLogConsoleWorker";
-}
+const testValues = {
+    logOutput: faker.datatype.string(),
+    workerName: "testLogConsoleWorker",
+};
 
-const testSetup: TestSetup = new TestSetup();
+const initWorker = async (): Promise<ConsoleLogWorker> => {
+    const worker: ConsoleLogWorker = new ConsoleLogWorker();
+    await AwaitHelper.execute(worker.init(testValues.workerName));
+    return worker;
+};
 
 describe("Worker Test - Log - Console", () => {
     describe("Init Functions", () => {
         it("Test Init", async () => {
-            await AwaitHelper.execute(testSetup.worker.init(testSetup.workerName));
+            await AwaitHelper.execute(initWorker());
         });
     });
 
-    describe("Worker Functions", () => {
+    describe("Worker Functions", async () => {
         it(`Console Log Output`, async () => {
+            const worker = await AwaitHelper.execute(initWorker());
             const spy = sinon.spy(console, "log");
-            testSetup.worker.write(OmniHiveLogLevel.Info, testSetup.logOutput);
-            expect(spy.calledWith(testSetup.logOutput)).to.be.true;
+            worker.write(OmniHiveLogLevel.Info, testValues.logOutput);
+            expect(spy.calledWith(testValues.logOutput)).to.be.true;
         });
     });
 });

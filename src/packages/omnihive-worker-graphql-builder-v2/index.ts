@@ -18,7 +18,7 @@ import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/Regist
 import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataLifecycleFunction";
 import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
 import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
-import { IsHelper } from "../omnihive-core/helpers/IsHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import GraphBooleanDb from "./scalarTypes/GraphBooleanDb";
 import GraphFloatDb from "./scalarTypes/GraphFloatDb";
 import GraphIntDb from "./scalarTypes/GraphIntDb";

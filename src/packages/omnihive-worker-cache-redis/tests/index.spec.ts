@@ -1,36 +1,32 @@
 import { expect } from "chai";
-import CacheRedisWorker from "..";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import faker from "faker";
+import RedisCacheWorker from "..";
 
-class TestSetup {
-    public cacheKey: string = faker.datatype.string();
-    public cacheValue: string = faker.datatype.string();
-    public connectionStringInvalid: string = "redis://localhost:9999";
-    public connectionStringValid: string = "redis://localhost:6379";
-    public timeout: number = 5000;
-    public workerInvalid: CacheRedisWorker = new CacheRedisWorker();
-    public workerValid: CacheRedisWorker = new CacheRedisWorker();
-    public workerName: string = "testCacheRedisCacheWorker";
-}
+const testValues = {
+    cacheKey: faker.datatype.string(),
+    cacheValue: faker.datatype.string(),
+    connectionStringInvalid: "redis://localhost:9999",
+    connectionStringValid: "redis://localhost:6379",
+    timeout: 5000,
+    workerName: "testCacheRedisCacheWorker",
+};
 
-const testSetup: TestSetup = new TestSetup();
+const initWorker = async (connectionString: string): Promise<RedisCacheWorker> => {
+    const worker: RedisCacheWorker = new RedisCacheWorker();
+    await AwaitHelper.execute(worker.init(testValues.workerName, { connectionString }));
+    return worker;
+};
 
 describe("Worker Test - Cache - Redis", () => {
     describe("Init Functions", () => {
         it("Test Init - Valid Connection String", async () => {
-            await AwaitHelper.execute(
-                testSetup.workerValid.init(testSetup.workerName, { connectionString: testSetup.connectionStringValid })
-            );
+            await AwaitHelper.execute(initWorker(testValues.connectionStringValid));
         });
 
         it("Test Init - Invalid Connection String", async () => {
             try {
-                await AwaitHelper.execute(
-                    testSetup.workerInvalid.init(testSetup.workerName, {
-                        connectionString: testSetup.connectionStringInvalid,
-                    })
-                );
+                await AwaitHelper.execute(initWorker(testValues.connectionStringInvalid));
                 expect.fail("Method Expected to Fail");
             } catch (err) {
                 expect(err).to.be.an.instanceOf(Error);
@@ -39,34 +35,35 @@ describe("Worker Test - Cache - Redis", () => {
     });
     describe("Worker Functions", () => {
         beforeEach(async () => {
-            const exists = await AwaitHelper.execute(testSetup.workerValid.exists(testSetup.cacheKey));
-            if (exists) await AwaitHelper.execute(testSetup.workerValid.remove(testSetup.cacheKey));
+            const worker = await AwaitHelper.execute(initWorker(testValues.connectionStringValid));
+            const exists = await AwaitHelper.execute(worker.exists(testValues.cacheKey));
+            if (exists) await AwaitHelper.execute(worker.remove(testValues.cacheKey));
         });
 
-        it(`Key "${testSetup.cacheKey}" Does Not Exist`, async () => {
-            const result = await AwaitHelper.execute(testSetup.workerValid.exists(testSetup.cacheKey));
+        it(`Key "${testValues.cacheKey}" Does Not Exist`, async () => {
+            const worker = await AwaitHelper.execute(initWorker(testValues.connectionStringValid));
+            const result = await AwaitHelper.execute(worker.exists(testValues.cacheKey));
             expect(result).to.be.false;
         });
 
-        it(`Get/Set Cache Key "${testSetup.cacheKey}" With Value "${testSetup.cacheValue}"`, async () => {
-            await AwaitHelper.execute(
-                testSetup.workerValid.set(testSetup.cacheKey, testSetup.cacheValue, testSetup.timeout)
-            );
-            const result = await AwaitHelper.execute(testSetup.workerValid.get(testSetup.cacheKey));
-            expect(result).to.equal(testSetup.cacheValue);
+        it(`Get/Set Cache Key "${testValues.cacheKey}" With Value "${testValues.cacheValue}"`, async () => {
+            const worker = await AwaitHelper.execute(initWorker(testValues.connectionStringValid));
+            await AwaitHelper.execute(worker.set(testValues.cacheKey, testValues.cacheValue, testValues.timeout));
+            const result = await AwaitHelper.execute(worker.get(testValues.cacheKey));
+            expect(result).to.equal(testValues.cacheValue);
         });
 
-        it(`Cache Value of ${testSetup.cacheKey} is Undefined`, async () => {
-            const result = await AwaitHelper.execute(testSetup.workerValid.get(testSetup.cacheKey));
+        it(`Cache Value of ${testValues.cacheKey} is Undefined`, async () => {
+            const worker = await AwaitHelper.execute(initWorker(testValues.connectionStringValid));
+            const result = await AwaitHelper.execute(worker.get(testValues.cacheKey));
             expect(result).to.be.undefined;
         });
 
-        it(`Delete Key ${testSetup.cacheKey}`, async () => {
-            await AwaitHelper.execute(
-                testSetup.workerValid.set(testSetup.cacheKey, testSetup.cacheValue, testSetup.timeout)
-            );
-            await AwaitHelper.execute(testSetup.workerValid.remove(testSetup.cacheKey));
-            const result = await AwaitHelper.execute(testSetup.workerValid.exists(testSetup.cacheKey));
+        it(`Delete Key ${testValues.cacheKey}`, async () => {
+            const worker = await AwaitHelper.execute(initWorker(testValues.connectionStringValid));
+            await AwaitHelper.execute(worker.set(testValues.cacheKey, testValues.cacheValue, testValues.timeout));
+            await AwaitHelper.execute(worker.remove(testValues.cacheKey));
+            const result = await AwaitHelper.execute(worker.exists(testValues.cacheKey));
             expect(result).to.be.false;
         });
     });

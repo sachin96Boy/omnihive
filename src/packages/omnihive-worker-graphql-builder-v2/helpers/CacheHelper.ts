@@ -1,8 +1,8 @@
 import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
-import { OmniHiveLogLevel } from "src/packages/omnihive-core/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "src/packages/omnihive-core/helpers/AwaitHelper";
-import { IEncryptionWorker } from "src/packages/omnihive-core/interfaces/IEncryptionWorker";
-import { ILogWorker } from "src/packages/omnihive-core/interfaces/ILogWorker";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 
 export class CacheHelper {
     // Workers

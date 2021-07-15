@@ -2,7 +2,7 @@ import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IGraphEndpointWorker } from "@withonevision/omnihive-core/interfaces/IGraphEndpointWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { GraphContext } from "src/packages/omnihive-core/models/GraphContext";
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 
 export class CustomGraphHelper {
     public parseCustomGraph = async (

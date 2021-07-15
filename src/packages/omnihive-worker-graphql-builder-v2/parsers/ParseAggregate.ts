@@ -10,7 +10,7 @@ import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncr
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { GraphHelper } from "../helpers/GraphHelper";
 import { CacheHelper } from "../helpers/CacheHelper";
-import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { Path } from "graphql/jsutils/Path";
 import { WorkerHelper } from "../helpers/WorkerHelper";
 import { DatabaseHelper } from "../helpers/DatabaseHelper";

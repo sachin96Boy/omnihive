@@ -5,151 +5,202 @@ import FileSystemWorker from "..";
 import faker from "faker";
 import fse from "fs-extra";
 
-class TestSetup {
-    public worker: FileSystemWorker = new FileSystemWorker();
-    public workerName: string = "testFilesystemFsExtra";
+const testValues = {
+    workerName: "testFilesystemFsExtra",
+    dirnamePath: __dirname,
+    workDirectoryPath: path.join(__dirname, "work-directory"),
+    copyDirectoryPath: path.join(__dirname, "work-copy-folder"),
+    testData: JSON.parse(faker.datatype.json()),
+    testJsonFileName: "test-json-file.json",
+    testJsonFilePath: path.join(__dirname, "work-directory", "test-json-file.json"),
+};
 
-    public dirnamePath: string = __dirname;
-    public workDirectoryPath: string = path.join(this.dirnamePath, "work-directory");
-    public copyDirectoryPath: string = path.join(this.dirnamePath, "work-copy-folder");
-    public testJsonFileName: string = `${faker.system.fileName()}.json`;
-    public testJsonFilePath = path.join(this.workDirectoryPath, this.testJsonFileName);
-
-    public testData: string = JSON.parse(faker.datatype.json());
-}
-
-const testSetup = new TestSetup();
+const initWorker = async (): Promise<FileSystemWorker> => {
+    const worker: FileSystemWorker = new FileSystemWorker();
+    await AwaitHelper.execute(worker.init(testValues.workerName));
+    return worker;
+};
 
 describe("Worker Test - File - FSExtra", () => {
     describe("Init Functions", () => {
         it("Test Init", async () => {
-            await AwaitHelper.execute(testSetup.worker.init(testSetup.workerName));
+            await AwaitHelper.execute(initWorker());
         });
     });
 
     describe("Worker Functions", () => {
         beforeEach(() => {
-            fse.ensureDirSync(testSetup.copyDirectoryPath);
-            fse.emptyDirSync(testSetup.copyDirectoryPath);
+            fse.ensureDirSync(testValues.copyDirectoryPath);
+            fse.emptyDirSync(testValues.copyDirectoryPath);
 
-            fse.ensureDirSync(testSetup.workDirectoryPath);
-            fse.emptyDirSync(testSetup.workDirectoryPath);
+            fse.ensureDirSync(testValues.workDirectoryPath);
+            fse.emptyDirSync(testValues.workDirectoryPath);
 
-            fse.writeFileSync(testSetup.testJsonFilePath, JSON.stringify(testSetup.testData), { encoding: "utf8" });
+            fse.writeFileSync(testValues.testJsonFilePath, JSON.stringify(testValues.testData), { encoding: "utf8" });
         });
 
         afterEach(() => {
-            if (fse.existsSync(testSetup.workDirectoryPath)) {
-                if (fse.readdirSync(testSetup.workDirectoryPath).length > 0) {
-                    fse.emptyDirSync(testSetup.workDirectoryPath);
+            if (fse.existsSync(testValues.workDirectoryPath)) {
+                if (fse.readdirSync(testValues.workDirectoryPath).length > 0) {
+                    fse.emptyDirSync(testValues.workDirectoryPath);
                 }
 
-                fse.rmdirSync(testSetup.workDirectoryPath);
+                fse.rmdirSync(testValues.workDirectoryPath);
             }
 
-            if (fse.existsSync(testSetup.copyDirectoryPath)) {
-                if (fse.readdirSync(testSetup.copyDirectoryPath).length > 0) {
-                    fse.emptyDirSync(testSetup.copyDirectoryPath);
+            if (fse.existsSync(testValues.copyDirectoryPath)) {
+                if (fse.readdirSync(testValues.copyDirectoryPath).length > 0) {
+                    fse.emptyDirSync(testValues.copyDirectoryPath);
                 }
 
-                fse.rmdirSync(testSetup.copyDirectoryPath);
+                fse.rmdirSync(testValues.copyDirectoryPath);
             }
         });
 
         after(() => {
-            if (fse.pathExistsSync(testSetup.copyDirectoryPath)) {
-                fse.rmdirSync(testSetup.copyDirectoryPath);
+            if (fse.pathExistsSync(testValues.copyDirectoryPath)) {
+                fse.rmdirSync(testValues.copyDirectoryPath);
             }
 
-            if (fse.pathExistsSync(testSetup.workDirectoryPath)) {
-                fse.rmdirSync(testSetup.workDirectoryPath);
+            if (fse.pathExistsSync(testValues.workDirectoryPath)) {
+                fse.rmdirSync(testValues.workDirectoryPath);
             }
         });
 
-        it("Directory Has Files", () => {
-            const results: boolean = testSetup.worker.directoryHasFiles("./");
+        it("Directory Has Files", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            const results: boolean = worker.directoryHasFiles("./");
             expect(results).to.be.true;
         });
 
-        it("Read Files From Directory", () => {
-            const results: string[] = testSetup.worker.readFileNamesFromDirectory(testSetup.workDirectoryPath);
-            expect(results).to.deep.equal([testSetup.testJsonFileName]);
+        it("Read Files From Directory", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            const results: string[] = worker.readFileNamesFromDirectory(testValues.workDirectoryPath);
+            expect(results).to.deep.equal([testValues.testJsonFileName]);
         });
 
-        it("Read File", () => {
-            const fileContents: string = testSetup.worker.readFile(testSetup.testJsonFilePath);
-            expect(fileContents).to.equal(JSON.stringify(testSetup.testData));
+        it("Read File", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            const fileContents: string = worker.readFile(testValues.testJsonFilePath);
+            expect(fileContents).to.equal(JSON.stringify(testValues.testData));
         });
 
-        it("Ensure Folder Exists", () => {
-            testSetup.worker.ensureFolderExists(testSetup.workDirectoryPath);
-            const result: boolean = testSetup.worker.pathExists(testSetup.workDirectoryPath);
+        it("Ensure Folder Exists", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            worker.ensureFolderExists(testValues.workDirectoryPath);
+            const result: boolean = worker.pathExists(testValues.workDirectoryPath);
             expect(result).to.be.true;
         });
 
-        it("Remove File", () => {
-            testSetup.worker.removeFile(testSetup.testJsonFilePath);
-            const result: string[] = testSetup.worker.readFileNamesFromDirectory(testSetup.workDirectoryPath);
+        it("Remove File", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            worker.removeFile(testValues.testJsonFilePath);
+            const result: string[] = worker.readFileNamesFromDirectory(testValues.workDirectoryPath);
             expect(result).to.deep.equal([]);
         });
 
-        it("Remove Files In Directory", () => {
-            testSetup.worker.removeFilesFromDirectory(testSetup.workDirectoryPath);
-            const result: string[] = testSetup.worker.readFileNamesFromDirectory(testSetup.workDirectoryPath);
+        it("Remove Files In Directory", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            worker.removeFilesFromDirectory(testValues.workDirectoryPath);
+            const result: string[] = worker.readFileNamesFromDirectory(testValues.workDirectoryPath);
             expect(result).to.deep.equal([]);
         });
 
-        it("Remove Directory", () => {
-            testSetup.worker.removeDirectory(testSetup.workDirectoryPath);
-            const result: boolean = testSetup.worker.pathExists(testSetup.workDirectoryPath);
+        it("Remove Directory - Valid Directory", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            worker.removeDirectory(testValues.workDirectoryPath);
+            const result: boolean = worker.pathExists(testValues.workDirectoryPath);
             expect(result).to.be.false;
         });
 
-        it("Write Data To File", () => {
-            const testPath: string = path.join(testSetup.workDirectoryPath, `${faker.system.fileName()}.txt`);
+        it("Remove Directory - Valid Directory - With Files", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            worker.ensureFolderExists(testValues.workDirectoryPath);
+
+            for (let i = 0; i < 3; i++) {
+                const fileContents: string = faker.lorem.paragraphs();
+                worker.writeDataToFile(
+                    path.join(testValues.workDirectoryPath, `${faker.system.fileName()}.txt`),
+                    fileContents
+                );
+            }
+
+            worker.removeDirectory(testValues.workDirectoryPath);
+            const result: boolean = worker.pathExists(testValues.workDirectoryPath);
+            expect(result).to.be.false;
+        });
+
+        it("Remove Directory - Valid Directory - Without Files", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            worker.ensureFolderExists(testValues.workDirectoryPath);
+            worker.removeFilesFromDirectory(testValues.workDirectoryPath);
+            worker.removeDirectory(testValues.workDirectoryPath);
+            const result: boolean = worker.pathExists(testValues.workDirectoryPath);
+            expect(result).to.be.false;
+        });
+
+        it("Remove Directory - Invalid Directory", async () => {
+            const badPath: string = path.join(".", "bad-directory");
+            const worker = await AwaitHelper.execute(initWorker());
+
+            try {
+                worker.removeDirectory(badPath);
+                const result: boolean = worker.pathExists(badPath);
+                expect(result).to.be.false;
+            } catch (err) {
+                expect(err).to.not.be.an.instanceOf(Error);
+            }
+        });
+
+        it("Write Data To File", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            const testPath: string = path.join(testValues.workDirectoryPath, `${faker.system.fileName()}.txt`);
             const testData: string = faker.lorem.paragraphs();
-            testSetup.worker.writeDataToFile(testPath, testData);
+            worker.writeDataToFile(testPath, testData);
 
             // Verify file creation
-            const exists: boolean = testSetup.worker.pathExists(testPath);
+            const exists: boolean = worker.pathExists(testPath);
             expect(exists).to.be.true;
 
             // Verify file content
-            const result: string = testSetup.worker.readFile(testPath);
+            const result: string = worker.readFile(testPath);
             expect(result).to.deep.equal(testData);
         });
 
-        it("Write JSON To File", () => {
-            const testPath: string = path.join(testSetup.workDirectoryPath, `${faker.system.fileName()}.json`);
-            testSetup.worker.writeJsonToFile(testPath, testSetup.testData);
+        it("Write JSON To File", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            const testPath: string = path.join(testValues.workDirectoryPath, `${faker.system.fileName()}.json`);
+            worker.writeJsonToFile(testPath, testValues.testData);
 
             // Verify file creation
-            const exists: boolean = testSetup.worker.pathExists(testPath);
+            const exists: boolean = worker.pathExists(testPath);
             expect(exists).to.be.true;
 
             // Verify file content
-            const fileContents: string = testSetup.worker.readFile(testPath);
-            expect(fileContents).to.equal(JSON.stringify(testSetup.testData));
+            const fileContents: string = worker.readFile(testPath);
+            expect(fileContents).to.equal(JSON.stringify(testValues.testData));
         });
 
-        it("Copy File", () => {
-            const sourcePath: string = path.join(testSetup.workDirectoryPath, `${faker.system.fileName()}.json`);
+        it("Copy File", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            const sourcePath: string = path.join(testValues.workDirectoryPath, `${faker.system.fileName()}.json`);
             const sourceData: string = JSON.parse(faker.datatype.json());
-            testSetup.worker.writeJsonToFile(sourcePath, sourceData);
+            worker.writeJsonToFile(sourcePath, sourceData);
 
-            const destPath: string = path.join(testSetup.copyDirectoryPath, `${faker.system.fileName()}.json`);
-            testSetup.worker.copyFile(sourcePath, destPath);
+            const destPath: string = path.join(testValues.copyDirectoryPath, `${faker.system.fileName()}.json`);
+            worker.copyFile(sourcePath, destPath);
 
-            const result: boolean = testSetup.worker.pathExists(destPath);
+            const result: boolean = worker.pathExists(destPath);
             expect(result).to.be.true;
         });
 
-        it("Copy Directory", () => {
-            const sourceFiles: string[] = testSetup.worker.readFileNamesFromDirectory(testSetup.workDirectoryPath);
-            const destPath: string = path.join(testSetup.copyDirectoryPath);
-            testSetup.worker.copyDirectory(testSetup.workDirectoryPath, destPath);
+        it("Copy Directory", async () => {
+            const worker = await AwaitHelper.execute(initWorker());
+            const sourceFiles: string[] = worker.readFileNamesFromDirectory(testValues.workDirectoryPath);
+            const destPath: string = path.join(testValues.copyDirectoryPath);
+            worker.copyDirectory(testValues.workDirectoryPath, destPath);
 
-            const result: string[] = testSetup.worker.readFileNamesFromDirectory(destPath);
+            const result: string[] = worker.readFileNamesFromDirectory(destPath);
             expect(result).to.deep.equal(sourceFiles);
         });
     });

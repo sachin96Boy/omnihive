@@ -1,13 +1,13 @@
 import { Knex } from "knex";
-import { HiveWorkerType } from "src/packages/omnihive-core/enums/HiveWorkerType";
-import { AwaitHelper } from "src/packages/omnihive-core/helpers/AwaitHelper";
-import { ICacheWorker } from "src/packages/omnihive-core/interfaces/ICacheWorker";
-import { IDatabaseWorker } from "src/packages/omnihive-core/interfaces/IDatabaseWorker";
-import { IDateWorker } from "src/packages/omnihive-core/interfaces/IDateWorker";
-import { IEncryptionWorker } from "src/packages/omnihive-core/interfaces/IEncryptionWorker";
-import { ILogWorker } from "src/packages/omnihive-core/interfaces/ILogWorker";
-import { ITokenWorker } from "src/packages/omnihive-core/interfaces/ITokenWorker";
-import { GraphContext } from "src/packages/omnihive-core/models/GraphContext";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
 
 export class WorkerHelper {
     /**

@@ -120,7 +120,8 @@ export class ParseInsert {
                 const databaseHelper: DatabaseHelper = new DatabaseHelper();
                 const dbInsertObject = databaseHelper.convertEntityObjectToDbObject(
                     structure[key].args.insert,
-                    columns
+                    columns,
+                    this.knex
                 );
                 const returnArray = structure[key].columns.map(
                     (x: { name: string; alias: string; dbName: string }) => x.dbName

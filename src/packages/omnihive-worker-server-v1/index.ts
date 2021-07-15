@@ -185,7 +185,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
             logWorker?.write(OmniHiveLogLevel.Info, `Writing Graph Generation Files`);
 
             // Get all build workers and write out their graph schema
-            const dbWorkerModules: { workerName: string; dbModule: any }[] = [];
+            const dbWorkerModules: { dbWorkerName: string; builderWorkerName: string; dbModule: any }[] = [];
 
             for (const builder of buildWorkers) {
                 const buildWorker: IGraphBuildWorker = builder.instance as IGraphBuildWorker;
@@ -198,7 +198,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         (value: ConnectionSchema) => value.workerName === dbWorker.registeredWorker.name
                     );
 
-                    const graphWorkerReturn = buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
+                    const graphWorkerReturn = await buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
                     let dbWorkerModule = undefined;
 
                     if (typeof graphWorkerReturn === "string") {
@@ -209,7 +209,11 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         };
                     }
 
-                    dbWorkerModules.push({ workerName: dbWorker.registeredWorker.name, dbModule: dbWorkerModule });
+                    dbWorkerModules.push({
+                        dbWorkerName: dbWorker.registeredWorker.name,
+                        builderWorkerName: builder.name,
+                        dbModule: dbWorkerModule,
+                    });
                 }
             }
 
@@ -293,7 +297,9 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         let graphDatabaseSchema: any;
 
                         const databaseDynamicModule: any = dbWorkerModules.filter(
-                            (value) => value.workerName === databaseWorker.registeredWorker.name
+                            (value) =>
+                                value.dbWorkerName === databaseWorker.registeredWorker.name &&
+                                value.builderWorkerName === builder.name
                         )[0].dbModule;
                         const databaseQuerySchema: any = databaseDynamicModule.FederatedGraphQuerySchema;
 

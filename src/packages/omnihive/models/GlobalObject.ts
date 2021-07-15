@@ -21,17 +21,19 @@ import { Server } from "http";
 import path from "path";
 import { serializeError } from "serialize-error";
 import socketIo from "socket.io";
+import { OmniHiveClient } from "@withonevision/omnihive-client";
 import { CommandLineArgs } from "./CommandLineArgs";
 
 export class GlobalObject {
     public adminServer: socketIo.Server | undefined = undefined;
     public appServer: express.Express | undefined = undefined;
-    public serverConfig: ServerConfig = new ServerConfig();
     public commandLineArgs: CommandLineArgs = new CommandLineArgs();
     public ohDirName: string = "";
     public registeredSchemas: ConnectionSchema[] = [];
     public registeredUrls: RegisteredUrl[] = [];
     public registeredWorkers: RegisteredHiveWorker[] = [];
+    public serverClient: OmniHiveClient = OmniHiveClient.getSingleton();
+    public serverConfig: ServerConfig = new ServerConfig();
     public serverError: any = {};
     public serverStatus: ServerStatus = ServerStatus.Unknown;
     public webServer: Server | undefined = undefined;

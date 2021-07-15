@@ -1,6 +1,6 @@
 import { Knex } from "knex";
-import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
-import { TableSchema } from "src/packages/omnihive-core/models/TableSchema";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 
 export class DatabaseHelper {
     private joinFieldSuffix: string = "_table";
@@ -12,10 +12,10 @@ export class DatabaseHelper {
      * @param columns
      * @returns { any }
      */
-    public convertEntityObjectToDbObject = (entityObject: any, columns: TableSchema[]): any => {
+    public convertEntityObjectToDbObject = (entityObject: any, columns: TableSchema[], knex: Knex): any => {
         // If the object is an array iterate through the array converting property names
         if (IsHelper.isArray(entityObject)) {
-            return entityObject.map((x) => this.convertEntityObjectToDbObject(x, columns));
+            return entityObject.map((x) => this.convertEntityObjectToDbObject(x, columns, knex));
         }
 
         // Initiate return object
@@ -29,6 +29,10 @@ export class DatabaseHelper {
             if (schemaColumn) {
                 // Transform the entities value to the proper database equivalent
                 let entityValue = entityObject[entityName];
+
+                if (entityObject[entityName].raw) {
+                    entityValue = knex.raw(entityObject[entityName].raw);
+                }
 
                 if (IsHelper.isBoolean(entityValue) && schemaColumn.columnTypeEntity === "boolean") {
                     entityValue = entityValue ? 1 : 0;
@@ -548,6 +552,10 @@ export class DatabaseHelper {
     ): void => {
         // Initiate an array to store the order by values in the given order
         const orderByArgs: { column: string; order: "asc" | "desc" }[] = [];
+
+        if (!IsHelper.isArray(arg)) {
+            arg = [arg];
+        }
 
         // Iterate through each argument and build the order by array item
         for (const field of arg) {

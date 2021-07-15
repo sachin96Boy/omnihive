@@ -7,8 +7,74 @@ export class GraphHelper {
     private columnCount: number = 0;
     private joinFieldSuffix: string = "_table";
     private aggregateFieldSuffix: string = "_aggregate";
+    private insertPrefix: string = "insert_";
+    private updatePrefix: string = "update_";
+    private deletePrefix: string = "delete_";
 
+    //#region Graph Type Helpers
+
+    /**
+     * Transform database types to input GraphQL Types
+     *
+     * INPUT TYPES ONLY
+     *
+     * @param dbType
+     * @returns
+     */
     public getGraphTypeFromDbType = (dbType: string): string => {
+        switch (dbType) {
+            case "money":
+                return `DbFloat`;
+            case "bigint":
+                return "DbInt";
+            case "int":
+                return `DbInt`;
+            case "smallint":
+                return `DbInt`;
+            case "tinyint":
+                return `DbInt`;
+            case "float":
+                return `DbFloat`;
+            case "decimal":
+                return `DbFloat`;
+            case "numeric":
+                return `DbFloat`;
+            case "nvarchar":
+                return "DbString";
+            case "varchar":
+                return `DbString`;
+            case "nchar":
+                return `DbString`;
+            case "text":
+                return `DbString`;
+            case "varbinary":
+                return `DbString`;
+            case "binary":
+                return `DbString`;
+            case "datetime":
+                return `DbString`;
+            case "date":
+                return "DbString";
+            case "time":
+                return `DbString`;
+            case "uniqueidentifier":
+                return `DbString`;
+            case "bit":
+                return "DbBoolean";
+            default:
+                return `DbString`;
+        }
+    };
+
+    /**
+     * Transform database types to return GraphQL Types
+     *
+     * RETURN TYPES ONLY
+     *
+     * @param dbType
+     * @returns
+     */
+    public getGraphReturnTypeFromDbType = (dbType: string): string => {
         switch (dbType) {
             case "money":
                 return `Float`;
@@ -52,6 +118,58 @@ export class GraphHelper {
                 return `String`;
         }
     };
+
+    /**
+     * Transform database types to the proper Equality type for the where object
+     *
+     * @param dbType
+     * @returns
+     */
+    public getGraphEqualityTypeFromDbType = (dbType: string): string => {
+        switch (dbType) {
+            case "money":
+                return `EqualityTypesFloat`;
+            case "bigint":
+                return "EqualityTypesInt";
+            case "int":
+                return `EqualityTypesInt`;
+            case "smallint":
+                return `EqualityTypesInt`;
+            case "tinyint":
+                return `EqualityTypesInt`;
+            case "float":
+                return `EqualityTypesFloat`;
+            case "decimal":
+                return `EqualityTypesFloat`;
+            case "numeric":
+                return `EqualityTypesFloat`;
+            case "nvarchar":
+                return "EqualityTypesString";
+            case "varchar":
+                return `EqualityTypesString`;
+            case "nchar":
+                return `EqualityTypesString`;
+            case "text":
+                return `EqualityTypesString`;
+            case "varbinary":
+                return `EqualityTypesString`;
+            case "binary":
+                return `EqualityTypesString`;
+            case "datetime":
+                return `EqualityTypesString`;
+            case "date":
+                return "EqualityTypesString";
+            case "time":
+                return `EqualityTypesString`;
+            case "uniqueidentifier":
+                return `EqualityTypesString`;
+            case "bit":
+                return "EqualityTypesBoolean";
+            default:
+                return `EqualityTypesString`;
+        }
+    };
+    //#endregion
 
     /**
      *
@@ -127,16 +245,51 @@ export class GraphHelper {
 
                 // Increment the table count
                 tableCount++;
-                // Recurse through the query builder for the current field values
 
-                structure[structureKey] = this.buildQueryStructure(
-                    fieldSelections as FieldNode[],
-                    structureKeyObj,
-                    tableCount,
-                    aliasKeys,
-                    parentCall,
-                    schema
-                );
+                // Recurse through the query builder for the current field values
+                const callingTableKey: string = structureKeyObj.key
+                    .replace(this.insertPrefix, "")
+                    .replace(this.updatePrefix, "")
+                    .replace(this.deletePrefix, "")
+                    .replace(this.joinFieldSuffix, "")
+                    .replace(this.aggregateFieldSuffix, "");
+
+                // If the field is linking to a table that links to the parent call
+                if (schema[callingTableKey]) {
+                    // Re-call the function with sub-object with the parent key of the linking table
+                    structure[structureKey] = this.buildQueryStructure(
+                        fieldSelections as FieldNode[],
+                        structureKeyObj,
+                        tableCount,
+                        aliasKeys,
+                        callingTableKey,
+                        schema
+                    );
+                } else {
+                    // Find the table the current field is linking to
+                    const strippedParentCall = parentCall
+                        .replace(this.joinFieldSuffix, "")
+                        .replace(this.aggregateFieldSuffix, "");
+
+                    const newParentSchema: TableSchema | undefined = schema[strippedParentCall].find(
+                        (x) => callingTableKey === x.columnNameEntity
+                    );
+
+                    // If the field is found then re-call the function with sub-object with the parent key of the table being linked to.
+                    if (newParentSchema) {
+                        const newParentTableName: string | undefined =
+                            newParentSchema?.schemaName + newParentSchema?.columnForeignKeyTableNamePascalCase;
+
+                        structure[structureKey] = this.buildQueryStructure(
+                            fieldSelections as FieldNode[],
+                            structureKeyObj,
+                            tableCount,
+                            aliasKeys,
+                            newParentTableName,
+                            schema
+                        );
+                    }
+                }
 
                 // Set the table alias
                 structure[structureKey].tableAlias = `t${tableCount}`;
@@ -259,7 +412,8 @@ export class GraphHelper {
             }
             // Else this is a join to another table from the parent table
             else {
-                const columnSchema = schema[parentKey].find(
+                let parentTable = parentCall.replace(this.joinFieldSuffix, "").replace(this.aggregateFieldSuffix, "");
+                const columnSchema = schema[parentTable].find(
                     (x) =>
                         field.name.value.replace(this.joinFieldSuffix, "").replace(this.aggregateFieldSuffix, "") ===
                         x.columnNameEntity
@@ -272,7 +426,9 @@ export class GraphHelper {
                 }
 
                 // Set the parent key as the linkingTableKey value
-                structure[structureKey].linkingTableKey = parentKey;
+                structure[structureKey].linkingTableKey = parentKey
+                    .replace(this.joinFieldSuffix, "")
+                    .replace(this.aggregateFieldSuffix, "");
             }
         }
     };

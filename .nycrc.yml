@@ -1,0 +1,14 @@
+extends: "@istanbuljs/nyc-config-typescript"
+all: true
+check-coverage: true
+reporter:
+    - "html"
+    - "text"
+    - "text-summary"
+exclude:
+    - "**/.yarn/**"
+    - "**/node_modules/**"
+    - "**/tests/**"
+    - "**/*.js"
+    - "**/*.d.ts"
+    - "**/dist/**"

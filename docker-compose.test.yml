@@ -1,0 +1,14 @@
+version: "3"
+services:
+    redis:
+        image: redis:alpine
+        ports:
+            - 6379:6379
+    sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        environment:
+            SA_PASSWORD: mZtag2yfWAvYTqwy
+            ACCEPT_EULA: Y
+            MSSQL_PID: Developer
+        ports:
+            - 1433:1433

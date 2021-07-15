@@ -231,7 +231,12 @@ export class ParseAstQuery {
                 const column = this.schema[tableName].find((column) => column.columnNameEntity === field.name);
 
                 // If the TableSchema is found and is not already in the database query then add the column to the query
-                if (column && !this.selectionFields.some((x) => x.columnNameEntity === column.columnNameEntity)) {
+                if (
+                    column &&
+                    !this.selectionFields.some(
+                        (x) => x.columnNameEntity === column.columnNameEntity && x.tableName === column.tableName
+                    )
+                ) {
                     // Save the column to the global variable for comparison
                     this.selectionFields.push(column);
 

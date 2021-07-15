@@ -6,7 +6,7 @@ import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { ParseInsert } from "./ParseInsert";
 import { ParseDelete } from "./ParseDelete";
 import { ParseUpdate } from "./ParseUpdate";
-import { ProcFunctionSchema } from "src/packages/omnihive-core/models/ProcFunctionSchema";
+import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { ParseProcedure } from "./ParseProcedure";
 import { ParseCustomSql } from "./ParseCustomSql";
 import { ParseAggregate } from "./ParseAggregate";

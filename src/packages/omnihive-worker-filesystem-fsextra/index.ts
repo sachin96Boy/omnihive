@@ -27,14 +27,6 @@ export default class FileSystemWorker extends HiveWorkerBase implements IFileSys
         fse.ensureDirSync(path);
     };
 
-    public getCurrentExecutionDirectory = (): string => {
-        return process.cwd();
-    };
-
-    public getCurrentFileDirectory = (): string => {
-        return __dirname;
-    };
-
     public readFile = (path: string): string => {
         return fse.readFileSync(path, { encoding: "utf8" });
     };

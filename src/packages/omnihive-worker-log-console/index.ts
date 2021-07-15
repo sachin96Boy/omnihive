@@ -2,7 +2,7 @@ import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLog
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 
-export default class DefaultLogWorker extends HiveWorkerBase implements ILogWorker {
+export default class ConsoleLogWorker extends HiveWorkerBase implements ILogWorker {
     constructor() {
         super();
     }

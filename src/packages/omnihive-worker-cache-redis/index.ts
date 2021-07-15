@@ -3,8 +3,6 @@ import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import Redis from "ioredis";
-import { serializeError } from "serialize-error";
-
 export class RedisCacheWorkerMetadata {
     public connectionString: string = "";
 }
@@ -17,16 +15,12 @@ export default class RedisCacheWorker extends HiveWorkerBase implements ICacheWo
     }
 
     public async init(name: string, metadata?: any): Promise<void> {
-        try {
-            await AwaitHelper.execute(super.init(name, metadata));
-            const typedMetadata: RedisCacheWorkerMetadata = this.checkObjectStructure<RedisCacheWorkerMetadata>(
-                RedisCacheWorkerMetadata,
-                metadata
-            );
-            this.redis = new Redis(typedMetadata.connectionString);
-        } catch (err) {
-            throw new Error("Redis Init Error => " + JSON.stringify(serializeError(err)));
-        }
+        await AwaitHelper.execute(super.init(name, metadata));
+        const typedMetadata: RedisCacheWorkerMetadata = this.checkObjectStructure<RedisCacheWorkerMetadata>(
+            RedisCacheWorkerMetadata,
+            metadata
+        );
+        this.redis = new Redis(typedMetadata.connectionString);
     }
 
     public exists = async (key: string): Promise<boolean> => {

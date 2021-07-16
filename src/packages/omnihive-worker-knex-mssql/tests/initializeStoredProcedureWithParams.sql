@@ -1,9 +1,9 @@
 create procedure test_stored_procedure_with_params
-    (@value varchar(1000),
-     @numeric int)
+    (@paramString varchar(1000),
+     @paramNumber int)
 as
 begin
 
-select convert(varchar(1000), @value) + ' ' + convert(varchar(1000), @numeric) as dataresult
+select convert(varchar(1000), @paramString) + ' ' + convert(varchar(1000), @paramNumber) as dataresult
 
 end

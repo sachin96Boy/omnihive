@@ -3,6 +3,7 @@
 import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { expect } from "chai";
@@ -10,7 +11,7 @@ import fs from "fs";
 import path from "path";
 import MssqlDatabaseWorker from "..";
 import { GlobalTestObject } from "../../../tests/GlobalTestObject";
-import ConsoleLogWorker from "../../omnihive-worker-log-console";
+import NullLogWorker from "../../omnihive-worker-log-null";
 
 const testValues = {
     metadata: {
@@ -33,7 +34,7 @@ const testValues = {
     workerName: "testMssqlDatabaseWorker",
 };
 
-const initWorker = async (metadata?: HiveWorkerMetadataDatabase): Promise<MssqlDatabaseWorker> => {
+const initWorker = async (metadata?: HiveWorkerMetadataDatabase): Promise<IDatabaseWorker> => {
     if (IsHelper.isNullOrUndefined(metadata)) {
         metadata = testValues.metadata;
     }
@@ -43,7 +44,7 @@ const initWorker = async (metadata?: HiveWorkerMetadataDatabase): Promise<MssqlD
 };
 
 const buildWorkers = async (): Promise<void> => {
-    const logWorker: ConsoleLogWorker = new ConsoleLogWorker();
+    const logWorker: NullLogWorker = new NullLogWorker();
     logWorker.init("testLogWorker");
 
     global.omnihive.registeredWorkers.push({
@@ -59,7 +60,7 @@ const createDatabase = async () => {
     const masterWorker = await AwaitHelper.execute(
         initWorker({ ...Object.assign({}, testValues.metadata), databaseName: "master" })
     );
-    const sqlContentsDb: string = fs.readFileSync(path.join(__dirname, "initializeDatabase.sql"), {
+    const sqlContentsDb: string = fs.readFileSync(path.join(__dirname, "scripts", "initializeDatabase.sql"), {
         encoding: "utf8",
     });
 
@@ -67,14 +68,14 @@ const createDatabase = async () => {
 
     const testingWorker = await AwaitHelper.execute(initWorker());
 
-    const sqlContentsTable: string = fs.readFileSync(path.join(__dirname, "initializeTable.sql"), {
+    const sqlContentsTable: string = fs.readFileSync(path.join(__dirname, "scripts", "initializeTable.sql"), {
         encoding: "utf8",
     });
 
     await AwaitHelper.execute(testingWorker.executeQuery(sqlContentsTable));
 
     const sqlContentsSprocWithoutParams: string = fs.readFileSync(
-        path.join(__dirname, "initializeStoredProcedureWithoutParams.sql"),
+        path.join(__dirname, "scripts", "initializeStoredProcedureWithoutParams.sql"),
         {
             encoding: "utf8",
         }
@@ -83,13 +84,22 @@ const createDatabase = async () => {
     await AwaitHelper.execute(testingWorker.executeQuery(sqlContentsSprocWithoutParams));
 
     const sqlContentsSprocWithParams: string = fs.readFileSync(
-        path.join(__dirname, "initializeStoredProcedureWithParams.sql"),
+        path.join(__dirname, "scripts", "initializeStoredProcedureWithParams.sql"),
         {
             encoding: "utf8",
         }
     );
 
     await AwaitHelper.execute(testingWorker.executeQuery(sqlContentsSprocWithParams));
+
+    const sqlContentsFunctionWithoutParams: string = fs.readFileSync(
+        path.join(__dirname, "scripts", "initializeFunctionWithoutParams.sql"),
+        {
+            encoding: "utf8",
+        }
+    );
+
+    await AwaitHelper.execute(testingWorker.executeQuery(sqlContentsFunctionWithoutParams));
 };
 
 describe("Worker Test - Knex - MSSQL", () => {
@@ -120,7 +130,7 @@ describe("Worker Test - Knex - MSSQL", () => {
 
     describe("Worker Functions", () => {
         beforeEach(async () => {
-            const sqlContents: string = fs.readFileSync(path.join(__dirname, "wipeTestData.sql"), {
+            const sqlContents: string = fs.readFileSync(path.join(__dirname, "scripts", "wipeTestData.sql"), {
                 encoding: "utf8",
             });
             const worker = await AwaitHelper.execute(initWorker());
@@ -139,10 +149,13 @@ describe("Worker Test - Knex - MSSQL", () => {
         it("Get Schema - Default Schema Files - Default Tables Does Not Exist", async () => {
             const worker = await AwaitHelper.execute(initWorker());
 
-            fs.renameSync(path.join(__dirname, "defaultTables.sql"), path.join(__dirname, "defaultTablesNot.sql"));
             fs.renameSync(
-                path.join(__dirname, "..", "defaultTables.sql"),
-                path.join(__dirname, "..", "defaultTablesNot.sql")
+                path.join(__dirname, "scripts", "defaultTables.sql"),
+                path.join(__dirname, "scripts", "defaultTablesNot.sql")
+            );
+            fs.renameSync(
+                path.join(__dirname, "..", "scripts", "defaultTables.sql"),
+                path.join(__dirname, "..", "scripts", "defaultTablesNot.sql")
             );
 
             try {
@@ -152,10 +165,13 @@ describe("Worker Test - Knex - MSSQL", () => {
                 expect(err).to.be.an.instanceOf(Error);
             }
 
-            fs.renameSync(path.join(__dirname, "defaultTablesNot.sql"), path.join(__dirname, "defaultTables.sql"));
             fs.renameSync(
-                path.join(__dirname, "..", "defaultTablesNot.sql"),
-                path.join(__dirname, "..", "defaultTables.sql")
+                path.join(__dirname, "scripts", "defaultTablesNot.sql"),
+                path.join(__dirname, "scripts", "defaultTables.sql")
+            );
+            fs.renameSync(
+                path.join(__dirname, "..", "scripts", "defaultTablesNot.sql"),
+                path.join(__dirname, "..", "scripts", "defaultTables.sql")
             );
         });
 
@@ -163,13 +179,13 @@ describe("Worker Test - Knex - MSSQL", () => {
             const worker = await AwaitHelper.execute(initWorker());
 
             fs.renameSync(
-                path.join(__dirname, "defaultProcFunctions.sql"),
-                path.join(__dirname, "defaultProcFunctionsNot.sql")
+                path.join(__dirname, "scripts", "defaultProcFunctions.sql"),
+                path.join(__dirname, "scripts", "defaultProcFunctionsNot.sql")
             );
 
             fs.renameSync(
-                path.join(__dirname, "..", "defaultProcFunctions.sql"),
-                path.join(__dirname, "..", "defaultProcFunctionsNot.sql")
+                path.join(__dirname, "..", "scripts", "defaultProcFunctions.sql"),
+                path.join(__dirname, "..", "scripts", "defaultProcFunctionsNot.sql")
             );
 
             try {
@@ -180,33 +196,36 @@ describe("Worker Test - Knex - MSSQL", () => {
             }
 
             fs.renameSync(
-                path.join(__dirname, "defaultProcFunctionsNot.sql"),
-                path.join(__dirname, "defaultProcFunctions.sql")
+                path.join(__dirname, "scripts", "defaultProcFunctionsNot.sql"),
+                path.join(__dirname, "scripts", "defaultProcFunctions.sql")
             );
 
             fs.renameSync(
-                path.join(__dirname, "..", "defaultProcFunctionsNot.sql"),
-                path.join(__dirname, "..", "defaultProcFunctions.sql")
+                path.join(__dirname, "..", "scripts", "defaultProcFunctionsNot.sql"),
+                path.join(__dirname, "..", "scripts", "defaultProcFunctions.sql")
             );
         });
 
         it("Get Schema - Default Schema - All Files Do Not Exist", async () => {
             const worker = await AwaitHelper.execute(initWorker());
 
-            fs.renameSync(path.join(__dirname, "defaultTables.sql"), path.join(__dirname, "defaultTablesNot.sql"));
             fs.renameSync(
-                path.join(__dirname, "..", "defaultTables.sql"),
-                path.join(__dirname, "..", "defaultTablesNot.sql")
+                path.join(__dirname, "scripts", "defaultTables.sql"),
+                path.join(__dirname, "scripts", "defaultTablesNot.sql")
+            );
+            fs.renameSync(
+                path.join(__dirname, "..", "scripts", "defaultTables.sql"),
+                path.join(__dirname, "..", "scripts", "defaultTablesNot.sql")
             );
 
             fs.renameSync(
-                path.join(__dirname, "defaultProcFunctions.sql"),
-                path.join(__dirname, "defaultProcFunctionsNot.sql")
+                path.join(__dirname, "scripts", "defaultProcFunctions.sql"),
+                path.join(__dirname, "scripts", "defaultProcFunctionsNot.sql")
             );
 
             fs.renameSync(
-                path.join(__dirname, "..", "defaultProcFunctions.sql"),
-                path.join(__dirname, "..", "defaultProcFunctionsNot.sql")
+                path.join(__dirname, "..", "scripts", "defaultProcFunctions.sql"),
+                path.join(__dirname, "..", "scripts", "defaultProcFunctionsNot.sql")
             );
 
             try {
@@ -216,25 +235,28 @@ describe("Worker Test - Knex - MSSQL", () => {
                 expect(err).to.be.an.instanceOf(Error);
             }
 
-            fs.renameSync(path.join(__dirname, "defaultTablesNot.sql"), path.join(__dirname, "defaultTables.sql"));
             fs.renameSync(
-                path.join(__dirname, "..", "defaultTablesNot.sql"),
-                path.join(__dirname, "..", "defaultTables.sql")
+                path.join(__dirname, "scripts", "defaultTablesNot.sql"),
+                path.join(__dirname, "scripts", "defaultTables.sql")
             );
             fs.renameSync(
-                path.join(__dirname, "defaultProcFunctionsNot.sql"),
-                path.join(__dirname, "defaultProcFunctions.sql")
+                path.join(__dirname, "..", "scripts", "defaultTablesNot.sql"),
+                path.join(__dirname, "..", "scripts", "defaultTables.sql")
             );
             fs.renameSync(
-                path.join(__dirname, "..", "defaultProcFunctionsNot.sql"),
-                path.join(__dirname, "..", "defaultProcFunctions.sql")
+                path.join(__dirname, "scripts", "defaultProcFunctionsNot.sql"),
+                path.join(__dirname, "scripts", "defaultProcFunctions.sql")
+            );
+            fs.renameSync(
+                path.join(__dirname, "..", "scripts", "defaultProcFunctionsNot.sql"),
+                path.join(__dirname, "..", "scripts", "defaultProcFunctions.sql")
             );
         });
 
         it("Get Schema - With Schema Files", async () => {
             const metadata: HiveWorkerMetadataDatabase = Object.assign({}, testValues.metadata);
-            metadata.getSchemaSqlFile = path.join(__dirname, "defaultTables.sql");
-            metadata.getProcFunctionSqlFile = path.join(__dirname, "defaultProcFunctions.sql");
+            metadata.getSchemaSqlFile = path.join(__dirname, "scripts", "defaultTables.sql");
+            metadata.getProcFunctionSqlFile = path.join(__dirname, "scripts", "defaultProcFunctions.sql");
 
             const worker = await AwaitHelper.execute(initWorker(metadata));
             const results = await AwaitHelper.execute(worker.getSchema());
@@ -246,7 +268,7 @@ describe("Worker Test - Knex - MSSQL", () => {
 
         it("Get Schema - With Schema Files - Table File Does Not Exist", async () => {
             const metadata: HiveWorkerMetadataDatabase = Object.assign({}, testValues.metadata);
-            metadata.getSchemaSqlFile = path.join(__dirname, "defaultTablesBad.sql");
+            metadata.getSchemaSqlFile = path.join(__dirname, "scripts", "defaultTablesBad.sql");
 
             try {
                 const worker = await AwaitHelper.execute(initWorker(metadata));
@@ -259,7 +281,7 @@ describe("Worker Test - Knex - MSSQL", () => {
 
         it("Get Schema - With Schema Files - Proc File Does Not Exist", async () => {
             const metadata: HiveWorkerMetadataDatabase = Object.assign({}, testValues.metadata);
-            metadata.getProcFunctionSqlFile = path.join(__dirname, "defaultProcFunctionsBad.sql");
+            metadata.getProcFunctionSqlFile = path.join(__dirname, "scripts", "defaultProcFunctionsBad.sql");
 
             try {
                 const worker = await AwaitHelper.execute(initWorker(metadata));
@@ -272,8 +294,8 @@ describe("Worker Test - Knex - MSSQL", () => {
 
         it("Get Schema - With Schema Files - All Files Do Not Exist", async () => {
             const metadata: HiveWorkerMetadataDatabase = Object.assign({}, testValues.metadata);
-            metadata.getSchemaSqlFile = path.join(__dirname, "defaultTablesBad.sql");
-            metadata.getProcFunctionSqlFile = path.join(__dirname, "defaultProcFunctionsBad.sql");
+            metadata.getSchemaSqlFile = path.join(__dirname, "scripts", "defaultTablesBad.sql");
+            metadata.getProcFunctionSqlFile = path.join(__dirname, "scripts", "defaultProcFunctionsBad.sql");
 
             try {
                 const worker = await AwaitHelper.execute(initWorker(metadata));
@@ -302,7 +324,7 @@ describe("Worker Test - Knex - MSSQL", () => {
 
         it("Execute Query", async () => {
             const worker = await AwaitHelper.execute(initWorker());
-            const sqlContents: string = fs.readFileSync(path.join(__dirname, "executeQueryTest.sql"), {
+            const sqlContents: string = fs.readFileSync(path.join(__dirname, "scripts", "executeQueryTest.sql"), {
                 encoding: "utf8",
             });
             const result = await worker.executeQuery(sqlContents);
@@ -314,7 +336,7 @@ describe("Worker Test - Knex - MSSQL", () => {
             const worker = await AwaitHelper.execute(initWorker());
             worker.registeredWorkers = global.omnihive.registeredWorkers;
 
-            const sqlContents: string = fs.readFileSync(path.join(__dirname, "executeQueryTest.sql"), {
+            const sqlContents: string = fs.readFileSync(path.join(__dirname, "scripts", "executeQueryTest.sql"), {
                 encoding: "utf8",
             });
             const result = await worker.executeQuery(sqlContents);
@@ -323,7 +345,7 @@ describe("Worker Test - Knex - MSSQL", () => {
 
         it("Execute Query - Without Log", async () => {
             const worker = await AwaitHelper.execute(initWorker());
-            const sqlContents: string = fs.readFileSync(path.join(__dirname, "executeQueryTest.sql"), {
+            const sqlContents: string = fs.readFileSync(path.join(__dirname, "scripts", "executeQueryTest.sql"), {
                 encoding: "utf8",
             });
             const result = await worker.executeQuery(sqlContents, true);
@@ -332,7 +354,7 @@ describe("Worker Test - Knex - MSSQL", () => {
 
         it("Execute Bad Query", async () => {
             const worker = await AwaitHelper.execute(initWorker());
-            const sqlContents: string = fs.readFileSync(path.join(__dirname, "executeBadQueryTest.sql"), {
+            const sqlContents: string = fs.readFileSync(path.join(__dirname, "scripts", "executeBadQueryTest.sql"), {
                 encoding: "utf8",
             });
             try {
@@ -343,7 +365,7 @@ describe("Worker Test - Knex - MSSQL", () => {
             }
         });
 
-        it("Execute Stored Procedure - With Schema", async function () {
+        it("Execute Stored Procedure - With Schema", async () => {
             const worker = await AwaitHelper.execute(initWorker());
             const getSchema = await AwaitHelper.execute(worker.getSchema());
 
@@ -358,7 +380,7 @@ describe("Worker Test - Knex - MSSQL", () => {
             expect(result[0][0].dataresult).to.equal("Testing Values 1");
         });
 
-        it("Execute Stored Procedure - No Schema", async function () {
+        it("Execute Stored Procedure - No Schema", async () => {
             const schema: ProcFunctionSchema[] = [];
             const worker = await AwaitHelper.execute(initWorker());
 
@@ -371,7 +393,7 @@ describe("Worker Test - Knex - MSSQL", () => {
             expect(result[0][0].dataresult).to.equal("Success");
         });
 
-        it("Execute Stored Procedure - Without Params", async function () {
+        it("Execute Stored Procedure - Without Params", async () => {
             const worker = await AwaitHelper.execute(initWorker());
             const getSchema = await AwaitHelper.execute(worker.getSchema());
 
@@ -383,7 +405,7 @@ describe("Worker Test - Knex - MSSQL", () => {
             expect(result[0][0].dataresult).to.equal("Success");
         });
 
-        it("Execute Bad Stored Procedure", async function () {
+        it("Execute Bad Stored Procedure", async () => {
             const schema: ProcFunctionSchema[] = [];
             const worker = await AwaitHelper.execute(initWorker());
 

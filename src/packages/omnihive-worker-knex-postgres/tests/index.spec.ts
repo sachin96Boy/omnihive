@@ -9,7 +9,7 @@ import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunc
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import MySqlDatabaseWorker from "..";
+import PostgresDatabaseWorker from "..";
 import { GlobalTestObject } from "../../../tests/GlobalTestObject";
 import NullLogWorker from "../../omnihive-worker-log-null";
 
@@ -23,22 +23,22 @@ const testValues = {
         getProcFunctionSqlFile: "",
         requireSsl: false,
         rowLimit: 10000,
-        schemas: ["testing"],
+        schemas: ["public"],
         serverAddress: "localhost",
-        serverPort: 3306,
+        serverPort: 5432,
         sslCertPath: "",
         getSchemaSqlFile: "",
         urlRoute: "test",
-        userName: "root",
+        userName: "postgres",
     },
-    workerName: "testMySqlDatabaseWorker",
+    workerName: "testPostgresDatabaseWorker",
 };
 
 const initWorker = async (metadata?: HiveWorkerMetadataDatabase): Promise<IDatabaseWorker> => {
     if (IsHelper.isNullOrUndefined(metadata)) {
         metadata = testValues.metadata;
     }
-    const worker: MySqlDatabaseWorker = new MySqlDatabaseWorker();
+    const worker: PostgresDatabaseWorker = new PostgresDatabaseWorker();
     await AwaitHelper.execute(worker.init(testValues.workerName, metadata));
     return worker;
 };
@@ -58,7 +58,7 @@ const buildWorkers = async (): Promise<void> => {
 
 const createDatabase = async () => {
     const masterWorker = await AwaitHelper.execute(
-        initWorker({ ...Object.assign({}, testValues.metadata), databaseName: "mysql" })
+        initWorker({ ...Object.assign({}, testValues.metadata), databaseName: "postgres" })
     );
     const sqlContentsDb: string = fs.readFileSync(path.join(__dirname, "scripts", "initializeDatabase.sql"), {
         encoding: "utf8",
@@ -75,7 +75,7 @@ const createDatabase = async () => {
     await AwaitHelper.execute(testingWorker.executeQuery(sqlContentsTable));
 
     const sqlContentsSprocWithoutParams: string = fs.readFileSync(
-        path.join(__dirname, "scripts", "initializeStoredProcedureWithoutParams.sql"),
+        path.join(__dirname, "scripts", "initializeFunctionWithoutParams.sql"),
         {
             encoding: "utf8",
         }
@@ -84,7 +84,7 @@ const createDatabase = async () => {
     await AwaitHelper.execute(testingWorker.executeQuery(sqlContentsSprocWithoutParams));
 
     const sqlContentsSprocWithParams: string = fs.readFileSync(
-        path.join(__dirname, "scripts", "initializeStoredProcedureWithParams.sql"),
+        path.join(__dirname, "scripts", "initializeFunctionWithParams.sql"),
         {
             encoding: "utf8",
         }
@@ -93,7 +93,7 @@ const createDatabase = async () => {
     await AwaitHelper.execute(testingWorker.executeQuery(sqlContentsSprocWithParams));
 };
 
-describe("Worker Test - Knex - MySQL", () => {
+describe("Worker Test - Knex - Postgres", () => {
     before(async () => {
         // @ts-ignore
         global.omnihive = new GlobalTestObject();
@@ -130,7 +130,7 @@ describe("Worker Test - Knex - MySQL", () => {
 
         it("Get Schema - Default", async () => {
             const worker = await AwaitHelper.execute(initWorker());
-            const results = await worker.getSchema();
+            const results = await AwaitHelper.execute(worker.getSchema());
 
             expect(results.tables[0].tableName).to.equal("test_table");
             expect(results.tables.length).to.equal(1);
@@ -318,7 +318,7 @@ describe("Worker Test - Knex - MySQL", () => {
             const sqlContents: string = fs.readFileSync(path.join(__dirname, "scripts", "executeQueryTest.sql"), {
                 encoding: "utf8",
             });
-            const result = await worker.executeQuery(sqlContents);
+            const result = await AwaitHelper.execute(worker.executeQuery(sqlContents));
             expect(result[1][0].test_data).to.equal("Testing Values 1");
         });
 
@@ -330,7 +330,7 @@ describe("Worker Test - Knex - MySQL", () => {
             const sqlContents: string = fs.readFileSync(path.join(__dirname, "scripts", "executeQueryTest.sql"), {
                 encoding: "utf8",
             });
-            const result = await worker.executeQuery(sqlContents);
+            const result = await AwaitHelper.execute(worker.executeQuery(sqlContents));
             expect(result[1][0].test_data).to.equal("Testing Values 1");
         });
 
@@ -339,7 +339,7 @@ describe("Worker Test - Knex - MySQL", () => {
             const sqlContents: string = fs.readFileSync(path.join(__dirname, "scripts", "executeQueryTest.sql"), {
                 encoding: "utf8",
             });
-            const result = await worker.executeQuery(sqlContents, true);
+            const result = await AwaitHelper.execute(worker.executeQuery(sqlContents, true));
             expect(result[1][0].test_data).to.equal("Testing Values 1");
         });
 
@@ -349,64 +349,68 @@ describe("Worker Test - Knex - MySQL", () => {
                 encoding: "utf8",
             });
             try {
-                await worker.executeQuery(sqlContents);
+                await AwaitHelper.execute(worker.executeQuery(sqlContents));
                 expect.fail("This is a bad query");
             } catch (err) {
                 expect(err).to.be.instanceOf(Error);
             }
         });
 
-        it("Execute Stored Procedure - With Schema", async function () {
+        it("Execute Function - With Schema", async () => {
             const worker = await AwaitHelper.execute(initWorker());
             const getSchema = await AwaitHelper.execute(worker.getSchema());
 
-            const result = await worker.executeProcedure(
-                getSchema.procFunctions.filter((value) => value.name === "test_stored_procedure_with_params"),
-                [
-                    { name: "paramString", value: "Testing Values", isString: true },
-                    { name: "paramNumber", value: 1, isString: false },
-                ]
+            const result = await AwaitHelper.execute(
+                worker.executeProcedure(
+                    getSchema.procFunctions.filter((value) => value.name === "test_function_with_params"),
+                    [
+                        { name: "paramString", value: "Testing Values", isString: true },
+                        { name: "paramNumber", value: 1, isString: false },
+                    ]
+                )
             );
 
-            expect(result[0][0].dataresult).to.equal("Testing Values 1");
+            expect(result[0][0].test_function_with_params).to.equal("Testing Values 1");
         });
 
-        it("Execute Stored Procedure - No Schema", async function () {
+        it("Execute Function - No Schema", async () => {
             const schema: ProcFunctionSchema[] = [];
             const worker = await AwaitHelper.execute(initWorker());
 
             schema[0] = new ProcFunctionSchema();
             schema[0].schemaName = "";
-            schema[0].name = "test_stored_procedure_without_params";
+            schema[0].name = "test_function_without_params";
 
-            const result = await worker.executeProcedure(schema, []);
+            const result = await AwaitHelper.execute(worker.executeProcedure(schema, []));
 
-            expect(result[0][0].dataresult).to.equal("Success");
+            expect(result[0][0].test_function_without_params).to.equal("Success");
         });
 
-        it("Execute Stored Procedure - Without Params", async function () {
+        it("Execute Function - Without Params", async () => {
             const worker = await AwaitHelper.execute(initWorker());
             const getSchema = await AwaitHelper.execute(worker.getSchema());
 
-            const result = await worker.executeProcedure(
-                getSchema.procFunctions.filter((value) => value.name === "test_stored_procedure_without_params"),
-                []
+            const result = await AwaitHelper.execute(
+                worker.executeProcedure(
+                    getSchema.procFunctions.filter((value) => value.name === "test_function_without_params"),
+                    []
+                )
             );
 
-            expect(result[0][0].dataresult).to.equal("Success");
+            expect(result[0][0].test_function_without_params).to.equal("Success");
         });
 
-        it("Execute Bad Stored Procedure", async function () {
+        it("Execute Bad Function", async () => {
             const schema: ProcFunctionSchema[] = [];
             const worker = await AwaitHelper.execute(initWorker());
 
             schema[0] = new ProcFunctionSchema();
             schema[0].schemaName = "dbo";
-            schema[0].name = "bad_stored_procedure";
+            schema[0].name = "bad_function";
 
             try {
-                await worker.executeProcedure(schema, []);
-                expect.fail("This is a bad stored procedure");
+                await AwaitHelper.execute(worker.executeProcedure(schema, []));
+                expect.fail("This is a bad function");
             } catch (err) {
                 expect(err).to.be.instanceOf(Error);
             }

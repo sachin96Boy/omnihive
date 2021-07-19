@@ -112,9 +112,12 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
                 ) {
                     logWorker?.write(OmniHiveLogLevel.Warn, "Provided Schema SQL File is not found.");
                 }
-                if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {
+                if (fse.existsSync(path.join(__dirname, "scripts", "defaultTables.sql"))) {
                     tableResult = await AwaitHelper.execute(
-                        this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultTables.sql"), "utf8"), true)
+                        this.executeQuery(
+                            fse.readFileSync(path.join(__dirname, "scripts", "defaultTables.sql"), "utf8"),
+                            true
+                        )
                     );
                 } else {
                     throw new Error(`Cannot find a table executor for ${this.name}`);

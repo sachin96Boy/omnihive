@@ -2,7 +2,6 @@ import { expect } from "chai";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import faker from "faker";
 import ConsoleLogWorker from "..";
-import sinon from "sinon";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 
@@ -17,7 +16,7 @@ const initWorker = async (): Promise<ILogWorker> => {
     return worker;
 };
 
-describe("Worker Test - Log - Console", () => {
+describe("Worker Test - Log - Null", () => {
     describe("Init Functions", () => {
         it("Test Init", async () => {
             await AwaitHelper.execute(initWorker());
@@ -25,11 +24,10 @@ describe("Worker Test - Log - Console", () => {
     });
 
     describe("Worker Functions", async () => {
-        it(`Console Log Output`, async () => {
+        it(`Null Log Output`, async () => {
             const worker = await AwaitHelper.execute(initWorker());
-            const spy = sinon.spy(console, "log");
             worker.write(OmniHiveLogLevel.Info, testValues.logOutput);
-            expect(spy.calledWith(testValues.logOutput)).to.be.true;
+            expect("ok").to.equal("ok");
         });
     });
 });

@@ -36,7 +36,6 @@ from information_schema.routines proc
 where proc.routine_schema not in ('pg_catalog', 'information_schema')
 	and proc.routine_schema not like 'pg_temp%'
 	and proc.routine_type = 'FUNCTION'
-	and proc.data_type = 'record'
 order by proc.specific_schema,
 	proc.routine_name,
 	args.ordinal_position;

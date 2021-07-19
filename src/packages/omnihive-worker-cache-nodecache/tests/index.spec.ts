@@ -2,6 +2,7 @@ import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import NodeCacheWorker from "..";
 import faker from "faker";
 import { expect } from "chai";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
 
 const testValues = {
     cacheKey: faker.datatype.string(),
@@ -10,7 +11,7 @@ const testValues = {
     workerName: "testCacheNodeCacheWorker",
 };
 
-const initWorker = async (): Promise<NodeCacheWorker> => {
+const initWorker = async (): Promise<ICacheWorker> => {
     const worker: NodeCacheWorker = new NodeCacheWorker();
     await AwaitHelper.execute(worker.init(testValues.workerName));
     return worker;

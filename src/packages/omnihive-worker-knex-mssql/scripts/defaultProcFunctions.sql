@@ -34,7 +34,7 @@ from sys.objects as so
 where so.object_id in (
         select object_id
         from sys.objects
-        where type in ('P', 'FN')
+        where type in ('P')
     )
     and so.type_desc = 'SQL_STORED_PROCEDURE'
 order by schema_name(so.schema_id),

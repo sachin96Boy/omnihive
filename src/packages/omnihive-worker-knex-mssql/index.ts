@@ -51,6 +51,8 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             this.connectionPool = new sql.ConnectionPool({ ...this.sqlConfig });
             await AwaitHelper.execute(this.connectionPool.connect());
 
+            await AwaitHelper.execute(this.executeQuery("select 1 as dummy"));
+
             const connectionOptions: Knex.Config = {
                 connection: {},
                 pool: { min: 0, max: this.typedMetadata.connectionPoolLimit },
@@ -101,7 +103,7 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
             }
         });
 
-        return this.executeQuery(builder.outputString());
+        return AwaitHelper.execute(this.executeQuery(builder.outputString()));
     };
 
     public getSchema = async (): Promise<ConnectionSchema> => {
@@ -127,9 +129,12 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
                 throw new Error(`Cannot find a table executor for ${this.name}`);
             }
         } else {
-            if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {
+            if (fse.existsSync(path.join(__dirname, "scripts", "defaultTables.sql"))) {
                 tableResult = await AwaitHelper.execute(
-                    this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultTables.sql"), "utf8"), true)
+                    this.executeQuery(
+                        fse.readFileSync(path.join(__dirname, "scripts", "defaultTables.sql"), "utf8"),
+                        true
+                    )
                 );
             } else {
                 throw new Error(`Cannot find a table executor for ${this.name}`);
@@ -148,9 +153,12 @@ export default class MssqlDatabaseWorker extends HiveWorkerBase implements IData
                 throw new Error(`Cannot find a proc executor for ${this.name}`);
             }
         } else {
-            if (fse.existsSync(path.join(__dirname, "defaultProcFunctions.sql"))) {
+            if (fse.existsSync(path.join(__dirname, "scripts", "defaultProcFunctions.sql"))) {
                 procResult = await AwaitHelper.execute(
-                    this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultProcFunctions.sql"), "utf8"), true)
+                    this.executeQuery(
+                        fse.readFileSync(path.join(__dirname, "scripts", "defaultProcFunctions.sql"), "utf8"),
+                        true
+                    )
                 );
             } else {
                 throw new Error(`Cannot find a proc executor for ${this.name}`);

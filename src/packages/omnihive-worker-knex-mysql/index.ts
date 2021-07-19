@@ -132,7 +132,7 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
         orderBy(procFunctionSchema, ["parameterOrder"], ["asc"]).forEach(
             (schema: ProcFunctionSchema, index: number) => {
                 const arg: { name: string; value: any; isString: boolean } | undefined = args.find(
-                    (arg) => arg.name === schema.parameterName
+                    (arg) => arg.name.toLowerCase() === schema.parameterName.toLowerCase()
                 );
 
                 if (!IsHelper.isNullOrUndefined(arg)) {
@@ -180,9 +180,12 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
                 ) {
                     logWorker?.write(OmniHiveLogLevel.Warn, "Provided Schema SQL File is not found.");
                 }
-                if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {
+                if (fse.existsSync(path.join(__dirname, "scripts", "defaultTables.sql"))) {
                     tableResult = await AwaitHelper.execute(
-                        this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultTables.sql"), "utf8"), true)
+                        this.executeQuery(
+                            fse.readFileSync(path.join(__dirname, "scripts", "defaultTables.sql"), "utf8"),
+                            true
+                        )
                     );
                 } else {
                     throw new Error(`Cannot find a table executor for ${this.name}`);
@@ -208,10 +211,10 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
                 ) {
                     logWorker?.write(OmniHiveLogLevel.Warn, "Provided Proc SQL File is not found.");
                 }
-                if (fse.existsSync(path.join(__dirname, "defaultProcFunctions.sql"))) {
+                if (fse.existsSync(path.join(__dirname, "scripts", "defaultProcFunctions.sql"))) {
                     procResult = await AwaitHelper.execute(
                         this.executeQuery(
-                            fse.readFileSync(path.join(__dirname, "defaultProcFunctions.sql"), "utf8"),
+                            fse.readFileSync(path.join(__dirname, "scripts", "defaultProcFunctions.sql"), "utf8"),
                             true
                         )
                     );

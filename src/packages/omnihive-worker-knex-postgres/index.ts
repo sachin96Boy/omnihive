@@ -67,6 +67,8 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
             this.connectionPool = new pg.Pool({ ...this.sqlConfig });
             this.connectionPool.connect();
 
+            await AwaitHelper.execute(this.executeQuery("select 1 as dummy"));
+
             const connectionOptions: Knex.Config = {
                 connection: {},
                 pool: { min: 0, max: this.typedMetadata.connectionPoolLimit },
@@ -88,12 +90,13 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
         const result = await AwaitHelper.execute(this.connectionPool.query(query));
 
         const returnResults: any[][] = [];
-        let currentResultIndex: number = 0;
 
-        if (!Array.isArray(result)) {
-            returnResults[currentResultIndex] = result.rows;
+        if (!IsHelper.isArray(result)) {
+            returnResults[0] = result.rows;
             return returnResults;
         }
+
+        let currentResultIndex: number = 0;
 
         for (let r of result) {
             returnResults[currentResultIndex] = r.rows;
@@ -125,7 +128,7 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
         orderBy(procFunctionSchema, ["parameterOrder"], ["asc"]).forEach(
             (schema: ProcFunctionSchema, index: number) => {
                 const arg: { name: string; value: any; isString: boolean } | undefined = args.find(
-                    (arg) => arg.name === schema.parameterName
+                    (arg) => arg.name.toLowerCase() === schema.parameterName.toLowerCase()
                 );
 
                 if (!IsHelper.isNullOrUndefined(arg)) {
@@ -140,7 +143,7 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
 
         builder.append(")");
 
-        return this.executeQuery(builder.outputString());
+        return AwaitHelper.execute(this.executeQuery(builder.outputString()));
     };
 
     public getSchema = async (): Promise<ConnectionSchema> => {
@@ -171,9 +174,12 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
                 ) {
                     logWorker?.write(OmniHiveLogLevel.Warn, "Provided Schema SQL File is not found.");
                 }
-                if (fse.existsSync(path.join(__dirname, "defaultTables.sql"))) {
+                if (fse.existsSync(path.join(__dirname, "scripts", "defaultTables.sql"))) {
                     tableResult = await AwaitHelper.execute(
-                        this.executeQuery(fse.readFileSync(path.join(__dirname, "defaultTables.sql"), "utf8"), true)
+                        this.executeQuery(
+                            fse.readFileSync(path.join(__dirname, "scripts", "defaultTables.sql"), "utf8"),
+                            true
+                        )
                     );
                 } else {
                     throw new Error(`Cannot find a table executor for ${this.name}`);
@@ -199,10 +205,10 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
                 ) {
                     logWorker?.write(OmniHiveLogLevel.Warn, "Provided Proc SQL File is not found.");
                 }
-                if (fse.existsSync(path.join(__dirname, "defaultProcFunctions.sql"))) {
+                if (fse.existsSync(path.join(__dirname, "scripts", "defaultProcFunctions.sql"))) {
                     procResult = await AwaitHelper.execute(
                         this.executeQuery(
-                            fse.readFileSync(path.join(__dirname, "defaultProcFunctions.sql"), "utf8"),
+                            fse.readFileSync(path.join(__dirname, "scripts", "defaultProcFunctions.sql"), "utf8"),
                             true
                         )
                     );

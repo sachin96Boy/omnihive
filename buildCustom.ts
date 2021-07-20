@@ -7,7 +7,7 @@ import yargs from "yargs";
 import axios from "axios";
 import { Listr } from "listr2";
 import execa from "execa";
-import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 const build = async (): Promise<void> => {
     // Handle args

@@ -9,7 +9,7 @@ import { Listr } from "listr2";
 import execa from "execa";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import tar from "tar";
-import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 // Master build process
 const build = async (): Promise<void> => {

@@ -11,7 +11,6 @@ WORKDIR /home/node/app/
 USER node
 RUN yarn install --silent
 
-EXPOSE 3001 7205 7206
 ENTRYPOINT ["node", "omnihive.js"]
 
-CMD [ "server" ]
+CMD [ "taskRunner" ]

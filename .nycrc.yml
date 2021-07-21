@@ -5,6 +5,8 @@ reporter:
     - "html"
     - "text"
     - "text-summary"
+include:
+    - "src/packages/**/*"
 exclude:
     - "**/.yarn/**"
     - "**/node_modules/**"

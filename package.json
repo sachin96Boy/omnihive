@@ -4,7 +4,8 @@
     "version": "6.2.45",
     "workspaces": [
         "src/packages/*",
-        "src/custom/*"
+        "src/custom/*",
+        "src/extras/*"
     ],
     "repository": {
         "type": "git",

@@ -65,7 +65,6 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
             }
 
             this.connectionPool = new pg.Pool({ ...this.sqlConfig });
-            this.connectionPool.connect();
 
             await AwaitHelper.execute(this.executeQuery("select 1 as dummy"));
 
@@ -87,23 +86,29 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
             logWorker?.write(OmniHiveLogLevel.Info, query);
         }
 
-        const result = await AwaitHelper.execute(this.connectionPool.query(query));
+        const client: pg.PoolClient = await AwaitHelper.execute(this.connectionPool.connect());
 
-        const returnResults: any[][] = [];
+        try {
+            const result = await AwaitHelper.execute(client.query(query));
 
-        if (!IsHelper.isArray(result)) {
-            returnResults[0] = result.rows;
+            const returnResults: any[][] = [];
+
+            if (!IsHelper.isArray(result)) {
+                returnResults[0] = result.rows;
+                return returnResults;
+            }
+
+            let currentResultIndex: number = 0;
+
+            for (let r of result) {
+                returnResults[currentResultIndex] = r.rows;
+                currentResultIndex++;
+            }
+
             return returnResults;
+        } finally {
+            client.release();
         }
-
-        let currentResultIndex: number = 0;
-
-        for (let r of result) {
-            returnResults[currentResultIndex] = r.rows;
-            currentResultIndex++;
-        }
-
-        return returnResults;
     };
 
     public executeProcedure = async (

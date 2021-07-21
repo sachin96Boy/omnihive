@@ -56,7 +56,6 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
             }
 
             this.connectionPool = new pg.Pool({ ...this.sqlConfig });
-            this.connectionPool.connect();
 
             const connectionOptions: Knex.Config = {
                 connection: {},
@@ -160,7 +159,7 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
     };
 
     public set = async (settings: ServerConfig): Promise<boolean> => {
-        const currentSettings: ServerConfig = await this.get();
+        const currentSettings: ServerConfig = await AwaitHelper.execute(this.get());
 
         const client = await AwaitHelper.execute(this.connectionPool.connect());
 
@@ -254,21 +253,27 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
     };
 
     private executeQuery = async (query: string): Promise<any[][]> => {
-        const result = await AwaitHelper.execute(this.connectionPool.query(query));
+        const client: pg.PoolClient = await AwaitHelper.execute(this.connectionPool.connect());
 
-        const returnResults: any[][] = [];
-        let currentResultIndex: number = 0;
+        try {
+            const result = await AwaitHelper.execute(client.query(query));
 
-        if (!IsHelper.isArray(result)) {
-            returnResults[currentResultIndex] = result.rows;
+            const returnResults: any[][] = [];
+            let currentResultIndex: number = 0;
+
+            if (!IsHelper.isArray(result)) {
+                returnResults[currentResultIndex] = result.rows;
+                return returnResults;
+            }
+
+            for (let r of result) {
+                returnResults[currentResultIndex] = r.rows;
+                currentResultIndex++;
+            }
+
             return returnResults;
+        } finally {
+            client.release();
         }
-
-        for (let r of result) {
-            returnResults[currentResultIndex] = r.rows;
-            currentResultIndex++;
-        }
-
-        return returnResults;
     };
 }

@@ -148,7 +148,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
             // Merge all the schemas into one master schema to rule them all
             return mergeSchemas({
-                schemas: this.graphSchemas,
+                schemas: [...this.graphSchemas],
             });
         } catch (err) {
             throw err;
@@ -1356,16 +1356,18 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         const updateFunction = this.buildUpdateFunction(databaseWorker, propertyName);
         const deleteFunction = this.buildDeleteFunction(databaseWorker, propertyName);
 
+        const tableSchema = { ...this.tables };
+
         const resolver: any = {
             Query: {
                 [propertyName]: async (_obj: any, args: any, context: any, info: any) => {
                     return await AwaitHelper.execute(
-                        this.parseMaster.parseAstQuery(databaseWorker.name, args, info, context.omnihive, this.tables)
+                        this.parseMaster.parseAstQuery(databaseWorker.name, args, info, context.omnihive, tableSchema)
                     );
                 },
                 [propertyName + this.aggregateQuerySuffix]: async (_obj: any, args: any, context: any, info: any) => {
                     return await AwaitHelper.execute(
-                        this.parseMaster.parseAggregate(databaseWorker.name, args, info, context.omnihive, this.tables)
+                        this.parseMaster.parseAggregate(databaseWorker.name, args, info, context.omnihive, tableSchema)
                     );
                 },
             },
@@ -1405,7 +1407,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 info: any
             ) => {
                 return await AwaitHelper.execute(
-                    this.parseMaster.parseAggregate(databaseWorker.name, args, info, context.omnihive, this.tables)
+                    this.parseMaster.parseAggregate(databaseWorker.name, args, info, context.omnihive, tableSchema)
                 );
             };
         }
@@ -1421,10 +1423,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @returns { Function }
      */
     private buildInsertFunction = (databaseWorker: IDatabaseWorker, propertyName: string): Function => {
+        const tableSchema = { ...this.tables };
+
         // Set default insert function
         const defaultInsert = async (_obj: any, _args: any, context: any, info: any) => {
             return await AwaitHelper.execute(
-                this.parseMaster.parseInsert(databaseWorker.name, propertyName, info, context.omnihive, this.tables)
+                this.parseMaster.parseInsert(databaseWorker.name, propertyName, info, context.omnihive, tableSchema)
             );
         };
 
@@ -1440,10 +1444,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @returns { Function }
      */
     private buildUpdateFunction = (databaseWorker: IDatabaseWorker, propertyName: string): Function => {
+        const tableSchema = { ...this.tables };
+
         // Set default update function
         const defaultUpdate = async (_obj: any, _args: any, context: any, info: any) => {
             return await AwaitHelper.execute(
-                this.parseMaster.parseUpdate(databaseWorker.name, propertyName, info, context.omnihive, this.tables)
+                this.parseMaster.parseUpdate(databaseWorker.name, propertyName, info, context.omnihive, tableSchema)
             );
         };
 
@@ -1459,10 +1465,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @returns { Function }
      */
     private buildDeleteFunction = (databaseWorker: IDatabaseWorker, propertyName: string): Function => {
+        const tableSchema = { ...this.tables };
+
         // Set default delete function
         const defaultDelete = async (_obj: any, args: any, context: any, _info: any) => {
             return await AwaitHelper.execute(
-                this.parseMaster.parseDelete(databaseWorker.name, propertyName, args, context.omnihive, this.tables)
+                this.parseMaster.parseDelete(databaseWorker.name, propertyName, args, context.omnihive, tableSchema)
             );
         };
 
@@ -1629,6 +1637,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      */
     private buildProcResolvers = (proc: ProcFunctionSchema[], databaseWorker: IDatabaseWorker): any => {
         const typeName = `${proc[0].schemaName}_${proc[0].name.replace(/[^a-zA-Z0-9_]/g, "_")}`;
+        const procSchema: ProcFunctionSchema[] = [...proc];
 
         return {
             Query: {
@@ -1641,7 +1650,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     const workerName = databaseWorker.name;
 
                     return await AwaitHelper.execute(
-                        this.parseMaster.parseProcedure(workerName, info, context.omnihive, proc)
+                        this.parseMaster.parseProcedure(workerName, info, context.omnihive, procSchema)
                     );
                 },
             },

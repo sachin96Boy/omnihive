@@ -105,14 +105,22 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         connectionSchema: ConnectionSchema | undefined
     ): Promise<GraphQLSchema | undefined> => {
         try {
+            this.graphSchemas = [];
+            this.tables = {};
+            this.storedProcs = {};
+            this.lifecycleWorkers = [];
+            this.currentLifecycleWorkers = {};
+
             if (!connectionSchema) {
                 return;
             }
 
+            // Get all lifecycle workers
             const lifecycleRegisteredWorkers: RegisteredHiveWorker[] = this.registeredWorkers.filter(
                 (rw: RegisteredHiveWorker) => rw.type === HiveWorkerType.DataLifecycleFunction
             );
 
+            // Format lifecycle workers as usable object for future use
             lifecycleRegisteredWorkers.forEach((worker) => {
                 const metadata: HiveWorkerMetadataLifecycleFunction = worker.metadata;
                 if (worker.metadata.databaseWorker === databaseWorker.name) {
@@ -147,50 +155,71 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         }
     };
 
+    /**
+     * Build table schemas
+     *
+     * @param connectionSchema
+     * @param databaseWorker
+     */
     private buildMainTableSchemas = async (connectionSchema: ConnectionSchema, databaseWorker: IDatabaseWorker) => {
         try {
             //  Type: { [ tableNameCamelCase: string ]: TableSchema[] }
-            for (const column of connectionSchema.tables) {
-                const tableKey: string = column.schemaName + column.tableNamePascalCase;
-
-                if (!this.tables[tableKey] || this.tables[tableKey]?.length <= 0) {
-                    this.tables[tableKey] = [];
-                }
-
-                if (!this.tables[tableKey].some((t) => t.columnNameEntity == column.columnNameEntity)) {
-                    this.tables[tableKey].push(column);
-                }
-            }
+            await Promise.all(
+                connectionSchema.tables.map((column: TableSchema) => this.buildTableSchemaObject(column))
+            );
 
             // Iterate through each table and build it's graph schema
-            for (const tableName in this.tables) {
-                this.graphSchemas.push(this.buildExeSchema(this.tables[tableName], databaseWorker));
-            }
+
+            await Promise.all(
+                Object.keys(this.tables).map((tableName: string) =>
+                    this.buildExeSchema(this.tables[tableName], databaseWorker)
+                )
+            );
         } catch (err) {
             throw err;
+        }
+    };
+
+    private buildTableSchemaObject = async (column: TableSchema): Promise<void> => {
+        const tableKey: string = column.schemaName + column.tableNamePascalCase;
+
+        if (!this.tables[tableKey] || this.tables[tableKey]?.length <= 0) {
+            this.tables[tableKey] = [];
+        }
+
+        if (!this.tables[tableKey].some((t) => t.columnNameEntity == column.columnNameEntity)) {
+            this.tables[tableKey].push(column);
         }
     };
 
     private buildMainProcedureSchemas = async (connectionSchema: ConnectionSchema, databaseWorker: IDatabaseWorker) => {
         try {
             // Type: { [procedureName: string]: ProcFunctionSchema[] }
-            for (const parameter of connectionSchema.procFunctions) {
-                const procKey: string = parameter.schemaName + "_" + parameter.name;
-                if (!this.storedProcs[procKey] || this.storedProcs[procKey]?.length <= 0) {
-                    this.storedProcs[procKey] = [];
-                }
-
-                if (!this.storedProcs[procKey].some((t) => t.parameterName == parameter.parameterName)) {
-                    this.storedProcs[procKey].push(parameter);
-                }
-            }
+            await Promise.all(
+                connectionSchema.procFunctions.map((parameter: ProcFunctionSchema) =>
+                    this.buildProcSchemaObject(parameter)
+                )
+            );
 
             // Iterate through each procedure and build it's graph schema
-            for (const proc in this.storedProcs) {
-                this.graphSchemas.push(this.buildProcSchema(this.storedProcs[proc], databaseWorker));
-            }
+            await Promise.all(
+                Object.keys(this.storedProcs).map((proc: string) =>
+                    this.buildProcSchema(this.storedProcs[proc], databaseWorker)
+                )
+            );
         } catch (err) {
             throw err;
+        }
+    };
+
+    private buildProcSchemaObject = async (parameter: ProcFunctionSchema): Promise<void> => {
+        const procKey: string = parameter.schemaName + "_" + parameter.name;
+        if (!this.storedProcs[procKey] || this.storedProcs[procKey]?.length <= 0) {
+            this.storedProcs[procKey] = [];
+        }
+
+        if (!this.storedProcs[procKey].some((t) => t.parameterName == parameter.parameterName)) {
+            this.storedProcs[procKey].push(parameter);
         }
     };
 
@@ -211,7 +240,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @param databaseWorker
      * @returns { GraphQLSchema }
      */
-    private buildExeSchema = (schema: TableSchema[], databaseWorker: IDatabaseWorker): GraphQLSchema => {
+    private buildExeSchema = async (schema: TableSchema[], databaseWorker: IDatabaseWorker): Promise<void> => {
         try {
             // Clear string builder for new table processing
             this.builder.clear();
@@ -225,10 +254,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             this.buildTypeDefinitions(schema, foreignColumns);
             const resolver = this.buildResolvers(schema, databaseWorker, foreignColumns);
 
-            return makeExecutableSchema({
-                typeDefs: this.builder.outputString(),
-                resolvers: resolver,
-            });
+            this.graphSchemas.push(
+                makeExecutableSchema({
+                    typeDefs: this.builder.outputString(),
+                    resolvers: resolver,
+                })
+            );
         } catch (err) {
             throw err;
         }
@@ -1515,7 +1546,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      * @param databaseWorker
      * @returns { GraphQLSchema }
      */
-    private buildProcSchema = (proc: ProcFunctionSchema[], databaseWorker: IDatabaseWorker): GraphQLSchema => {
+    private buildProcSchema = async (proc: ProcFunctionSchema[], databaseWorker: IDatabaseWorker): Promise<void> => {
         // Clear string builder for new table processing
         this.builder.clear();
 
@@ -1526,10 +1557,12 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Build resolvers
         const resolver = this.buildProcResolvers(proc, databaseWorker);
 
-        return makeExecutableSchema({
-            typeDefs: this.builder.outputString(),
-            resolvers: resolver,
-        });
+        this.graphSchemas.push(
+            makeExecutableSchema({
+                typeDefs: this.builder.outputString(),
+                resolvers: resolver,
+            })
+        );
     };
 
     /**

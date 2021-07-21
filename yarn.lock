@@ -2145,23 +2145,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-worker-graphql-builder-v1@workspace:*, @withonevision/omnihive-worker-graphql-builder-v1@workspace:src/packages/omnihive-worker-graphql-builder-v1":
-  version: 0.0.0-use.local
-  resolution: "@withonevision/omnihive-worker-graphql-builder-v1@workspace:src/packages/omnihive-worker-graphql-builder-v1"
-  dependencies:
-    "@types/lodash": 4.14.170
-    "@types/pluralize": 0.0.29
-    "@withonevision/omnihive-core": "workspace:*"
-    chai: 4.3.4
-    graphql: 15.5.0
-    knex: 0.95.7
-    lodash: 4.17.21
-    pluralize: 8.0.0
-    typescript: 4.2.4
-  languageName: unknown
-  linkType: soft
-
-"@withonevision/omnihive-worker-graphql-builder-v2@workspace:src/packages/omnihive-worker-graphql-builder-v2":
+"@withonevision/omnihive-worker-graphql-builder-v2@workspace:*, @withonevision/omnihive-worker-graphql-builder-v2@workspace:src/packages/omnihive-worker-graphql-builder-v2":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-graphql-builder-v2@workspace:src/packages/omnihive-worker-graphql-builder-v2"
   dependencies:
@@ -2282,6 +2266,16 @@ __metadata:
     "@withonevision/omnihive-core": "workspace:*"
     chai: 4.3.4
     serialize-error: 8.1.0
+    typescript: 4.2.4
+  languageName: unknown
+  linkType: soft
+
+"@withonevision/omnihive-worker-log-null@workspace:src/packages/omnihive-worker-log-null":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-worker-log-null@workspace:src/packages/omnihive-worker-log-null"
+  dependencies:
+    "@withonevision/omnihive-core": "workspace:*"
+    chai: 4.3.4
     typescript: 4.2.4
   languageName: unknown
   linkType: soft
@@ -9623,7 +9617,7 @@ fsevents@~2.3.2:
     "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*"
     "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*"
     "@withonevision/omnihive-worker-function-core": "workspace:*"
-    "@withonevision/omnihive-worker-graphql-builder-v1": "workspace:*"
+    "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:*"
     "@withonevision/omnihive-worker-knex-mssql": "workspace:*"
     "@withonevision/omnihive-worker-knex-mysql": "workspace:*"
     "@withonevision/omnihive-worker-knex-postgres": "workspace:*"

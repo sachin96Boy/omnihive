@@ -4,13 +4,14 @@ import faker from "faker";
 import ConsoleLogWorker from "..";
 import sinon from "sinon";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 
 const testValues = {
     logOutput: faker.datatype.string(),
     workerName: "testLogConsoleWorker",
 };
 
-const initWorker = async (): Promise<ConsoleLogWorker> => {
+const initWorker = async (): Promise<ILogWorker> => {
     const worker: ConsoleLogWorker = new ConsoleLogWorker();
     await AwaitHelper.execute(worker.init(testValues.workerName));
     return worker;

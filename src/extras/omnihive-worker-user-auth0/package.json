@@ -24,8 +24,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "auth0": "2.35.0",
-        "serialize-error": "8.1.0"
+        "auth0": "2.35.0"
     },
     "devDependencies": {
         "@types/auth0": "2.33.3",

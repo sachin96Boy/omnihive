@@ -24,8 +24,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "pusher-js": "7.0.3",
-        "serialize-error": "8.1.0"
+        "pusher-js": "7.0.3"
     },
     "devDependencies": {
         "chai": "4.3.4",

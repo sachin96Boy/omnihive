@@ -27,8 +27,7 @@
         "auth0": "2.35.0",
         "axios": "0.21.1",
         "jwt-decode": "3.1.2",
-        "node-jose": "2.0.0",
-        "serialize-error": "8.1.0"
+        "node-jose": "2.0.0"
     },
     "devDependencies": {
         "@types/auth0": "2.33.3",

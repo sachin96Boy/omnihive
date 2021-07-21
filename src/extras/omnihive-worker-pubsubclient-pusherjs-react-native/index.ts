@@ -4,7 +4,6 @@ import { IPubSubClientWorker } from "@withonevision/omnihive-core/interfaces/IPu
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
 import Pusher, { Channel } from "pusher-js/react-native";
-import { serializeError } from "serialize-error";
 
 export class PusherJsReactNativePubSubClientWorkerMetadata {
     public key: string = "";
@@ -54,45 +53,35 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
     public addListener = (channelName: string, eventName: string, callback?: Function): void => {
         this.checkConnection();
 
-        try {
-            if (!this.channels.some((channel: Channel) => channel.name === channelName)) {
-                this.joinChannel(channelName);
-            }
-
-            this.removeListener(channelName, eventName);
-
-            this.channels
-                .filter((channel: Channel) => channel.name === channelName)[0]
-                .bind(eventName, (data: any) => {
-                    if (!IsHelper.isNullOrUndefined(callback) && IsHelper.isFunction(callback)) {
-                        callback(data);
-                    }
-                });
-
-            this.listeners.push({ channelName, eventName, callback });
-        } catch (err) {
-            throw new Error("PubSub Add Listener Error => " + JSON.stringify(serializeError(err)));
+        if (!this.channels.some((channel: Channel) => channel.name === channelName)) {
+            this.joinChannel(channelName);
         }
+
+        this.removeListener(channelName, eventName);
+
+        this.channels
+            .filter((channel: Channel) => channel.name === channelName)[0]
+            .bind(eventName, (data: any) => {
+                if (!IsHelper.isNullOrUndefined(callback) && IsHelper.isFunction(callback)) {
+                    callback(data);
+                }
+            });
+
+        this.listeners.push({ channelName, eventName, callback });
     };
 
     public removeListener = (channelName: string, eventName: string): void => {
         this.checkConnection();
 
-        try {
-            if (
-                this.listeners.some(
-                    (listener: PubSubListener) =>
-                        listener.channelName == channelName && listener.eventName === eventName
-                )
-            ) {
-                this.listeners = this.listeners.filter(
-                    (listener: PubSubListener) =>
-                        listener.channelName == channelName && listener.eventName !== eventName
-                );
-                this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind(eventName);
-            }
-        } catch (err) {
-            throw new Error("PubSub Remove Listener Error => " + JSON.stringify(serializeError(err)));
+        if (
+            this.listeners.some(
+                (listener: PubSubListener) => listener.channelName == channelName && listener.eventName === eventName
+            )
+        ) {
+            this.listeners = this.listeners.filter(
+                (listener: PubSubListener) => listener.channelName == channelName && listener.eventName !== eventName
+            );
+            this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind(eventName);
         }
     };
 
@@ -118,27 +107,23 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
             throw new Error("Pusher is not instantiated.");
         }
 
-        try {
-            this.checkConnection(false);
+        this.checkConnection(false);
 
-            if (this.connected) {
-                this.listeners.filter((listener: PubSubListener) => {
-                    this.removeListener(listener.channelName, listener.eventName);
-                });
+        if (this.connected) {
+            this.listeners.filter((listener: PubSubListener) => {
+                this.removeListener(listener.channelName, listener.eventName);
+            });
 
-                this.listeners = [];
+            this.listeners = [];
 
-                this.getJoinedChannels().forEach((channel: string) => {
-                    this.leaveChannel(channel);
-                });
+            this.getJoinedChannels().forEach((channel: string) => {
+                this.leaveChannel(channel);
+            });
 
-                this.channels = [];
+            this.channels = [];
 
-                this.pusher.disconnect();
-                this.connected = false;
-            }
-        } catch (err) {
-            throw new Error("PubSub Disconnect Error => " + JSON.stringify(serializeError(err)));
+            this.pusher.disconnect();
+            this.connected = false;
         }
     };
 
@@ -149,12 +134,8 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
 
         this.checkConnection();
 
-        try {
-            if (!this.channels.some((channel: Channel) => channel.name === channelName)) {
-                this.channels.push(this.pusher.subscribe(channelName));
-            }
-        } catch (err) {
-            throw new Error("PubSub Join Channel Error => " + JSON.stringify(serializeError(err)));
+        if (!this.channels.some((channel: Channel) => channel.name === channelName)) {
+            this.channels.push(this.pusher.subscribe(channelName));
         }
     };
 
@@ -165,14 +146,10 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
 
         this.checkConnection();
 
-        try {
-            if (this.channels.some((channel: Channel) => channel.name === channelName)) {
-                this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind_all();
-                this.channels = this.channels.filter((channel: Channel) => channel.name !== channelName);
-                this.pusher.unsubscribe(channelName);
-            }
-        } catch (err) {
-            throw new Error("PubSub Leave Channel Error => " + JSON.stringify(serializeError(err)));
+        if (this.channels.some((channel: Channel) => channel.name === channelName)) {
+            this.channels.filter((channel: Channel) => channel.name === channelName)[0].unbind_all();
+            this.channels = this.channels.filter((channel: Channel) => channel.name !== channelName);
+            this.pusher.unsubscribe(channelName);
         }
     };
 

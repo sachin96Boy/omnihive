@@ -3,7 +3,6 @@ import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPu
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
 import PusherServer from "pusher";
-import { serializeError } from "serialize-error";
 
 export class PusherPubSubServerWorkerMetadata {
     public appId: string = "";
@@ -25,27 +24,19 @@ export default class PusherPubSubServerWorker extends HiveWorkerBase implements 
     };
 
     public async init(name: string, metadata?: any): Promise<void> {
-        try {
-            await AwaitHelper.execute(super.init(name, metadata));
-            const typedMetadata: PusherPubSubServerWorkerMetadata =
-                this.checkObjectStructure<PusherPubSubServerWorkerMetadata>(PusherPubSubServerWorkerMetadata, metadata);
-            this.server = new PusherServer({
-                appId: typedMetadata.appId,
-                key: typedMetadata.key,
-                secret: typedMetadata.secret,
-                cluster: typedMetadata.cluster,
-            });
-        } catch (err) {
-            throw new Error(JSON.stringify(serializeError(err)));
-        }
+        await AwaitHelper.execute(super.init(name, metadata));
+        const typedMetadata: PusherPubSubServerWorkerMetadata =
+            this.checkObjectStructure<PusherPubSubServerWorkerMetadata>(PusherPubSubServerWorkerMetadata, metadata);
+        this.server = new PusherServer({
+            appId: typedMetadata.appId,
+            key: typedMetadata.key,
+            secret: typedMetadata.secret,
+            cluster: typedMetadata.cluster,
+        });
     }
 
     public emit = async (channelName: string, eventName: string, data: any): Promise<void> => {
-        try {
-            this.server.trigger(channelName, eventName, data);
-        } catch (err) {
-            throw new Error(JSON.stringify(serializeError(err)));
-        }
+        this.server.trigger(channelName, eventName, data);
     };
 
     public getListeners = (): PubSubListener[] => {
@@ -53,6 +44,6 @@ export default class PusherPubSubServerWorker extends HiveWorkerBase implements 
     };
 
     public removeListener = (_channelName: string, _eventName: string): void => {
-        throw new Error("Not Available for This Worker");
+        throw new Error("Remove Listener Not Available for This Worker");
     };
 }

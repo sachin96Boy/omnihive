@@ -24,8 +24,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "launchdarkly-node-server-sdk": "5.14.4",
-        "serialize-error": "8.1.0"
+        "launchdarkly-node-server-sdk": "5.14.4"
     },
     "devDependencies": {
         "chai": "4.3.4",

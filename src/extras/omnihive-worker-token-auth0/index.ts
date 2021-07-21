@@ -6,7 +6,6 @@ import { AuthenticationClient, ClientCredentialsGrantOptions } from "auth0";
 import axios, { AxiosResponse } from "axios";
 import jwtDecode from "jwt-decode";
 import jose from "node-jose";
-import { serializeError } from "serialize-error";
 
 export class AuthZeroTokenWorkerMetadata {
     public clientId: string = "";
@@ -41,21 +40,17 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
     }
 
     public get = async (): Promise<string> => {
-        try {
-            if (this.token !== "" && !this.expired(this.token)) {
-                return this.token;
-            }
-
-            const options: ClientCredentialsGrantOptions = {
-                audience: this.typedMetadata.audience,
-            };
-
-            this.token = (await AwaitHelper.execute(this.authClient.clientCredentialsGrant(options))).access_token;
-            this.token = `${this.typedMetadata.clientId}||${this.token}`;
+        if (this.token !== "" && !this.expired(this.token)) {
             return this.token;
-        } catch (err) {
-            throw new Error(`[ohAccessError] Get Token Error => ${JSON.stringify(serializeError(err))}`);
         }
+
+        const options: ClientCredentialsGrantOptions = {
+            audience: this.typedMetadata.audience,
+        };
+
+        this.token = (await AwaitHelper.execute(this.authClient.clientCredentialsGrant(options))).access_token;
+        this.token = `${this.typedMetadata.clientId}||${this.token}`;
+        return this.token;
     };
 
     public expired = async (token: string): Promise<boolean> => {

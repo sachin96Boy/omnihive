@@ -6,7 +6,6 @@ import { IFeatureWorker } from "@withonevision/omnihive-core/interfaces/IFeature
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import LaunchDarkly, { LDUser } from "launchdarkly-node-server-sdk";
-import { serializeError } from "serialize-error";
 
 type LaunchDarklyFeatureClient = {
     clientSideId: string;
@@ -41,36 +40,32 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
     }
 
     public async init(name: string, metadata?: any): Promise<void> {
-        try {
-            await AwaitHelper.execute(super.init(name, metadata));
-            const typedMetadata: LaunchDarklyNodeFeatureWorkerMetadata =
-                this.checkObjectStructure<LaunchDarklyNodeFeatureWorkerMetadata>(
-                    LaunchDarklyNodeFeatureWorkerMetadata,
-                    metadata
-                );
+        await AwaitHelper.execute(super.init(name, metadata));
+        const typedMetadata: LaunchDarklyNodeFeatureWorkerMetadata =
+            this.checkObjectStructure<LaunchDarklyNodeFeatureWorkerMetadata>(
+                LaunchDarklyNodeFeatureWorkerMetadata,
+                metadata
+            );
 
-            const ldInstance: LaunchDarkly.LDClient = LaunchDarkly.init(typedMetadata.sdkKey);
+        const ldInstance: LaunchDarkly.LDClient = LaunchDarkly.init(typedMetadata.sdkKey);
 
-            const featureClient: LaunchDarklyFeatureClient = {
-                clientSideId: typedMetadata.clientSideId,
-                mobileKey: typedMetadata.mobileKey,
-                project: typedMetadata.project,
-                sdkKey: typedMetadata.sdkKey,
-                instance: ldInstance,
-                ready: false,
-            };
-            this.user = { key: typedMetadata.user };
-            this.project = typedMetadata.project;
+        const featureClient: LaunchDarklyFeatureClient = {
+            clientSideId: typedMetadata.clientSideId,
+            mobileKey: typedMetadata.mobileKey,
+            project: typedMetadata.project,
+            sdkKey: typedMetadata.sdkKey,
+            instance: ldInstance,
+            ready: false,
+        };
+        this.user = { key: typedMetadata.user };
+        this.project = typedMetadata.project;
 
-            featureClient.instance.on("ready", () => {
-                featureClient.ready = true;
-                this.client = featureClient;
-            });
+        featureClient.instance.on("ready", () => {
+            featureClient.ready = true;
+            this.client = featureClient;
+        });
 
-            await AwaitHelper.execute(featureClient.instance.waitForInitialization());
-        } catch (err) {
-            throw new Error("Launch Darkly Init Error => " + JSON.stringify(serializeError(err)));
-        }
+        await AwaitHelper.execute(featureClient.instance.waitForInitialization());
     }
 
     public get = async <T extends unknown>(name: string, defaultValue?: unknown): Promise<T | undefined> => {
@@ -97,7 +92,7 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
         try {
             value = await AwaitHelper.execute(this.client.instance.variation(name, this.user, defaultValue));
         } catch (err) {
-            throw new Error("Failed to retrieve feature.");
+            throw new Error(`Failed to retrieve LaunchDarkly feature ${name}`);
         }
 
         this.features.push({ name, value });

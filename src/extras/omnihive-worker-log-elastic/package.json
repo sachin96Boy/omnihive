@@ -24,8 +24,7 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "7.12.0",
-        "@withonevision/omnihive-core": "workspace:*",
-        "serialize-error": "8.1.0"
+        "@withonevision/omnihive-core": "workspace:*"
     },
     "devDependencies": {
         "chai": "4.3.4",

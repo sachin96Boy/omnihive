@@ -3,7 +3,6 @@ import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWo
 import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import fse from "fs-extra";
-import { serializeError } from "serialize-error";
 import knex, { Knex } from "knex";
 import pg from "pg";
 import { HiveWorkerMetadataConfigDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataConfigDatabase";
@@ -26,47 +25,43 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
     }
 
     public async init(name: string, metadata?: any): Promise<void> {
-        try {
-            await AwaitHelper.execute(super.init(name, metadata));
-            this.typedMetadata = this.checkObjectStructure<HiveWorkerMetadataConfigDatabase>(
-                HiveWorkerMetadataConfigDatabase,
-                metadata
-            );
+        await AwaitHelper.execute(super.init(name, metadata));
+        this.typedMetadata = this.checkObjectStructure<HiveWorkerMetadataConfigDatabase>(
+            HiveWorkerMetadataConfigDatabase,
+            metadata
+        );
 
-            if (IsHelper.isEmptyStringOrWhitespace(this.typedMetadata.configName)) {
-                throw new Error("No config name set to retrieve");
-            }
-
-            this.sqlConfig = {
-                host: this.typedMetadata.serverAddress,
-                port: this.typedMetadata.serverPort,
-                database: this.typedMetadata.databaseName,
-                user: this.typedMetadata.userName,
-                password: this.typedMetadata.password,
-            };
-
-            if (this.typedMetadata.requireSsl) {
-                if (IsHelper.isEmptyStringOrWhitespace(this.typedMetadata.sslCertPath)) {
-                    this.sqlConfig.ssl = this.typedMetadata.requireSsl;
-                } else {
-                    this.sqlConfig.ssl = {
-                        ca: fse.readFileSync(this.typedMetadata.sslCertPath).toString(),
-                    };
-                }
-            }
-
-            this.connectionPool = new pg.Pool({ ...this.sqlConfig });
-
-            const connectionOptions: Knex.Config = {
-                connection: {},
-                pool: { min: 0, max: 10 },
-            };
-            connectionOptions.client = "pg";
-            connectionOptions.connection = this.sqlConfig;
-            this.connection = knex(connectionOptions);
-        } catch (err) {
-            throw new Error("Postgres Init Error => " + JSON.stringify(serializeError(err)));
+        if (IsHelper.isEmptyStringOrWhitespace(this.typedMetadata.configName)) {
+            throw new Error("No config name set to retrieve");
         }
+
+        this.sqlConfig = {
+            host: this.typedMetadata.serverAddress,
+            port: this.typedMetadata.serverPort,
+            database: this.typedMetadata.databaseName,
+            user: this.typedMetadata.userName,
+            password: this.typedMetadata.password,
+        };
+
+        if (this.typedMetadata.requireSsl) {
+            if (IsHelper.isEmptyStringOrWhitespace(this.typedMetadata.sslCertPath)) {
+                this.sqlConfig.ssl = this.typedMetadata.requireSsl;
+            } else {
+                this.sqlConfig.ssl = {
+                    ca: fse.readFileSync(this.typedMetadata.sslCertPath).toString(),
+                };
+            }
+        }
+
+        this.connectionPool = new pg.Pool({ ...this.sqlConfig });
+
+        const connectionOptions: Knex.Config = {
+            connection: {},
+            pool: { min: 0, max: 10 },
+        };
+        connectionOptions.client = "pg";
+        connectionOptions.connection = this.sqlConfig;
+        this.connection = knex(connectionOptions);
     }
 
     public get = async (): Promise<ServerConfig> => {
@@ -244,7 +239,7 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
             await AwaitHelper.execute(client.query("COMMIT"));
         } catch (err) {
             await AwaitHelper.execute(client.query("ROLLBACK"));
-            throw new Error("Postgres Config Save Error => " + JSON.stringify(serializeError(err)));
+            throw err;
         } finally {
             client.release();
         }

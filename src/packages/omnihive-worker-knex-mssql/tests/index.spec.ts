@@ -1,5 +1,6 @@
 /// <reference path="../../../types/globals.omnihive.test.d.ts" />
 
+import { describe, it, beforeEach, before } from "mocha";
 import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";

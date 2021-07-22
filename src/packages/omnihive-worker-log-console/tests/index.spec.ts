@@ -5,6 +5,7 @@ import ConsoleLogWorker from "..";
 import sinon from "sinon";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { describe, it } from "mocha";
 
 const testValues = {
     logOutput: faker.datatype.string(),

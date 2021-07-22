@@ -18,7 +18,8 @@
     },
     "scripts": {
         "build": "yarn node -r ts-node/register ./build.ts",
-        "build:custom": "yarn node -r ts-node/register ./buildCustom.ts",
+        "build:custom": "yarn node -r ts-node/register ./buildManual.ts -w custom",
+        "build:manual": "yarn node -r ts-node/register ./buildManual.ts",
         "build:debug": "yarn node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build.ts -d",
         "commit": "cz",
         "doctor": "yarn dlx @yarnpkg/doctor@2.1.3",

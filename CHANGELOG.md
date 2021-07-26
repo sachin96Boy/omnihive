@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 6.2.57 (2021-07-22)
+
+
+### Build
+
+* **monorepo:** Fixing dockerfile ([91bac8f](https://github.com/WithOneVisionTechnologies/omnihive/commit/91bac8feebda573778d61101d5b2d154bd89f9b1))
+
+### 6.2.56 (2021-07-22)
+
+### 6.2.55 (2021-07-21)
+
+### 6.2.54 (2021-07-16)
+
+### 6.2.53 (2021-07-16)
+
+### 6.2.52 (2021-07-15)
+
+### 6.2.51 (2021-07-08)
+
+### 6.2.50 (2021-07-08)
+
+### 6.2.49 (2021-07-08)
+
+### 6.2.48 (2021-07-02)
+
+### 6.2.47 (2021-07-02)
+
+### 6.2.46 (2021-07-01)
+
 ### 6.2.45 (2021-06-28)
 
 ### 6.2.44 (2021-06-28)

@@ -199,7 +199,9 @@ const getPublishFolders = () => {
 };
 
 const publish = (directory: string) => {
-    fse.rmdirSync(path.join(directory, `tests`), { recursive: true });
+    if (fse.existsSync(path.join(directory, "tests"))) {
+        fse.rmdirSync(path.join(directory, `tests`), { recursive: true });
+    }
 
     let publishString: string = "npm publish";
 

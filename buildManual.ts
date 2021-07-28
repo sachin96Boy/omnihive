@@ -8,6 +8,7 @@ import axios from "axios";
 import { Listr } from "listr2";
 import execa from "execa";
 import { IsHelper } from "src/packages/omnihive-core/helpers/IsHelper";
+import readPkgUp from "read-pkg-up";
 
 interface IArgs {
     ohVersion: string;
@@ -232,23 +233,33 @@ const updateVersions = async () => {
         to: `${args.ohVersion}`,
     };
 
+    let publishVersion: string = args.publishVersion;
+
     await replaceInFile.replaceInFile(replaceOhVersionOptions);
 
     // Replace package versions for publishing if provided
 
-    if (
-        IsHelper.isNullOrUndefined(args.publish) ||
-        args.publish === false ||
-        IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(args.publishVersion)
-    ) {
+    if (IsHelper.isNullOrUndefined(args.publish) || args.publish === false) {
         return;
+    }
+
+    // If version was not specified then get the max version and increment patch number
+    if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(args.publishVersion)) {
+        const maxVersion: string = await getMaxVersionOfPackages();
+
+        // Increment Patch Number
+        const parts: string[] = maxVersion.split(".");
+        parts[parts.length - 1] = (Number.parseInt(parts[parts.length - 1]) + 1).toString();
+
+        // Build version string
+        publishVersion = parts.join(".");
     }
 
     const replacePublishVersionOptions: ReplaceInFileConfig = {
         allowEmptyPaths: true,
         files: [path.join(`dist`, `**`, `package.json`)],
         from: /"version": ".*"/g,
-        to: `"version": "${args.publishVersion}"`,
+        to: `"version": "${publishVersion}"`,
     };
 
     await replaceInFile.replaceInFile(replacePublishVersionOptions);
@@ -257,10 +268,49 @@ const updateVersions = async () => {
         allowEmptyPaths: true,
         files: [path.join(`dist`, `**`, `package.json`)],
         from: /"workspace:\*"/g,
-        to: `"${args.publishVersion}"`,
+        to: `"${publishVersion}"`,
     };
 
     await replaceInFile.replaceInFile(replaceDependentVersionOptions);
+};
+
+const getMaxVersionOfPackages = async (): Promise<string> => {
+    let version = "";
+
+    // Find all valid workspace packages
+    const packageFolders: string[] = await fse
+        .readdirSync(path.join(`.`, `dist`, args.workspace))
+        .filter(
+            (f) =>
+                args.packageList.some((x) => x === "*" || x === f) &&
+                fse.statSync(path.join(`.`, `dist`, args.workspace, f)).isDirectory()
+        );
+
+    // Iterate through each package and grab the max version
+    for (const item of packageFolders) {
+        // Get package names
+        const packageName: string | undefined = (
+            await readPkgUp({
+                cwd: path.join(`.`, `dist`, `custom`, item),
+            })
+        )?.packageJson.name;
+
+        if (packageName) {
+            const packageVersion: string = execa.commandSync(`npm view ${packageName} version`).stdout;
+
+            if (parseVersionNumber(packageVersion) > parseVersionNumber(version)) {
+                version = packageVersion;
+            }
+        }
+    }
+
+    return version;
+};
+
+const parseVersionNumber = (versionNumber: string) => {
+    const parts: string[] = versionNumber.split(".");
+    parts.forEach((x) => x.padStart(5, "0"));
+    return Number.parseInt("1" + parts.join(""));
 };
 
 build();

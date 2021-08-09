@@ -296,10 +296,14 @@ const getMaxVersionOfPackages = async (): Promise<string> => {
         )?.packageJson.name;
 
         if (packageName) {
-            const packageVersion: string = execa.commandSync(`npm view ${packageName} version`).stdout;
+            try {
+                const packageVersion: string = execa.commandSync(`npm view ${packageName} version`).stdout;
 
-            if (parseVersionNumber(packageVersion) > parseVersionNumber(version)) {
-                version = packageVersion;
+                if (parseVersionNumber(packageVersion) > parseVersionNumber(version)) {
+                    version = packageVersion;
+                }
+            } catch (err) {
+                continue;
             }
         }
     }

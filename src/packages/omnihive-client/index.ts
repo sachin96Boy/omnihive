@@ -151,6 +151,8 @@ export class OmniHiveClient {
                         });
 
                         throw new Error(errorString.outputString());
+                    } else if (IsHelper.isNullOrUndefined(response)) {
+                        throw new Error("Undetermined Error. Response is null or undefined.");
                     }
 
                     resolve(response.data.data);

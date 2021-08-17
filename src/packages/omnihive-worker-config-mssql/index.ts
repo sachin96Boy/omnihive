@@ -225,12 +225,12 @@ export default class MssqlConfigWorker extends HiveWorkerBase implements IConfig
             }
 
             for (let variable of currentSettings.environmentVariables.filter((value) => !value.isSystem)) {
-                const deleteConstantsQuery: string = `DELETE oh_srv_config_environment where config_id = ${this.configId} AND environment_key = '${variable.key}'`;
+                const deleteConstantsQuery: string = `DELETE FROM oh_srv_config_environment where config_id = ${this.configId} AND environment_key = '${variable.key}'`;
                 await AwaitHelper.execute(new sql.Request(transaction).query(deleteConstantsQuery));
             }
 
             for (let worker of currentSettings.workers) {
-                const deleteWorkerQuery: string = `DELETE oh_srv_config_workers where config_id = ${this.configId} AND worker_name = '${worker.name}'`;
+                const deleteWorkerQuery: string = `DELETE FROM oh_srv_config_workers where config_id = ${this.configId} AND worker_name = '${worker.name}'`;
                 await AwaitHelper.execute(new sql.Request(transaction).query(deleteWorkerQuery));
             }
 

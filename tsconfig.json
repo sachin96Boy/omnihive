@@ -10,7 +10,7 @@
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
-        "jsx": "preserve",
+        "jsx": "react",
         "lib": ["ES2020", "DOM"],
         "module": "CommonJS",
         "moduleResolution": "Node",

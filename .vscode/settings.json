@@ -44,7 +44,9 @@
         "omnihive",
         "client",
         "worker",
-        "monorepo"
+        "monorepo",
+        "desktop"
     ],
-    "typescript.preferences.quoteStyle": "double"
+    "typescript.preferences.quoteStyle": "double",
+    "npm.packageManager": "yarn"
 }

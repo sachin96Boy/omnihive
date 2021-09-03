@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --omnihive-background-color: #212121;
+    --omnihive-dark-grey: #969696;
+    --omnihive-light-grey: #ababab;
+    --omnihive-orange: #d38d15;
+    --omnihive-orange-hover: #eca62d;
+    --omnihive-sidebar: #373737;
+}
+
+.dock-content .dock-tabpane {
+    overflow-y: scroll;
+    padding-bottom: 30px;
+}
+
+.dock-content-holder {
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.dock-divider {
+    background: var(--omnihive-background-color);
+    flex-basis: 1px;
+}
+
+.dock-drop-layer .dock-drop-square {
+    background: #4d4d4d;
+}
+
+.dock-drop-layer .dock-drop-square:hover {
+    background: var(--omnihive-orange);
+}
+
+.dock-ink-bar {
+    background-color: var(--omnihive-orange);
+}
+
+.dock-layout > .dock-drop-indicator {
+    background: var(--omnihive-orange);
+    opacity: 0.4;
+}
+
+.dock-nav {
+    height: 34px;
+}
+
+.dock-panel {
+    border: none;
+    background: black;
+    background-color: black;
+}
+
+.dock-tab {
+    background-color: var(--omnihive-background-color);
+    color: white;
+    border: none !important;
+    width: 200px;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.dock-tab > div > .drag-initiator {
+    width: 150px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.dock-tab:hover {
+    color: var(--omnihive-orange);
+}
+
+.dock-tab-active {
+    background-color: black;
+}
+
+.dock-tab-close-btn {
+    margin-right: 10px;
+}
+
+.dock-top .dock-bar {
+    background: var(--omnihive-background-color) !important;
+    background-color: var(--omnihive-background-color) !important;
+    height: 35px;
+    border-bottom: none;
+    padding-left: 0px;
+}

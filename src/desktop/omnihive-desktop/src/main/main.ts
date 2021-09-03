@@ -8,7 +8,6 @@ import { AppSettings } from "@withonevision/omnihive-desktop-core/models/AppSett
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import _ from "lodash";
 import { ipcMain } from "electron-better-ipc";
-import keytar from "keytar";
 
 // Variables
 let store: ElectronStore;
@@ -45,24 +44,28 @@ const getNewEncryptionKey = (length: number) => {
     return result;
 };
 
-keytar.getPassword("OmniHive Desktop", "Encryption Key").then((key: string) => {
-    if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(key)) {
-        key = getNewEncryptionKey(32);
-        keytar.setPassword("OmniHive Desktop", "Encryption Key", key);
-    } else {
-        encryptionKey = key;
-    }
+if (!fs.existsSync(path.join(app.getPath("userData"), "keys"))) {
+    fs.mkdirSync(path.join(app.getPath("userData"), "keys"));
+}
 
-    // Initiate settings
-    store = new ElectronStore({ encryptionKey });
-    const savedSettings = store.get("appSettings") as AppSettings;
+const keyStore = new ElectronStore({ cwd: path.join(app.getPath("userData"), "keys") });
 
-    if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(savedSettings)) {
-        appSettings = defaultSettingsSchema;
-    } else {
-        appSettings = savedSettings;
-    }
-});
+if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(keyStore.get("master") as string)) {
+    encryptionKey = getNewEncryptionKey(32);
+    keyStore.set("master", encryptionKey);
+} else {
+    encryptionKey = keyStore.get("master") as string;
+}
+
+// Initiate settings
+store = new ElectronStore({ encryptionKey });
+const savedSettings = store.get("appSettings") as AppSettings;
+
+if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(savedSettings)) {
+    appSettings = defaultSettingsSchema;
+} else {
+    appSettings = savedSettings;
+}
 
 // Setup menu
 const menuTemplate: MenuItemConstructorOptions[] = [];

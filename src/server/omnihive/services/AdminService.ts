@@ -200,7 +200,11 @@ export class AdminService {
                         verified: true,
                     });
                 } catch (e) {
-                    this.sendErrorToSocket(AdminEventType.ConfigSaveRequest, socket, serializeError(e));
+                    this.sendErrorToSocket(
+                        AdminEventType.ConfigSaveRequest,
+                        socket,
+                        serializeError(e as Error).message ?? ""
+                    );
                     return;
                 }
             });

@@ -313,7 +313,7 @@ export class CommonService {
                 try {
                     execa.commandSync(removeCommand.outputString(), { cwd: global.omnihive.ohDirName });
                 } catch (removeError) {
-                    logWorker?.write(OmniHiveLogLevel.Error, removeError.stderr.toString().trim());
+                    logWorker?.write(OmniHiveLogLevel.Error, (removeError as any).stderr.toString().trim());
                     throw removeError;
                 }
             }
@@ -324,7 +324,7 @@ export class CommonService {
             try {
                 execa.commandSync("yarn cache clean", { cwd: global.omnihive.ohDirName });
             } catch (cleanError) {
-                logWorker?.write(OmniHiveLogLevel.Error, cleanError.stderr.toString().trim());
+                logWorker?.write(OmniHiveLogLevel.Error, (cleanError as any).stderr.toString().trim());
                 throw cleanError;
             }
 
@@ -380,7 +380,7 @@ export class CommonService {
                 try {
                     execa.commandSync(addCommand.outputString(), { cwd: global.omnihive.ohDirName });
                 } catch (addError) {
-                    logWorker?.write(OmniHiveLogLevel.Error, addError.stderr.toString().trim());
+                    logWorker?.write(OmniHiveLogLevel.Error, (addError as any).stderr.toString().trim());
                     throw addError;
                 }
             }

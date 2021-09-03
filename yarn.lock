@@ -4680,7 +4680,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/cookie@npm:^0.4.1":
+"@types/cookie@npm:^0.4.0, @types/cookie@npm:^0.4.1":
   version: 0.4.1
   resolution: "@types/cookie@npm:0.4.1"
   checksum: 3275534ed69a76c68eb1a77d547d75f99fedc80befb75a3d1d03662fb08d697e6f8b1274e12af1a74c6896071b11510631ba891f64d30c78528d0ec45a9c1a18
@@ -4706,7 +4706,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/cors@npm:2.8.12, @types/cors@npm:^2.8.12":
+"@types/cors@npm:2.8.12, @types/cors@npm:^2.8.12, @types/cors@npm:^2.8.8":
   version: 2.8.12
   resolution: "@types/cors@npm:2.8.12"
   checksum: 8c45f112c7d1d2d831b4b266f2e6ed33a1887a35dcbfe2a18b28370751fababb7cd045e745ef84a523c33a25932678097bf79afaa367c6cb3fa0daa7a6438257
@@ -5201,10 +5201,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:16.7.10, @types/node@npm:>=10.0.0":
+"@types/node@npm:*, @types/node@npm:>=10.0.0":
   version: 16.7.10
   resolution: "@types/node@npm:16.7.10"
   checksum: 0518803caa1a14f4070e770a280eda1c4b4581a425cbda481cdd54b1f34a7ea497ff067fd23b90e3d4f4fdcfba15c1316182875e9cf9f5b2e880de1e595de053
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:14.17.14, @types/node@npm:^14.0.10, @types/node@npm:^14.6.2":
+  version: 14.17.14
+  resolution: "@types/node@npm:14.17.14"
+  checksum: 66ed675a324fdddc4f693f1b240c0d81a9f53e1c68f7de8b84d02d65c0b447f9fa30d318481d04e1502f68dd37091b5cadc59633b57246582ad25e3fa835cd7d
   languageName: node
   linkType: hard
 
@@ -5212,13 +5219,6 @@ __metadata:
   version: 10.17.60
   resolution: "@types/node@npm:10.17.60"
   checksum: 2cdb3a77d071ba8513e5e8306fa64bf50e3c3302390feeaeff1fd325dd25c8441369715dfc8e3701011a72fed5958c7dfa94eb9239a81b3c286caa4d97db6eef
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^14.0.10, @types/node@npm:^14.6.2":
-  version: 14.17.14
-  resolution: "@types/node@npm:14.17.14"
-  checksum: 66ed675a324fdddc4f693f1b240c0d81a9f53e1c68f7de8b84d02d65c0b447f9fa30d318481d04e1502f68dd37091b5cadc59633b57246582ad25e3fa835cd7d
   languageName: node
   linkType: hard
 
@@ -9058,6 +9058,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:4.1.1":
+  version: 4.1.1
+  resolution: "chalk@npm:4.1.1"
+  dependencies:
+    ansi-styles: ^4.1.0
+    supports-color: ^7.1.0
+  checksum: 036e973e665ba1a32c975e291d5f3d549bceeb7b1b983320d4598fb75d70fe20c5db5d62971ec0fe76cdbce83985a00ee42372416abfc3a5584465005a7855ed
+  languageName: node
+  linkType: hard
+
 "chalk@npm:4.1.2, chalk@npm:^4.0.0, chalk@npm:^4.1.0, chalk@npm:^4.1.1, chalk@npm:^4.1.2":
   version: 4.1.2
   resolution: "chalk@npm:4.1.2"
@@ -10783,6 +10793,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dayjs@npm:1.10.5":
+  version: 1.10.5
+  resolution: "dayjs@npm:1.10.5"
+  checksum: a4b6565becdb7607e381666bf1b64a48ade2fcf305c18e4e9c8f9346aa80436a0319a2856f86a6e4b12d6041e3ba3619e9995bde2b44ff9887dcb402e176aba1
+  languageName: node
+  linkType: hard
+
 "dayjs@npm:1.10.6":
   version: 1.10.6
   resolution: "dayjs@npm:1.10.6"
@@ -12088,6 +12105,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"engine.io-client@npm:~5.1.1":
+  version: 5.1.2
+  resolution: "engine.io-client@npm:5.1.2"
+  dependencies:
+    base64-arraybuffer: 0.1.4
+    component-emitter: ~1.3.0
+    debug: ~4.3.1
+    engine.io-parser: ~4.0.1
+    has-cors: 1.1.0
+    parseqs: 0.0.6
+    parseuri: 0.0.6
+    ws: ~7.4.2
+    yeast: 0.1.2
+  checksum: 910456281c62fd3e4805dea833163c043c53f10643b57de54bc9537d4d50e3b3ffec4b8903fcd921ce29e68f027803c54ea28018dda9a4dd41f06bf76f060f05
+  languageName: node
+  linkType: hard
+
 "engine.io-client@npm:~5.2.0":
   version: 5.2.0
   resolution: "engine.io-client@npm:5.2.0"
@@ -12112,6 +12146,21 @@ __metadata:
   dependencies:
     base64-arraybuffer: 0.1.4
   checksum: 9e2db35acb6f2e8269a7c5cd8ca40d1cd7277e5c6472e7341d0f85a8d09a6788427c1f55cc5a8fa4a44213d89d2bd2494f230d0624605d88f7aae32651a3c44b
+  languageName: node
+  linkType: hard
+
+"engine.io@npm:~5.1.0":
+  version: 5.1.1
+  resolution: "engine.io@npm:5.1.1"
+  dependencies:
+    accepts: ~1.3.4
+    base64id: 2.0.0
+    cookie: ~0.4.1
+    cors: ~2.8.5
+    debug: ~4.3.1
+    engine.io-parser: ~4.0.0
+    ws: ~7.4.2
+  checksum: af06176d422ef687e9fed435b50f83298ef598252eb392748635a73ac48e3fcb2745db7642c60ef821a985d991907d69195c744481061888c725e895d1e45c7a
   languageName: node
   linkType: hard
 
@@ -13135,6 +13184,13 @@ __metadata:
   version: 3.5.2
   resolution: "figgy-pudding@npm:3.5.2"
   checksum: 4090bd66193693dcda605e44d6b8715d8fb5c92a67acd57826e55cf816a342f550d57e5638f822b39366e1b2fdb244e99b3068a37213aa1d6c1bf602b8fde5ae
+  languageName: node
+  linkType: hard
+
+"figlet@npm:1.5.0":
+  version: 1.5.0
+  resolution: "figlet@npm:1.5.0"
+  checksum: 89641163b38f6f76e798d878cc6ba04cf978f6962c54f52521bc6630fd6cfb4d2cbc2cb97465a8049bf0e84a22a47159da3264590dfd307d45e39f23bc4087df
   languageName: node
   linkType: hard
 
@@ -17010,13 +17066,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"keytar@link:./src::locator=root%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "keytar@link:./src::locator=root%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"keytar@npm:7.7.0, keytar@npm:^7.3.0":
+"keytar@npm:^7.3.0":
   version: 7.7.0
   resolution: "keytar@npm:7.7.0"
   dependencies:
@@ -19045,17 +19095,6 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"node-loader@npm:2.0.0":
-  version: 2.0.0
-  resolution: "node-loader@npm:2.0.0"
-  dependencies:
-    loader-utils: ^2.0.0
-  peerDependencies:
-    webpack: ^5.0.0
-  checksum: 9252a92b226c0e6fdd29fef92d9853d6c389a4c65119a32306dc12cee7886f2ab4dde333dda5e37df92283c34bd0267e98c384be6d548dbe69676e3343f549ea
-  languageName: node
-  linkType: hard
-
 "node-modules-regexp@npm:^1.0.0":
   version: 1.0.0
   resolution: "node-modules-regexp@npm:1.0.0"
@@ -19596,7 +19635,7 @@ fsevents@^1.2.7:
     "@types/css-minimizer-webpack-plugin": 3.0.2
     "@types/lodash": 4.14.172
     "@types/mini-css-extract-plugin": 2.2.0
-    "@types/node": 16.7.10
+    "@types/node": 14.17.14
     "@types/react": 17.0.19
     "@types/react-dom": 17.0.9
     "@types/terser-webpack-plugin": 5.2.0
@@ -19617,10 +19656,8 @@ fsevents@^1.2.7:
     esbuild: 0.12.25
     fork-ts-checker-webpack-plugin: 6.3.3
     html-webpack-plugin: 5.3.2
-    keytar: 7.7.0
     lodash: 4.17.21
     mini-css-extract-plugin: 2.2.2
-    node-loader: 2.0.0
     postcss: 8.3.6
     postcss-loader: 6.1.1
     react: 17.0.2
@@ -19646,7 +19683,7 @@ fsevents@^1.2.7:
     "@types/lodash.isequal": 4.5.5
     "@types/lodash.orderby": 4.6.6
     "@types/mocha": 9.0.0
-    "@types/node": 16.7.10
+    "@types/node": 14.17.14
     "@types/react": 17.0.19
     "@types/react-copy-to-clipboard": 5.0.1
     "@types/react-dom": 17.0.9
@@ -19710,7 +19747,7 @@ fsevents@^1.2.7:
     "@types/figlet": 1.5.4
     "@types/forever-monitor": 1.7.6
     "@types/ms": 0.7.31
-    "@types/node": 16.7.10
+    "@types/node": 14.17.14
     "@types/node-ipc": 9.1.5
     "@types/redis": 2.8.31
     "@types/swagger-ui-express": 4.1.3
@@ -19733,14 +19770,14 @@ fsevents@^1.2.7:
     "@withonevision/omnihive-worker-server-v1": "workspace:*"
     "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*"
     chai: 4.3.4
-    chalk: 4.1.2
-    dayjs: 1.10.6
+    chalk: 4.1.1
+    dayjs: 1.10.5
     dotenv: 10.0.0
     ejs: 3.1.6
     execa: 5.1.1
     exit-hook: 2.2.1
     express: 4.17.1
-    figlet: 1.5.2
+    figlet: 1.5.0
     forever-monitor: 3.0.3
     fs-extra: 10.0.0
     helmet: 4.6.0
@@ -19750,14 +19787,14 @@ fsevents@^1.2.7:
     read-pkg-up: 7.0.1
     redis: 3.1.2
     serialize-error: 8.1.0
-    socket.io: 4.2.0
-    socket.io-client: 4.2.0
+    socket.io: 4.1.2
+    socket.io-client: 4.1.2
     swagger-ui-express: 4.1.6
     ts-node: 10.2.1
     typescript: 4.4.2
     uuid: 8.3.2
     yaml: 1.10.2
-    yargs: 17.1.1
+    yargs: 17.0.1
   bin:
     omnihive: ./omnihive.js
   languageName: unknown
@@ -23323,7 +23360,7 @@ fsevents@^1.2.7:
     "@types/figlet": 1.5.4
     "@types/fs-extra": 9.0.12
     "@types/mocha": 9.0.0
-    "@types/node": 16.7.10
+    "@types/node": 14.17.14
     "@types/tar": 4.0.5
     "@types/yargs": 17.0.2
     "@typescript-eslint/eslint-plugin": 4.30.0
@@ -23348,7 +23385,6 @@ fsevents@^1.2.7:
     figlet: 1.5.2
     fs-extra: 10.0.0
     husky: 7.0.2
-    keytar: "link:./src"
     listr2: 3.11.1
     mocha: 9.1.1
     nodemon: 2.0.12
@@ -24069,6 +24105,21 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"socket.io-client@npm:4.1.2":
+  version: 4.1.2
+  resolution: "socket.io-client@npm:4.1.2"
+  dependencies:
+    "@types/component-emitter": ^1.2.10
+    backo2: ~1.0.2
+    component-emitter: ~1.3.0
+    debug: ~4.3.1
+    engine.io-client: ~5.1.1
+    parseuri: 0.0.6
+    socket.io-parser: ~4.0.4
+  checksum: c9815738c1cb8c05b9921f7ebf89bd1231f8c84ce664a90e45581550360c392f7f1893959c5e05ff89f9cf786eda8bbd79992967873818cf65d6091c66e30a51
+  languageName: node
+  linkType: hard
+
 "socket.io-client@npm:4.2.0":
   version: 4.2.0
   resolution: "socket.io-client@npm:4.2.0"
@@ -24084,7 +24135,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"socket.io-parser@npm:~4.0.4":
+"socket.io-parser@npm:~4.0.3, socket.io-parser@npm:~4.0.4":
   version: 4.0.4
   resolution: "socket.io-parser@npm:4.0.4"
   dependencies:
@@ -24092,6 +24143,23 @@ fsevents@^1.2.7:
     component-emitter: ~1.3.0
     debug: ~4.3.1
   checksum: c173b4f3747c51e2af802eca35212f4dcfa8fe55d7fdc07b9a01da1ecc956791c1bf6591e307952548eab69e6500bcfe27cea8aff1386b860d9bb51f98e4fafb
+  languageName: node
+  linkType: hard
+
+"socket.io@npm:4.1.2":
+  version: 4.1.2
+  resolution: "socket.io@npm:4.1.2"
+  dependencies:
+    "@types/cookie": ^0.4.0
+    "@types/cors": ^2.8.8
+    "@types/node": ">=10.0.0"
+    accepts: ~1.3.4
+    base64id: ~2.0.0
+    debug: ~4.3.1
+    engine.io: ~5.1.0
+    socket.io-adapter: ~2.3.0
+    socket.io-parser: ~4.0.3
+  checksum: 88d2044fcf2cd5d392ca08e4a799c6ff0a06467ecb380ce40ef56b826fe959e763e1ca5ffadff41197bd5bc4ffdacd6cba87c72733ddbdca3965330f2e1484c8
   languageName: node
   linkType: hard
 
@@ -27760,6 +27828,21 @@ typescript@^3.9.7:
     y18n: ^5.0.5
     yargs-parser: ^20.2.2
   checksum: b14afbb51e3251a204d81937c86a7e9d4bdbf9a2bcee38226c900d00f522969ab675703bee2a6f99f8e20103f608382936034e64d921b74df82b63c07c5e8f59
+  languageName: node
+  linkType: hard
+
+"yargs@npm:17.0.1":
+  version: 17.0.1
+  resolution: "yargs@npm:17.0.1"
+  dependencies:
+    cliui: ^7.0.2
+    escalade: ^3.1.1
+    get-caller-file: ^2.0.5
+    require-directory: ^2.1.1
+    string-width: ^4.2.0
+    y18n: ^5.0.5
+    yargs-parser: ^20.2.2
+  checksum: 4ffffa5a82647e5d07840b64bed88c365b901d3d4a4c51745dddb10d177902d85014026d7224aae18c42df9ca3f75a41c5aff556e5342e2f8ffc5177d149cd17
   languageName: node
   linkType: hard
 

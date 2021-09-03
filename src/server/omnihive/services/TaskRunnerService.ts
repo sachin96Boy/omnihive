@@ -49,7 +49,7 @@ export class TaskRunnerService {
                 try {
                     workerArgs = yaml.parse(fse.readFileSync(commandLineArgs.taskRunnerArgs, { encoding: "utf8" }));
                 } catch {
-                    this.logError(commandLineArgs.taskRunnerWorker, err);
+                    this.logError(commandLineArgs.taskRunnerWorker, err as Error);
                 }
             }
         }
@@ -62,7 +62,7 @@ export class TaskRunnerService {
                 await AwaitHelper.execute(taskWorker.instance.execute());
             }
         } catch (err) {
-            this.logError(commandLineArgs.taskRunnerWorker, err);
+            this.logError(commandLineArgs.taskRunnerWorker, err as Error);
         }
 
         process.exit();

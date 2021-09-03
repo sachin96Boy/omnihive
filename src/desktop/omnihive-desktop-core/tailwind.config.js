@@ -34,6 +34,7 @@ module.exports = {
     },
     variants: {
         extend: {
+            cursor: ["hover"],
             opacity: ["disabled"],
         },
     },

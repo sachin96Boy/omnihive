@@ -100,7 +100,7 @@ export class ServerService {
             await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Online));
         } catch (err) {
             // Problem...spin up admin server
-            await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Admin, err));
+            await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Admin, err as Error));
             logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
         }
     };

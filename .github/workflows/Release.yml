@@ -34,7 +34,7 @@ jobs:
                   rm gh.txt
             - name: Run Monorepo Build Script
               id: monorepoBuild
-              run: yarn node -r ts-node/register ./build.ts
+              run: yarn node -r ts-node/register ./buildServer.ts
             - name: Log into Docker Hub
               uses: docker/login-action@v1
               with:
@@ -49,7 +49,7 @@ jobs:
                   context: ./
             - name: Get Version Number
               id: version
-              run: echo "::set-output name=VERSION::$(node -p -e "require('./dist/packages/omnihive/package.json').version")"
+              run: echo "::set-output name=VERSION::$(node -p -e "require('./dist/server/omnihive/package.json').version")"
             - name: Push to Docker Hub - Version Number
               uses: docker/build-push-action@v2
               with:

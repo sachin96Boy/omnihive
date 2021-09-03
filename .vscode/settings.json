@@ -13,7 +13,7 @@
     },
     "editor.formatOnSave": true,
     "mocha.requires": ["ts-node/register"],
-    "mocha.files.glob": "packages/**/tests/**/*.ts",
+    "mocha.files.glob": "server/**/tests/**/*.ts",
     "mocha.runTestsOnSave": "true",
     "mocha.showInExplorer": false,
     "mocha.options": {

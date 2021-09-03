@@ -29,7 +29,7 @@
         "types": ["mocha", "node"]
     },
     "paths": {
-        "@withonevision/*": ["./src/packages/*"]
+        "@withonevision/*": ["./src/desktop/*", "./src/server/*", "./src/extras/*", "./src/extensions/*"]
     },
     "include": ["./src/**/*.ts", "./src/**/*.tsx", "./src/**/package.json"],
     "exclude": [".yarn/**/*", "node_modules/**/*", "**/node_modules/**/*", "./dist/**/*", "src/**/*.spec.ts" ]

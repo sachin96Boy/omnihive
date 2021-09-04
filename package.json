@@ -35,6 +35,9 @@
     },
     "dependencies": {
         "electron": "link:./src",
+        "electron-builder": "link:./src",
+        "electron-esbuild": "link:./src",
+        "esbuild": "link:./src",
         "src": "link:./src"
     },
     "devDependencies": {

@@ -1,13 +1,19 @@
 {
   "compilerOptions": {
-    "jsx": "react",
-    "target": "es2015",
+    "target": "esnext",
+    "lib": ["DOM", "DOM.Iterable", "esnext"],
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "moduleResolution": "node",
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
     "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,
-    "baseUrl": "./",
     "paths": {
       "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../other/*"]
     },

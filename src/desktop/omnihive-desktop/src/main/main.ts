@@ -67,6 +67,10 @@ if (IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(savedSettings)) {
     appSettings = savedSettings;
 }
 
+if (is.development) {
+    app.commandLine.appendSwitch("remote-debugging-port", "8315");
+}
+
 // Setup menu
 const menuTemplate: MenuItemConstructorOptions[] = [];
 

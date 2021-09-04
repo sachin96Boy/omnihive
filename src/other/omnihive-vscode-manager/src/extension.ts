@@ -26,7 +26,8 @@ export const activate = (context: vscode.ExtensionContext) => {
     vscode.window.registerTreeDataProvider("ohServers", ExtensionStore.getSingleton().extensionTreeProvider);
 
     // Get servers
-    const servers: RegisteredServerModel[] | undefined = context.globalState.get<RegisteredServerModel[]>("oh:registeredServers");
+    const servers: RegisteredServerModel[] | undefined =
+        context.globalState.get<RegisteredServerModel[]>("oh:registeredServers");
 
     if (!IsHelper.isNullOrUndefined(servers) && IsHelper.isArray(servers) && servers.length > 0) {
         for (const server of servers) {

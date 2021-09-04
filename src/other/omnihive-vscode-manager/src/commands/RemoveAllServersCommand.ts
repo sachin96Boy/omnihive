@@ -16,7 +16,11 @@ export class RemoveAllServersCommand {
 
         const cmdOhRemoveAllServers = vscode.commands.registerCommand(VsCodeCommand.RemoveAllServers, () => {
             vscode.window
-                .showWarningMessage("Are you sure you want to remove all servers?", { modal: true }, ...removeAllServersMessageItems)
+                .showWarningMessage(
+                    "Are you sure you want to remove all servers?",
+                    { modal: true },
+                    ...removeAllServersMessageItems
+                )
                 .then((value: vscode.MessageItem | undefined) => {
                     if (value?.title === "OK") {
                         ExtensionStore.getSingleton().removeAllServers(context);

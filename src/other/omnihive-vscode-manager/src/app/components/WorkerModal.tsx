@@ -405,7 +405,11 @@ export const WorkerModal: React.FC<Props> = (props): React.ReactElement => {
                                 wrapEnabled={true}
                                 height="600px"
                                 width="95%"
-                                mode={props.extensionConfiguration.generalEditorMarkupFormat === EditorMarkupFormat.YAML ? "yaml" : "json"}
+                                mode={
+                                    props.extensionConfiguration.generalEditorMarkupFormat === EditorMarkupFormat.YAML
+                                        ? "yaml"
+                                        : "json"
+                                }
                                 theme="tomorrow_night"
                                 name="metadata"
                                 highlightActiveLine={true}
@@ -413,7 +417,9 @@ export const WorkerModal: React.FC<Props> = (props): React.ReactElement => {
                                 onLoad={(editor) => {
                                     switch (props.extensionConfiguration.generalEditorMarkupFormat) {
                                         case EditorMarkupFormat.JSON:
-                                            editor.getSession().setValue(JSON.stringify(props.editorObject.metadata, null, "\t"));
+                                            editor
+                                                .getSession()
+                                                .setValue(JSON.stringify(props.editorObject.metadata, null, "\t"));
                                             break;
                                         case EditorMarkupFormat.YAML:
                                             editor.getSession().setValue(yaml.stringify(props.editorObject.metadata));

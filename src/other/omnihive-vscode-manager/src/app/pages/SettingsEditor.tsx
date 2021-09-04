@@ -55,7 +55,9 @@ export const SettingsEditor: React.FC<Props> = (props): React.ReactElement => {
     const [toastSuccessMessage, setToastSuccessMessage] = React.useState<string>("");
     const [workerEditorObject, setWorkerEditorObject] = React.useState<WorkerEditorObject>(undefined);
 
-    const server = props.panelProps.registeredServers.find((server: RegisteredServerModel) => server.label === props.panelProps.panelData.serverLabel);
+    const server = props.panelProps.registeredServers.find(
+        (server: RegisteredServerModel) => server.label === props.panelProps.panelData.serverLabel
+    );
 
     React.useEffect(() => {
         const url: URL = new URL(server.address);
@@ -66,8 +68,14 @@ export const SettingsEditor: React.FC<Props> = (props): React.ReactElement => {
 
         socket.on("connect", () => {
             socketReconnectInProgress = false;
-            socket.emit(AdminEventType.StatusRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
-            socket.emit(AdminEventType.ConfigRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
+            socket.emit(AdminEventType.StatusRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
+            socket.emit(AdminEventType.ConfigRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
         });
 
         socket.on("connect_error", () => {
@@ -96,29 +104,32 @@ export const SettingsEditor: React.FC<Props> = (props): React.ReactElement => {
             }, 1000);
         });
 
-        socket.on(AdminEventType.ConfigResponse, (message: AdminResponse<{ config: ServerConfig; systemEnvironmentVariables: EnvironmentVariable[] }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
-            }
+        socket.on(
+            AdminEventType.ConfigResponse,
+            (message: AdminResponse<{ config: ServerConfig; systemEnvironmentVariables: EnvironmentVariable[] }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
 
-            if (IsHelper.isNullOrUndefined(message) || !message.requestComplete || !message.data.config) {
-                showError(message.requestError);
-                return;
-            }
+                if (IsHelper.isNullOrUndefined(message) || !message.requestComplete || !message.data.config) {
+                    showError(message.requestError);
+                    return;
+                }
 
-            if (
-                !IsHelper.isNullOrUndefined(message.data.systemEnvironmentVariables) &&
-                IsHelper.isArray(message.data.systemEnvironmentVariables) &&
-                message.data.systemEnvironmentVariables.length > 0
-            ) {
-                message.data.systemEnvironmentVariables.forEach((envVariable: EnvironmentVariable) => {
-                    message.data.config.environmentVariables.push(envVariable);
-                });
-            }
+                if (
+                    !IsHelper.isNullOrUndefined(message.data.systemEnvironmentVariables) &&
+                    IsHelper.isArray(message.data.systemEnvironmentVariables) &&
+                    message.data.systemEnvironmentVariables.length > 0
+                ) {
+                    message.data.systemEnvironmentVariables.forEach((envVariable: EnvironmentVariable) => {
+                        message.data.config.environmentVariables.push(envVariable);
+                    });
+                }
 
-            setServerConfig(message.data.config);
-            setupComponent(message.data.config);
-        });
+                setServerConfig(message.data.config);
+                setupComponent(message.data.config);
+            }
+        );
 
         socket.on(AdminEventType.ConfigSaveResponse, (message: AdminResponse<{ verified: boolean }>) => {
             if (message.serverGroupId !== server.serverGroupId) {
@@ -147,42 +158,45 @@ export const SettingsEditor: React.FC<Props> = (props): React.ReactElement => {
             }, props.panelProps.extensionConfiguration.generalAlertSuccessTimeout);
         });
 
-        socket.on(AdminEventType.StatusResponse, (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
-            }
+        socket.on(
+            AdminEventType.StatusResponse,
+            (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
 
-            switch (message.data.serverStatus) {
-                case ServerStatus.Admin:
-                    setBeeImg(props.panelProps.imageSources.beeLightOrange);
-                    setShowCommands(true);
-                    break;
-                case ServerStatus.Error:
-                    setBeeImg(props.panelProps.imageSources.beeLightRed);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Offline:
-                    setBeeImg(props.panelProps.imageSources.beeLightRed);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Online:
-                    setBeeImg(props.panelProps.imageSources.beeLightGreen);
-                    setShowCommands(true);
-                    break;
-                case ServerStatus.Rebuilding:
-                    setBeeImg(props.panelProps.imageSources.beeLightYellow);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Unknown:
-                    setBeeImg(props.panelProps.imageSources.beeLightGrey);
-                    setShowCommands(false);
-                    break;
-                default:
-                    setBeeImg(props.panelProps.imageSources.beeLightGrey);
-                    setShowCommands(false);
-                    break;
+                switch (message.data.serverStatus) {
+                    case ServerStatus.Admin:
+                        setBeeImg(props.panelProps.imageSources.beeLightOrange);
+                        setShowCommands(true);
+                        break;
+                    case ServerStatus.Error:
+                        setBeeImg(props.panelProps.imageSources.beeLightRed);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Offline:
+                        setBeeImg(props.panelProps.imageSources.beeLightRed);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Online:
+                        setBeeImg(props.panelProps.imageSources.beeLightGreen);
+                        setShowCommands(true);
+                        break;
+                    case ServerStatus.Rebuilding:
+                        setBeeImg(props.panelProps.imageSources.beeLightYellow);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Unknown:
+                        setBeeImg(props.panelProps.imageSources.beeLightGrey);
+                        setShowCommands(false);
+                        break;
+                    default:
+                        setBeeImg(props.panelProps.imageSources.beeLightGrey);
+                        setShowCommands(false);
+                        break;
+                }
             }
-        });
+        );
     }, []);
 
     React.useEffect(() => {
@@ -407,9 +421,21 @@ export const SettingsEditor: React.FC<Props> = (props): React.ReactElement => {
 
             nextIndex++;
 
-            rowCopy.push({ index: nextIndex, key: model.key, value: model.value, type: model.type, isSystem: model.isSystem });
+            rowCopy.push({
+                index: nextIndex,
+                key: model.key,
+                value: model.value,
+                type: model.type,
+                isSystem: model.isSystem,
+            });
         } else {
-            rowCopy.splice(model.index, 1, { index: model.index, key: model.key, value: model.value, type: model.type, isSystem: model.isSystem });
+            rowCopy.splice(model.index, 1, {
+                index: model.index,
+                key: model.key,
+                value: model.value,
+                type: model.type,
+                isSystem: model.isSystem,
+            });
         }
 
         setDataTableRows(rowCopy);
@@ -634,11 +660,23 @@ export const SettingsEditor: React.FC<Props> = (props): React.ReactElement => {
                 />
             )}
             {!mouseInBounds && showSave && (
-                <ToastWarning show={true} message={"Please note you have unsaved changes"} warningPng={props.panelProps.imageSources.warning} />
+                <ToastWarning
+                    show={true}
+                    message={"Please note you have unsaved changes"}
+                    warningPng={props.panelProps.imageSources.warning}
+                />
             )}
             {/* Toast Handlers */}
-            <ToastSuccess show={showToastSuccess} message={toastSuccessMessage} successPng={props.panelProps.imageSources.success} />
-            <ToastError show={showToastError} message={toastErrorMessage} errorPng={props.panelProps.imageSources.error} />
+            <ToastSuccess
+                show={showToastSuccess}
+                message={toastSuccessMessage}
+                successPng={props.panelProps.imageSources.success}
+            />
+            <ToastError
+                show={showToastError}
+                message={toastErrorMessage}
+                errorPng={props.panelProps.imageSources.error}
+            />
 
             <div className="flex flex-col h-screen">
                 {/* Header */}
@@ -649,7 +687,8 @@ export const SettingsEditor: React.FC<Props> = (props): React.ReactElement => {
                         </div>
                         <div>
                             <span className="font-bold text-white text-base">
-                                OMNIHIVE EDIT {props.settingsSection.toUpperCase()} - {props.panelProps.panelData.serverLabel.toUpperCase()}
+                                OMNIHIVE EDIT {props.settingsSection.toUpperCase()} -{" "}
+                                {props.panelProps.panelData.serverLabel.toUpperCase()}
                             </span>
                         </div>
                     </div>
@@ -657,7 +696,11 @@ export const SettingsEditor: React.FC<Props> = (props): React.ReactElement => {
                         <div className="mt-2 mr-10">
                             {saving && (
                                 <button type="button" title="Saving...">
-                                    <img src={props.panelProps.imageSources.spinner} alt="spinner" className="h-8 animate-spin" />
+                                    <img
+                                        src={props.panelProps.imageSources.spinner}
+                                        alt="spinner"
+                                        className="h-8 animate-spin"
+                                    />
                                 </button>
                             )}
                             {!saving && (

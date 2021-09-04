@@ -8,11 +8,13 @@
         "lib": ["ES6", "DOM", "DOM.Iterable"],
         "jsx": "react",
         "sourceMap": true,
-        "rootDir": "..",
         "noUnusedLocals": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "experimentalDecorators": true
     },
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules"],
+    "paths": {
+        "@withonevision/*": ["../../*", "../../../server/*", "../../../extras/*", "../../../other/*"]
+    }
 }

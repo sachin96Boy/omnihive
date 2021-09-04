@@ -198,10 +198,16 @@ export const AddEditServer: React.FC<Props> = ({ props }): React.ReactElement =>
         };
 
         const url: URL = new URL(serverAddress);
-        const socket = socketio(`${url.origin}/${serverGroupId}`, { path: `${url.pathname === "/" ? "" : url.pathname}/socket.io`, transports: ["websocket"] });
+        const socket = socketio(`${url.origin}/${serverGroupId}`, {
+            path: `${url.pathname === "/" ? "" : url.pathname}/socket.io`,
+            transports: ["websocket"],
+        });
 
         socket.on("connect", () => {
-            socket.emit(AdminEventType.RegisterRequest, { adminPassword: serverModel.adminPassword, serverGroupId: serverModel.serverGroupId });
+            socket.emit(AdminEventType.RegisterRequest, {
+                adminPassword: serverModel.adminPassword,
+                serverGroupId: serverModel.serverGroupId,
+            });
         });
 
         socket.on("connect_error", () => {
@@ -217,7 +223,12 @@ export const AddEditServer: React.FC<Props> = ({ props }): React.ReactElement =>
 
             socket.disconnect();
 
-            if (IsHelper.isNullOrUndefined(message) || !message.requestComplete || IsHelper.isNullOrUndefined(message.data) || !message.data.verified) {
+            if (
+                IsHelper.isNullOrUndefined(message) ||
+                !message.requestComplete ||
+                IsHelper.isNullOrUndefined(message.data) ||
+                !message.data.verified
+            ) {
                 showError(message.requestError);
                 setProcessing(false);
                 return;
@@ -258,12 +269,21 @@ export const AddEditServer: React.FC<Props> = ({ props }): React.ReactElement =>
             <div className="w-full h-full flex flex-col items-center overflow-auto">
                 <div className="w-1/2 mb-10">
                     <div className="mx-auto py-6">
-                        <img className="mx-auto" alt="OmniHive Logo" src={props.imageSources.beeLight} style={{ width: 125 }} />
+                        <img
+                            className="mx-auto"
+                            alt="OmniHive Logo"
+                            src={props.imageSources.beeLight}
+                            style={{ width: 125 }}
+                        />
                     </div>
                     <div className="mx-auto text-center pb-6">
                         <div className="text-white text-3xl">OMNIHIVE</div>
-                        {props.panelData.mode.toLowerCase() === "add" && <div className="text-2xl text-omnihive-orange">ADD SERVER</div>}
-                        {props.panelData.mode.toLowerCase() === "edit" && <div className="text-2xl text-omnihive-orange">EDIT SERVER</div>}
+                        {props.panelData.mode.toLowerCase() === "add" && (
+                            <div className="text-2xl text-omnihive-orange">ADD SERVER</div>
+                        )}
+                        {props.panelData.mode.toLowerCase() === "edit" && (
+                            <div className="text-2xl text-omnihive-orange">EDIT SERVER</div>
+                        )}
                     </div>
                     <div>
                         <div className={FormStyles.formInputContainer}>
@@ -282,7 +302,9 @@ export const AddEditServer: React.FC<Props> = ({ props }): React.ReactElement =>
                             {labelError !== "" && <div className="pt-2 text-red-600">{labelError}</div>}
                         </div>
                         <div className={FormStyles.formInputContainer}>
-                            <label className={FormStyles.formInputLabel}>Server Address (Include Protocol and Port Number)</label>
+                            <label className={FormStyles.formInputLabel}>
+                                Server Address (Include Protocol and Port Number)
+                            </label>
                             <input
                                 className={FormStyles.formInput}
                                 style={addressError !== "" ? { border: "2px solid red" } : {}}

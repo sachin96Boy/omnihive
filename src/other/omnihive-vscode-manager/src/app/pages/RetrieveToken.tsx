@@ -22,7 +22,9 @@ export const RetrieveToken: React.FC<Props> = ({ props }): React.ReactElement =>
     const [beeImg, setBeeImg] = React.useState<string>(props.imageSources.beeLight);
     const [showCommands, setShowCommands] = React.useState<boolean>(false);
 
-    const server = props.registeredServers.find((server: RegisteredServerModel) => server.label === props.panelData.serverLabel);
+    const server = props.registeredServers.find(
+        (server: RegisteredServerModel) => server.label === props.panelData.serverLabel
+    );
 
     React.useEffect(() => {
         const url: URL = new URL(server.address);
@@ -33,7 +35,10 @@ export const RetrieveToken: React.FC<Props> = ({ props }): React.ReactElement =>
 
         socket.on("connect", () => {
             socketReconnectInProgress = false;
-            socket.emit(AdminEventType.StatusRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
+            socket.emit(AdminEventType.StatusRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
         });
 
         socket.on("connect_error", () => {
@@ -62,67 +67,73 @@ export const RetrieveToken: React.FC<Props> = ({ props }): React.ReactElement =>
             }, 1000);
         });
 
-        socket.on(AdminEventType.AccessTokenResponse, (message: AdminResponse<{ serverLabel: string; hasWorker: boolean; token: string }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
-            }
+        socket.on(
+            AdminEventType.AccessTokenResponse,
+            (message: AdminResponse<{ serverLabel: string; hasWorker: boolean; token: string }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
 
-            if (!message.requestComplete || IsHelper.isNullOrUndefined(message.data)) {
-                setToken(message.requestError);
-                return;
-            }
+                if (!message.requestComplete || IsHelper.isNullOrUndefined(message.data)) {
+                    setToken(message.requestError);
+                    return;
+                }
 
-            if (!message.data.hasWorker) {
-                setToken("No Token Worker Available on This Server or Server is Offline");
-                return;
-            }
+                if (!message.data.hasWorker) {
+                    setToken("No Token Worker Available on This Server or Server is Offline");
+                    return;
+                }
 
-            setToken(message.data.token);
-        });
-
-        socket.on(AdminEventType.StatusResponse, (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
+                setToken(message.data.token);
             }
+        );
 
-            switch (message.data.serverStatus) {
-                case ServerStatus.Admin:
-                    setBeeImg(props.imageSources.beeLightOrange);
-                    setShowCommands(false);
-                    setToken("Server is in admin mode");
-                    break;
-                case ServerStatus.Error:
-                    setBeeImg(props.imageSources.beeLightRed);
-                    setShowCommands(false);
-                    setToken("Server is offline");
-                    break;
-                case ServerStatus.Offline:
-                    setBeeImg(props.imageSources.beeLightRed);
-                    setShowCommands(false);
-                    setToken("Server is offline");
-                    break;
-                case ServerStatus.Online:
-                    setBeeImg(props.imageSources.beeLightGreen);
-                    getKey();
-                    setShowCommands(true);
-                    break;
-                case ServerStatus.Rebuilding:
-                    setBeeImg(props.imageSources.beeLightYellow);
-                    setShowCommands(false);
-                    setToken("Server is rebuilding");
-                    break;
-                case ServerStatus.Unknown:
-                    setBeeImg(props.imageSources.beeLightGrey);
-                    setShowCommands(false);
-                    setToken("");
-                    break;
-                default:
-                    setBeeImg(props.imageSources.beeLightGrey);
-                    setShowCommands(false);
-                    setToken("");
-                    break;
+        socket.on(
+            AdminEventType.StatusResponse,
+            (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
+
+                switch (message.data.serverStatus) {
+                    case ServerStatus.Admin:
+                        setBeeImg(props.imageSources.beeLightOrange);
+                        setShowCommands(false);
+                        setToken("Server is in admin mode");
+                        break;
+                    case ServerStatus.Error:
+                        setBeeImg(props.imageSources.beeLightRed);
+                        setShowCommands(false);
+                        setToken("Server is offline");
+                        break;
+                    case ServerStatus.Offline:
+                        setBeeImg(props.imageSources.beeLightRed);
+                        setShowCommands(false);
+                        setToken("Server is offline");
+                        break;
+                    case ServerStatus.Online:
+                        setBeeImg(props.imageSources.beeLightGreen);
+                        getKey();
+                        setShowCommands(true);
+                        break;
+                    case ServerStatus.Rebuilding:
+                        setBeeImg(props.imageSources.beeLightYellow);
+                        setShowCommands(false);
+                        setToken("Server is rebuilding");
+                        break;
+                    case ServerStatus.Unknown:
+                        setBeeImg(props.imageSources.beeLightGrey);
+                        setShowCommands(false);
+                        setToken("");
+                        break;
+                    default:
+                        setBeeImg(props.imageSources.beeLightGrey);
+                        setShowCommands(false);
+                        setToken("");
+                        break;
+                }
             }
-        });
+        );
 
         socket.connect();
     }, []);
@@ -142,12 +153,21 @@ export const RetrieveToken: React.FC<Props> = ({ props }): React.ReactElement =>
     };
 
     const getKey = () => {
-        socket.emit(AdminEventType.AccessTokenRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
+        socket.emit(AdminEventType.AccessTokenRequest, {
+            adminPassword: server.adminPassword,
+            serverGroupId: server.serverGroupId,
+        });
     };
 
     return (
         <>
-            {showCopiedToClipboard && <ToastWarning show={true} message={"Token copied to clipboard!"} warningPng={props.imageSources.warning} />}
+            {showCopiedToClipboard && (
+                <ToastWarning
+                    show={true}
+                    message={"Token copied to clipboard!"}
+                    warningPng={props.imageSources.warning}
+                />
+            )}
             <div className="flex flex-col h-screen">
                 <div className="w-full mb-2 flex justify-between items-center shadow-md h-20">
                     <div className="flex items-center ml-5">
@@ -155,7 +175,9 @@ export const RetrieveToken: React.FC<Props> = ({ props }): React.ReactElement =>
                             <img className="align-middle h-12" alt="OmniHive Logo" src={beeImg} />
                         </div>
                         <div>
-                            <span className="font-bold text-base text-white">OMNIHIVE ACCESS TOKEN - {props.panelData.serverLabel}</span>
+                            <span className="font-bold text-base text-white">
+                                OMNIHIVE ACCESS TOKEN - {props.panelData.serverLabel}
+                            </span>
                         </div>
                     </div>
                     {!showCopiedToClipboard && showCommands && (
@@ -176,7 +198,12 @@ export const RetrieveToken: React.FC<Props> = ({ props }): React.ReactElement =>
                         <div className="bg-omnihive-orange rounded px-3 py-2 border-b">
                             <h3 className=" text-sm text-black font-medium">Token</h3>
                         </div>
-                        <textarea rows={7} className="text-black flex-1 p-2 m-1 bg-transparent" value={token} readOnly={true}></textarea>
+                        <textarea
+                            rows={7}
+                            className="text-black flex-1 p-2 m-1 bg-transparent"
+                            value={token}
+                            readOnly={true}
+                        ></textarea>
                     </div>
                 </div>
             </div>

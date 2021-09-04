@@ -13,10 +13,15 @@ export class WebViewPanelProvider {
         webpanelRoute: VsCodeWebpanelRoute,
         panelData?: any
     ): vscode.WebviewPanel => {
-        const panel: vscode.WebviewPanel = vscode.window.createWebviewPanel(`${viewType}`, `${title}`, vscode.ViewColumn.One, {
-            enableScripts: true,
-            retainContextWhenHidden: true,
-        });
+        const panel: vscode.WebviewPanel = vscode.window.createWebviewPanel(
+            `${viewType}`,
+            `${title}`,
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+            }
+        );
 
         const beeDarkOnDiskPath = vscode.Uri.file(`${context.extensionPath}/resources/images/omnihive-bee-dark.png`);
         const beeDarkSrc = panel.webview.asWebviewUri(beeDarkOnDiskPath);
@@ -24,19 +29,29 @@ export class WebViewPanelProvider {
         const beeLightOnDiskPath = vscode.Uri.file(`${context.extensionPath}/resources/images/omnihive-bee-light.png`);
         const beeLightSrc = panel.webview.asWebviewUri(beeLightOnDiskPath);
 
-        const beeLightGreenOnDiskPath = vscode.Uri.file(`${context.extensionPath}/resources/images/omnihive-bee-light-green.png`);
+        const beeLightGreenOnDiskPath = vscode.Uri.file(
+            `${context.extensionPath}/resources/images/omnihive-bee-light-green.png`
+        );
         const beeLightGreenSrc = panel.webview.asWebviewUri(beeLightGreenOnDiskPath);
 
-        const beeLightGreyOnDiskPath = vscode.Uri.file(`${context.extensionPath}/resources/images/omnihive-bee-light-grey.png`);
+        const beeLightGreyOnDiskPath = vscode.Uri.file(
+            `${context.extensionPath}/resources/images/omnihive-bee-light-grey.png`
+        );
         const beeLightGreySrc = panel.webview.asWebviewUri(beeLightGreyOnDiskPath);
 
-        const beeLightOrangeOnDiskPath = vscode.Uri.file(`${context.extensionPath}/resources/images/omnihive-bee-light-orange.png`);
+        const beeLightOrangeOnDiskPath = vscode.Uri.file(
+            `${context.extensionPath}/resources/images/omnihive-bee-light-orange.png`
+        );
         const beeLightOrangeSrc = panel.webview.asWebviewUri(beeLightOrangeOnDiskPath);
 
-        const beeLightRedOnDiskPath = vscode.Uri.file(`${context.extensionPath}/resources/images/omnihive-bee-light-red.png`);
+        const beeLightRedOnDiskPath = vscode.Uri.file(
+            `${context.extensionPath}/resources/images/omnihive-bee-light-red.png`
+        );
         const beeLightRedSrc = panel.webview.asWebviewUri(beeLightRedOnDiskPath);
 
-        const beeLightYellowOnDiskPath = vscode.Uri.file(`${context.extensionPath}/resources/images/omnihive-bee-light-yellow.png`);
+        const beeLightYellowOnDiskPath = vscode.Uri.file(
+            `${context.extensionPath}/resources/images/omnihive-bee-light-yellow.png`
+        );
         const beeLightYellowSrc = panel.webview.asWebviewUri(beeLightYellowOnDiskPath);
 
         const clipboardOnDiskPath = vscode.Uri.file(`${context.extensionPath}/resources/images/clipboard.png`);
@@ -79,7 +94,9 @@ export class WebViewPanelProvider {
             webViewContent.appendLine(`<head>`);
             webViewContent.appendLine(`\t<meta charset="UTF-8">`);
             webViewContent.appendLine(`\t<title>Swagger UI</title>`);
-            webViewContent.appendLine(`\t<link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css">`);
+            webViewContent.appendLine(
+                `\t<link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css">`
+            );
             webViewContent.appendLine(`\t<style>`);
             webViewContent.appendLine(`\t\thtml`);
             webViewContent.appendLine(`\t\t\t{`);
@@ -102,23 +119,35 @@ export class WebViewPanelProvider {
             webViewContent.appendLine(`\t\t\t}`);
             webViewContent.appendLine(`\t</style>`);
 
-            if (!IsHelper.isEmptyStringOrWhitespace(ExtensionStore.getSingleton().getConfiguration().stylesSwaggerBrowser)) {
+            if (
+                !IsHelper.isEmptyStringOrWhitespace(
+                    ExtensionStore.getSingleton().getConfiguration().stylesSwaggerBrowser
+                )
+            ) {
                 webViewContent.appendLine(
-                    `\t<link rel="stylesheet" type="text/css" href="${ExtensionStore.getSingleton().getConfiguration().stylesSwaggerBrowser}">`
+                    `\t<link rel="stylesheet" type="text/css" href="${
+                        ExtensionStore.getSingleton().getConfiguration().stylesSwaggerBrowser
+                    }">`
                 );
             }
 
             webViewContent.appendLine(`</head>`);
             webViewContent.appendLine();
             webViewContent.appendLine(`<body>`);
-            webViewContent.appendLine(`\t<div id="topbar" style="padding-top: 10px; border-bottom: 1px solid; padding-bottom: 10px;">`);
+            webViewContent.appendLine(
+                `\t<div id="topbar" style="padding-top: 10px; border-bottom: 1px solid; padding-bottom: 10px;">`
+            );
             webViewContent.appendLine(
                 `\t\t<img style="height:50px;" src="https://static1.smartbear.co/swagger/media/assets/images/swagger_logo.svg" alt="swagger" />`
             );
             webViewContent.appendLine(`\t</div>`);
             webViewContent.appendLine(`\t<div id="swagger-ui"></div>`);
-            webViewContent.appendLine(`\t<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.45.0/swagger-ui-standalone-preset.min.js"></script>`);
-            webViewContent.appendLine(`\t<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.45.0/swagger-ui-bundle.min.js" charset="UTF-8"></script>`);
+            webViewContent.appendLine(
+                `\t<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.45.0/swagger-ui-standalone-preset.min.js"></script>`
+            );
+            webViewContent.appendLine(
+                `\t<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.45.0/swagger-ui-bundle.min.js" charset="UTF-8"></script>`
+            );
             webViewContent.appendLine(`\t<script>`);
             webViewContent.appendLine(`\t\twindow.onload = function() {`);
             webViewContent.appendLine(`\t\t\tconst ui = SwaggerUIBundle({`);
@@ -154,8 +183,14 @@ export class WebViewPanelProvider {
             webViewContent.appendLine(`\t<title>OmniHive Administrator</title>`);
             webViewContent.appendLine(`\t<script>`);
             webViewContent.appendLine(`\t\twindow.acquireVsCodeApi = acquireVsCodeApi;`);
-            webViewContent.appendLine(`\t\twindow.extensionConfiguration = \`${JSON.stringify(ExtensionStore.getSingleton().getConfiguration())}\`;`);
-            webViewContent.appendLine(`\t\twindow.registeredServers = \`${JSON.stringify(ExtensionStore.getSingleton().registeredServers)}\``);
+            webViewContent.appendLine(
+                `\t\twindow.extensionConfiguration = \`${JSON.stringify(
+                    ExtensionStore.getSingleton().getConfiguration()
+                )}\`;`
+            );
+            webViewContent.appendLine(
+                `\t\twindow.registeredServers = \`${JSON.stringify(ExtensionStore.getSingleton().registeredServers)}\``
+            );
             webViewContent.appendLine(`\t\twindow.imageSources = {`);
             webViewContent.appendLine(`\t\t\tbeeDark: "${beeDarkSrc}",`);
             webViewContent.appendLine(`\t\t\tbeeLight: "${beeLightSrc}",`);
@@ -184,14 +219,20 @@ export class WebViewPanelProvider {
             webViewContent.appendLine(`\t\twindow.webpanelRoute = "${webpanelRoute}";`);
             webViewContent.appendLine(`\t</script>`);
             webViewContent.appendLine(`\t<link rel="stylesheet" href="https://use.typekit.net/auk3lqn.css">`);
-            webViewContent.appendLine(`\t<link href="https://cdn.jsdelivr.net/npm/graphiql@1.4.0/graphiql.min.css" rel="stylesheet" />`);
+            webViewContent.appendLine(
+                `\t<link href="https://cdn.jsdelivr.net/npm/graphiql@1.4.0/graphiql.min.css" rel="stylesheet" />`
+            );
 
             if (
-                !IsHelper.isEmptyStringOrWhitespace(ExtensionStore.getSingleton().getConfiguration().stylesGraphBrowser) &&
+                !IsHelper.isEmptyStringOrWhitespace(
+                    ExtensionStore.getSingleton().getConfiguration().stylesGraphBrowser
+                ) &&
                 webpanelRoute === VsCodeWebpanelRoute.GraphBrowser
             ) {
                 webViewContent.appendLine(
-                    `\t<link rel="stylesheet" type="text/css" href="${ExtensionStore.getSingleton().getConfiguration().stylesGraphBrowser}">`
+                    `\t<link rel="stylesheet" type="text/css" href="${
+                        ExtensionStore.getSingleton().getConfiguration().stylesGraphBrowser
+                    }">`
                 );
             }
 
@@ -206,9 +247,11 @@ export class WebViewPanelProvider {
         }
 
         panel.onDidDispose(() => {
-            ExtensionStore.getSingleton().activePanels = ExtensionStore.getSingleton().activePanels.filter((activePanel: ActivePanel) => {
-                return activePanel.panelName !== title;
-            });
+            ExtensionStore.getSingleton().activePanels = ExtensionStore.getSingleton().activePanels.filter(
+                (activePanel: ActivePanel) => {
+                    return activePanel.panelName !== title;
+                }
+            );
         });
 
         ExtensionStore.getSingleton().activePanels.push({ panelName: title, panel });

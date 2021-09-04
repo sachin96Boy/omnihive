@@ -16,17 +16,27 @@ export class AddServerCommand {
                 return;
             }
 
-            const panel: vscode.WebviewPanel = panelProvider.generateNewPanel(context, "ohAddServerPanel", panelName, VsCodeWebpanelRoute.AddServer, {
-                mode: "add",
-                editServerLabel: "",
-            });
+            const panel: vscode.WebviewPanel = panelProvider.generateNewPanel(
+                context,
+                "ohAddServerPanel",
+                panelName,
+                VsCodeWebpanelRoute.AddServer,
+                {
+                    mode: "add",
+                    editServerLabel: "",
+                }
+            );
 
             panel.webview.onDidReceiveMessage((message: VsCodePostMessageModel) => {
                 if (message.command === VsCodeCommand.AddServer && message.data && message.data.registeredServer) {
-                    const registeredServer: RegisteredServerModel = message.data.registeredServer as RegisteredServerModel;
+                    const registeredServer: RegisteredServerModel = message.data
+                        .registeredServer as RegisteredServerModel;
                     ExtensionStore.getSingleton().addServer(context, registeredServer);
                     panel.dispose();
-                    vscode.window.showInformationMessage(`OmniHive Server ${registeredServer.label} Added Successfully`, { modal: true });
+                    vscode.window.showInformationMessage(
+                        `OmniHive Server ${registeredServer.label} Added Successfully`,
+                        { modal: true }
+                    );
                 }
             });
         });

@@ -19,7 +19,6 @@ module.exports = {
             {
                 test: /\.(ts|tsx)$/,
                 loader: "ts-loader",
-                options: {},
             },
             {
                 test: /\.css$/,

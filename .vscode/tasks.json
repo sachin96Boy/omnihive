@@ -5,20 +5,35 @@
     "tasks": [
         {
             "label": "Watch VS Code Extension",
-            "path": "${workspaceFolder}/src/other/omnihive-vscode-manager",
             "options": {
-                "cwd": "${workspaceFolder}/src/other/omnihive-vscode-manager"
+                "cwd": "./src/other/omnihive-vscode-manager"
             },
             "type": "npm",
             "script": "watch",
-            "problemMatcher": "$tsc-watch",
             "isBackground": true,
             "presentation": {
-                "reveal": "never"
+                "reveal": "always"
             },
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "problemMatcher": {
+                "owner": "typescript",
+                "fileLocation": "relative",
+                "pattern": {
+                    "regexp": "^([^\\s].*)\\((\\d+|\\,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+                    "file": 1,
+                    "location": 2,
+                    "severity": 3,
+                    "code": 4,
+                    "message": 5
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^\\s*\\d{1,2}:\\d{1,2}:\\d{1,2}(?: AM| PM)? - Starting compilation in watch mode\\.\\.\\.",
+                    "endsPattern": "^.* webpack .* compiled successfully"
+                }
             }
         }
     ]

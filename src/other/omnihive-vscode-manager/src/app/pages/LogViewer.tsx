@@ -24,7 +24,9 @@ export const LogViewer: React.FC<Props> = ({ props }): React.ReactElement => {
     const [displayItems, setDisplayItems] = React.useState<string[]>([]);
     const [pauseScroll, setPauseScroll] = React.useState<boolean>(false);
 
-    const server = props.registeredServers.find((server: RegisteredServerModel) => server.label === props.panelData.serverLabel);
+    const server = props.registeredServers.find(
+        (server: RegisteredServerModel) => server.label === props.panelData.serverLabel
+    );
 
     React.useEffect(() => {
         const url: URL = new URL(server.address);
@@ -35,8 +37,14 @@ export const LogViewer: React.FC<Props> = ({ props }): React.ReactElement => {
 
         socket.on("connect", () => {
             socketReconnectInProgress = false;
-            socket.emit(AdminEventType.StatusRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
-            socket.emit(AdminEventType.StartLogRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
+            socket.emit(AdminEventType.StatusRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
+            socket.emit(AdminEventType.StartLogRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
 
             let newLine: string = `<span style="color:limegreen;">info:&nbsp;&nbsp;Connected and awaiting log messages...<span><br />`;
             setDisplayItems((currentLogArray) => [...currentLogArray, newLine]);
@@ -66,46 +74,56 @@ export const LogViewer: React.FC<Props> = ({ props }): React.ReactElement => {
             }, 1000);
         });
 
-        socket.on(AdminEventType.StatusResponse, (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
-            }
+        socket.on(
+            AdminEventType.StatusResponse,
+            (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
 
-            if (message.data.serverStatus === ServerStatus.Admin && message.data.serverError) {
-                const newLine: string = `<span style="color:red;">admin error:&nbsp;&nbsp;${JSON.stringify(
-                    serializeError(message.data.serverError)
-                )}<span><br />`;
-                setDisplayItems((currentLogArray) => [...currentLogArray, newLine]);
-            }
+                if (message.data.serverStatus === ServerStatus.Admin && message.data.serverError) {
+                    const newLine: string = `<span style="color:red;">admin error:&nbsp;&nbsp;${JSON.stringify(
+                        serializeError(message.data.serverError)
+                    )}<span><br />`;
+                    setDisplayItems((currentLogArray) => [...currentLogArray, newLine]);
+                }
 
-            switch (message.data.serverStatus) {
-                case ServerStatus.Admin:
-                    setBeeImg(props.imageSources.beeLightOrange);
-                    break;
-                case ServerStatus.Error:
-                    setBeeImg(props.imageSources.beeLightRed);
-                    break;
-                case ServerStatus.Offline:
-                    setBeeImg(props.imageSources.beeLightRed);
-                    break;
-                case ServerStatus.Online:
-                    setBeeImg(props.imageSources.beeLightGreen);
-                    break;
-                case ServerStatus.Rebuilding:
-                    setBeeImg(props.imageSources.beeLightYellow);
-                    break;
-                case ServerStatus.Unknown:
-                    setBeeImg(props.imageSources.beeLightGrey);
-                    break;
-                default:
-                    setBeeImg(props.imageSources.beeLightGrey);
-                    break;
+                switch (message.data.serverStatus) {
+                    case ServerStatus.Admin:
+                        setBeeImg(props.imageSources.beeLightOrange);
+                        break;
+                    case ServerStatus.Error:
+                        setBeeImg(props.imageSources.beeLightRed);
+                        break;
+                    case ServerStatus.Offline:
+                        setBeeImg(props.imageSources.beeLightRed);
+                        break;
+                    case ServerStatus.Online:
+                        setBeeImg(props.imageSources.beeLightGreen);
+                        break;
+                    case ServerStatus.Rebuilding:
+                        setBeeImg(props.imageSources.beeLightYellow);
+                        break;
+                    case ServerStatus.Unknown:
+                        setBeeImg(props.imageSources.beeLightGrey);
+                        break;
+                    default:
+                        setBeeImg(props.imageSources.beeLightGrey);
+                        break;
+                }
             }
-        });
+        );
 
         socket.on(
             AdminEventType.LogResponse,
-            (message: AdminResponse<{ logLevel: OmniHiveLogLevel; timestamp: string; osName: string; logString: string }>) => {
+            (
+                message: AdminResponse<{
+                    logLevel: OmniHiveLogLevel;
+                    timestamp: string;
+                    osName: string;
+                    logString: string;
+                }>
+            ) => {
                 if (message.serverGroupId !== server.serverGroupId) {
                     return;
                 }
@@ -141,7 +159,10 @@ export const LogViewer: React.FC<Props> = ({ props }): React.ReactElement => {
 
     React.useEffect(() => {
         return () => {
-            socket.emit(AdminEventType.StopLogRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
+            socket.emit(AdminEventType.StopLogRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
             socket.disconnect();
         };
     }, []);
@@ -156,7 +177,11 @@ export const LogViewer: React.FC<Props> = ({ props }): React.ReactElement => {
     };
 
     const scrollToBottom = (force: boolean = false) => {
-        if (!IsHelper.isNullOrUndefined(bottomRef) && !IsHelper.isNullOrUndefined(bottomRef.current) && (!pauseScroll || force)) {
+        if (
+            !IsHelper.isNullOrUndefined(bottomRef) &&
+            !IsHelper.isNullOrUndefined(bottomRef.current) &&
+            (!pauseScroll || force)
+        ) {
             bottomRef.current.scrollIntoView();
         }
     };
@@ -169,7 +194,9 @@ export const LogViewer: React.FC<Props> = ({ props }): React.ReactElement => {
                         <img className="align-middle h-12" alt="OmniHive Logo" src={beeImg} />
                     </div>
                     <div>
-                        <span className="font-bold text-base text-white">OMNIHIVE LOG - {props.panelData.serverLabel}</span>
+                        <span className="font-bold text-base text-white">
+                            OMNIHIVE LOG - {props.panelData.serverLabel}
+                        </span>
                     </div>
                 </div>
                 <div className="mt-2 mr-10">

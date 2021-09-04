@@ -17,9 +17,15 @@ export class RetrieveTokenCommand {
                 return;
             }
 
-            panelProvider.generateNewPanel(context, "ohRetrieveTokenPanel", panelName, VsCodeWebpanelRoute.RetrieveToken, {
-                serverLabel,
-            });
+            panelProvider.generateNewPanel(
+                context,
+                "ohRetrieveTokenPanel",
+                panelName,
+                VsCodeWebpanelRoute.RetrieveToken,
+                {
+                    serverLabel,
+                }
+            );
         });
 
         context.subscriptions.push(cmdOhAddServer);

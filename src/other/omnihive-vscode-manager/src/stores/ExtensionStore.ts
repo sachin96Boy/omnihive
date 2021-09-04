@@ -15,6 +15,7 @@ import { RegisteredClientModel } from "../models/RegisteredClientModel";
 import { RegisteredServerModel } from "../models/RegisteredServerModel";
 import { ExtensionTreeProvider } from "../providers/ExtensionTreeProvider";
 import { WebViewPanelProvider } from "../providers/WebViewPanelProvider";
+import { serializeError } from "serialize-error";
 
 export class ExtensionStore {
     private static singleton: ExtensionStore;
@@ -170,7 +171,10 @@ export class ExtensionStore {
             );
             return true;
         } catch (error) {
-            vscode.window.showErrorMessage(`There was a problem refreshing the environment => ${err}`, { modal: true });
+            vscode.window.showErrorMessage(
+                `There was a problem refreshing the environment => ${JSON.stringify(serializeError(error))}`,
+                { modal: true }
+            );
             return false;
         }
     };

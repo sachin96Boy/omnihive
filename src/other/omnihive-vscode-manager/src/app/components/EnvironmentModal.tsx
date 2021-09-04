@@ -24,7 +24,9 @@ export const EnvironmentModal: React.FC<Props> = (props): React.ReactElement => 
     const originalEditorObject: EnvironmentEditorObject = Object.assign({}, props.editorObject);
 
     const [currentEditorKey, setCurrentEditorKey] = React.useState<string>(props.editorObject.key);
-    const [currentEditorValue, setCurrentEditorValue] = React.useState<string | number | boolean>(props.editorObject.value);
+    const [currentEditorValue, setCurrentEditorValue] = React.useState<string | number | boolean>(
+        props.editorObject.value
+    );
     const [nameError, setNameError] = React.useState<string>("");
     const [valueError, setValueError] = React.useState<string>("");
 
@@ -54,7 +56,10 @@ export const EnvironmentModal: React.FC<Props> = (props): React.ReactElement => 
     };
 
     const checkValue = (value: string | number | boolean): void => {
-        if (props.editorObject.type === EnvironmentVariableType.String && IsHelper.isEmptyStringOrWhitespace(value.toString())) {
+        if (
+            props.editorObject.type === EnvironmentVariableType.String &&
+            IsHelper.isEmptyStringOrWhitespace(value.toString())
+        ) {
             setValueError("Value cannot be blank");
             return;
         }
@@ -63,7 +68,10 @@ export const EnvironmentModal: React.FC<Props> = (props): React.ReactElement => 
     };
 
     const disableEditorOk = (): boolean => {
-        if (IsHelper.isEmptyStringOrWhitespace(currentEditorKey) || IsHelper.isEmptyStringOrWhitespace(currentEditorValue)) {
+        if (
+            IsHelper.isEmptyStringOrWhitespace(currentEditorKey) ||
+            IsHelper.isEmptyStringOrWhitespace(currentEditorValue)
+        ) {
             return true;
         }
 
@@ -109,12 +117,17 @@ export const EnvironmentModal: React.FC<Props> = (props): React.ReactElement => 
                         </div>
                         <div className={FormStyles.formInputContainer}>
                             <label className={FormStyles.formInputLabel}>Value</label>
-                            {(props.editorObject.type === EnvironmentVariableType.Number || props.editorObject.type === EnvironmentVariableType.String) && (
+                            {(props.editorObject.type === EnvironmentVariableType.Number ||
+                                props.editorObject.type === EnvironmentVariableType.String) && (
                                 <>
                                     <input
                                         className={FormStyles.formInput}
                                         style={valueError !== "" ? { border: "2px solid red" } : {}}
-                                        type={props.editorObject.type === EnvironmentVariableType.Number ? "number" : "text"}
+                                        type={
+                                            props.editorObject.type === EnvironmentVariableType.Number
+                                                ? "number"
+                                                : "text"
+                                        }
                                         name="value"
                                         value={currentEditorValue.toString()}
                                         onChange={(e) => {

@@ -17,9 +17,15 @@ export class RawEditorCommand {
                 return;
             }
 
-            const panel: vscode.WebviewPanel = panelProvider.generateNewPanel(context, "ohRawEditorPanel", panelName, VsCodeWebpanelRoute.RawEditor, {
-                serverLabel,
-            });
+            const panel: vscode.WebviewPanel = panelProvider.generateNewPanel(
+                context,
+                "ohRawEditorPanel",
+                panelName,
+                VsCodeWebpanelRoute.RawEditor,
+                {
+                    serverLabel,
+                }
+            );
 
             panel.webview.onDidReceiveMessage((message: VsCodePostMessageModel) => {
                 if (message.command === VsCodeCommand.RawEditor && message.data && message.data.settings) {
@@ -35,9 +41,15 @@ export class RawEditorCommand {
                         return;
                     }
 
-                    panelProvider.generateNewPanel(context, "ohOpenLogWindow", logPanelName, VsCodeWebpanelRoute.LogViewer, {
-                        serverLabel: serverLabel,
-                    });
+                    panelProvider.generateNewPanel(
+                        context,
+                        "ohOpenLogWindow",
+                        logPanelName,
+                        VsCodeWebpanelRoute.LogViewer,
+                        {
+                            serverLabel: serverLabel,
+                        }
+                    );
 
                     if (ExtensionStore.getSingleton().getConfiguration().generalAutoCloseSettings) {
                         panel.dispose();

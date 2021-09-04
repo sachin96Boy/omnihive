@@ -19,11 +19,17 @@ export class RemoveServerCommand {
             const serverLabel: string = ohPath[0];
 
             vscode.window
-                .showWarningMessage(`Are you sure you want to remove the server ${args.label}?`, { modal: true }, ...removeServerMessageItems)
+                .showWarningMessage(
+                    `Are you sure you want to remove the server ${args.label}?`,
+                    { modal: true },
+                    ...removeServerMessageItems
+                )
                 .then((value: vscode.MessageItem | undefined) => {
                     if (value?.title === "OK") {
                         ExtensionStore.getSingleton().removeServer(context, serverLabel);
-                        vscode.window.showInformationMessage(`OmniHive Server ${args.label} Removed Successfully`, { modal: true });
+                        vscode.window.showInformationMessage(`OmniHive Server ${args.label} Removed Successfully`, {
+                            modal: true,
+                        });
                     } else {
                         return;
                     }

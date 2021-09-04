@@ -18,18 +18,33 @@ export class EditServerCommand {
                 return;
             }
 
-            const panel: vscode.WebviewPanel = panelProvider.generateNewPanel(context, "ohEditServerPanel", panelName, VsCodeWebpanelRoute.EditServer, {
-                mode: "edit",
-                editServerLabel: serverLabel,
-            });
+            const panel: vscode.WebviewPanel = panelProvider.generateNewPanel(
+                context,
+                "ohEditServerPanel",
+                panelName,
+                VsCodeWebpanelRoute.EditServer,
+                {
+                    mode: "edit",
+                    editServerLabel: serverLabel,
+                }
+            );
 
             panel.webview.onDidReceiveMessage((message: VsCodePostMessageModel) => {
-                if (message.command === VsCodeCommand.EditServer && message.data && message.data.registeredServer && message.data.oldServerLabel) {
-                    const registeredServer: RegisteredServerModel = message.data.registeredServer as RegisteredServerModel;
+                if (
+                    message.command === VsCodeCommand.EditServer &&
+                    message.data &&
+                    message.data.registeredServer &&
+                    message.data.oldServerLabel
+                ) {
+                    const registeredServer: RegisteredServerModel = message.data
+                        .registeredServer as RegisteredServerModel;
                     const oldServerLabel: string = message.data.oldServerLabel as string;
                     ExtensionStore.getSingleton().editServer(context, oldServerLabel, registeredServer);
                     panel.dispose();
-                    vscode.window.showInformationMessage(`OmniHive Server ${registeredServer.label} Edited Successfully`, { modal: true });
+                    vscode.window.showInformationMessage(
+                        `OmniHive Server ${registeredServer.label} Edited Successfully`,
+                        { modal: true }
+                    );
                 }
             });
         });

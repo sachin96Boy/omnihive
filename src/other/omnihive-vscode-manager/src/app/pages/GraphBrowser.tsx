@@ -20,7 +20,9 @@ export const GraphBrowser: React.FC<Props> = ({ props }): React.ReactElement => 
     const [beeImg, setBeeImg] = React.useState<string>(props.imageSources.beeLight);
     const [showCommands, setShowCommands] = React.useState<boolean>(false);
 
-    const server = props.registeredServers.find((server: RegisteredServerModel) => server.label === props.panelData.serverLabel);
+    const server = props.registeredServers.find(
+        (server: RegisteredServerModel) => server.label === props.panelData.serverLabel
+    );
 
     React.useEffect(() => {
         const url: URL = new URL(server.address);
@@ -31,7 +33,10 @@ export const GraphBrowser: React.FC<Props> = ({ props }): React.ReactElement => 
 
         socket.on("connect", () => {
             socketReconnectInProgress = false;
-            socket.emit(AdminEventType.StatusRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
+            socket.emit(AdminEventType.StatusRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
             getKey();
         });
 
@@ -61,61 +66,67 @@ export const GraphBrowser: React.FC<Props> = ({ props }): React.ReactElement => 
             }, 1000);
         });
 
-        socket.on(AdminEventType.StatusResponse, (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
+        socket.on(
+            AdminEventType.StatusResponse,
+            (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
+
+                switch (message.data.serverStatus) {
+                    case ServerStatus.Admin:
+                        setBeeImg(props.imageSources.beeLightOrange);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Error:
+                        setBeeImg(props.imageSources.beeLightRed);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Offline:
+                        setBeeImg(props.imageSources.beeLightRed);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Online:
+                        setBeeImg(props.imageSources.beeLightGreen);
+                        setShowCommands(true);
+                        break;
+                    case ServerStatus.Rebuilding:
+                        setBeeImg(props.imageSources.beeLightYellow);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Unknown:
+                        setBeeImg(props.imageSources.beeLightGrey);
+                        setShowCommands(false);
+                        break;
+                    default:
+                        setBeeImg(props.imageSources.beeLightGrey);
+                        setShowCommands(false);
+                        break;
+                }
             }
+        );
 
-            switch (message.data.serverStatus) {
-                case ServerStatus.Admin:
-                    setBeeImg(props.imageSources.beeLightOrange);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Error:
-                    setBeeImg(props.imageSources.beeLightRed);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Offline:
-                    setBeeImg(props.imageSources.beeLightRed);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Online:
-                    setBeeImg(props.imageSources.beeLightGreen);
-                    setShowCommands(true);
-                    break;
-                case ServerStatus.Rebuilding:
-                    setBeeImg(props.imageSources.beeLightYellow);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Unknown:
-                    setBeeImg(props.imageSources.beeLightGrey);
-                    setShowCommands(false);
-                    break;
-                default:
-                    setBeeImg(props.imageSources.beeLightGrey);
-                    setShowCommands(false);
-                    break;
+        socket.on(
+            AdminEventType.AccessTokenResponse,
+            (message: AdminResponse<{ hasWorker: boolean; token: string }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
+
+                if (!message.requestComplete || IsHelper.isNullOrUndefined(message.data)) {
+                    return;
+                }
+
+                setShowCommands(true);
+
+                if (!message.data.hasWorker) {
+                    setHeaders("");
+                    return;
+                }
+
+                setHeaders(`{"x-omnihive-access": "${message.data.token}"}`);
             }
-        });
-
-        socket.on(AdminEventType.AccessTokenResponse, (message: AdminResponse<{ hasWorker: boolean; token: string }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
-            }
-
-            if (!message.requestComplete || IsHelper.isNullOrUndefined(message.data)) {
-                return;
-            }
-
-            setShowCommands(true);
-
-            if (!message.data.hasWorker) {
-                setHeaders("");
-                return;
-            }
-
-            setHeaders(`{"x-omnihive-access": "${message.data.token}"}`);
-        });
+        );
 
         socket.connect();
     }, []);
@@ -127,7 +138,10 @@ export const GraphBrowser: React.FC<Props> = ({ props }): React.ReactElement => 
     }, []);
 
     const getKey = () => {
-        socket.emit(AdminEventType.AccessTokenRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
+        socket.emit(AdminEventType.AccessTokenRequest, {
+            adminPassword: server.adminPassword,
+            serverGroupId: server.serverGroupId,
+        });
     };
 
     return (
@@ -138,7 +152,9 @@ export const GraphBrowser: React.FC<Props> = ({ props }): React.ReactElement => 
                         <img className="align-middle h-12" alt="OmniHive Logo" src={beeImg} />
                     </div>
                     <div>
-                        <span className="font-bold text-base text-white">OMNIHIVE GRAPH BROWSER - {props.panelData.graphUrl}</span>
+                        <span className="font-bold text-base text-white">
+                            OMNIHIVE GRAPH BROWSER - {props.panelData.graphUrl}
+                        </span>
                     </div>
                 </div>
                 {showCommands && (

@@ -123,6 +123,7 @@ const createConfig = (): Configuration => {
             port: 9080,
             hot: true,
             overlay: true,
+            writeToDisk: true,
         };
 
         const entries = configuration.entry as Record<"renderer", string[]>;

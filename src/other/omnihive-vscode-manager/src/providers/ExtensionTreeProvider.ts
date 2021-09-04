@@ -34,7 +34,10 @@ export class ExtensionTreeProvider implements vscode.TreeDataProvider<any> {
         // Root handler
         if (IsHelper.isUndefined(element)) {
             // Handle no server registrations in memory
-            if (ExtensionStore.getSingleton().registeredServers && ExtensionStore.getSingleton().registeredServers.length === 0) {
+            if (
+                ExtensionStore.getSingleton().registeredServers &&
+                ExtensionStore.getSingleton().registeredServers.length === 0
+            ) {
                 const emptyArray: InfoTreeItemModel[] = [];
                 emptyArray.push(new InfoTreeItemModel("No OmniHive servers registered"));
                 return Promise.resolve(emptyArray);
@@ -42,9 +45,11 @@ export class ExtensionTreeProvider implements vscode.TreeDataProvider<any> {
 
             const servers: ServerTreeItemModel[] = [];
 
-            orderBy(ExtensionStore.getSingleton().registeredServers, "label", "asc").forEach((server: RegisteredServerModel) => {
-                servers.push(new ServerTreeItemModel(server.label, server.label, server.status));
-            });
+            orderBy(ExtensionStore.getSingleton().registeredServers, "label", "asc").forEach(
+                (server: RegisteredServerModel) => {
+                    servers.push(new ServerTreeItemModel(server.label, server.label, server.status));
+                }
+            );
 
             return Promise.resolve(servers);
         }
@@ -105,7 +110,13 @@ export class ExtensionTreeProvider implements vscode.TreeDataProvider<any> {
                     browserEndpoints.push(new GraphTreeItemModel(url.path, `${element.ohPath}||${url.path}`));
                     break;
                 case "swagger":
-                    browserEndpoints.push(new SwaggerTreeItemModel(url.path, `${element.ohPath}||${url.path}`, url.metadata.swaggerJsonUrl));
+                    browserEndpoints.push(
+                        new SwaggerTreeItemModel(
+                            url.path,
+                            `${element.ohPath}||${url.path}`,
+                            url.metadata.swaggerJsonUrl
+                        )
+                    );
                     break;
             }
         });
@@ -117,7 +128,9 @@ export class ExtensionTreeProvider implements vscode.TreeDataProvider<any> {
         const toolList: any[] = [];
         const ohPath: string[] = ExtensionStore.getSingleton().getOhPath(element.ohPath);
 
-        toolList.push(new EditServerEnvironmentTreeItemModel("Server Environment", `${ohPath.join("||")}||serverEnvironment`));
+        toolList.push(
+            new EditServerEnvironmentTreeItemModel("Server Environment", `${ohPath.join("||")}||serverEnvironment`)
+        );
         toolList.push(new EditServerWorkersTreeItemModel("Server Workers", `${ohPath.join("||")}||serverWorkers`));
         toolList.push(new RawEditorTreeItemModel("Raw Configuration Editor", `${ohPath.join("||")}||rawEditor`));
 

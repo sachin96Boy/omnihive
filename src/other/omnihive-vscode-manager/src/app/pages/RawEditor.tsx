@@ -39,7 +39,10 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
     const [beeImg, setBeeImg] = React.useState<string>(props.imageSources.beeLight);
     const [currentAppSettings, setCurrentAppSettings] = React.useState<string>("");
     const [editorDirty, setEditorDirty] = React.useState<boolean>(false);
-    const [loadedConfig, setLoadedConfig] = React.useState<{ config: ServerConfig; systemEnvironmentVariables: EnvironmentVariable[] }>({
+    const [loadedConfig, setLoadedConfig] = React.useState<{
+        config: ServerConfig;
+        systemEnvironmentVariables: EnvironmentVariable[];
+    }>({
         config: new ServerConfig(),
         systemEnvironmentVariables: [],
     });
@@ -55,7 +58,9 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
     const [toastSuccessMessage, setToastSuccessMessage] = React.useState<string>("");
     const [validatorLogItems, setValidatorLogItems] = React.useState<string[]>([]);
 
-    const server = props.registeredServers.find((server: RegisteredServerModel) => server.label === props.panelData.serverLabel);
+    const server = props.registeredServers.find(
+        (server: RegisteredServerModel) => server.label === props.panelData.serverLabel
+    );
 
     React.useEffect(() => {
         const url: URL = new URL(server.address);
@@ -66,8 +71,14 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
 
         socket.on("connect", () => {
             socketReconnectInProgress = false;
-            socket.emit(AdminEventType.StatusRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
-            socket.emit(AdminEventType.ConfigRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
+            socket.emit(AdminEventType.StatusRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
+            socket.emit(AdminEventType.ConfigRequest, {
+                adminPassword: server.adminPassword,
+                serverGroupId: server.serverGroupId,
+            });
         });
 
         socket.on("connect_error", () => {
@@ -96,30 +107,33 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
             }, 1000);
         });
 
-        socket.on(AdminEventType.ConfigResponse, (message: AdminResponse<{ config: ServerConfig; systemEnvironmentVariables: EnvironmentVariable[] }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
+        socket.on(
+            AdminEventType.ConfigResponse,
+            (message: AdminResponse<{ config: ServerConfig; systemEnvironmentVariables: EnvironmentVariable[] }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
+
+                setLoadedConfig(message.data);
+
+                const workingSettings: ServerConfig = message.data.config;
+
+                workingSettings.environmentVariables.forEach((value) => {
+                    delete value["isSystem"];
+                });
+
+                switch (props.extensionConfiguration.generalEditorMarkupFormat) {
+                    case EditorMarkupFormat.JSON:
+                        setCurrentAppSettings(JSON.stringify(workingSettings, null, "\t"));
+                        break;
+                    case EditorMarkupFormat.YAML:
+                        setCurrentAppSettings(yaml.stringify(workingSettings));
+                        break;
+                }
+
+                setRetrieving(false);
             }
-
-            setLoadedConfig(message.data);
-
-            const workingSettings: ServerConfig = message.data.config;
-
-            workingSettings.environmentVariables.forEach((value) => {
-                delete value["isSystem"];
-            });
-
-            switch (props.extensionConfiguration.generalEditorMarkupFormat) {
-                case EditorMarkupFormat.JSON:
-                    setCurrentAppSettings(JSON.stringify(workingSettings, null, "\t"));
-                    break;
-                case EditorMarkupFormat.YAML:
-                    setCurrentAppSettings(yaml.stringify(workingSettings));
-                    break;
-            }
-
-            setRetrieving(false);
-        });
+        );
 
         socket.on(AdminEventType.ConfigSaveResponse, (message: AdminResponse<{ verified: boolean }>) => {
             if (message.serverGroupId !== server.serverGroupId) {
@@ -150,42 +164,45 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
             }, props.extensionConfiguration.generalAlertSuccessTimeout);
         });
 
-        socket.on(AdminEventType.StatusResponse, (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
-            if (message.serverGroupId !== server.serverGroupId) {
-                return;
-            }
+        socket.on(
+            AdminEventType.StatusResponse,
+            (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
+                if (message.serverGroupId !== server.serverGroupId) {
+                    return;
+                }
 
-            switch (message.data.serverStatus) {
-                case ServerStatus.Admin:
-                    setBeeImg(props.imageSources.beeLightOrange);
-                    setShowCommands(true);
-                    break;
-                case ServerStatus.Error:
-                    setBeeImg(props.imageSources.beeLightRed);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Offline:
-                    setBeeImg(props.imageSources.beeLightRed);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Online:
-                    setBeeImg(props.imageSources.beeLightGreen);
-                    setShowCommands(true);
-                    break;
-                case ServerStatus.Rebuilding:
-                    setBeeImg(props.imageSources.beeLightYellow);
-                    setShowCommands(false);
-                    break;
-                case ServerStatus.Unknown:
-                    setBeeImg(props.imageSources.beeLightGrey);
-                    setShowCommands(false);
-                    break;
-                default:
-                    setBeeImg(props.imageSources.beeLightGrey);
-                    setShowCommands(false);
-                    break;
+                switch (message.data.serverStatus) {
+                    case ServerStatus.Admin:
+                        setBeeImg(props.imageSources.beeLightOrange);
+                        setShowCommands(true);
+                        break;
+                    case ServerStatus.Error:
+                        setBeeImg(props.imageSources.beeLightRed);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Offline:
+                        setBeeImg(props.imageSources.beeLightRed);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Online:
+                        setBeeImg(props.imageSources.beeLightGreen);
+                        setShowCommands(true);
+                        break;
+                    case ServerStatus.Rebuilding:
+                        setBeeImg(props.imageSources.beeLightYellow);
+                        setShowCommands(false);
+                        break;
+                    case ServerStatus.Unknown:
+                        setBeeImg(props.imageSources.beeLightGrey);
+                        setShowCommands(false);
+                        break;
+                    default:
+                        setBeeImg(props.imageSources.beeLightGrey);
+                        setShowCommands(false);
+                        break;
+                }
             }
-        });
+        );
 
         socket.connect();
     }, []);
@@ -410,8 +427,14 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
                 return;
             }
 
-            if (IsHelper.isNullOrUndefined(variable.key) || IsHelper.isNullOrUndefined(variable.type) || IsHelper.isNullOrUndefined(variable.value)) {
-                pushNewError(`Missing or extra values of environment object keys null check: ${variable?.key ?? "Unknown"}`);
+            if (
+                IsHelper.isNullOrUndefined(variable.key) ||
+                IsHelper.isNullOrUndefined(variable.type) ||
+                IsHelper.isNullOrUndefined(variable.value)
+            ) {
+                pushNewError(
+                    `Missing or extra values of environment object keys null check: ${variable?.key ?? "Unknown"}`
+                );
                 configPass = false;
             }
 
@@ -423,9 +446,13 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
             if (
                 IsHelper.isNullOrUndefined(variable.type) ||
                 IsHelper.isEmptyStringOrWhitespace(variable.type) ||
-                (variable.type.toString() !== "string" && variable.type.toString() !== "number" && variable.type.toString() !== "boolean")
+                (variable.type.toString() !== "string" &&
+                    variable.type.toString() !== "number" &&
+                    variable.type.toString() !== "boolean")
             ) {
-                pushNewError(`Environment variable type is invalid...validation cannot continue : ${variable?.key ?? "Unknown"}`);
+                pushNewError(
+                    `Environment variable type is invalid...validation cannot continue : ${variable?.key ?? "Unknown"}`
+                );
                 configPass = false;
             }
 
@@ -436,19 +463,34 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
             switch (variable.type) {
                 case "boolean":
                     if (IsHelper.isNullOrUndefined(variable.value) || !IsHelper.isBoolean(variable.value)) {
-                        pushNewError(`Environment variable value must be boolean if type is boolean: ${variable?.key ?? "Unknown"}`);
+                        pushNewError(
+                            `Environment variable value must be boolean if type is boolean: ${
+                                variable?.key ?? "Unknown"
+                            }`
+                        );
                         configPass = false;
                     }
                     break;
                 case "number":
                     if (IsHelper.isNullOrUndefined(variable.value) || !IsHelper.isNumber(variable.value)) {
-                        pushNewError(`Environment variable value must be numeric if type is number: ${variable?.key ?? "Unknown"}`);
+                        pushNewError(
+                            `Environment variable value must be numeric if type is number: ${
+                                variable?.key ?? "Unknown"
+                            }`
+                        );
                         configPass = false;
                     }
                     break;
                 default:
-                    if (IsHelper.isNullOrUndefined(variable.value) || IsHelper.isEmptyStringOrWhitespace(variable.value)) {
-                        pushNewError(`Environment variable value must be non-whitespace string if type is string: ${variable?.key ?? "Unknown"}`);
+                    if (
+                        IsHelper.isNullOrUndefined(variable.value) ||
+                        IsHelper.isEmptyStringOrWhitespace(variable.value)
+                    ) {
+                        pushNewError(
+                            `Environment variable value must be non-whitespace string if type is string: ${
+                                variable?.key ?? "Unknown"
+                            }`
+                        );
                         configPass = false;
                     }
                     break;
@@ -641,9 +683,17 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
                 />
             )}
             {!mouseInBounds && editorDirty && (
-                <ToastWarning show={true} message={"Please note you have unsaved changes"} warningPng={props.imageSources.warning} />
+                <ToastWarning
+                    show={true}
+                    message={"Please note you have unsaved changes"}
+                    warningPng={props.imageSources.warning}
+                />
             )}
-            <ToastSuccess show={showToastSuccess} message={toastSuccessMessage} successPng={props.imageSources.success} />
+            <ToastSuccess
+                show={showToastSuccess}
+                message={toastSuccessMessage}
+                successPng={props.imageSources.success}
+            />
             <ToastError show={showToastError} message={toastErrorMessage} errorPng={props.imageSources.error} />
             <div className="flex flex-col h-screen">
                 {/* Header */}
@@ -653,7 +703,9 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
                             <img className="align-middle h-12" alt="OmniHive Logo" src={beeImg} />
                         </div>
                         <div>
-                            <span className="font-bold text-white text-base">OMNIHIVE RAW CONFIG EDITOR - {props.panelData.serverLabel.toUpperCase()}</span>
+                            <span className="font-bold text-white text-base">
+                                OMNIHIVE RAW CONFIG EDITOR - {props.panelData.serverLabel.toUpperCase()}
+                            </span>
                         </div>
                     </div>
                     {showSave && showCommands && (
@@ -679,7 +731,11 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
                                     <h3 className="text-sm text-white font-medium mt-1">Configuration</h3>
                                 </div>
                                 <div className="w-1/2">
-                                    <button className="float-right" onClick={() => setValidatorLogItems([])} title="Clear Log">
+                                    <button
+                                        className="float-right"
+                                        onClick={() => setValidatorLogItems([])}
+                                        title="Clear Log"
+                                    >
                                         <img src={props.imageSources.trash} alt="trash" className="h-6" />
                                     </button>
                                 </div>
@@ -691,7 +747,12 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
                                     wrapEnabled={true}
                                     height="100%"
                                     width="60%"
-                                    mode={props.extensionConfiguration.generalEditorMarkupFormat === EditorMarkupFormat.YAML ? "yaml" : "json"}
+                                    mode={
+                                        props.extensionConfiguration.generalEditorMarkupFormat ===
+                                        EditorMarkupFormat.YAML
+                                            ? "yaml"
+                                            : "json"
+                                    }
                                     theme="tomorrow_night"
                                     name="metadata"
                                     highlightActiveLine={true}

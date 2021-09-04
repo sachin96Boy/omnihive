@@ -41,9 +41,15 @@ export class EditServerWorkersCommand {
                         return;
                     }
 
-                    panelProvider.generateNewPanel(context, "ohOpenLogWindow", logPanelName, VsCodeWebpanelRoute.LogViewer, {
-                        serverLabel: serverLabel,
-                    });
+                    panelProvider.generateNewPanel(
+                        context,
+                        "ohOpenLogWindow",
+                        logPanelName,
+                        VsCodeWebpanelRoute.LogViewer,
+                        {
+                            serverLabel: serverLabel,
+                        }
+                    );
 
                     if (ExtensionStore.getSingleton().getConfiguration().generalAutoCloseSettings) {
                         panel.dispose();

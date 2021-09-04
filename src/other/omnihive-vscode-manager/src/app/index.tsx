@@ -32,13 +32,20 @@ const props: ReactPropsModel = {
 };
 
 ReactDOM.render(
-    <div className="h-full w-full overflow-hidden" style={{ backgroundColor: props.extensionConfiguration.stylesWebPanelBackgroundColorHex }}>
+    <div
+        className="h-full w-full overflow-hidden"
+        style={{ backgroundColor: props.extensionConfiguration.stylesWebPanelBackgroundColorHex }}
+    >
         {props.webpanelRoute === VsCodeWebpanelRoute.AddServer && <AddEditServer props={props} />}
         {props.webpanelRoute === VsCodeWebpanelRoute.EditServer && <AddEditServer props={props} />}
         {props.webpanelRoute === VsCodeWebpanelRoute.GraphBrowser && <GraphBrowser props={props} />}
         {props.webpanelRoute === VsCodeWebpanelRoute.LogViewer && <LogViewer props={props} />}
-        {props.webpanelRoute === VsCodeWebpanelRoute.EditServerEnvironment && <SettingsEditor panelProps={props} settingsSection="environmentVariables" />}
-        {props.webpanelRoute === VsCodeWebpanelRoute.EditServerWorkers && <SettingsEditor panelProps={props} settingsSection="workers" />}
+        {props.webpanelRoute === VsCodeWebpanelRoute.EditServerEnvironment && (
+            <SettingsEditor panelProps={props} settingsSection="environmentVariables" />
+        )}
+        {props.webpanelRoute === VsCodeWebpanelRoute.EditServerWorkers && (
+            <SettingsEditor panelProps={props} settingsSection="workers" />
+        )}
         {props.webpanelRoute === VsCodeWebpanelRoute.RawEditor && <RawEditor props={props} />}
         {props.webpanelRoute === VsCodeWebpanelRoute.RetrieveToken && <RetrieveToken props={props} />}
     </div>,

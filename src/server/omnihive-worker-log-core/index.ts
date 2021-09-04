@@ -39,12 +39,12 @@ export default class LogWorkerServerDefault extends HiveWorkerBase implements IL
         logWorkers.forEach((value: RegisteredHiveWorker) => {
             try {
                 (value.instance as ILogWorker).write(logLevel, logString);
-            } catch (e) {
+            } catch (error) {
                 this.chalkConsole(
                     OmniHiveLogLevel.Error,
                     osName,
                     timestamp,
-                    `Skipping logging for ${value.name} due to error: ${serializeError(e)}`
+                    `Skipping logging for ${value.name} due to error: ${JSON.stringify(serializeError(error))}`
                 );
             }
         });

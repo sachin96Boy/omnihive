@@ -322,7 +322,7 @@ export class OmniHiveClient {
         if (!IsHelper.isNullOrUndefined(tokenWorker)) {
             try {
                 newToken = await AwaitHelper.execute(tokenWorker.get());
-            } catch (e) {
+            } catch (error) {
                 throw new Error("[ohAccessError] Could not retrieve token");
             }
         }

@@ -43,8 +43,8 @@ export class ParseCustomSql {
 
             // Run the decrypted query
             return await AwaitHelper.execute(databaseWorker.executeQuery(decryptedSql));
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 }

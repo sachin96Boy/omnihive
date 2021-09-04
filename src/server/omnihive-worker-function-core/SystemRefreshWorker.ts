@@ -30,8 +30,8 @@ export default class SystemRefreshWorker extends HiveWorkerBase implements IRest
         try {
             this.checkRequest(headers, body);
             return { response: { message: "Server Refresh/Reset Initiated" }, status: 200 };
-        } catch (e) {
-            return { response: { error: serializeError(e) }, status: 400 };
+        } catch (error) {
+            return { response: { error: serializeError(error) }, status: 400 };
         }
     };
 

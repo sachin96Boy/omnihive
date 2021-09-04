@@ -46,14 +46,14 @@
         "@withonevision/omnihive-worker-log-core": "workspace:*",
         "@withonevision/omnihive-worker-server-v1": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",
-        "chalk": "4.1.1",
-        "dayjs": "1.10.5",
+        "chalk": "4.1.2",
+        "dayjs": "1.10.6",
         "dotenv": "10.0.0",
         "ejs": "3.1.6",
         "execa": "5.1.1",
         "exit-hook": "2.2.1",
         "express": "4.17.1",
-        "figlet": "1.5.0",
+        "figlet": "1.5.2",
         "forever-monitor": "3.0.3",
         "fs-extra": "10.0.0",
         "helmet": "4.6.0",
@@ -67,7 +67,7 @@
         "swagger-ui-express": "4.1.6",
         "uuid": "8.3.2",
         "yaml": "1.10.2",
-        "yargs": "17.0.1"
+        "yargs": "17.1.1"
     },
     "devDependencies": {
         "@types/cors": "2.8.12",
@@ -101,14 +101,14 @@
             "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
             "@withonevision/omnihive-worker-function-core": "workspace:*",
             "@withonevision/omnihive-worker-log-core": "workspace:*",
-            "chalk": "4.1.1",
-            "dayjs": "1.10.5",
+            "chalk": "4.1.2",
+            "dayjs": "1.10.6",
             "dotenv": "10.0.0",
             "ejs": "3.1.6",
             "execa": "5.1.1",
             "exit-hook": "2.2.1",
             "express": "4.17.1",
-            "figlet": "1.5.0",
+            "figlet": "1.5.2",
             "forever-monitor": "3.0.3",
             "fs-extra": "10.0.0",
             "helmet": "4.6.0",
@@ -122,7 +122,7 @@
             "swagger-ui-express": "4.1.6",
             "uuid": "8.3.2",
             "yaml": "1.10.2",
-            "yargs": "17.0.1"
+            "yargs": "17.1.1"
         },
         "bootWorkers": [
             {

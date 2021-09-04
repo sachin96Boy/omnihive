@@ -13,7 +13,7 @@ import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
 import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import execa from "execa";
+import execa, { ExecaSyncError } from "execa";
 import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { ConfigType } from "../enums/ConfigType";
 import { CommandLineArgs } from "../models/CommandLineArgs";
@@ -312,9 +312,9 @@ export class CommonService {
 
                 try {
                     execa.commandSync(removeCommand.outputString(), { cwd: global.omnihive.ohDirName });
-                } catch (removeError) {
-                    logWorker?.write(OmniHiveLogLevel.Error, (removeError as any).stderr.toString().trim());
-                    throw removeError;
+                } catch (error) {
+                    logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
+                    throw error;
                 }
             }
 
@@ -323,9 +323,9 @@ export class CommonService {
             // Clean Yarn Cache
             try {
                 execa.commandSync("yarn cache clean", { cwd: global.omnihive.ohDirName });
-            } catch (cleanError) {
-                logWorker?.write(OmniHiveLogLevel.Error, (cleanError as any).stderr.toString().trim());
-                throw cleanError;
+            } catch (error) {
+                logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
+                throw error;
             }
 
             //Find out what to add
@@ -379,9 +379,9 @@ export class CommonService {
 
                 try {
                     execa.commandSync(addCommand.outputString(), { cwd: global.omnihive.ohDirName });
-                } catch (addError) {
-                    logWorker?.write(OmniHiveLogLevel.Error, (addError as any).stderr.toString().trim());
-                    throw addError;
+                } catch (error) {
+                    logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
+                    throw error;
                 }
             }
         }

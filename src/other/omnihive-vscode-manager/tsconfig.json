@@ -15,6 +15,6 @@
     },
     "exclude": ["node_modules", ".vscode-test", "**/app/**"],
     "paths": {
-        "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../extensions/*"]
+        "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../other/*"]
     }
 }

@@ -98,10 +98,13 @@ export class ServerService {
 
             global.omnihive.appServer = app;
             await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Online));
-        } catch (err) {
+        } catch (error) {
             // Problem...spin up admin server
-            await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Admin, err as Error));
-            logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
+            await AwaitHelper.execute(this.changeServerStatus(ServerStatus.Admin, error as Error));
+            logWorker?.write(
+                OmniHiveLogLevel.Error,
+                `Server Spin-Up Error => ${JSON.stringify(serializeError(error))}`
+            );
         }
     };
 
@@ -272,7 +275,7 @@ export class ServerService {
                         HiveWorkerMetadataRestFunction,
                         rw.metadata
                     );
-                } catch (e) {
+                } catch (error) {
                     logWorker?.write(
                         OmniHiveLogLevel.Error,
                         `Cannot register system REST worker ${rw.name}.  MetaData is incorrect.`
@@ -302,10 +305,10 @@ export class ServerService {
                             } else {
                                 res.status(workerResponse.status).send(true);
                             }
-                        } catch (e) {
+                        } catch (error) {
                             return res.status(500).render("500", {
                                 rootUrl: webRootUrl,
-                                error: serializeError(e),
+                                error: serializeError(error),
                             });
                         }
                     }

@@ -35,8 +35,8 @@ export default class SystemStatusWorker extends HiveWorkerBase implements IRestE
                 response: { status: global.omnihive.serverStatus, error: global.omnihive.serverError },
                 status: 200,
             };
-        } catch (e) {
-            return { response: { error: serializeError(e) }, status: 400 };
+        } catch (error) {
+            return { response: { error: serializeError(error) }, status: 400 };
         }
     };
 

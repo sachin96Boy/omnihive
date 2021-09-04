@@ -148,8 +148,8 @@ describe("Worker Test - File - FSExtra", () => {
                 worker.removeDirectory(badPath);
                 const result: boolean = worker.pathExists(badPath);
                 expect(result).to.be.false;
-            } catch (err) {
-                expect(err).to.not.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.not.be.an.instanceOf(Error);
             }
         });
 

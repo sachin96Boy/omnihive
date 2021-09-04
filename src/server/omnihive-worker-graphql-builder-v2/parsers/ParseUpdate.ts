@@ -100,8 +100,8 @@ export class ParseUpdate {
                     error: "An unexpected error occurred when transforming the database results back into the graph object structure",
                 },
             ];
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 

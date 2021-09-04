@@ -46,8 +46,8 @@ describe("ObjectHelper Tests", () => {
         try {
             ObjectHelper.createStrict<TestObject>(TestObject, null);
             expect.fail("Strict can not create without a model");
-        } catch (err) {
-            expect(err).to.be.an.instanceOf(Error);
+        } catch (error) {
+            expect(error).to.be.an.instanceOf(Error);
         }
     });
 
@@ -61,8 +61,8 @@ describe("ObjectHelper Tests", () => {
 
             ObjectHelper.createStrict<TestObject>(TestObject, model);
             expect.fail("Strict can not create with a bad property");
-        } catch (err) {
-            expect(err).to.be.an.instanceOf(Error);
+        } catch (error) {
+            expect(error).to.be.an.instanceOf(Error);
         }
     });
 
@@ -109,8 +109,8 @@ describe("ObjectHelper Tests", () => {
 
             ObjectHelper.createArrayStrict<TestObject>(TestObject, [model, model]);
             expect.fail("Strict array can not create with a bad property");
-        } catch (err) {
-            expect(err).to.be.an.instanceOf(Error);
+        } catch (error) {
+            expect(error).to.be.an.instanceOf(Error);
         }
     });
 });

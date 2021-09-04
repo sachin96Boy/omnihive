@@ -237,9 +237,9 @@ export default class PostgresConfigWorker extends HiveWorkerBase implements ICon
             }
 
             await AwaitHelper.execute(client.query("COMMIT"));
-        } catch (err) {
+        } catch (error) {
             await AwaitHelper.execute(client.query("ROLLBACK"));
-            throw err;
+            throw error;
         } finally {
             client.release();
         }

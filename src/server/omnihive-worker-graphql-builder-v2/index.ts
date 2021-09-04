@@ -150,8 +150,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             return mergeSchemas({
                 schemas: [...this.graphSchemas],
             });
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 
@@ -175,8 +175,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     this.buildExeSchema(this.tables[tableName], databaseWorker)
                 )
             );
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 
@@ -207,8 +207,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     this.buildProcSchema(this.storedProcs[proc], databaseWorker)
                 )
             );
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 
@@ -226,8 +226,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private buildMainCustomSqlSchema = async (databaseWorker: IDatabaseWorker) => {
         try {
             this.graphSchemas.push(this.buildCustomSqlSchema(databaseWorker));
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 
@@ -260,8 +260,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                     resolvers: resolver,
                 })
             );
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 

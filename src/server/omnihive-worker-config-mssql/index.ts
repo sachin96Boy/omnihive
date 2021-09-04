@@ -235,9 +235,9 @@ export default class MssqlConfigWorker extends HiveWorkerBase implements IConfig
             }
 
             await AwaitHelper.execute(transaction.commit());
-        } catch (err) {
+        } catch (error) {
             await AwaitHelper.execute(transaction.rollback());
-            throw err;
+            throw error;
         }
 
         return true;

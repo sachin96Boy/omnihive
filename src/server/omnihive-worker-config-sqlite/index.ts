@@ -229,9 +229,9 @@ export default class SqliteConfigWorker extends HiveWorkerBase implements IConfi
                 }
 
                 database.run("COMMIT");
-            } catch (err) {
+            } catch (error) {
                 database.run("ROLLBACK");
-                throw err;
+                throw error;
             } finally {
                 database.close;
             }

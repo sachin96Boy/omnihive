@@ -28,8 +28,8 @@ describe("AwaitHelper Tests", async () => {
         try {
             await AwaitHelper.execute(failFunction());
             expect.fail("Function Should Have Failed");
-        } catch (err) {
-            expect(err).to.equal(testValues.testString);
+        } catch (error) {
+            expect(error).to.equal(testValues.testString);
         }
     });
 });

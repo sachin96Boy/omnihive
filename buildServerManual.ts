@@ -302,7 +302,7 @@ const getMaxVersionOfPackages = async (): Promise<string> => {
                 if (parseVersionNumber(packageVersion) > parseVersionNumber(version)) {
                     version = packageVersion;
                 }
-            } catch (err) {
+            } catch (error) {
                 continue;
             }
         }

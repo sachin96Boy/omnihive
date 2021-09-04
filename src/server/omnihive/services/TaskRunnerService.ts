@@ -45,11 +45,11 @@ export class TaskRunnerService {
         ) {
             try {
                 workerArgs = JSON.parse(fse.readFileSync(commandLineArgs.taskRunnerArgs, { encoding: "utf8" }));
-            } catch (err) {
+            } catch (error) {
                 try {
                     workerArgs = yaml.parse(fse.readFileSync(commandLineArgs.taskRunnerArgs, { encoding: "utf8" }));
                 } catch {
-                    this.logError(commandLineArgs.taskRunnerWorker, err as Error);
+                    this.logError(commandLineArgs.taskRunnerWorker, error as Error);
                 }
             }
         }
@@ -61,8 +61,8 @@ export class TaskRunnerService {
             } else {
                 await AwaitHelper.execute(taskWorker.instance.execute());
             }
-        } catch (err) {
-            this.logError(commandLineArgs.taskRunnerWorker, err as Error);
+        } catch (error) {
+            this.logError(commandLineArgs.taskRunnerWorker, error as Error);
         }
 
         process.exit();

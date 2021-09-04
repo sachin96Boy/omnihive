@@ -30,8 +30,8 @@ describe("Worker Test - Cache - Redis", () => {
             try {
                 await AwaitHelper.execute(initWorker(testValues.connectionStringInvalid));
                 expect.fail("Method Expected to Fail");
-            } catch (err) {
-                expect(err).to.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.an.instanceOf(Error);
             }
         });
     });

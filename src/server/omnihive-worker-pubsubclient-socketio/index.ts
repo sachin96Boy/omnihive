@@ -101,7 +101,7 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
 
             this.ioClient.connect();
             this.connected = true;
-        } catch (err) {
+        } catch (error) {
             if (retry <= this.typedMetadata.maxRetries) {
                 this.connect(retry++);
             } else {
@@ -167,8 +167,8 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
                 this.connect();
 
                 return true;
-            } catch (err) {
-                throw new Error(err.message);
+            } catch (error) {
+                throw error;
             }
         } else if (!this.connected && !autoConnect) {
             return false;

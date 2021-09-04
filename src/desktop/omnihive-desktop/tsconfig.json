@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
-      "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../extensions/*"]
+      "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../other/*"]
     },
   }
 }

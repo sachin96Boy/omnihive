@@ -238,11 +238,11 @@ export default class MySqlConfigWorker extends HiveWorkerBase implements IConfig
             }
 
             await AwaitHelper.execute(connection.commit());
-        } catch (err) {
+        } catch (error) {
             if (!IsHelper.isNullOrUndefined(connection)) {
                 await AwaitHelper.execute(connection.rollback());
             }
-            throw err;
+            throw error;
         } finally {
             connection.release();
         }

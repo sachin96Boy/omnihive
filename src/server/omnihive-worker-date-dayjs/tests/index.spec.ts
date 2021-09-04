@@ -40,8 +40,8 @@ describe("Worker Test - Date - DayJS", () => {
             try {
                 await AwaitHelper.execute(initWorker(testValues.dateFormatInvalid));
                 expect.fail("Method Expected to Fail");
-            } catch (err) {
-                expect(err).to.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.an.instanceOf(Error);
             }
         });
     });
@@ -65,8 +65,8 @@ describe("Worker Test - Date - DayJS", () => {
                 worker.convertDateBetweenTimezones(testDate, testValues.invalidTimezone, testValues.homeTimezone);
 
                 expect.fail("Method Expected To Fail");
-            } catch (err) {
-                expect(err).to.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.an.instanceOf(Error);
             }
         });
 
@@ -77,8 +77,8 @@ describe("Worker Test - Date - DayJS", () => {
                 worker.convertDateBetweenTimezones(testDate, testValues.otherTimezone, testValues.invalidTimezone);
 
                 expect.fail("Method Expected To Fail");
-            } catch (err) {
-                expect(err).to.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.an.instanceOf(Error);
             }
         });
 

@@ -45,8 +45,8 @@ const build = async (): Promise<void> => {
 
     try {
         await tasks.run();
-    } catch (err) {
-        console.log(err);
+    } catch (error) {
+        console.log(error);
         process.exit(1);
     }
 };

@@ -75,8 +75,8 @@ export class ParseAggregate {
 
             // Process the built query
             return await AwaitHelper.execute(this.processQuery(workerName, omniHiveContext));
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 

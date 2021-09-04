@@ -39,7 +39,11 @@ export class ExtensionStore {
         this.extensionTreeProvider._onDidChangeTreeData.fire(undefined);
     };
 
-    public editServer = (context: vscode.ExtensionContext, oldServerLabel: string, registeredServer: RegisteredServerModel): void => {
+    public editServer = (
+        context: vscode.ExtensionContext,
+        oldServerLabel: string,
+        registeredServer: RegisteredServerModel
+    ): void => {
         this.removeServer(context, oldServerLabel);
         this.addServer(context, registeredServer);
     };
@@ -47,37 +51,49 @@ export class ExtensionStore {
     public getConfiguration = (): ExtensionConfiguration => {
         const extensionConfiguration = new ExtensionConfiguration();
 
-        let generalAlertErrorTimeout: number | undefined = vscode.workspace.getConfiguration("omnihive").get<number>("generalSettings.alertErrorTimeout");
+        let generalAlertErrorTimeout: number | undefined = vscode.workspace
+            .getConfiguration("omnihive")
+            .get<number>("generalSettings.alertErrorTimeout");
 
         if (generalAlertErrorTimeout) {
             extensionConfiguration.generalAlertErrorTimeout = generalAlertErrorTimeout;
         }
 
-        let generalAlertSuccessTimeout: number | undefined = vscode.workspace.getConfiguration("omnihive").get<number>("generalSettings.alertSuccessTimeout");
+        let generalAlertSuccessTimeout: number | undefined = vscode.workspace
+            .getConfiguration("omnihive")
+            .get<number>("generalSettings.alertSuccessTimeout");
 
         if (generalAlertSuccessTimeout) {
             extensionConfiguration.generalAlertSuccessTimeout = generalAlertSuccessTimeout;
         }
 
-        let generalAutoCloseSettings: boolean | undefined = vscode.workspace.getConfiguration("omnihive").get<boolean>("generalSettings.autoCloseSettings");
+        let generalAutoCloseSettings: boolean | undefined = vscode.workspace
+            .getConfiguration("omnihive")
+            .get<boolean>("generalSettings.autoCloseSettings");
 
         if (generalAutoCloseSettings) {
             extensionConfiguration.generalAutoCloseSettings = generalAutoCloseSettings;
         }
 
-        let generalAutoOpenLogWindow: boolean | undefined = vscode.workspace.getConfiguration("omnihive").get<boolean>("generalSettings.autoOpenLogWindow");
+        let generalAutoOpenLogWindow: boolean | undefined = vscode.workspace
+            .getConfiguration("omnihive")
+            .get<boolean>("generalSettings.autoOpenLogWindow");
 
         if (generalAutoOpenLogWindow) {
             extensionConfiguration.generalAutoOpenLogWindow = generalAutoOpenLogWindow;
         }
 
-        let generalAutoRefreshServer: boolean | undefined = vscode.workspace.getConfiguration("omnihive").get<boolean>("generalSettings.autoRefreshServer");
+        let generalAutoRefreshServer: boolean | undefined = vscode.workspace
+            .getConfiguration("omnihive")
+            .get<boolean>("generalSettings.autoRefreshServer");
 
         if (generalAutoRefreshServer) {
             extensionConfiguration.generalAutoRefreshServer = generalAutoRefreshServer;
         }
 
-        let generalEditorMarkupFormat: string | undefined = vscode.workspace.getConfiguration("omnihive").get<string>("generalSettings.editorMarkupFormat");
+        let generalEditorMarkupFormat: string | undefined = vscode.workspace
+            .getConfiguration("omnihive")
+            .get<string>("generalSettings.editorMarkupFormat");
 
         if (!IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(generalEditorMarkupFormat)) {
             switch (generalEditorMarkupFormat) {
@@ -93,13 +109,17 @@ export class ExtensionStore {
             }
         }
 
-        let stylesGraphBrowser: string | undefined = vscode.workspace.getConfiguration("omnihive").get<string>("styles.graphBrowser");
+        let stylesGraphBrowser: string | undefined = vscode.workspace
+            .getConfiguration("omnihive")
+            .get<string>("styles.graphBrowser");
 
         if (!IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(stylesGraphBrowser)) {
             extensionConfiguration.stylesGraphBrowser = stylesGraphBrowser;
         }
 
-        let stylesSwaggerBrowser: string | undefined = vscode.workspace.getConfiguration("omnihive").get<string>("styles.swaggerBrowser");
+        let stylesSwaggerBrowser: string | undefined = vscode.workspace
+            .getConfiguration("omnihive")
+            .get<string>("styles.swaggerBrowser");
 
         if (!IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(stylesSwaggerBrowser)) {
             extensionConfiguration.stylesSwaggerBrowser = stylesSwaggerBrowser;
@@ -121,10 +141,18 @@ export class ExtensionStore {
     };
 
     public refreshSchema = (serverLabel: string): boolean => {
-        const server: RegisteredServerModel | undefined = this.registeredServers.find((rs: RegisteredServerModel) => rs.label === serverLabel);
-        const client: RegisteredClientModel | undefined = this.registeredClients.find((rc: RegisteredClientModel) => rc.serverLabel === serverLabel);
+        const server: RegisteredServerModel | undefined = this.registeredServers.find(
+            (rs: RegisteredServerModel) => rs.label === serverLabel
+        );
+        const client: RegisteredClientModel | undefined = this.registeredClients.find(
+            (rc: RegisteredClientModel) => rc.serverLabel === serverLabel
+        );
 
-        if (IsHelper.isNullOrUndefined(server) || IsHelper.isNullOrUndefined(client) || IsHelper.isNullOrUndefined(client.socket)) {
+        if (
+            IsHelper.isNullOrUndefined(server) ||
+            IsHelper.isNullOrUndefined(client) ||
+            IsHelper.isNullOrUndefined(client.socket)
+        ) {
             vscode.window.showErrorMessage(`OmniHive server ${serverLabel} could not be contacted`, { modal: true });
             return false;
         }
@@ -136,9 +164,12 @@ export class ExtensionStore {
             };
 
             client.socket.emit(AdminEventType.ServerResetRequest, eventRequest);
-            vscode.window.showInformationMessage(`Schema refresh for OmniHive server ${serverLabel} has been requested`, { modal: true });
+            vscode.window.showInformationMessage(
+                `Schema refresh for OmniHive server ${serverLabel} has been requested`,
+                { modal: true }
+            );
             return true;
-        } catch (err) {
+        } catch (error) {
             vscode.window.showErrorMessage(`There was a problem refreshing the environment => ${err}`, { modal: true });
             return false;
         }
@@ -153,15 +184,23 @@ export class ExtensionStore {
     };
 
     public removeServer = (context: vscode.ExtensionContext, serverLabel: string): void => {
-        this.registeredServers = this.registeredServers.filter((server: RegisteredServerModel) => server.label !== serverLabel);
+        this.registeredServers = this.registeredServers.filter(
+            (server: RegisteredServerModel) => server.label !== serverLabel
+        );
         this.unsubscribeFromServer(serverLabel);
         context.globalState.update("oh:registeredServers", this.registeredServers);
         this.extensionTreeProvider._onDidChangeTreeData.fire(undefined);
     };
 
-    public subscribeToServer = (context: vscode.ExtensionContext, serverLabel: string, provideFeedback: boolean = false): void => {
+    public subscribeToServer = (
+        context: vscode.ExtensionContext,
+        serverLabel: string,
+        provideFeedback: boolean = false
+    ): void => {
         let errorNotificationCount: number = 0;
-        const server: RegisteredServerModel | undefined = this.registeredServers.find((server: RegisteredServerModel) => server.label === serverLabel);
+        const server: RegisteredServerModel | undefined = this.registeredServers.find(
+            (server: RegisteredServerModel) => server.label === serverLabel
+        );
 
         if (IsHelper.isNullOrUndefined(server)) {
             return;
@@ -190,7 +229,9 @@ export class ExtensionStore {
         });
 
         socket.on("connect_error", () => {
-            const server: RegisteredServerModel | undefined = this.registeredServers.find((server: RegisteredServerModel) => server.label === serverLabel);
+            const server: RegisteredServerModel | undefined = this.registeredServers.find(
+                (server: RegisteredServerModel) => server.label === serverLabel
+            );
 
             if (IsHelper.isNullOrUndefined(server)) {
                 return;
@@ -210,7 +251,9 @@ export class ExtensionStore {
         });
 
         socket.on("disconnect", () => {
-            const server: RegisteredServerModel | undefined = this.registeredServers.find((server: RegisteredServerModel) => server.label === serverLabel);
+            const server: RegisteredServerModel | undefined = this.registeredServers.find(
+                (server: RegisteredServerModel) => server.label === serverLabel
+            );
 
             if (IsHelper.isNullOrUndefined(server)) {
                 return;
@@ -231,7 +274,8 @@ export class ExtensionStore {
 
         socket.on(AdminEventType.ServerResetResponse, (message: AdminRequest) => {
             const server: RegisteredServerModel | undefined = this.registeredServers.find(
-                (server: RegisteredServerModel) => server.label === serverLabel && server.serverGroupId === message.serverGroupId
+                (server: RegisteredServerModel) =>
+                    server.label === serverLabel && server.serverGroupId === message.serverGroupId
             );
 
             if (IsHelper.isNullOrUndefined(server)) {
@@ -262,7 +306,8 @@ export class ExtensionStore {
 
         socket.on(AdminEventType.RegisterResponse, (message: AdminResponse<{ verified: boolean }>) => {
             const server: RegisteredServerModel | undefined = this.registeredServers.find(
-                (server: RegisteredServerModel) => server.label === serverLabel && server.serverGroupId === message.serverGroupId
+                (server: RegisteredServerModel) =>
+                    server.label === serverLabel && server.serverGroupId === message.serverGroupId
             );
 
             if (IsHelper.isNullOrUndefined(server)) {
@@ -283,36 +328,44 @@ export class ExtensionStore {
             socket.emit(AdminEventType.StatusRequest, eventRequest);
         });
 
-        socket.on(AdminEventType.StatusResponse, (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
-            const server: RegisteredServerModel | undefined = this.registeredServers.find(
-                (server: RegisteredServerModel) => server.label === serverLabel && server.serverGroupId === message.serverGroupId
-            );
+        socket.on(
+            AdminEventType.StatusResponse,
+            (message: AdminResponse<{ serverStatus: ServerStatus; serverError: any }>) => {
+                const server: RegisteredServerModel | undefined = this.registeredServers.find(
+                    (server: RegisteredServerModel) =>
+                        server.label === serverLabel && server.serverGroupId === message.serverGroupId
+                );
 
-            if (IsHelper.isNullOrUndefined(server)) {
-                return;
-            }
+                if (IsHelper.isNullOrUndefined(server)) {
+                    return;
+                }
 
-            const currentStatus: string = server.status;
+                const currentStatus: string = server.status;
 
-            if (!message.requestComplete) {
-                if (currentStatus !== ServerStatus.Offline) {
-                    server.status = ServerStatus.Offline;
+                if (!message.requestComplete) {
+                    if (currentStatus !== ServerStatus.Offline) {
+                        server.status = ServerStatus.Offline;
+                        this.extensionTreeProvider._onDidChangeTreeData.fire(undefined);
+                    }
+                    return;
+                }
+
+                server.status = message.data?.serverStatus ?? ServerStatus.Unknown;
+
+                if (currentStatus !== server.status) {
+                    socket.emit(AdminEventType.UrlListRequest, {
+                        adminPassword: server.adminPassword,
+                        serverGroupId: server.serverGroupId,
+                    });
                     this.extensionTreeProvider._onDidChangeTreeData.fire(undefined);
                 }
-                return;
             }
-
-            server.status = message.data?.serverStatus ?? ServerStatus.Unknown;
-
-            if (currentStatus !== server.status) {
-                socket.emit(AdminEventType.UrlListRequest, { adminPassword: server.adminPassword, serverGroupId: server.serverGroupId });
-                this.extensionTreeProvider._onDidChangeTreeData.fire(undefined);
-            }
-        });
+        );
 
         socket.on(AdminEventType.UrlListResponse, (message: AdminResponse<{ urls: RegisteredUrl[] }>) => {
             const server: RegisteredServerModel | undefined = this.registeredServers.find(
-                (server: RegisteredServerModel) => server.label === serverLabel && server.serverGroupId === message.serverGroupId
+                (server: RegisteredServerModel) =>
+                    server.label === serverLabel && server.serverGroupId === message.serverGroupId
             );
 
             if (IsHelper.isNullOrUndefined(server)) {
@@ -334,7 +387,9 @@ export class ExtensionStore {
     };
 
     public unsubscribeFromServer = (serverLabel: string): void => {
-        const client: RegisteredClientModel | undefined = this.registeredClients.find((client: RegisteredClientModel) => client.serverLabel === serverLabel);
+        const client: RegisteredClientModel | undefined = this.registeredClients.find(
+            (client: RegisteredClientModel) => client.serverLabel === serverLabel
+        );
 
         if (IsHelper.isNullOrUndefined(client) || IsHelper.isNullOrUndefined(client.socket)) {
             return;
@@ -344,6 +399,8 @@ export class ExtensionStore {
         client.socket.disconnect();
         client.socket = null;
 
-        this.registeredClients = this.registeredClients.filter((client: RegisteredClientModel) => client.serverLabel !== serverLabel);
+        this.registeredClients = this.registeredClients.filter(
+            (client: RegisteredClientModel) => client.serverLabel !== serverLabel
+        );
     };
 }

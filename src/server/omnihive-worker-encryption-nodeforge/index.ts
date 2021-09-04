@@ -73,21 +73,21 @@ export default class NodeForgeEncryptionWorker extends HiveWorkerBase implements
             if (IsHelper.isNullOrUndefined(data)) {
                 throw new Error("Secure message data packet not in the correct format");
             }
-        } catch (e) {
+        } catch (error) {
             throw new Error("Secure message data packet not in the correct format");
         }
 
         try {
             decodedKey = forge.util.createBuffer(forge.util.binary.base64.decode(this.typedMetadata.encryptionKey));
             decipher = forge.cipher.createDecipher("AES-CBC", decodedKey);
-        } catch (e) {
+        } catch (error) {
             throw new Error("Secure message symmetric key not in the correct format");
         }
 
         // Create and execute decipher
         try {
             decipher.start({ iv });
-        } catch (err) {
+        } catch (error) {
             throw new Error("Secure message symmetric iv not in the correct format");
         }
 

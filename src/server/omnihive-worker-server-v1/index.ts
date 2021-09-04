@@ -60,8 +60,8 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 HiveWorkerMetadataServer,
                 metadata
             );
-        } catch (err) {
-            throw new Error("Server Init Error => " + JSON.stringify(serializeError(err)));
+        } catch (error) {
+            throw new Error("Server Init Error => " + JSON.stringify(serializeError(error)));
         }
     }
 
@@ -199,7 +199,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     );
 
                     const graphWorkerReturn = await buildWorker.buildDatabaseWorkerSchema(databaseWorker, schema);
-                    let dbWorkerModule = undefined;
+                    let dbWorkerModule: any = undefined;
 
                     if (typeof graphWorkerReturn === "string") {
                         dbWorkerModule = this.importFromString(graphWorkerReturn);
@@ -449,7 +449,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                             HiveWorkerMetadataRestFunction,
                             rw.metadata
                         );
-                    } catch (e) {
+                    } catch (error) {
                         logWorker?.write(
                             OmniHiveLogLevel.Error,
                             `Cannot register custom REST worker ${rw.name}.  MetaData is incorrect.`
@@ -479,10 +479,10 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                                 } else {
                                     res.status(workerResponse.status).send(true);
                                 }
-                            } catch (e) {
+                            } catch (error) {
                                 return res.status(500).render("500", {
                                     rootUrl: this.webRootUrl,
-                                    error: serializeError(e),
+                                    error: serializeError(error),
                                 });
                             }
                         }
@@ -536,9 +536,12 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
             // Return app
             return app;
-        } catch (err) {
-            logWorker?.write(OmniHiveLogLevel.Error, `Server Spin-Up Error => ${JSON.stringify(serializeError(err))}`);
-            throw new Error(err);
+        } catch (error) {
+            logWorker?.write(
+                OmniHiveLogLevel.Error,
+                `Server Spin-Up Error => ${JSON.stringify(serializeError(error))}`
+            );
+            throw error;
         }
     };
 

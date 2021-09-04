@@ -105,8 +105,8 @@ export class ParseDelete {
 
             // If this point is reached then nothing was deleted
             return 0;
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            throw error;
         }
     };
 

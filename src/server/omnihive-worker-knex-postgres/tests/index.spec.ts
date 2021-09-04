@@ -114,8 +114,8 @@ describe("Worker Test - Knex - Postgres", () => {
                     initWorker({ ...Object.assign({}, testValues.metadata), databaseName: "testbad" })
                 );
                 expect.fail("Method Expected to Fail");
-            } catch (err) {
-                expect(err).to.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.an.instanceOf(Error);
             }
         });
     });
@@ -153,8 +153,8 @@ describe("Worker Test - Knex - Postgres", () => {
             try {
                 await AwaitHelper.execute(worker.getSchema());
                 expect.fail("Schema file does not exist");
-            } catch (err) {
-                expect(err).to.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.an.instanceOf(Error);
             }
 
             fs.renameSync(
@@ -183,8 +183,8 @@ describe("Worker Test - Knex - Postgres", () => {
             try {
                 await AwaitHelper.execute(worker.getSchema());
                 expect.fail("Schema file does not exist");
-            } catch (err) {
-                expect(err).to.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.an.instanceOf(Error);
             }
 
             fs.renameSync(
@@ -223,8 +223,8 @@ describe("Worker Test - Knex - Postgres", () => {
             try {
                 await AwaitHelper.execute(worker.getSchema());
                 expect.fail("Schema file does not exist");
-            } catch (err) {
-                expect(err).to.be.an.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.an.instanceOf(Error);
             }
 
             fs.renameSync(
@@ -266,8 +266,8 @@ describe("Worker Test - Knex - Postgres", () => {
                 const worker = await AwaitHelper.execute(initWorker(metadata));
                 await AwaitHelper.execute(worker.getSchema());
                 expect.fail("Schema file does not exist");
-            } catch (err) {
-                expect(err).to.be.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.instanceOf(Error);
             }
         });
 
@@ -279,8 +279,8 @@ describe("Worker Test - Knex - Postgres", () => {
                 const worker = await AwaitHelper.execute(initWorker(metadata));
                 await AwaitHelper.execute(worker.getSchema());
                 expect.fail("Schema file does not exist");
-            } catch (err) {
-                expect(err).to.be.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.instanceOf(Error);
             }
         });
 
@@ -293,8 +293,8 @@ describe("Worker Test - Knex - Postgres", () => {
                 const worker = await AwaitHelper.execute(initWorker(metadata));
                 await AwaitHelper.execute(worker.getSchema());
                 expect.fail("Schema file does not exist");
-            } catch (err) {
-                expect(err).to.be.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.instanceOf(Error);
             }
         });
 
@@ -309,8 +309,8 @@ describe("Worker Test - Knex - Postgres", () => {
                 const worker = await AwaitHelper.execute(initWorker(metadata));
                 await AwaitHelper.execute(worker.getSchema());
                 expect.fail("Schemas do not exist");
-            } catch (err) {
-                expect(err).to.be.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.instanceOf(Error);
             }
         });
 
@@ -352,8 +352,8 @@ describe("Worker Test - Knex - Postgres", () => {
             try {
                 await AwaitHelper.execute(worker.executeQuery(sqlContents));
                 expect.fail("This is a bad query");
-            } catch (err) {
-                expect(err).to.be.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.instanceOf(Error);
             }
         });
 
@@ -412,8 +412,8 @@ describe("Worker Test - Knex - Postgres", () => {
             try {
                 await AwaitHelper.execute(worker.executeProcedure(schema, []));
                 expect.fail("This is a bad function");
-            } catch (err) {
-                expect(err).to.be.instanceOf(Error);
+            } catch (error) {
+                expect(error).to.be.instanceOf(Error);
             }
         });
     });

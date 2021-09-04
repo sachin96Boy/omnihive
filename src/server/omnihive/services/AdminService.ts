@@ -199,11 +199,11 @@ export class AdminService {
                     this.sendSuccessToSocket(AdminEventType.ConfigSaveRequest, socket, {
                         verified: true,
                     });
-                } catch (e) {
+                } catch (error) {
                     this.sendErrorToSocket(
                         AdminEventType.ConfigSaveRequest,
                         socket,
-                        serializeError(e as Error).message ?? ""
+                        JSON.stringify(serializeError(error))
                     );
                     return;
                 }

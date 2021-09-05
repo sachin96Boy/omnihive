@@ -252,7 +252,7 @@
     },
     "scripts": {
         "commit": "cz",
-        "compile": "concurrently \"yarn run compile:extension\" \"yarn run compile:app\"",
+        "compile": "npm-run-all compile:extension compile:app",
         "compile:extension": "tsc -p ./",
         "compile:app": "NODE_ENV=production yarn run webpack --mode production",
         "deploy": "vsce publish --yarn",
@@ -263,9 +263,9 @@
         "release:dry-run": "standard-version --dry-run",
         "test": "yarn run compile && node ./out/test/runTest.js",
         "vscode:prepublish": "yarn run compile",
-        "watch": "concurrently \"yarn run watch:extension\" \"yarn run watch:app\"",
+        "watch": "npm-run-all --parallel watch:extension watch:app",
         "watch:extension": "tsc -watch -p ./",
-        "watch:app": "vite"
+        "watch:app": "webpack --watch --mode development"
     },
     "dependencies": {
         "@types/vscode": "1.60.0",
@@ -306,16 +306,15 @@
         "@types/semver": "7.3.8",
         "@typescript-eslint/eslint-plugin": "4.30.0",
         "@typescript-eslint/parser": "4.30.0",
-        "@vitejs/plugin-react-refresh": "1.3.1",
         "commitizen": "4.2.4",
         "compression-webpack-plugin": "8.0.1",
-        "concurrently": "6.2.1",
         "css-loader": "6.2.0",
         "cz-conventional-changelog": "3.3.0",
         "eslint": "7.32.0",
         "eslint-config-prettier": "8.3.0",
         "eslint-plugin-prettier": "4.0.0",
         "husky": "7.0.2",
+        "npm-run-all": "4.1.5",
         "postcss": "8.3.6",
         "postcss-loader": "6.1.1",
         "prettier": "2.3.2",
@@ -323,7 +322,8 @@
         "style-loader": "3.2.1",
         "ts-loader": "9.2.5",
         "typescript": "4.4.2",
-        "vite": "2.5.3",
-        "vsce": "1.96.3"
+        "vsce": "1.96.3",
+        "webpack": "5.52.0",
+        "webpack-cli": "4.8.0"
     }
 }

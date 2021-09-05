@@ -170,7 +170,8 @@ export class WebViewPanelProvider {
 
             panel.webview.html = webViewContent.outputString();
         } else {
-            const reactAdminPathOnDisk = vscode.Uri.file(`${context.extensionPath}/src/app/index.tsx`);
+            const reactAdminPathOnDisk = vscode.Uri.file(`${context.extensionPath}/out/reactAdmin.js`);
+            const reactAdminUri = reactAdminPathOnDisk.with({ scheme: "vscode-resource" });
 
             const webViewContent: StringBuilder = new StringBuilder();
 
@@ -239,9 +240,7 @@ export class WebViewPanelProvider {
             webViewContent.appendLine(`</head>`);
             webViewContent.appendLine(`<body class="w-full h-full">`);
             webViewContent.appendLine(`\t<div id="root" class="w-full h-full"></div>`);
-            webViewContent.appendLine(
-                `\t<script type="module" src="${panel.webview.asWebviewUri(reactAdminPathOnDisk)}"></script>`
-            );
+            webViewContent.appendLine(`\t<script src="${reactAdminUri}"></script>`);
             webViewContent.appendLine(`</body>`);
             webViewContent.appendLine(`</html>`);
 

@@ -5442,10 +5442,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/auth0@npm:2.33.4":
-  version: 2.33.4
-  resolution: "@types/auth0@npm:2.33.4"
-  checksum: 7f4a03330c44e59099bc998f472f33a0371298e1bf5a37230f2d4994b1210d5cadf011970c0f6eb7a4f506d8a9500aa24e0a3cab34bea127476b843493847bc1
+"@types/auth0@npm:2.33.5":
+  version: 2.33.5
+  resolution: "@types/auth0@npm:2.33.5"
+  checksum: 21a0a751a8857727687f7421cb73a57fb35784e11d01bbf4410c3e3cce36b0d373463b6c4a35e2eb55a49951737c49af29637699d8b2af3a10737e5b21db8486
   languageName: node
   linkType: hard
 
@@ -5548,7 +5548,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/cors@npm:2.8.12, @types/cors@npm:^2.8.8":
+"@types/cors@npm:2.8.12, @types/cors@npm:^2.8.10":
   version: 2.8.12
   resolution: "@types/cors@npm:2.8.12"
   checksum: 8c45f112c7d1d2d831b4b266f2e6ed33a1887a35dcbfe2a18b28370751fababb7cd045e745ef84a523c33a25932678097bf79afaa367c6cb3fa0daa7a6438257
@@ -6215,7 +6215,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*":
+"@types/react@npm:*, @types/react@npm:17.0.20":
   version: 17.0.20
   resolution: "@types/react@npm:17.0.20"
   dependencies:
@@ -6223,17 +6223,6 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: e342bfaa4fe052fc3a445ea49f746f3fd82cfc9c8028eae139a3e0763ead1871f353bd40da2a472f23d2b52544d2781d40e3159c0703e7e2ff08c13f067a3b9c
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:17.0.19":
-  version: 17.0.19
-  resolution: "@types/react@npm:17.0.19"
-  dependencies:
-    "@types/prop-types": "*"
-    "@types/scheduler": "*"
-    csstype: ^3.0.2
-  checksum: d5af52623dd863e5a9f64eb72979f19c21e03012e25ee93adc93f664ed7976e81b654128dc653b225ad5ba2aaae24e0febe37face272bb051d6289e23ed7177d
   languageName: node
   linkType: hard
 
@@ -6984,7 +6973,7 @@ __metadata:
   resolution: "@withonevision/omnihive-client@workspace:src/server/omnihive-client"
   dependencies:
     "@withonevision/omnihive-core": "workspace:*"
-    axios: 0.21.2
+    axios: 0.21.3
     chai: 4.3.4
     typescript: 4.4.2
   languageName: unknown
@@ -7016,7 +7005,7 @@ __metadata:
   resolution: "@withonevision/omnihive-desktop-core@workspace:src/desktop/omnihive-desktop-core"
   dependencies:
     "@types/faker": 5.5.8
-    "@types/react": 17.0.19
+    "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
     "@withonevision/omnihive-core": "workspace:*"
     autoprefixer: 10.3.4
@@ -7039,7 +7028,7 @@ __metadata:
   resolution: "@withonevision/omnihive-desktop-server-manager@workspace:src/desktop/omnihive-desktop-server-manager"
   dependencies:
     "@types/faker": 5.5.8
-    "@types/react": 17.0.19
+    "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
     "@withonevision/omnihive-core": "workspace:*"
     "@withonevision/omnihive-desktop-core": "workspace:*"
@@ -7055,7 +7044,7 @@ __metadata:
     rc-dock: 3.0.20
     react: 17.0.2
     react-dom: 17.0.2
-    socket.io-client: 4.1.2
+    socket.io-client: 4.1.3
     style-loader: 3.2.1
     tailwindcss: 2.2.9
     typescript: 4.4.2
@@ -7078,7 +7067,7 @@ __metadata:
     "@storybook/builder-webpack5": 6.3.8
     "@storybook/manager-webpack5": 6.3.8
     "@storybook/react": 6.3.8
-    "@types/react": 17.0.19
+    "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
     "@withonevision/omnihive-core": "workspace:*"
     "@withonevision/omnihive-desktop-core": "workspace:*"
@@ -7442,7 +7431,7 @@ __metadata:
   dependencies:
     "@withonevision/omnihive-core": "workspace:*"
     chai: 4.3.4
-    socket.io-client: 4.1.2
+    socket.io-client: 4.1.3
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
@@ -7464,7 +7453,7 @@ __metadata:
   dependencies:
     "@withonevision/omnihive-core": "workspace:*"
     chai: 4.3.4
-    socket.io: 4.1.2
+    socket.io: 4.1.3
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
@@ -7507,11 +7496,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-token-auth0@workspace:src/extras/omnihive-worker-token-auth0"
   dependencies:
-    "@types/auth0": 2.33.4
+    "@types/auth0": 2.33.5
     "@types/node-jose": 1.1.8
     "@withonevision/omnihive-core": "workspace:*"
     auth0: 2.36.1
-    axios: 0.21.2
+    axios: 0.21.3
     chai: 4.3.4
     jwt-decode: 3.1.2
     node-jose: 2.0.0
@@ -7538,7 +7527,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-user-auth0@workspace:src/extras/omnihive-worker-user-auth0"
   dependencies:
-    "@types/auth0": 2.33.4
+    "@types/auth0": 2.33.5
     "@withonevision/omnihive-core": "workspace:*"
     auth0: 2.36.1
     chai: 4.3.4
@@ -8788,16 +8777,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:0.21.2":
-  version: 0.21.2
-  resolution: "axios@npm:0.21.2"
-  dependencies:
-    follow-redirects: ^1.14.0
-  checksum: 41299c21f77323e7c56ea49d2d5ed25407d24bb145a4ce3441a8db17359ae56554f9495dca6e15d343a9530e106212a684c75a4db3bedfbe19f6414a8d94378e
-  languageName: node
-  linkType: hard
-
-"axios@npm:^0.21.1":
+"axios@npm:0.21.3, axios@npm:^0.21.1":
   version: 0.21.3
   resolution: "axios@npm:0.21.3"
   dependencies:
@@ -13208,7 +13188,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"engine.io-client@npm:~5.1.1":
+"engine.io-client@npm:~5.1.2":
   version: 5.1.2
   resolution: "engine.io-client@npm:5.1.2"
   dependencies:
@@ -13234,7 +13214,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"engine.io@npm:~5.1.0":
+"engine.io@npm:~5.1.1":
   version: 5.1.1
   resolution: "engine.io@npm:5.1.1"
   dependencies:
@@ -20935,7 +20915,7 @@ fsevents@^1.2.7:
   dependencies:
     "@types/lodash": 4.14.172
     "@types/node": 14.17.14
-    "@types/react": 17.0.19
+    "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
     "@vitejs/plugin-react-refresh": 1.3.6
     "@withonevision/omnihive-core": "workspace:*"
@@ -20972,7 +20952,7 @@ fsevents@^1.2.7:
     "@mdx-js/react": 1.6.22
     "@svgr/webpack": 5.5.0
     "@tsconfig/docusaurus": 1.0.4
-    "@types/react": 17.0.19
+    "@types/react": 17.0.20
     "@types/react-helmet": 6.1.2
     "@types/react-router-dom": 5.1.8
     "@typescript-eslint/eslint-plugin": 4.30.0
@@ -21007,7 +20987,7 @@ fsevents@^1.2.7:
     "@types/lodash.orderby": 4.6.6
     "@types/mocha": 9.0.0
     "@types/node": 14.17.14
-    "@types/react": 17.0.19
+    "@types/react": 17.0.20
     "@types/react-copy-to-clipboard": 5.0.1
     "@types/react-dom": 17.0.9
     "@types/semver": 7.3.8
@@ -21019,7 +20999,7 @@ fsevents@^1.2.7:
     ag-grid-community: 26.0.0
     ag-grid-react: 26.0.0
     autoprefixer: 10.3.4
-    axios: 0.21.2
+    axios: 0.21.3
     commitizen: 4.2.4
     compression-webpack-plugin: 8.0.1
     css-loader: 6.2.0
@@ -21045,7 +21025,7 @@ fsevents@^1.2.7:
     react-dom: 17.0.2
     semver: 7.3.5
     serialize-error: 8.1.0
-    socket.io-client: 4.1.2
+    socket.io-client: 4.1.3
     standard-version: 9.3.1
     style-loader: 3.2.1
     tailwindcss: 2.2.9
@@ -21110,8 +21090,8 @@ fsevents@^1.2.7:
     read-pkg-up: 7.0.1
     redis: 3.1.2
     serialize-error: 8.1.0
-    socket.io: 4.1.2
-    socket.io-client: 4.1.2
+    socket.io: 4.1.3
+    socket.io-client: 4.1.3
     swagger-ui-express: 4.1.6
     ts-node: 10.2.1
     typescript: 4.4.2
@@ -25028,7 +25008,7 @@ fsevents@^1.2.7:
     prettier: 2.3.2
     read-pkg-up: 7.0.1
     replace-in-file: 6.2.0
-    socket.io: 4.1.2
+    socket.io: 4.1.3
     source-map-support: 0.5.19
     src: "link:./src"
     standard-version: 9.3.1
@@ -25866,29 +25846,29 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"socket.io-adapter@npm:~2.3.0":
+"socket.io-adapter@npm:~2.3.0, socket.io-adapter@npm:~2.3.1":
   version: 2.3.2
   resolution: "socket.io-adapter@npm:2.3.2"
   checksum: 3388a4cf579be29d0c96a6e4a6c44d32485d7ad47140258645e5a1fd7b12b09153c354400ee295a135296b9d8d8d405fc25a7d9caa18b64c0d070694f7a1045e
   languageName: node
   linkType: hard
 
-"socket.io-client@npm:4.1.2":
-  version: 4.1.2
-  resolution: "socket.io-client@npm:4.1.2"
+"socket.io-client@npm:4.1.3":
+  version: 4.1.3
+  resolution: "socket.io-client@npm:4.1.3"
   dependencies:
     "@types/component-emitter": ^1.2.10
     backo2: ~1.0.2
     component-emitter: ~1.3.0
     debug: ~4.3.1
-    engine.io-client: ~5.1.1
+    engine.io-client: ~5.1.2
     parseuri: 0.0.6
     socket.io-parser: ~4.0.4
-  checksum: c9815738c1cb8c05b9921f7ebf89bd1231f8c84ce664a90e45581550360c392f7f1893959c5e05ff89f9cf786eda8bbd79992967873818cf65d6091c66e30a51
+  checksum: 5750783767bd4436dad67ffcd9a46478c8660b581d919a069bde1b0aa17370a7c90e87df60c47836ae18bf5022240850fec2f68add4f4f3761dc8b00147540ef
   languageName: node
   linkType: hard
 
-"socket.io-parser@npm:~4.0.3, socket.io-parser@npm:~4.0.4":
+"socket.io-parser@npm:~4.0.4":
   version: 4.0.4
   resolution: "socket.io-parser@npm:4.0.4"
   dependencies:
@@ -25899,20 +25879,20 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"socket.io@npm:4.1.2":
-  version: 4.1.2
-  resolution: "socket.io@npm:4.1.2"
+"socket.io@npm:4.1.3":
+  version: 4.1.3
+  resolution: "socket.io@npm:4.1.3"
   dependencies:
     "@types/cookie": ^0.4.0
-    "@types/cors": ^2.8.8
+    "@types/cors": ^2.8.10
     "@types/node": ">=10.0.0"
     accepts: ~1.3.4
     base64id: ~2.0.0
     debug: ~4.3.1
-    engine.io: ~5.1.0
-    socket.io-adapter: ~2.3.0
-    socket.io-parser: ~4.0.3
-  checksum: 88d2044fcf2cd5d392ca08e4a799c6ff0a06467ecb380ce40ef56b826fe959e763e1ca5ffadff41197bd5bc4ffdacd6cba87c72733ddbdca3965330f2e1484c8
+    engine.io: ~5.1.1
+    socket.io-adapter: ~2.3.1
+    socket.io-parser: ~4.0.4
+  checksum: a233029a29ceb448784f8b091c082dfd491960535d747a508d3058f77fd2bd299d65864628352b12785ecd209705b03384463659a656a674b06c835d14252af1
   languageName: node
   linkType: hard
 

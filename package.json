@@ -23,6 +23,8 @@
         "build:custom": "yarn node -r ts-node/register ./buildServerManual.ts -w custom",
         "build:manual": "yarn node -r ts-node/register ./buildServerManual.ts",
         "build:debug": "yarn node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./buildServer.ts -d",
+        "clean:nodemodules": "npx npkill",
+        "clean:packagelock": "find . -name \"package-lock.json\" -type f -delete",
         "commit": "cz",
         "desktop:debug": "cd src/desktop/omnihive-desktop && yarn run dev",
         "desktop:storybook": "cd src/desktop/omnihive-desktop-storybook && yarn run storybook",
@@ -32,7 +34,8 @@
         "release:dry-run": "standard-version --dry-run",
         "server:debug": "cd src/server/omnihive && yarn run server:debug",
         "taskRunner:debug": "cd src/server/omnihive && yarn run taskRunner:debug",
-        "test:debug": "docker-compose -f docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f docker-compose.test.yml down"
+        "test:debug": "docker-compose -f docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f docker-compose.test.yml down",
+        "update:packages": "npx npm-check -u -E"
     },
     "dependencies": {
         "electron": "link:./src",
@@ -81,7 +84,7 @@
         "prettier": "2.3.2",
         "read-pkg-up": "7.0.1",
         "replace-in-file": "6.2.0",
-        "socket.io": "4.1.2",
+        "socket.io": "4.1.3",
         "source-map-support": "0.5.19",
         "standard-version": "9.3.1",
         "stylelint": "13.13.1",

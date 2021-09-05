@@ -27,7 +27,7 @@
         "auth0": "2.36.1"
     },
     "devDependencies": {
-        "@types/auth0": "2.33.4",
+        "@types/auth0": "2.33.5",
         "chai": "4.3.4",
         "typescript": "4.4.2"
     }

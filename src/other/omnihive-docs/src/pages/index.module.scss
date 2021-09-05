@@ -1,0 +1,106 @@
+/* stylelint-disable docusaurus/copyright-header */
+
+@use "../css/variables";
+
+.buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cornerRibbon {
+    background: variables.$ohOrange;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    color: #121212;
+    letter-spacing: 1px;
+    line-height: 50px;
+    position: fixed;
+    text-align: center;
+    width: 200px;
+
+    &.bottomLeft {
+        top: auto;
+        bottom: 25px;
+        left: -50px;
+        transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
+    }
+
+    &.bottomRight {
+        top: auto;
+        right: -50px;
+        bottom: 25px;
+        left: auto;
+        transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg);
+    }
+}
+
+.features {
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+    width: 100%;
+}
+
+.getStarted {
+    background-color: variables.$ohDarkGrey;
+    color: variables.$ohOrange;
+
+    &:hover {
+        background-color: white;
+        color: variables.$ohDarkGrey;
+    }
+}
+
+.heroBanner {
+    background: url("/img/hero_bg_final.png") 20% 20% / cover no-repeat;
+    background-color: #2e2e2e !important;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.heroBee {
+    height: 70px;
+    width: 55px;
+    padding-right: 10px;
+}
+
+.ohSubtitle {
+    color: variables.$ohOrange;
+}
+
+.ohTitle {
+    font-family: "Big Noodle Titling";
+    color: variables.$ohOrange;
+    font-size: 6rem;
+    line-height: 1;
+}
+
+.rowJustified {
+    justify-content: center !important;
+}
+
+@media only screen and (max-width: 365px) {
+    .heroBee {
+        padding-right: 0px;
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    .cornerRibbon {
+        &.bottomLeft {
+            display: none;
+        }
+    }
+
+    .ohTitle {
+        font-size: 5rem;
+    }
+}
+
+@media only screen and (max-width: 966px) {
+    .heroBanner {
+        padding: 2rem;
+    }
+}

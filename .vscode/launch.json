@@ -41,6 +41,19 @@
         {
             "type": "pwa-node",
             "request": "launch",
+            "name": "OH Docs Web : Debug",
+            "runtimeExecutable": "yarn",
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": ["run", "docs:debug"],
+            "timeout": 10000,
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
             "name": "OH Server : Debug",
             "runtimeExecutable": "yarn",
             "cwd": "${workspaceFolder}",

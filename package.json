@@ -26,6 +26,7 @@
         "commit": "cz",
         "desktop:debug": "cd src/desktop/omnihive-desktop && yarn run dev",
         "desktop:storybook": "cd src/desktop/omnihive-desktop-storybook && yarn run storybook",
+        "docs:debug": "cd src/other/omnihive-docs && yarn start",
         "husky": "husky install",
         "release": "standard-version",
         "release:dry-run": "standard-version --dry-run",

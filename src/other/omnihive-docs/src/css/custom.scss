@@ -1,0 +1,39 @@
+/* stylelint-disable docusaurus/copyright-header */
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+
+@font-face {
+    font-family: "Big Noodle Titling";
+    src: url("/fonts/big_noodle_titling.ttf");
+}
+
+:root {
+    --ifm-color-primary: #d38d15;
+    --ifm-code-font-size: 95%;
+    --ifm-footer-background-color: #212121;
+    --ifm-footer-title-color: var(--ifm-color-white);
+    --ifm-footer-link-color: var(--ifm-color-white);
+}
+
+html[data-theme="dark"] {
+    background-color: #2e2e2e;
+}
+
+.admonition-icon {
+    svg {
+        fill: #2e2e2e;
+    }
+}
+
+.alert {
+    color: #2e2e2e;
+}
+
+.footer__links {
+    text-align: center;
+}

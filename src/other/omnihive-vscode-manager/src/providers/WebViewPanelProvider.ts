@@ -170,8 +170,7 @@ export class WebViewPanelProvider {
 
             panel.webview.html = webViewContent.outputString();
         } else {
-            const reactAdminPathOnDisk = vscode.Uri.file(`${context.extensionPath}/out/reactAdmin.js`);
-            const reactAdminUri = reactAdminPathOnDisk.with({ scheme: "vscode-resource" });
+            const reactAdminPathOnDisk = vscode.Uri.file(`${context.extensionPath}/src/app/index.tsx`);
 
             const webViewContent: StringBuilder = new StringBuilder();
 
@@ -180,6 +179,7 @@ export class WebViewPanelProvider {
             webViewContent.appendLine(`<head>`);
             webViewContent.appendLine(`\t<meta charset="UTF-8">`);
             webViewContent.appendLine(`\t<meta name="viewport" content="width=device-width, initial-scale=1.0">`);
+            webViewContent.appendLine(`\t<meta http-equiv="Content-Security-Policy" content="">`);
             webViewContent.appendLine(`\t<title>OmniHive Administrator</title>`);
             webViewContent.appendLine(`\t<script>`);
             webViewContent.appendLine(`\t\twindow.acquireVsCodeApi = acquireVsCodeApi;`);
@@ -239,7 +239,9 @@ export class WebViewPanelProvider {
             webViewContent.appendLine(`</head>`);
             webViewContent.appendLine(`<body class="w-full h-full">`);
             webViewContent.appendLine(`\t<div id="root" class="w-full h-full"></div>`);
-            webViewContent.appendLine(`\t<script src="${reactAdminUri}"></script>`);
+            webViewContent.appendLine(
+                `\t<script type="module" src="${panel.webview.asWebviewUri(reactAdminPathOnDisk)}"></script>`
+            );
             webViewContent.appendLine(`</body>`);
             webViewContent.appendLine(`</html>`);
 

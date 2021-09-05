@@ -22,7 +22,7 @@ export type AddEditServerProps = {
 const registerButtonStyle: string =
     "mx-auto h-10 px-10 text-sm text-white transition-colors duration-150 rounded-lg focus:shadow-md bg-omnihiveOrange hover:bg-omnihiveOrangeHover";
 
-const AddEditServer: React.FC<AddEditServerProps> = (props): React.ReactElement => {
+export const AddEditServer: React.FC<AddEditServerProps> = (props): React.ReactElement => {
     let oldServerLabel: string = "";
 
     if (!IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(props.editServerLabel)) {
@@ -375,5 +375,3 @@ const AddEditServer: React.FC<AddEditServerProps> = (props): React.ReactElement 
         </>
     );
 };
-
-export default AddEditServer;

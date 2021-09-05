@@ -2,7 +2,7 @@ import { DividerBox } from "rc-dock";
 import React from "react";
 import { ModuleDock } from "@withonevision/omnihive-desktop-core/components/ModuleDock";
 import { useOpenGridTab } from "@withonevision/omnihive-desktop-core/hooks/useOpenGridTab";
-import AddEditServer from "./components/AddEditServer";
+import { AddEditServer } from "./components/AddEditServer";
 import addIcon from "./assets/add.png";
 import trashIcon from "./assets/trash.png";
 

@@ -17,7 +17,7 @@ const registeredModules: DesktopModule[] = [
     },
 ];
 
-const App: React.FC = (): React.ReactElement => {
+export const App: React.FC = (): React.ReactElement => {
     const [activeModuleKey, setActiveModuleKey] = useState<string>("withonevision-omnihive-desktop-server-manager");
     const [appSettings, setAppSettings] = useState<AppSettings>(new AppSettings());
 
@@ -101,5 +101,3 @@ const App: React.FC = (): React.ReactElement => {
         </div>
     );
 };
-
-export default App;

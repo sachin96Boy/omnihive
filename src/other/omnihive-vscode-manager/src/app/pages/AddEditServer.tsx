@@ -229,7 +229,7 @@ export const AddEditServer: React.FC<Props> = ({ props }): React.ReactElement =>
                 IsHelper.isNullOrUndefined(message.data) ||
                 !message.data.verified
             ) {
-                showError(message.requestError);
+                showError(message.requestError ?? "");
                 setProcessing(false);
                 return;
             }

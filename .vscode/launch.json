@@ -76,7 +76,7 @@
     ],
     "compounds": [
         {
-          "name": "OH Desktop : Full Debug",
+          "name": "Compound : OH Desktop : Full Debug",
           "configurations": ["OH Desktop : Main Debug", "OH Desktop : Attach to Renderer"]
         }
       ]

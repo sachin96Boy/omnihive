@@ -24,11 +24,11 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "auth0": "2.35.0"
+        "auth0": "2.36.1"
     },
     "devDependencies": {
-        "@types/auth0": "2.33.3",
+        "@types/auth0": "2.33.5",
         "chai": "4.3.4",
-        "typescript": "4.3.5"
+        "typescript": "4.4.2"
     }
 }

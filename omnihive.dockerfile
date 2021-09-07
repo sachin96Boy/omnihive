@@ -2,7 +2,7 @@ FROM node:lts-alpine
 
 RUN npm install -g yarn -force
 
-COPY /dist/packages/omnihive /home/node/app/
+COPY /dist/server/omnihive /home/node/app/
 RUN mkdir -p /home/node/app/node_modules
 RUN chown -R node:node /home/node/app
 

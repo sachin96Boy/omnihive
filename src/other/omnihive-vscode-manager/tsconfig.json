@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "lib": ["DOM", "DOM.Iterable", "ES2020"],
+        "module": "CommonJS",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noUnusedParameters": true,
+        "outDir": "out",
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "ES6"
+    },
+    "exclude": ["node_modules", ".vscode-test", "**/app/**"],
+    "paths": {
+        "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../other/*"]
+    }
+}

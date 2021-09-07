@@ -1,0 +1,45 @@
+{
+    "name": "@withonevision/omnihive-desktop-core",
+    "version": "6.2.57",
+    "description": "OmniHive Desktop Core",
+    "license": "MIT",
+    "author": {
+        "name": "With One Vision Technologies",
+        "url": "https://www.withone.vision",
+        "email": "developers@withone.vision"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "keywords": [
+        "OmniHive",
+        "With One Vision"
+    ],
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@withonevision/omnihive-core": "workspace:*",
+        "classnames": "2.3.1",
+        "rc-dock": "3.0.20",
+        "react": "17.0.2",
+        "react-dom": "17.0.2",
+        "uuid": "8.3.2"
+    },
+    "devDependencies": {
+        "@types/faker": "5.5.8",
+        "@types/react": "17.0.20",
+        "@types/react-dom": "17.0.9",
+        "autoprefixer": "10.3.4",
+        "chai": "4.3.4",
+        "faker": "5.5.3",
+        "postcss": "8.3.6",
+        "tailwindcss": "2.2.9",
+        "typescript": "4.4.2",
+        "webpack": "5.52.0"
+    }
+}

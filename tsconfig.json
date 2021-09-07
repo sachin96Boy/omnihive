@@ -10,11 +10,12 @@
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
-        "jsx": "preserve",
+        "jsx": "react",
         "lib": ["ES2020", "DOM"],
         "module": "CommonJS",
         "moduleResolution": "Node",
         "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": false,
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -25,11 +26,11 @@
         "skipLibCheck": true,
         "sourceMap": true,
         "strict": true,
-        "target": "ES6",
+        "target": "ES2020",
         "types": ["mocha", "node"]
     },
     "paths": {
-        "@withonevision/*": ["./src/packages/*"]
+        "@withonevision/*": ["./src/desktop/*", "./src/server/*", "./src/extras/*", "./src/other/*"]
     },
     "include": ["./src/**/*.ts", "./src/**/*.tsx", "./src/**/package.json"],
     "exclude": [".yarn/**/*", "node_modules/**/*", "**/node_modules/**/*", "./dist/**/*", "src/**/*.spec.ts" ]

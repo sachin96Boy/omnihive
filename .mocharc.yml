@@ -1,6 +1,6 @@
 extension:
     - "ts"
 spec:
-    - "./src/packages/**/tests/**/*.spec.ts"
+    - "./src/server/**/tests/**/*.spec.ts"
 require:
     - "ts-node/register"

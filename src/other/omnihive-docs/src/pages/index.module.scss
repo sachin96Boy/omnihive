@@ -1,0 +1,182 @@
+/* stylelint-disable docusaurus/copyright-header */
+
+@use "../css/variables";
+
+.containerMd {
+    max-width: 900px !important;
+}
+
+.bgSquare {
+    background-size: cover;
+    background-position: center;
+    height: 0;
+    width: 100%;
+    padding-bottom: 100%;
+}
+
+.colBg {
+    background-size: cover;
+    background-position: center;
+}
+.flexVertCenter {
+    display: flex;
+    align-items: center;
+}
+@media screen and (max-width: 996px) {
+    .colBg {
+        display: none;
+    }
+}
+
+.sectionHeading {
+    font-size: var(--ifm-h1-font-size);
+    position: relative;
+    z-index: 1;
+}
+.sectionHeading::before {
+    content: "";
+    position: absolute;
+    bottom: -.35rem;
+    left: -1rem;
+    height: .55rem;
+    width: 19.5rem;
+    background-color: variables.$ohOrange;
+    z-index: -1;
+    transform: skewY(-3deg) skewX(-10deg);
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cornerRibbon {
+    background: variables.$ohOrange;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    color: #121212;
+    letter-spacing: 1px;
+    line-height: 50px;
+    position: fixed;
+    text-align: center;
+    width: 200px;
+
+    &.bottomLeft {
+        top: auto;
+        bottom: 25px;
+        left: -50px;
+        transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
+    }
+
+    &.bottomRight {
+        top: auto;
+        right: -50px;
+        bottom: 25px;
+        left: auto;
+        transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg);
+    }
+}
+
+.features {
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+    width: 100%;
+}
+
+.getStarted {
+    background-color: variables.$ohDarkGrey;
+    color: variables.$ohOrange;
+
+    &:hover {
+        background-color: white;
+        color: variables.$ohDarkGrey;
+    }
+}
+
+.heroBanner {
+    background: url("/img/hero_bg_final.png") 20% 20% / cover no-repeat;
+    background-color: #2e2e2e !important;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.heroBee {
+    height: 70px;
+    width: 55px;
+    padding-right: 10px;
+}
+
+.ohSubtitle {
+    color: variables.$ohOrange;
+}
+
+.ohTitle {
+    font-family: "Big Noodle Titling";
+    color: variables.$ohOrange;
+    font-size: 6rem;
+    line-height: 1;
+}
+
+.rowJustified {
+    justify-content: center !important;
+}
+
+.featureItem {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    padding: .1rem 1rem;
+}
+
+.featureBullet {
+    font-size: .5rem;
+    margin-right: .5rem;
+}
+
+@media only screen and (max-width: 365px) {
+    .heroBee {
+        padding-right: 0px;
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    .cornerRibbon {
+        &.bottomLeft {
+            display: none;
+        }
+    }
+
+    .ohTitle {
+        font-size: 5rem;
+    }
+}
+
+@media only screen and (max-width: 966px) {
+    .heroBanner {
+        padding: 2rem;
+    }
+}
+
+.lightBackground {
+    background-color: variables.$ohLightGray;
+}
+
+.sectionContent {
+    max-width: 560px;
+}
+
+@media only screen and (max-width: 996px) {
+    .sectionContent {
+        max-width: 100%;
+        padding-left: 2rem;
+    }
+}
+
+html[data-theme="dark"] {
+    .lightBackground {
+        background-color: variables.$ohDarkGrey;
+    }
+}

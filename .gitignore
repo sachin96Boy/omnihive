@@ -42,5 +42,13 @@ yarn-error.log*
 !/settings/default_omnihive.env
 
 #custom types
-!**/globals.omnihive.d.ts
-!**/globals.omnihive.test.d.ts
+!**/types/**
+!**/*.d.ts
+
+#desktop
+!**/.storybook/**
+!**/postcss.config.js
+!**/tailwind.config.js
+!**/webpack.*.config.js
+!**/webpack.config.js
+**/.webpack

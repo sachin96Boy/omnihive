@@ -23,11 +23,11 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@elastic/elasticsearch": "7.12.0",
+        "@elastic/elasticsearch": "7.14.1",
         "@withonevision/omnihive-core": "workspace:*"
     },
     "devDependencies": {
         "chai": "4.3.4",
-        "typescript": "4.3.5"
+        "typescript": "4.4.2"
     }
 }

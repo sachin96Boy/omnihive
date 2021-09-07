@@ -95,7 +95,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
 
         try {
             jwks = await AwaitHelper.execute(axios.get(`https://${this.typedMetadata.domain}/.well-known/jwks.json`));
-        } catch (e) {
+        } catch (error) {
             throw new Error("[ohAccessError] JWKS Url Not Responding");
         }
 
@@ -124,7 +124,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
 
         try {
             jwkKey = await AwaitHelper.execute(jose.JWK.asKey(keys[keyIndex]));
-        } catch (e) {
+        } catch (error) {
             throw new Error("[ohAccessError] Invalid key");
         }
 
@@ -133,7 +133,7 @@ export default class AuthZeroTokenWorker extends HiveWorkerBase implements IToke
 
         try {
             jwkVerification = await AwaitHelper.execute(jose.JWS.createVerify(jwkKey).verify(token));
-        } catch (e) {
+        } catch (error) {
             throw new Error("[ohAccessError] Signature verification failed");
         }
 

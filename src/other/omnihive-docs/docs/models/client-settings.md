@@ -21,7 +21,7 @@ title: ClientSettings
 
 ## Code
 
-```
+```ts
 export class ClientSettings {
     public rootUrl: string = "";
     public workers?: HiveWorker[] | undefined = undefined;

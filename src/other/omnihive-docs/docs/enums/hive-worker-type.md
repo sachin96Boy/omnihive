@@ -90,7 +90,7 @@ title: Hive Worker Type
 
 ## Code
 
-```
+```ts
 export enum HiveWorkerType {
     Cache = "cache",
     Config = "config",

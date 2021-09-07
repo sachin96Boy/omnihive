@@ -21,7 +21,7 @@ title: PubSubListener
 
 ## Code
 
-```
+```ts
 export class PubSubListener {
     public channelName: string = "";
     public eventName: string = "";

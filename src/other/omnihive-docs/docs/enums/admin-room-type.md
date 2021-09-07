@@ -14,7 +14,7 @@ title: Admin Room Type
 
 ## Code
 
-```
+```ts
 export enum AdminRoomType {
     Command = "command",
     Log = "log",

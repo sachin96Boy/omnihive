@@ -41,7 +41,7 @@ title: ProcFunctionSchema
 
 ## Code
 
-```
+```ts
 export class ProcFunctionSchema {
     public schemaName: string = "";
     public name: string = "";

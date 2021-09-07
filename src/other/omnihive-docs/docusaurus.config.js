@@ -4,7 +4,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
     title: "OmniHive",
-    tagline: "Plug and Play NodeJS Back-End Framework",
+    tagline: "The Plug and Play Back-End Framework for Node.js",
     url: "https://www.omnihive.io",
     baseUrl: "/",
     onBrokenLinks: "throw",

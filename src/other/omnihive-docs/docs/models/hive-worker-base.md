@@ -28,7 +28,7 @@ title: HiveWorkerBase
 
 ## Code
 
-```
+```ts
 export abstract class HiveWorkerBase extends WorkerGetterBase implements IHiveWorker {
     public config!: HiveWorker;
     public serverSettings!: ServerSettings;

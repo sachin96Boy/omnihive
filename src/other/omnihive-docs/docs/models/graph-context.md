@@ -26,7 +26,7 @@ title: GraphContext
 
 ## Code
 
-```
+```ts
 export class GraphContext {
     public access: string | undefined;
     public auth: string | undefined;

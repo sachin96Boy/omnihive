@@ -16,7 +16,7 @@ title: HiveWorkerMetadataServer
 
 ## Code
 
-```
+```ts
 export class HiveWorkerMetadataServer {
     public buildWorkers: string[] = [];
     public urlRoute: string = "";

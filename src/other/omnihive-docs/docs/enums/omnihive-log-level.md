@@ -18,7 +18,7 @@ title: OmniHive Log Level
 
 ## Code
 
-```
+```ts
 export enum OmniHiveLogLevel {
     Error = "error",
     Info = "info",

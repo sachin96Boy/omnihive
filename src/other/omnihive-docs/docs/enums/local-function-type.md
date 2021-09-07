@@ -26,7 +26,7 @@ title: Local Function Type
 
 ## Code
 
-```
+```ts
 export enum LocalFunctionType {
     Graph = "graph",
     Lifecycle = "lifecycle",

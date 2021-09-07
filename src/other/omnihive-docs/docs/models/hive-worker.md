@@ -46,7 +46,7 @@ title: HiveWorker
 
 ## Code
 
-```
+```ts
 export class HiveWorker {
     public type: string = "";
     public name: string = "";

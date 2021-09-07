@@ -21,7 +21,7 @@ title: ServerSettings
 
 ## Code
 
-```
+```ts
 export class ServerSettings {
     public constants: { [key: string]: unknown } = {};
     public features: { [key: string]: unknown } = {};

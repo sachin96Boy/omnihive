@@ -1,10 +1,12 @@
 /// <reference path="../../declarations.d.ts" />
 
-import React from "react";
-import Layout from "@theme/Layout";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import styles from "./index.module.scss";
+import Layout from "@theme/Layout";
+import React from "react";
+
 import HomePageFeature from "../components/HomePageFeature";
+import HomeSection, { HomeSectionProps } from "../components/HomeSection";
+import styles from "./index.module.scss";
 
 interface FeatureData {
     title: string;
@@ -98,6 +100,161 @@ const features: FeatureData[] = [
     },
 ];
 
+const sections: HomeSectionProps[] = [
+    {
+        data: {
+            heading: "Build Anything Now. Seriously.",
+            imgUrl: "img/worker-code.png",
+        },
+        orientation: "left",
+        content: (
+            <>
+                <p>
+                    Setting up core backend functionality takes too much time, delaying the building of your project by
+                    days or weeks.
+                </p>
+                <p>Eliminate boilerplate garbage and start building in minutes, not days.</p>
+                <p style={{ marginBottom: 0 }}>Out of the box Omnihive gives you</p>
+                <div className="row">
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Express.js
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Web socket services
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Security
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Error Handling
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Task Running
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Package Management
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Cluster Awareness
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>A REST Server
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>A Graph Server
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Logging
+                        </div>
+                    </div>
+                    <div className="col col--6">
+                        <div className={styles.featureItem}>
+                            <span className={styles.featureBullet}>&#9733;</span>Easy Debugging
+                        </div>
+                    </div>
+                </div>
+            </>
+        ),
+    },
+    {
+        data: {
+            heading: "What Plug and Play Means",
+            imgUrl: "img/plug-light.png",
+            darkImgUrl: "img/plug-dark.png",
+        },
+        orientation: "right",
+        content: (
+            <>
+                <p>Omnihive provides sensible defaults for many of your backend and middleware needs.</p>
+                <p>
+                    However, Omnihive's interfaced architecture allows you to easily replace any core worker module with
+                    one that works better for you.
+                </p>
+                <p>If one doesn't already exist that suits your needs, building a new worker is straight forward.</p>
+            </>
+        ),
+    },
+    {
+        data: {
+            heading: "The Power of Workers",
+            imgUrl: "img/atom-light.png",
+            darkImgUrl: "img/atom-dark.png",
+        },
+        orientation: "left",
+        content: (
+            <>
+                <p>
+                    Omnihive workers encapsulate backend functionality as npm packages, making your code sharable,
+                    reusable, and stackable.
+                </p>
+                <p>
+                    A worker could be as simple as a single data query or as complex as managing your realtime chat
+                    network.
+                </p>
+                <p>
+                    The power of workers comes from the fact that Omnihive's interfaced architecture allows you to use
+                    any other worker, or NPM package, inside any other worker.
+                </p>
+            </>
+        ),
+    },
+
+    {
+        data: {
+            heading: "Blur the lines between backend and frontend",
+            imgUrl: "img/send-back-light.png",
+            darkImgUrl: "img/send-back-dark.png",
+        },
+        orientation: "right",
+        content: (
+            <>
+                <p>Your development slows down when your front end developers have to wait on the backend.</p>
+                <p>
+                    Omnihive's built-in SQL to Graph Translator maps your SQL database to Graph models, empowering your
+                    front end team to query for exactly what they need using GraphQL.
+                </p>
+            </>
+        ),
+    },
+    {
+        data: {
+            heading: "Battle Tested and Joyful",
+            imgUrl: "img/swords-light.png",
+            darkImgUrl: "img/swords-dark.png",
+        },
+        orientation: "left",
+        content: (
+            <>
+                <p>The savvy researcher will notice that our first public release of Omnihive was version 6.0.</p>
+                <p>
+                    Before releasing Omnihive publically, we used it for 2 years on production projects at With One
+                    Vision Technologies.
+                </p>
+                <p>Omnihive was too much of a joy to keep to ourselves any longer.</p>
+            </>
+        ),
+    },
+];
+
 const Home: React.FC = (): React.ReactElement => {
     const context = useDocusaurusContext();
     const { siteConfig = {} } = context;
@@ -127,6 +284,11 @@ const Home: React.FC = (): React.ReactElement => {
                         </div>
                     </div>
                 </section>
+
+                {sections.map((item) => (
+                    <HomeSection data={item.data} orientation={item.orientation} content={item.content} />
+                ))}
+
                 <div className={`${styles.cornerRibbon} ${styles.bottomLeft}`}>In Pre-Alpha!</div>
                 <div className={`${styles.cornerRibbon} ${styles.bottomRight}`}>In Pre-Alpha!</div>
             </main>

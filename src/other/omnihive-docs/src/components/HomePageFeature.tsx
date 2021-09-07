@@ -2,8 +2,9 @@
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 import React from "react";
-import ThemedImage from "./ThemedImage";
+
 import styles from "./HomePageFeature.module.scss";
+import ThemedImage from "./ThemedImage";
 
 export interface FeatureProps {
     lightImageSource: string;
@@ -22,7 +23,7 @@ const Feature: React.FC<FeatureProps> = ({
     const darkImage = useBaseUrl(darkImageSource);
 
     return (
-        <div className={`col col--4 ${styles.feature}`}>
+        <div className={`col col--4 margin-vert--lg padding-horiz--lg ${styles.feature}`}>
             <div className="text--center">
                 <ThemedImage
                     className={`${styles.featureImage}`}

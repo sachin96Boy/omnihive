@@ -2,6 +2,12 @@ module.exports = {
     docs: [
         {
             type: "category",
+            label: "Foreword",
+            collapsed: true,
+            items: ["foreword/why-we-built-omnihive", "foreword/what-plug-and-play-means"],
+        },
+        {
+            type: "category",
             label: "Getting Started",
             collapsed: false,
             items: [
@@ -15,7 +21,7 @@ module.exports = {
             type: "category",
             label: "A deeper look",
             collapsed: true,
-            items: ["deeper-look/configuration-file"],
+            items: ["deeper-look/configuration-file", "deeper-look/graph-builder"],
         },
         {
             type: "category",

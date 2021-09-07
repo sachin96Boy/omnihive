@@ -21,7 +21,7 @@ title: ConverterSqlInfo
 
 ## Code
 
-```
+```ts
 export class ConverterSqlInfo {
     public workerName: string = "";
     public sql: string = "";

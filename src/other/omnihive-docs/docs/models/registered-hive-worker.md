@@ -21,7 +21,7 @@ title: RegisteredHiveWorker
 
 ## Code
 
-```
+```ts
 export class RegisteredHiveWorker extends HiveWorker {
     public instance: any;
     public isBoot: boolean = false;

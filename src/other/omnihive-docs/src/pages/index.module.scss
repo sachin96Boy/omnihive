@@ -2,6 +2,49 @@
 
 @use "../css/variables";
 
+.containerMd {
+    max-width: 900px !important;
+}
+
+.bgSquare {
+    background-size: cover;
+    background-position: center;
+    height: 0;
+    width: 100%;
+    padding-bottom: 100%;
+}
+
+.colBg {
+    background-size: cover;
+    background-position: center;
+}
+.flexVertCenter {
+    display: flex;
+    align-items: center;
+}
+@media screen and (max-width: 996px) {
+    .colBg {
+        display: none;
+    }
+}
+
+.sectionHeading {
+    font-size: var(--ifm-h1-font-size);
+    position: relative;
+    z-index: 1;
+}
+.sectionHeading::before {
+    content: "";
+    position: absolute;
+    bottom: -.35rem;
+    left: -1rem;
+    height: .55rem;
+    width: 19.5rem;
+    background-color: variables.$ohOrange;
+    z-index: -1;
+    transform: skewY(-3deg) skewX(-10deg);
+}
+
 .buttons {
     display: flex;
     align-items: center;
@@ -81,6 +124,18 @@
     justify-content: center !important;
 }
 
+.featureItem {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    padding: .1rem 1rem;
+}
+
+.featureBullet {
+    font-size: .5rem;
+    margin-right: .5rem;
+}
+
 @media only screen and (max-width: 365px) {
     .heroBee {
         padding-right: 0px;
@@ -102,5 +157,26 @@
 @media only screen and (max-width: 966px) {
     .heroBanner {
         padding: 2rem;
+    }
+}
+
+.lightBackground {
+    background-color: variables.$ohLightGray;
+}
+
+.sectionContent {
+    max-width: 560px;
+}
+
+@media only screen and (max-width: 996px) {
+    .sectionContent {
+        max-width: 100%;
+        padding-left: 2rem;
+    }
+}
+
+html[data-theme="dark"] {
+    .lightBackground {
+        background-color: variables.$ohDarkGrey;
     }
 }

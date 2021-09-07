@@ -46,7 +46,7 @@ title: HiveWorkerMetadataDatabase
 
 ## Code
 
-```
+```ts
 export class HiveWorkerMetadataConfigDatabase {
     public configName: string = "";
     public databaseName: string = "";

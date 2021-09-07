@@ -98,7 +98,7 @@ title: Admin Event Type
 
 ## Code
 
-```
+```ts
 export enum AdminEventType {
     AccessTokenRequest = "access-token-request",
     AccessTokenResponse = "access-token-response",

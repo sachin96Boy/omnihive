@@ -17,7 +17,7 @@ title: WorkerGetterBase
 
 ## Code
 
-```
+```ts
 export abstract class WorkerGetterBase {
     public registeredWorkers: RegisteredHiveWorker[] = [];
     public getWorker<T extends IHiveWorker | undefined>: (type: string, name?: string) => T | undefined;

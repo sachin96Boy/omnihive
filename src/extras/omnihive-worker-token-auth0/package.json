@@ -25,7 +25,7 @@
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
         "auth0": "2.36.1",
-        "axios": "0.21.3",
+        "axios": "0.21.4",
         "jwt-decode": "3.1.2",
         "node-jose": "2.0.0"
     },

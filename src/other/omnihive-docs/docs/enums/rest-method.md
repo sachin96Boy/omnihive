@@ -26,7 +26,7 @@ title: Rest Method
 
 ## Code
 
-```
+```ts
 export enum RestMethod {
     DELETE = "delete",
     GET = "get",

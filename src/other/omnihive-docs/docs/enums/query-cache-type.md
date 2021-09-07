@@ -12,7 +12,7 @@ title: Query Cache Type
 
 ## Code
 
-```
+```ts
 export enum QueryCacheType {
     None,
     FromCache,

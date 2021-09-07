@@ -22,7 +22,7 @@ title: Lifecycle Worker Action
 
 ## Code
 
-```
+```ts
 export enum LifecycleWorkerAction {
     Insert = "insert",
     Update = "update",

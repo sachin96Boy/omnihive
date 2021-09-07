@@ -41,7 +41,7 @@ title: AuthUser
 
 ## Code
 
-```
+```ts
 export class AuthUser {
     public email: string = "";
     public firstName: string = "";

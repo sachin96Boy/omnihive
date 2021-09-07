@@ -36,7 +36,7 @@ title: HiveWorkerMetadataLifecycleFunction
 
 ## Code
 
-```
+```ts
 export class HiveWorkerMetadataLifecycleFunction {
     public lifecycleAction: LifecycleWorkerAction = LifecycleWorkerAction.None;
     public lifecycleStage: LifecycleWorkerStage = LifecycleWorkerStage.None;

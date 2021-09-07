@@ -26,7 +26,7 @@ title: Registered URL Type
 
 ## Code
 
-```
+```ts
 export enum RegisteredUrlType {
     GraphDatabase = "graphDatabase",
     GraphFunction = "graphFunction",

@@ -23,7 +23,7 @@ title: WorkerSetterBase
 
 ## Code
 
-```
+```ts
 export abstract class WorkerSetterBase extends WorkerGetterBase {
     public serverSettings: ServerSettings = new ServerSettings();
     public initWorkers: (configs: HiveWorker[]) => Promise<void>;

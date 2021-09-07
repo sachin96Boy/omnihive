@@ -22,7 +22,7 @@ title: Lifecycle Worker Stage
 
 ## Code
 
-```
+```ts
 export enum LifecycleWorkerStage {
     After = "after",
     Before = "before",

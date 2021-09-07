@@ -21,7 +21,7 @@ title: ConnectionSchema
 
 ## Code
 
-```
+```ts
 export class ConnectionSchema {
     public workerName: string = "";
     public tables: TableSchema[] = [];

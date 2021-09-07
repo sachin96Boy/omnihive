@@ -21,7 +21,7 @@ title: HiveWorkerMetadataRestFunction
 
 ## Code
 
-```
+```ts
 export class HiveWorkerMetadataRestFunction {
     public restMethod: RestMethod = RestMethod.POST;
     public urlRoute: string = "";

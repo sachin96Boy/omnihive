@@ -30,7 +30,7 @@ title: Server Status
 
 ## Code
 
-```
+```ts
 export enum ServerStatus {
     Admin = "admin",
     Error = "error",

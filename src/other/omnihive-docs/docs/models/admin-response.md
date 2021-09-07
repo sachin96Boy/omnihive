@@ -21,7 +21,7 @@ title: AdminEvent
 
 ## Code
 
-```
+```ts
 export class AdminResponse<T = {}> {
     public data?: T | undefined = undefined;
     public requestComplete?: boolean = true;

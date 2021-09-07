@@ -91,7 +91,7 @@ title: TableSchema
 
 ## Code
 
-```
+```ts
 export class TableSchema {
     public schemaName: string = "";
     public tableName: string = "";

@@ -1,18 +1,20 @@
 /// <reference path="../../../types/globals.omnihive.test.d.ts" />
 
-import { describe, it, beforeEach, before } from "mocha";
-import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
-import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
+import {
+    AwaitHelper,
+    HiveWorkerMetadataDatabase,
+    IDatabaseWorker,
+    IsHelper,
+    ProcFunctionSchema,
+    RegisteredHiveWorkerSection,
+} from "@withonevision/omnihive-core/index.js";
+import NullLogWorker from "@withonevision/omnihive-worker-log-null/index.js";
 import { expect } from "chai";
 import fs from "fs";
+import { before, beforeEach, describe, it } from "mocha";
 import path from "path";
-import MssqlDatabaseWorker from "..";
-import { GlobalTestObject } from "../../../tests/GlobalTestObject";
-import NullLogWorker from "../../omnihive-worker-log-null";
+import { GlobalTestObject } from "../../../tests/GlobalTestObject.js";
+import MssqlDatabaseWorker from "../index.js";
 
 const testValues = {
     metadata: {

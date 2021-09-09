@@ -1,13 +1,12 @@
-import { describe, it } from "mocha";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { AwaitHelper, IDateWorker } from "@withonevision/omnihive-core/index.js";
 import { expect } from "chai";
 import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import tz from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
-import DayJsDateWorker from "..";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import tz from "dayjs/plugin/timezone.js";
+import utc from "dayjs/plugin/utc.js";
 import faker from "faker";
-import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { describe, it } from "mocha";
+import DayJsDateWorker from "../index.js";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);

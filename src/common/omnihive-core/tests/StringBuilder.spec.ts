@@ -1,7 +1,7 @@
-import { describe, it } from "mocha";
 import { expect } from "chai";
-import { StringBuilder } from "../helpers/StringBuilder";
 import faker from "faker";
+import { describe, it } from "mocha";
+import { StringBuilder } from "../helpers/StringBuilder.js";
 
 describe("StringBuilder Tests", () => {
     it("New String Builder - With Args", () => {

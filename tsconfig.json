@@ -27,8 +27,7 @@
     },
     "references": [],
     "paths": {
-        "@withonevision/omnihive-core": [".src/server/omnihive-core"],
-        "@withonevision/*": ["./src/desktop/*", "./src/server/*", "./src/extras/*", "./src/other/*"]
+        "@withonevision/*": ["./src/common/*", "./src/desktop/*", "./src/extras/*", "./src/other/*", "./src/server/*"]
     },
     "include": ["./src/**/*.ts", "./src/**/*.tsx", "./src/**/package.json"],
     "exclude": [".yarn/**/*", "node_modules/**/*", "**/node_modules/**/*", "./dist/**/*", "src/**/*.spec.ts" ]

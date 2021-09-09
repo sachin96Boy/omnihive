@@ -7010,9 +7010,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@withonevision/omnihive-client@workspace:*, @withonevision/omnihive-client@workspace:src/server/omnihive-client":
+"@withonevision/omnihive-client@workspace:*, @withonevision/omnihive-client@workspace:src/common/omnihive-client":
   version: 0.0.0-use.local
-  resolution: "@withonevision/omnihive-client@workspace:src/server/omnihive-client"
+  resolution: "@withonevision/omnihive-client@workspace:src/common/omnihive-client"
   dependencies:
     "@withonevision/omnihive-core": "workspace:*"
     axios: 0.21.4
@@ -7030,9 +7030,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@withonevision/omnihive-core@workspace:*, @withonevision/omnihive-core@workspace:src/server/omnihive-core":
+"@withonevision/omnihive-core@workspace:*, @withonevision/omnihive-core@workspace:src/common/omnihive-core":
   version: 0.0.0-use.local
-  resolution: "@withonevision/omnihive-core@workspace:src/server/omnihive-core"
+  resolution: "@withonevision/omnihive-core@workspace:src/common/omnihive-core"
   dependencies:
     "@types/faker": 5.5.8
     chai: 4.3.4
@@ -7042,9 +7042,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withonevision/omnihive-desktop-core@workspace:*, @withonevision/omnihive-desktop-core@workspace:src/desktop/omnihive-desktop-core":
+"@withonevision/omnihive-desktop-core@workspace:*, @withonevision/omnihive-desktop-core@workspace:src/common/omnihive-desktop-core":
   version: 0.0.0-use.local
-  resolution: "@withonevision/omnihive-desktop-core@workspace:src/desktop/omnihive-desktop-core"
+  resolution: "@withonevision/omnihive-desktop-core@workspace:src/common/omnihive-desktop-core"
   dependencies:
     "@types/faker": 5.5.8
     "@types/react": 17.0.20

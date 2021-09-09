@@ -1,3 +1,5 @@
+import { IHiveWorker, RegisteredHiveWorker } from "src/common/omnihive-core/index.js";
+
 declare global {
     declare namespace globalThis {
         var omnihive: {

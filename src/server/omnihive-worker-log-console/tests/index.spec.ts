@@ -1,11 +1,9 @@
+import { AwaitHelper, ILogWorker, OmniHiveLogLevel } from "@withonevision/omnihive-core/index.js";
 import { expect } from "chai";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import faker from "faker";
-import ConsoleLogWorker from "..";
-import sinon from "sinon";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { describe, it } from "mocha";
+import sinon from "sinon";
+import ConsoleLogWorker from "../index.js";
 
 const testValues = {
     logOutput: faker.datatype.string(),

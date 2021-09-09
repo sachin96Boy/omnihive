@@ -1,6 +1,6 @@
-import { describe, it } from "mocha";
 import { expect } from "chai";
-import { IsHelper } from "../helpers/IsHelper";
+import { describe, it } from "mocha";
+import { IsHelper } from "../helpers/IsHelper.js";
 
 describe("IsHelper Tests", () => {
     describe("isArray", () => {

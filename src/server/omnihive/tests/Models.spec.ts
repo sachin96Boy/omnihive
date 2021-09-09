@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import { expect } from "chai";
-import { CommandLineArgs } from "../models/CommandLineArgs";
+import { CommandLineArgs } from "../models/CommandLineArgs.js";
 
 describe("OmniHive Model Tests", () => {
     it("CommandLineArgs.ts", () => {

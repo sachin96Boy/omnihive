@@ -1,9 +1,8 @@
-import { describe, it, beforeEach } from "mocha";
+import { AwaitHelper, ICacheWorker } from "@withonevision/omnihive-core/index.js";
 import { expect } from "chai";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import faker from "faker";
-import RedisCacheWorker from "..";
-import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { beforeEach, describe, it } from "mocha";
+import RedisCacheWorker from "../index.js";
 
 const testValues = {
     cacheKey: faker.datatype.string(),

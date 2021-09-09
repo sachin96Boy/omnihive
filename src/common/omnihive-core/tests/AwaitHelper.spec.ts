@@ -1,7 +1,7 @@
-import { describe, it } from "mocha";
-import { AwaitHelper } from "../helpers/AwaitHelper";
 import { expect } from "chai";
 import faker from "faker";
+import { describe, it } from "mocha";
+import { AwaitHelper } from "../helpers/AwaitHelper.js";
 
 const testValues = {
     testString: faker.datatype.string(),

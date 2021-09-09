@@ -3,11 +3,12 @@
     "private": true,
     "version": "6.2.57",
     "workspaces": [
-        "src/server/*",
+        "src/common/*",
         "src/custom/*",
-        "src/extras/*",
         "src/desktop/*",
-        "src/other/*"
+        "src/extras/*",
+        "src/other/*",
+        "src/server/*"
     ],
     "repository": {
         "type": "git",

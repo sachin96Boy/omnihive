@@ -1,8 +1,6 @@
 /// <reference path="../types/globals.omnihive.test.d.ts" />
 
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { IHiveWorker, IsHelper, RegisteredHiveWorker } from "../common/omnihive-core/index.js";
 
 export class GlobalTestObject {
     public ohDirName: string = "";

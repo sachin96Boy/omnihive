@@ -1,10 +1,10 @@
-import { describe, it, beforeEach, afterEach, after } from "mocha";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { AwaitHelper } from "@withonevision/omnihive-core/index.js";
 import { expect } from "chai";
-import path from "path";
-import FileSystemWorker from "..";
 import faker from "faker";
 import fse from "fs-extra";
+import { after, afterEach, beforeEach, describe, it } from "mocha";
+import path from "path";
+import FileSystemWorker from "../index.js";
 
 const testValues = {
     workerName: "testFilesystemFsExtra",

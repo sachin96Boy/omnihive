@@ -1,6 +1,6 @@
-import { ConnectionSchema } from "../models/ConnectionSchema";
-import { ProcFunctionSchema } from "../models/ProcFunctionSchema";
-import { IHiveWorker } from "./IHiveWorker";
+import { ConnectionSchema } from "../models/ConnectionSchema.js";
+import { ProcFunctionSchema } from "../models/ProcFunctionSchema.js";
+import { IHiveWorker } from "./IHiveWorker.js";
 
 export interface IDatabaseWorker extends IHiveWorker {
     connection: any;

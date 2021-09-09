@@ -1,4 +1,4 @@
-import { HiveWorkerType } from "../enums/HiveWorkerType";
+import { HiveWorkerType } from "../enums/HiveWorkerType.js";
 
 export class HiveWorkerConfig {
     public type: HiveWorkerType | string = HiveWorkerType.Custom;

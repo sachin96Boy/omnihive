@@ -2,25 +2,27 @@
 
 import { createAdapter } from "@socket.io/redis-adapter";
 import { Emitter } from "@socket.io/redis-emitter";
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
+import {
+    AdminEventType,
+    AdminRequest,
+    AdminResponse,
+    AdminRoomType,
+    AwaitHelper,
+    EnvironmentVariable,
+    HiveWorkerType,
+    IConfigWorker,
+    ILogWorker,
+    IsHelper,
+    ITokenWorker,
+    ObjectHelper,
+    OmniHiveLogLevel,
+    ServerConfig,
+} from "@withonevision/omnihive-core/index.js";
 import ipc from "node-ipc";
 import redis from "redis";
+import { serializeError } from "serialize-error";
 import * as socketio from "socket.io";
 import { v4 as uuidv4 } from "uuid";
-import { serializeError } from "serialize-error";
 
 let ipcId: string = uuidv4();
 ipc.config.id = ipcId;

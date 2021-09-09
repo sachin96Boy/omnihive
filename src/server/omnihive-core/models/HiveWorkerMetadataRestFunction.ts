@@ -1,4 +1,4 @@
-import { RestMethod } from "../enums/RestMethod";
+import { RestMethod } from "../enums/RestMethod.js";
 
 export class HiveWorkerMetadataRestFunction {
     public restMethod: RestMethod = RestMethod.POST;

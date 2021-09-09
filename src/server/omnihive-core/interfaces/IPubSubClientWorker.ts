@@ -1,5 +1,5 @@
-import { PubSubListener } from "../models/PubSubListener";
-import { IHiveWorker } from "./IHiveWorker";
+import { PubSubListener } from "../models/PubSubListener.js";
+import { IHiveWorker } from "./IHiveWorker.js";
 
 export interface IPubSubClientWorker extends IHiveWorker {
     getListeners: () => PubSubListener[];

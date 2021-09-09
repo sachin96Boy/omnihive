@@ -1,16 +1,18 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import {
+    AdminEventType,
+    AdminRoomType,
+    HiveWorkerBase,
+    HiveWorkerType,
+    ILogWorker,
+    OmniHiveLogLevel,
+    RegisteredHiveWorker,
+} from "@withonevision/omnihive-core/index.js";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";
 import { serializeError } from "serialize-error";
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 
 export default class LogWorkerServerDefault extends HiveWorkerBase implements ILogWorker {
     constructor() {

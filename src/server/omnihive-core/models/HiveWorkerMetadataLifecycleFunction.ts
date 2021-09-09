@@ -1,5 +1,5 @@
-import { LifecycleWorkerAction } from "../enums/LifecycleWorkerAction";
-import { LifecycleWorkerStage } from "../enums/LifecycleWorkerStage";
+import { LifecycleWorkerAction } from "../enums/LifecycleWorkerAction.js";
+import { LifecycleWorkerStage } from "../enums/LifecycleWorkerStage.js";
 
 export class HiveWorkerMetadataLifecycleFunction {
     public action: LifecycleWorkerAction = LifecycleWorkerAction.None;

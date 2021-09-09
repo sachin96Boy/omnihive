@@ -1,16 +1,17 @@
+import {
+    AwaitHelper,
+    EnvironmentVariable,
+    HiveWorkerType,
+    IEncryptionWorker,
+    IHiveWorker,
+    IsHelper,
+    ITokenWorker,
+    QueryCacheType,
+    RegisteredHiveWorker,
+    RestMethod,
+    StringBuilder,
+} from "@withonevision/omnihive-core/index.js";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { QueryCacheType } from "@withonevision/omnihive-core/enums/QueryCacheType";
-import { RestMethod } from "@withonevision/omnihive-core/enums/RestMethod";
-import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
-import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 
 export class OmniHiveClient {
     private static singleton: OmniHiveClient;

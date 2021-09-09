@@ -1,19 +1,21 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import knex, { Knex } from "knex";
+import {
+    AwaitHelper,
+    ConnectionSchema,
+    HiveWorkerBase,
+    HiveWorkerMetadataDatabase,
+    HiveWorkerType,
+    IDatabaseWorker,
+    ILogWorker,
+    IsHelper,
+    OmniHiveLogLevel,
+    ProcFunctionSchema,
+    TableSchema,
+} from "@withonevision/omnihive-core/index.js";
 import fse from "fs-extra";
+import knex, { Knex } from "knex";
 import path from "path";
-import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 export class SqliteWorkerMetadata extends HiveWorkerMetadataDatabase {
     public filename: string = "";

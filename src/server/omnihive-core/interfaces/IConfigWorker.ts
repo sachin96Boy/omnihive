@@ -1,4 +1,4 @@
-import { ServerConfig } from "../models/ServerConfig";
+import { ServerConfig } from "../models/ServerConfig.js";
 import { IHiveWorker } from "./IHiveWorker";
 
 export interface IConfigWorker extends IHiveWorker {

@@ -48,5 +48,7 @@
         "desktop"
     ],
     "typescript.preferences.quoteStyle": "double",
-    "npm.packageManager": "yarn"
+    "npm.packageManager": "yarn",
+    "javascript.preferences.importModuleSpecifier": "project-relative",
+    "typescript.preferences.importModuleSpecifier": "project-relative",
 }

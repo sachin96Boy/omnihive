@@ -1,5 +1,5 @@
-import { HiveWorkerType } from "../enums/HiveWorkerType";
-import { RegisteredHiveWorkerSection } from "../enums/RegisteredHiveWorkerSection";
+import { HiveWorkerType } from "../enums/HiveWorkerType.js";
+import { RegisteredHiveWorkerSection } from "../enums/RegisteredHiveWorkerSection.js";
 
 export class RegisteredHiveWorker {
     public instance: any;

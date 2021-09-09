@@ -1,11 +1,11 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { ObjectHelper } from "../helpers/ObjectHelper";
-import { IsHelper } from "../helpers/IsHelper";
-import { EnvironmentVariable } from "./EnvironmentVariable";
-import { EnvironmentVariableType } from "../enums/EnvironmentVariableType";
-import { RegisteredHiveWorker } from "./RegisteredHiveWorker";
-import { IHiveWorker } from "../interfaces/IHiveWorker";
+import { EnvironmentVariableType } from "../enums/EnvironmentVariableType.js";
+import { IsHelper } from "../helpers/IsHelper.js";
+import { ObjectHelper } from "../helpers/ObjectHelper.js";
+import { IHiveWorker } from "../interfaces/IHiveWorker.js";
+import { EnvironmentVariable } from "./EnvironmentVariable.js";
+import { RegisteredHiveWorker } from "./RegisteredHiveWorker.js";
 
 export abstract class HiveWorkerBase implements IHiveWorker {
     public environmentVariables: EnvironmentVariable[] = [];

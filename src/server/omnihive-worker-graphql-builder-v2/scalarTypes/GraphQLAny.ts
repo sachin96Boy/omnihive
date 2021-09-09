@@ -1,5 +1,5 @@
 import { GraphQLScalarType } from "graphql";
-import { Kind } from "graphql/language";
+import { Kind } from "graphql/language/index.js";
 import Json5 from "json5";
 
 export default new GraphQLScalarType({

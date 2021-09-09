@@ -1,4 +1,4 @@
-import { IHiveWorker } from "./IHiveWorker";
+import { IHiveWorker } from "./IHiveWorker.js";
 
 export interface IEncryptionWorker extends IHiveWorker {
     base64Encode: (toEncode: string) => string;

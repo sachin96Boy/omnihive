@@ -1,22 +1,24 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
-import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import knex, { Knex } from "knex";
+import {
+    AwaitHelper,
+    ConnectionSchema,
+    HiveWorkerBase,
+    HiveWorkerMetadataDatabase,
+    HiveWorkerType,
+    IDatabaseWorker,
+    ILogWorker,
+    IsHelper,
+    OmniHiveLogLevel,
+    ProcFunctionSchema,
+    StringBuilder,
+    TableSchema,
+} from "@withonevision/omnihive-core/index.js";
 import fse from "fs-extra";
+import knex, { Knex } from "knex";
+import orderBy from "lodash.orderby";
 import path from "path";
 import pg from "pg";
-import orderBy from "lodash.orderby";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 export default class PostgresDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;

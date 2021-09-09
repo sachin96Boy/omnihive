@@ -1,5 +1,5 @@
-import { EnvironmentVariable } from "./EnvironmentVariable";
-import { HiveWorkerConfig } from "./HiveWorkerConfig";
+import { EnvironmentVariable } from "./EnvironmentVariable.js";
+import { HiveWorkerConfig } from "./HiveWorkerConfig.js";
 
 export class ServerConfig {
     public environmentVariables: EnvironmentVariable[] = [];

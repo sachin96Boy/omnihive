@@ -1,14 +1,14 @@
+import axios from "axios";
 import chalk from "chalk";
+import execa from "execa";
 import figlet from "figlet";
 import fse from "fs-extra";
-import path from "path";
-import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
-import yargs from "yargs";
-import axios from "axios";
 import { Listr } from "listr2";
-import execa from "execa";
-import { IsHelper } from "src/server/omnihive-core/helpers/IsHelper";
-import readPkgUp from "read-pkg-up";
+import path from "path";
+import { readPackageUpSync } from "read-pkg-up";
+import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
+import { IsHelper } from "src/server/omnihive-core/helpers/IsHelper.js";
+import yargs from "yargs";
 
 interface IArgs {
     ohVersion: string;
@@ -289,11 +289,9 @@ const getMaxVersionOfPackages = async (): Promise<string> => {
     // Iterate through each package and grab the max version
     for (const item of packageFolders) {
         // Get package names
-        const packageName: string | undefined = (
-            await readPkgUp({
-                cwd: path.join(`.`, `dist`, `custom`, item),
-            })
-        )?.packageJson.name;
+        const packageName: string | undefined = readPackageUpSync({
+            cwd: path.join(`.`, `dist`, `custom`, item),
+        })?.packageJson.name;
 
         if (packageName) {
             try {

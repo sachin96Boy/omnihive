@@ -1,15 +1,12 @@
-import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
+import { AwaitHelper, GraphContext, ProcFunctionSchema, TableSchema } from "@withonevision/omnihive-core/index.js";
 import { GraphQLResolveInfo } from "graphql";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { ParseAstQuery } from "./ParseAstQuery";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import { ParseInsert } from "./ParseInsert";
-import { ParseDelete } from "./ParseDelete";
-import { ParseUpdate } from "./ParseUpdate";
-import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
-import { ParseProcedure } from "./ParseProcedure";
-import { ParseCustomSql } from "./ParseCustomSql";
-import { ParseAggregate } from "./ParseAggregate";
+import { ParseAggregate } from "./ParseAggregate.js";
+import { ParseAstQuery } from "./ParseAstQuery.js";
+import { ParseCustomSql } from "./ParseCustomSql.js";
+import { ParseDelete } from "./ParseDelete.js";
+import { ParseInsert } from "./ParseInsert.js";
+import { ParseProcedure } from "./ParseProcedure.js";
+import { ParseUpdate } from "./ParseUpdate.js";
 
 export class ParseMaster {
     public parseAstQuery = async (

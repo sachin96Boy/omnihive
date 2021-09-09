@@ -1,5 +1,5 @@
-import { EnvironmentVariable } from "../models/EnvironmentVariable";
-import { RegisteredHiveWorker } from "../models/RegisteredHiveWorker";
+import { EnvironmentVariable } from "../models/EnvironmentVariable.js";
+import { RegisteredHiveWorker } from "../models/RegisteredHiveWorker.js";
 
 export interface IHiveWorker {
     environmentVariables: EnvironmentVariable[];

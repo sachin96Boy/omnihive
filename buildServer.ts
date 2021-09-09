@@ -1,15 +1,15 @@
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper.js";
 import chalk from "chalk";
+import execa from "execa";
 import figlet from "figlet";
 import fse from "fs-extra";
-import path from "path";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
-import writePkg from "write-pkg";
-import yargs from "yargs";
 import { Listr } from "listr2";
-import execa from "execa";
+import path from "path";
+import { NormalizedReadResult, readPackageUpSync } from "read-pkg-up";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import tar from "tar";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { writePackageSync } from "write-pkg";
+import yargs from "yargs";
 
 // Master build process
 const build = async (): Promise<void> => {
@@ -226,7 +226,7 @@ const publish = (directory: string, distTag: string) => {
 };
 
 const removeNonCorePackagesFromMainPackageJson = async () => {
-    const packageJson: NormalizedReadResult | undefined = await readPkgUp({
+    const packageJson: NormalizedReadResult | undefined = readPackageUpSync({
         cwd: path.join(`.`, `dist`, `server`, `omnihive`),
     });
 
@@ -255,7 +255,7 @@ const removeNonCorePackagesFromMainPackageJson = async () => {
     }
 
     if (!IsHelper.isNullOrUndefined(packageJson) && !IsHelper.isNullOrUndefined(packageJson.packageJson)) {
-        await writePkg(path.join(`.`, `dist`, `server`, `omnihive`), packageJson.packageJson);
+        writePackageSync(path.join(`.`, `dist`, `server`, `omnihive`), packageJson.packageJson);
     }
 };
 
@@ -272,7 +272,7 @@ const runVersioning = async (debug: boolean) => {
 };
 
 const updateVersion = async () => {
-    const packageJson: NormalizedReadResult | undefined = await readPkgUp({
+    const packageJson: NormalizedReadResult | undefined = readPackageUpSync({
         cwd: path.join(`.`, `dist`, `server`, `omnihive`),
     });
 

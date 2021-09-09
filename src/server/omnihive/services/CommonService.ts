@@ -1,23 +1,25 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import {
+    AwaitHelper,
+    EnvironmentVariable,
+    EnvironmentVariableType,
+    HiveWorkerConfig,
+    HiveWorkerType,
+    IConfigWorker,
+    ILogWorker,
+    IsHelper,
+    OmniHiveLogLevel,
+    RegisteredHiveWorker,
+    RegisteredHiveWorkerSection,
+    ServerConfig,
+    StringBuilder,
+} from "@withonevision/omnihive-core/index.js";
 import execa, { ExecaSyncError } from "execa";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
-import { ConfigType } from "../enums/ConfigType";
-import { CommandLineArgs } from "../models/CommandLineArgs";
-import { GlobalObject } from "../models/GlobalObject";
+import { NormalizedReadResult, readPackageUpSync } from "read-pkg-up";
+import { ConfigType } from "../enums/ConfigType.js";
+import { CommandLineArgs } from "../models/CommandLineArgs.js";
+import { GlobalObject } from "../models/GlobalObject.js";
 
 export class CommonService {
     public bootLoader = async (rootDir: string, commandLineArgs: CommandLineArgs) => {
@@ -57,7 +59,7 @@ export class CommonService {
                 });
             });
 
-        const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
+        const pkgJson: NormalizedReadResult | undefined = readPackageUpSync();
 
         // Load Config Worker
         if (
@@ -187,7 +189,7 @@ export class CommonService {
             "__ohBootLogWorker"
         );
 
-        const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
+        const pkgJson: NormalizedReadResult | undefined = readPackageUpSync();
         const serverConfig: ServerConfig = await AwaitHelper.execute(configWorker.get());
 
         // Load Core Workers

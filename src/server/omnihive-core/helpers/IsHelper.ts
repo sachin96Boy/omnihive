@@ -76,11 +76,16 @@ export class IsHelper {
     };
 
     public static isObject = (value: unknown): value is object => {
-        return !IsHelper.isNull(value) && (typeof value === "object" || IsHelper.isFunction(value));
+        return (
+            !IsHelper.isNull(value) &&
+            (typeof value === "object" ||
+                IsHelper.isFunction(value) ||
+                Object.prototype.toString.call(value) === "[object Object]")
+        );
     };
 
     public static isPlainObject = <T = unknown>(value: unknown): value is Record<string | number | symbol, T> => {
-        if (toString.call(value) !== "[object Object]") {
+        if (!this.isObject(value)) {
             return false;
         }
 

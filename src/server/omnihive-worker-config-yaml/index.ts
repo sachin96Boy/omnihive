@@ -1,11 +1,13 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import {
+    AwaitHelper,
+    HiveWorkerBase,
+    IConfigWorker,
+    ObjectHelper,
+    ServerConfig,
+} from "@withonevision/omnihive-core/index.js";
 import fse from "fs-extra";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import yaml from "yaml";
 
 export class JsonConfigWorkerMetadata {

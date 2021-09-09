@@ -1,28 +1,30 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
-import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
-import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
-import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
-import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
-import { HiveWorkerMetadataServer } from "@withonevision/omnihive-core/models/HiveWorkerMetadataServer";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import {
+    AwaitHelper,
+    ConnectionSchema,
+    HiveWorkerBase,
+    HiveWorkerMetadataDatabase,
+    HiveWorkerMetadataGraphBuilder,
+    HiveWorkerMetadataRestFunction,
+    HiveWorkerMetadataServer,
+    HiveWorkerType,
+    IDatabaseWorker,
+    IGraphBuildWorker,
+    ILogWorker,
+    IRestEndpointWorker,
+    IServerWorker,
+    IsHelper,
+    ObjectHelper,
+    OmniHiveLogLevel,
+    RegisteredHiveWorker,
+    RegisteredHiveWorkerSection,
+    RegisteredUrlType,
+    RestEndpointExecuteResponse,
+    ServerStatus,
+    StringBuilder,
+    TableSchema,
+} from "@withonevision/omnihive-core/index.js";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import { transformSync } from "esbuild";

@@ -1,28 +1,30 @@
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import { GraphHelper } from "./helpers/GraphHelper";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { makeExecutableSchema } from "@graphql-tools/schema";
-import { GraphQLSchema } from "graphql";
-import GraphQLAny from "./scalarTypes/GraphQLAny";
-import { ParseMaster } from "./parsers/ParseMaster";
 import { mergeSchemas } from "@graphql-tools/merge";
-import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
-import { GraphQLJSON } from "@withonevision/omnihive-core/models/GraphQLJSON";
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { HiveWorkerMetadataLifecycleFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataLifecycleFunction";
-import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
-import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import GraphBooleanDb from "./scalarTypes/GraphBooleanDb";
-import GraphFloatDb from "./scalarTypes/GraphFloatDb";
-import GraphIntDb from "./scalarTypes/GraphIntDb";
-import GraphStringDb from "./scalarTypes/GraphStringDb";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import {
+    AwaitHelper,
+    ConnectionSchema,
+    GraphQLJSON,
+    HiveWorkerBase,
+    HiveWorkerMetadataLifecycleFunction,
+    HiveWorkerType,
+    IDatabaseWorker,
+    IGraphBuildWorker,
+    IsHelper,
+    LifecycleWorkerAction,
+    LifecycleWorkerStage,
+    ProcFunctionSchema,
+    RegisteredHiveWorker,
+    StringBuilder,
+    TableSchema,
+} from "@withonevision/omnihive-core/index.js";
+import { GraphQLSchema } from "graphql";
+import { GraphHelper } from "./helpers/GraphHelper.js";
+import { ParseMaster } from "./parsers/ParseMaster.js";
+import GraphBooleanDb from "./scalarTypes/GraphBooleanDb.js";
+import GraphFloatDb from "./scalarTypes/GraphFloatDb.js";
+import GraphIntDb from "./scalarTypes/GraphIntDb.js";
+import GraphQLAny from "./scalarTypes/GraphQLAny.js";
+import GraphStringDb from "./scalarTypes/GraphStringDb.js";
 
 type LifecycleData = {
     schema: string;

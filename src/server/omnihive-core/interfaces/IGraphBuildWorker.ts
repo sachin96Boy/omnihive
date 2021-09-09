@@ -1,7 +1,7 @@
 import { GraphQLSchema } from "graphql";
-import { ConnectionSchema } from "../models/ConnectionSchema";
-import { IDatabaseWorker } from "./IDatabaseWorker";
-import { IHiveWorker } from "./IHiveWorker";
+import { ConnectionSchema } from "../models/ConnectionSchema.js";
+import { IDatabaseWorker } from "./IDatabaseWorker.js";
+import { IHiveWorker } from "./IHiveWorker.js";
 
 export interface IGraphBuildWorker extends IHiveWorker {
     buildDatabaseWorkerSchema: (

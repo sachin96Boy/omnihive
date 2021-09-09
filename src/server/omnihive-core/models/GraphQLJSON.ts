@@ -1,6 +1,6 @@
 import { GraphQLScalarType } from "graphql";
-import { Kind } from "graphql/language";
-import { IsHelper } from "../helpers/IsHelper";
+import { Kind } from "graphql/language/index.js";
+import { IsHelper } from "../helpers/IsHelper.js";
 
 function identity(value: any) {
     return value;

@@ -1,5 +1,5 @@
-import { ProcFunctionSchema } from "./ProcFunctionSchema";
-import { TableSchema } from "./TableSchema";
+import { ProcFunctionSchema } from "./ProcFunctionSchema.js";
+import { TableSchema } from "./TableSchema.js";
 
 export class ConnectionSchema {
     public workerName: string = "";

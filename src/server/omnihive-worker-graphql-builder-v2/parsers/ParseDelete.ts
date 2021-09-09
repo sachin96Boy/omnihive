@@ -1,12 +1,14 @@
-import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import {
+    AwaitHelper,
+    GraphContext,
+    IDatabaseWorker,
+    IDateWorker,
+    TableSchema,
+} from "@withonevision/omnihive-core/index.js";
 import { Knex } from "knex";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
-import { GraphHelper } from "../helpers/GraphHelper";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { WorkerHelper } from "../helpers/WorkerHelper";
-import { DatabaseHelper } from "../helpers/DatabaseHelper";
+import { DatabaseHelper } from "../helpers/DatabaseHelper.js";
+import { GraphHelper } from "../helpers/GraphHelper.js";
+import { WorkerHelper } from "../helpers/WorkerHelper.js";
 
 export class ParseDelete {
     // Workers

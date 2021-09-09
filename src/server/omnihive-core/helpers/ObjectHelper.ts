@@ -1,4 +1,4 @@
-import { IsHelper } from "./IsHelper";
+import { IsHelper } from "./IsHelper.js";
 
 export class ObjectHelper {
     public static create = <T extends unknown>(type: { new (): T }, model: any | null): T => {

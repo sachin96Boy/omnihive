@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { AwaitHelper, IsHelper } from "@withonevision/omnihive-core/index.js";
 import chalk from "chalk";
+import dotenv from "dotenv";
 import exitHook from "exit-hook";
 import figlet from "figlet";
 import forever from "forever-monitor";
+import fse from "fs-extra";
 import ipc from "node-ipc";
+import path from "path";
+import { URL } from "url";
 import { v4 as uuidv4 } from "uuid";
 import yargs from "yargs";
-import { ServerRunnerType } from "./enums/ServerRunnerType";
-import { CommandLineArgs } from "./models/CommandLineArgs";
-import { TaskRunnerService } from "./services/TaskRunnerService";
-import dotenv from "dotenv";
-import fse from "fs-extra";
-import path from "path";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ServerRunnerType } from "./enums/ServerRunnerType.js";
+import { CommandLineArgs } from "./models/CommandLineArgs.js";
+import { TaskRunnerService } from "./services/TaskRunnerService.js";
 
 // Setup IPC
 
@@ -28,7 +28,7 @@ ipc.config.sync = true;
 let child: forever.Monitor;
 
 // Get running directory
-const runningDir: string = __dirname;
+const runningDir: string = new URL(".", import.meta.url).pathname;
 
 const init = async () => {
     // Interpret command line
@@ -146,7 +146,7 @@ const createServerChild = async (commandLineArgs: CommandLineArgs) => {
             `${
                 serverRunnerType === ServerRunnerType.Production
                     ? `node`
-                    : `node -r ts-node/register --inspect --inspect-port=0`
+                    : `node --loader ts-node/esm --inspect --inspect-port=0`
             }`,
             `serverRunner.${serverRunnerType === ServerRunnerType.Production ? `js` : `ts`}`,
             `${ipcId}`,

@@ -1,5 +1,4 @@
-import { IFileSystemWorker } from "@withonevision/omnihive-core/interfaces/IFileSystemWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { HiveWorkerBase, IFileSystemWorker } from "@withonevision/omnihive-core/index.js";
 import fse from "fs-extra";
 
 export default class FileSystemWorker extends HiveWorkerBase implements IFileSystemWorker {

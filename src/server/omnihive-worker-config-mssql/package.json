@@ -19,6 +19,7 @@
         "OmniHive",
         "With One Vision"
     ],
+    "type": "module",
     "scripts": {
         "build": "tsc"
     },

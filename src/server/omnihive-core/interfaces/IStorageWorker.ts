@@ -1,4 +1,4 @@
-import { IHiveWorker } from "./IHiveWorker";
+import { IHiveWorker } from "./IHiveWorker.js";
 
 export interface IStorageWorker extends IHiveWorker {
     exists: (key: string) => Promise<boolean>;

@@ -1,4 +1,4 @@
-import { EnvironmentVariableType } from "../enums/EnvironmentVariableType";
+import { EnvironmentVariableType } from "../enums/EnvironmentVariableType.js";
 
 export class EnvironmentVariable {
     public key: string = "";

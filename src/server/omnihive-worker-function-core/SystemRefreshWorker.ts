@@ -1,9 +1,11 @@
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
-import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
+import {
+    HiveWorkerBase,
+    HiveWorkerType,
+    IRestEndpointWorker,
+    IsHelper,
+    ITokenWorker,
+    RestEndpointExecuteResponse,
+} from "@withonevision/omnihive-core/index.js";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 

@@ -1,4 +1,4 @@
-import { IHiveWorker } from "./IHiveWorker";
+import { IHiveWorker } from "./IHiveWorker.js";
 
 export interface IFileSystemWorker extends IHiveWorker {
     copyDirectory: (sourcePath: string, destPath: string) => void;

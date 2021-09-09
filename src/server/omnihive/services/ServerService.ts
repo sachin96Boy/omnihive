@@ -1,21 +1,23 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
-import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
-import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
-import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
-import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
-import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
+import {
+    AdminEventType,
+    AdminRoomType,
+    AwaitHelper,
+    HiveWorkerMetadataRestFunction,
+    HiveWorkerType,
+    ILogWorker,
+    IRestEndpointWorker,
+    IServerWorker,
+    IsHelper,
+    ObjectHelper,
+    OmniHiveLogLevel,
+    RegisteredHiveWorker,
+    RegisteredHiveWorkerSection,
+    RegisteredUrlType,
+    RestEndpointExecuteResponse,
+    ServerStatus,
+} from "@withonevision/omnihive-core/index.js";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -23,9 +25,9 @@ import http, { Server } from "http";
 import path from "path";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
-import { CommandLineArgs } from "../models/CommandLineArgs";
-import { AdminService } from "./AdminService";
-import { CommonService } from "./CommonService";
+import { CommandLineArgs } from "../models/CommandLineArgs.js";
+import { AdminService } from "./AdminService.js";
+import { CommonService } from "./CommonService.js";
 
 export class ServerService {
     private webRootUrl: string = "";

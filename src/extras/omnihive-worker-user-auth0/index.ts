@@ -1,9 +1,4 @@
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { IUserWorker } from "@withonevision/omnihive-core/interfaces/IUserWorker";
-import { AuthUser } from "@withonevision/omnihive-core/models/AuthUser";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-
+import { AuthUser, AwaitHelper, HiveWorkerBase, IsHelper, IUserWorker } from "@withonevision/omnihive-core/index.js";
 import {
     AppMetadata,
     AuthenticationClient,

@@ -1,17 +1,19 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { HiveWorkerMetadataConfigDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataConfigDatabase";
+import {
+    AwaitHelper,
+    EnvironmentVariable,
+    EnvironmentVariableType,
+    HiveWorkerBase,
+    HiveWorkerConfig,
+    HiveWorkerMetadataConfigDatabase,
+    IConfigWorker,
+    ServerConfig,
+    StringBuilder,
+} from "@withonevision/omnihive-core/index.js";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
 import sqlite from "sqlite3";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 
 export class SqliteWorkerMetadata extends HiveWorkerMetadataConfigDatabase {
     public filename: string = "";

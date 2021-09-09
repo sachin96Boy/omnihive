@@ -1,7 +1,6 @@
 import vscode from "vscode";
 import { VsCodeCommand } from "../enums/VsCodeCommand";
 import { VsCodeWebpanelRoute } from "../enums/VsCodeWebpanelRoute";
-import { VsCodePostMessageModel } from "../models/VsCodePostMessageModel";
 import { WebViewPanelProvider } from "../providers/WebViewPanelProvider";
 import { ExtensionStore } from "../stores/ExtensionStore";
 

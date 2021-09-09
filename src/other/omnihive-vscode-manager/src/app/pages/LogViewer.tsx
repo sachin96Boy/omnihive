@@ -1,14 +1,16 @@
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import {
+    AdminEventType,
+    AdminResponse,
+    IsHelper,
+    OmniHiveLogLevel,
+    ServerStatus,
+} from "@withonevision/omnihive-core-cjs";
 import Parser from "html-react-parser";
 import React from "react";
+import { serializeError } from "serialize-error";
+import socketio, { Socket } from "socket.io-client";
 import { ReactPropsModel } from "../../models/ReactPropsModel";
 import { RegisteredServerModel } from "../../models/RegisteredServerModel";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { serializeError } from "serialize-error";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import socketio, { Socket } from "socket.io-client";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 type Props = {
     props: ReactPropsModel;

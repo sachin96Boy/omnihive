@@ -1,4 +1,4 @@
-/// <reference path="../../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../../types/globals.omnihive.cjs.d.ts" />
 
 import { EnvironmentVariableType } from "../enums/EnvironmentVariableType";
 import { IsHelper } from "../helpers/IsHelper";

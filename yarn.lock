@@ -6997,9 +6997,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@withonevision/omnihive-client@workspace:*, @withonevision/omnihive-client@workspace:src/common/omnihive-client":
+"@withonevision/omnihive-client-cjs@workspace:src/common/omnihive-client-cjs":
   version: 0.0.0-use.local
-  resolution: "@withonevision/omnihive-client@workspace:src/common/omnihive-client"
+  resolution: "@withonevision/omnihive-client-cjs@workspace:src/common/omnihive-client-cjs"
+  dependencies:
+    "@withonevision/omnihive-core-cjs": "workspace:*"
+    axios: 0.21.4
+    chai: 4.3.4
+    typescript: 4.4.2
+  languageName: unknown
+  linkType: soft
+
+"@withonevision/omnihive-client-esm@workspace:*, @withonevision/omnihive-client-esm@workspace:src/common/omnihive-client-esm":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-client-esm@workspace:src/common/omnihive-client-esm"
   dependencies:
     "@withonevision/omnihive-core-esm": "workspace:*"
     axios: 0.21.4
@@ -7025,22 +7036,14 @@ __metadata:
   resolution: "@withonevision/omnihive-core-esm@workspace:src/common/omnihive-core-esm"
   dependencies:
     "@types/faker": 5.5.8
-    "@withonevision/omnihive-core-cjs": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     faker: 5.5.3
     graphql: 15.5.2
+    mocha: 9.1.1
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
-
-"@withonevision/omnihive-core@npm:6.2.62":
-  version: 6.2.62
-  resolution: "@withonevision/omnihive-core@npm:6.2.62"
-  dependencies:
-    graphql: 15.5.0
-  checksum: 2bb33b26e413349dfd689e8d6cd91e96c5fedca84ad8ebc47ad97b6f64d5ce1d5040bb53d9a80f28f5272bad2010dee7c2416b64d688258efd9656ce748dff16
-  languageName: node
-  linkType: hard
 
 "@withonevision/omnihive-desktop-core@workspace:*, @withonevision/omnihive-desktop-core@workspace:src/common/omnihive-desktop-core":
   version: 0.0.0-use.local
@@ -7058,6 +7061,7 @@ __metadata:
     rc-dock: 3.0.20
     react: 17.0.2
     react-dom: 17.0.2
+    socket.io-client: 4.1.3
     tailwindcss: 2.2.9
     typescript: 4.4.2
     uuid: 8.3.2
@@ -7106,12 +7110,17 @@ __metadata:
     "@storybook/addon-essentials": 6.3.8
     "@storybook/addon-links": 6.3.8
     "@storybook/addon-postcss": 2.0.0
+    "@storybook/addons": 6.3.8
+    "@storybook/api": 6.3.8
     "@storybook/builder-webpack5": 6.3.8
+    "@storybook/components": 6.3.8
+    "@storybook/core-events": 6.3.8
     "@storybook/manager-webpack5": 6.3.8
     "@storybook/react": 6.3.8
+    "@storybook/theming": 6.3.8
     "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
-    "@withonevision/omnihive-core-esm": "workspace:*"
+    "@withonevision/omnihive-core-cjs": "workspace:*"
     "@withonevision/omnihive-desktop-core": "workspace:*"
     "@withonevision/omnihive-desktop-server-manager": "workspace:*"
     autoprefixer: 10.3.4
@@ -7137,6 +7146,7 @@ __metadata:
     "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     faker: 5.5.3
+    mocha: 9.1.1
     node-cache: 5.1.2
     typescript: 4.4.2
   languageName: unknown
@@ -7152,6 +7162,7 @@ __metadata:
     chai: 4.3.4
     faker: 5.5.3
     ioredis: 4.27.9
+    mocha: 9.1.1
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
@@ -7248,6 +7259,7 @@ __metadata:
     chai: 4.3.4
     dayjs: 1.10.6
     faker: 5.5.3
+    mocha: 9.1.1
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
@@ -7296,6 +7308,7 @@ __metadata:
     chai: 4.3.4
     faker: 5.5.3
     fs-extra: 10.0.0
+    mocha: 9.1.1
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
@@ -7345,6 +7358,7 @@ __metadata:
     chai: 4.3.4
     fs-extra: 10.0.0
     knex: 0.95.11
+    mocha: 9.1.1
     mssql: 7.2.1
     tedious: 11.8.0
     typescript: 4.4.2
@@ -7363,6 +7377,7 @@ __metadata:
     fs-extra: 10.0.0
     knex: 0.95.11
     lodash.orderby: 4.6.0
+    mocha: 9.1.1
     mysql: 2.18.1
     typescript: 4.4.2
   languageName: unknown
@@ -7380,6 +7395,7 @@ __metadata:
     fs-extra: 10.0.0
     knex: 0.95.11
     lodash.orderby: 4.6.0
+    mocha: 9.1.1
     pg: 8.7.1
     typescript: 4.4.2
   languageName: unknown
@@ -7406,6 +7422,8 @@ __metadata:
     "@types/sinon": 10.0.2
     "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
+    faker: 5.5.3
+    mocha: 9.1.1
     sinon: 11.1.2
     typescript: 4.4.2
   languageName: unknown
@@ -7419,7 +7437,10 @@ __metadata:
     chai: 4.3.4
     chalk: 4.1.2
     dayjs: 1.10.6
+    faker: 5.5.3
+    mocha: 9.1.1
     serialize-error: 8.1.0
+    sinon: 11.1.2
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
@@ -7441,6 +7462,8 @@ __metadata:
   dependencies:
     "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
+    faker: 5.5.3
+    mocha: 9.1.1
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
@@ -11253,7 +11276,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cors@npm:^2.8.5, cors@npm:~2.8.5":
+"cors@npm:2.8.5, cors@npm:^2.8.5, cors@npm:~2.8.5":
   version: 2.8.5
   resolution: "cors@npm:2.8.5"
   dependencies:
@@ -15791,13 +15814,6 @@ fsevents@^1.2.7:
   peerDependencies:
     graphql: ">=0.11 <=15"
   checksum: f74f5d42843798136202bed9766d2ac6ce614950d31a69d5b935b4f41255d3ace8329b659658fe88a45a4dad43c0d668361b826889d0191859839856084c1eb9
-  languageName: node
-  linkType: hard
-
-"graphql@npm:15.5.0":
-  version: 15.5.0
-  resolution: "graphql@npm:15.5.0"
-  checksum: 58a69f7274ae94c690bfa2517f96bbaf1327e1ca1fc46606e772ba2f7ca517adeb375346301373351e693022f448b7866163034209623d7c5315819ef8c5e7c0
   languageName: node
   linkType: hard
 
@@ -20859,6 +20875,7 @@ fsevents@^1.2.7:
     "@vitejs/plugin-react-refresh": 1.3.6
     "@withonevision/omnihive-core-cjs": "workspace:*"
     "@withonevision/omnihive-desktop-core": "workspace:*"
+    "@withonevision/omnihive-desktop-server-manager": "workspace:*"
     autoprefixer: 10.3.4
     electron: 13.1.6
     electron-better-ipc: 2.0.1
@@ -20869,6 +20886,7 @@ fsevents@^1.2.7:
     esbuild: 0.12.25
     lodash: 4.17.21
     postcss: 8.3.6
+    rc-dock: 3.1.0
     react: 17.0.2
     react-dom: 17.0.2
     react-tooltip: 4.2.21
@@ -20913,6 +20931,7 @@ fsevents@^1.2.7:
     standard-version: 9.3.1
     typescript: 4.4.2
     url-loader: 4.1.1
+    webpack: 5.52.0
   languageName: unknown
   linkType: soft
 
@@ -20933,7 +20952,7 @@ fsevents@^1.2.7:
     "@types/vscode": 1.60.0
     "@typescript-eslint/eslint-plugin": 4.31.0
     "@typescript-eslint/parser": 4.31.0
-    "@withonevision/omnihive-core": 6.2.62
+    "@withonevision/omnihive-core-cjs": "workspace:*"
     ace-builds: 1.4.12
     ag-grid-community: 26.0.0
     ag-grid-react: 26.0.0
@@ -20995,7 +21014,7 @@ fsevents@^1.2.7:
     "@types/swagger-ui-express": 4.1.3
     "@types/uuid": 8.3.1
     "@types/yargs": 17.0.2
-    "@withonevision/omnihive-client": "workspace:*"
+    "@withonevision/omnihive-client-esm": "workspace:*"
     "@withonevision/omnihive-core-esm": "workspace:*"
     "@withonevision/omnihive-worker-config-json": "workspace:*"
     "@withonevision/omnihive-worker-config-mssql": "workspace:*"
@@ -21013,16 +21032,19 @@ fsevents@^1.2.7:
     "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*"
     chai: 4.3.4
     chalk: 4.1.2
+    cors: 2.8.5
     dayjs: 1.10.6
     dotenv: 10.0.0
     ejs: 3.1.6
     execa: 5.1.1
     exit-hook: 3.0.0
     express: 4.17.1
+    faker: 5.5.3
     figlet: 1.5.2
     forever-monitor: 3.0.3
     fs-extra: 10.0.0
     helmet: 4.6.0
+    mocha: 9.1.1
     ms: 2.1.3
     node-ipc: 10.0.2
     nodemon: 2.0.12
@@ -23357,6 +23379,23 @@ fsevents@^1.2.7:
     react: ">=15.0.0"
     react-dom: ">=15.0.0"
   checksum: 66d17dba017495d6a9d3aacadff80cc8ba0240eff53ac989097f96d04ea3735bcad42d8d8a029f6666cea636c7a5dc9315e1d055a3b9f3ebea03c62c27d3abcd
+  languageName: node
+  linkType: hard
+
+"rc-dock@npm:3.1.0":
+  version: 3.1.0
+  resolution: "rc-dock@npm:3.1.0"
+  dependencies:
+    classnames: ^2.2.6
+    lodash: ^4.17.20
+    rc-dropdown: ^3.2.0
+    rc-menu: ^8.10.5
+    rc-new-window: ^0.1.12
+    rc-tabs: ^11.7.3
+  peerDependencies:
+    react: ">=15.0.0"
+    react-dom: ">=15.0.0"
+  checksum: 1bac867d2dcb21584e2a510c3251fed63bac2cfe3b4c4a136c1cb73b9cf7deca3e01bb29cadd2aaa008fc772daab7a936c8772074a47ecab6af8b6cdbe2b7ed3
   languageName: node
   linkType: hard
 

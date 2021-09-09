@@ -1,7 +1,4 @@
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
+import { AdminEventType, AdminResponse, IsHelper, ServerStatus } from "@withonevision/omnihive-core-cjs";
 import isIp from "is-ip";
 import React from "react";
 import socketio from "socket.io-client";

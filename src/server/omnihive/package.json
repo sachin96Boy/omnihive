@@ -31,7 +31,7 @@
     "dependencies": {
         "@socket.io/redis-adapter": "7.0.0",
         "@socket.io/redis-emitter": "4.1.0",
-        "@withonevision/omnihive-client": "workspace:*",
+        "@withonevision/omnihive-client-esm": "workspace:*",
         "@withonevision/omnihive-core-esm": "workspace:*",
         "@withonevision/omnihive-worker-config-json": "workspace:*",
         "@withonevision/omnihive-worker-config-mssql": "workspace:*",
@@ -48,6 +48,7 @@
         "@withonevision/omnihive-worker-server-v1": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",
         "chalk": "4.1.2",
+        "cors": "2.8.5",
         "dayjs": "1.10.6",
         "dotenv": "10.0.0",
         "ejs": "3.1.6",
@@ -83,6 +84,8 @@
         "@types/uuid": "8.3.1",
         "@types/yargs": "17.0.2",
         "chai": "4.3.4",
+        "faker": "5.5.3",
+        "mocha": "9.1.1",
         "nodemon": "2.0.12",
         "ts-node": "10.2.1",
         "typescript": "4.4.2"
@@ -91,7 +94,7 @@
         "coreDependencies": {
             "@socket.io/redis-adapter": "7.0.0",
             "@socket.io/redis-emitter": "4.1.0",
-            "@withonevision/omnihive-client": "workspace:*",
+            "@withonevision/omnihive-client-esm": "workspace:*",
             "@withonevision/omnihive-core-esm": "workspace:*",
             "@withonevision/omnihive-worker-config-json": "workspace:*",
             "@withonevision/omnihive-worker-config-mssql": "workspace:*",
@@ -103,6 +106,7 @@
             "@withonevision/omnihive-worker-function-core": "workspace:*",
             "@withonevision/omnihive-worker-log-core": "workspace:*",
             "chalk": "4.1.2",
+            "cors": "2.8.5",
             "dayjs": "1.10.6",
             "dotenv": "10.0.0",
             "ejs": "3.1.6",

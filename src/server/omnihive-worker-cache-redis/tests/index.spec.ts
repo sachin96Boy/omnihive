@@ -1,4 +1,4 @@
-import { AwaitHelper, ICacheWorker } from "@withonevision/omnihive-core/index.js";
+import { AwaitHelper, ICacheWorker } from "@withonevision/omnihive-core-esm/index.js";
 import { expect } from "chai";
 import faker from "faker";
 import { beforeEach, describe, it } from "mocha";

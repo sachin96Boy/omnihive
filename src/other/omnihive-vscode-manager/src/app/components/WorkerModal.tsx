@@ -1,5 +1,4 @@
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
+import { HiveWorkerConfig, IsHelper } from "@withonevision/omnihive-core-cjs";
 import isEqual from "lodash.isequal";
 import React from "react";
 import AceEditor from "react-ace";
@@ -7,14 +6,13 @@ import semver from "semver";
 import yaml from "yaml";
 import { EditorMarkupFormat } from "../../enums/EditorMarkupFormat";
 import { ExtensionConfiguration } from "../../models/ExtensionConfiguration";
+import { WebpanelImageSources } from "../../models/WebpanelImageSources";
 import { FormStyles } from "../common/CommonStyles";
 import { ModalWrapper } from "./ModalWrapper";
-import { WebpanelImageSources } from "../../models/WebpanelImageSources";
 
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/mode-yaml";
 import "ace-builds/src-noconflict/theme-tomorrow_night";
-
 export interface WorkerEditorObject extends HiveWorkerConfig {
     index: number;
 }

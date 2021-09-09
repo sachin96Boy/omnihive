@@ -1,4 +1,4 @@
-import { AwaitHelper } from "@withonevision/omnihive-core/index.js";
+import { AwaitHelper } from "@withonevision/omnihive-core-esm/index.js";
 import { expect } from "chai";
 import faker from "faker";
 import fse from "fs-extra";

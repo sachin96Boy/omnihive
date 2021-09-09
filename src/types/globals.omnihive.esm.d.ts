@@ -1,7 +1,7 @@
 import express from "express";
 import { Server } from "http";
 import socketio from "socket.io";
-import { OmniHiveClient } from "src/common/omnihive-client/index.js";
+import { OmniHiveClient } from "src/common/omnihive-client-esm/index.js";
 import {
     AdminEventType,
     AdminRoomType,

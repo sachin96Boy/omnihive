@@ -1,4 +1,4 @@
-import { AwaitHelper, ILogWorker, OmniHiveLogLevel } from "@withonevision/omnihive-core/index.js";
+import { AwaitHelper, ILogWorker, OmniHiveLogLevel } from "@withonevision/omnihive-core-esm/index.js";
 import { expect } from "chai";
 import faker from "faker";
 import { describe, it } from "mocha";

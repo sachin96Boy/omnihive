@@ -1,7 +1,7 @@
 import React from "react";
-import { ToastContainer } from "./ToastContainer";
-import { ToastCommonStyles } from "./ToastCommonStyles";
 import toastWarningIcon from "../assets/toastWarning.png";
+import { ToastCommonStyles } from "./ToastCommonStyles";
+import { ToastContainer } from "./ToastContainer";
 
 export type ToastWarningProps = {
     show: boolean;

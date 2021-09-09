@@ -24,13 +24,14 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core-cjs": "workspace:*",
+        "@withonevision/omnihive-core-esm": "workspace:*",
         "graphql": "15.5.2"
     },
     "devDependencies": {
         "@types/faker": "5.5.8",
         "chai": "4.3.4",
         "faker": "5.5.3",
+        "mocha": "9.1.1",
         "typescript": "4.4.2"
     }
 }

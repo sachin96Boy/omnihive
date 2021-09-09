@@ -1,13 +1,10 @@
+import { AdminEventType, AdminResponse, IsHelper, ServerStatus } from "@withonevision/omnihive-core-cjs";
 import React from "react";
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import socketio, { Socket } from "socket.io-client";
 import { ReactPropsModel } from "../../models/ReactPropsModel";
 import { RegisteredServerModel } from "../../models/RegisteredServerModel";
-import socketio, { Socket } from "socket.io-client";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 import { ToastWarning } from "../components/ToastWarning";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 type Props = {
     props: ReactPropsModel;

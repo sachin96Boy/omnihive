@@ -7,8 +7,8 @@ import { Listr } from "listr2";
 import path from "path";
 import { readPackageUpSync } from "read-pkg-up";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
-import { IsHelper } from "src/server/omnihive-core/helpers/IsHelper.js";
 import yargs from "yargs";
+import { IsHelper } from "./src/common/omnihive-core-esm/index.js";
 
 interface IArgs {
     ohVersion: string;

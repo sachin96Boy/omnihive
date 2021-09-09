@@ -1,9 +1,9 @@
 import DockLayout, { DropDirection, LayoutData, PanelData, TabData } from "rc-dock";
 import React, { useRef, useState } from "react";
-import { useCustomEventListener } from "../hooks/useCustomEventListener";
-import { UseOpenGridTabProps } from "../hooks/useOpenGridTab";
 import { v4 as uuidv4 } from "uuid";
 import emptyDockBee from "../assets/empty_dock_bee.png";
+import { useCustomEventListener } from "../hooks/useCustomEventListener";
+import { UseOpenGridTabProps } from "../hooks/useOpenGridTab";
 
 export type ModuleDockProps = {
     moduleKey: string;

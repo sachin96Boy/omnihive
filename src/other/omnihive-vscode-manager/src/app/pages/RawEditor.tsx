@@ -1,9 +1,11 @@
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
+import {
+    AdminEventType,
+    AdminResponse,
+    EnvironmentVariable,
+    IsHelper,
+    ServerConfig,
+    ServerStatus,
+} from "@withonevision/omnihive-core-cjs";
 import Parser from "html-react-parser";
 import isEqual from "lodash.isequal";
 import React from "react";
@@ -18,8 +20,8 @@ import { RegisteredServerModel } from "../../models/RegisteredServerModel";
 import { VsCodePostMessageModel } from "../../models/VsCodePostMessageModel";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { ToastError } from "../components/ToastError";
-import { ToastWarning } from "../components/ToastWarning";
 import { ToastSuccess } from "../components/ToastSuccess";
+import { ToastWarning } from "../components/ToastWarning";
 
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/mode-yaml";

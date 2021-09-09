@@ -1,13 +1,14 @@
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
+import {
+    AdminEventType,
+    AdminResponse,
+    EnvironmentVariable,
+    EnvironmentVariableType,
+    HiveWorkerConfig,
+    IsHelper,
+    ServerConfig,
+    ServerStatus,
+} from "@withonevision/omnihive-core-cjs";
 import { ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
-import "ag-grid-community/dist/styles/ag-grid.css";
-import "ag-grid-community/dist/styles/ag-theme-alpine.css";
 import { AgGridReact } from "ag-grid-react";
 import React from "react";
 import socketio, { Socket } from "socket.io-client";
@@ -21,7 +22,9 @@ import { ToastError } from "../components/ToastError";
 import { ToastSuccess } from "../components/ToastSuccess";
 import { ToastWarning } from "../components/ToastWarning";
 import { WorkerEditorObject, WorkerModal } from "../components/WorkerModal";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+
+import "ag-grid-community/dist/styles/ag-grid.css";
+import "ag-grid-community/dist/styles/ag-theme-alpine.css";
 import "../styles/editor.css";
 
 type Props = {

@@ -1,4 +1,4 @@
-import { AwaitHelper, IDateWorker } from "@withonevision/omnihive-core/index.js";
+import { AwaitHelper, IDateWorker } from "@withonevision/omnihive-core-esm/index.js";
 import { expect } from "chai";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";

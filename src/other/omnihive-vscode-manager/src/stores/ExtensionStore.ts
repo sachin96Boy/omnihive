@@ -1,9 +1,12 @@
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
+import {
+    AdminEventType,
+    AdminRequest,
+    AdminResponse,
+    IsHelper,
+    RegisteredUrl,
+    ServerStatus,
+} from "@withonevision/omnihive-core-cjs";
+import { serializeError } from "serialize-error";
 import socketio from "socket.io-client";
 import { URL } from "url";
 import vscode from "vscode";
@@ -15,7 +18,6 @@ import { RegisteredClientModel } from "../models/RegisteredClientModel";
 import { RegisteredServerModel } from "../models/RegisteredServerModel";
 import { ExtensionTreeProvider } from "../providers/ExtensionTreeProvider";
 import { WebViewPanelProvider } from "../providers/WebViewPanelProvider";
-import { serializeError } from "serialize-error";
 
 export class ExtensionStore {
     private static singleton: ExtensionStore;

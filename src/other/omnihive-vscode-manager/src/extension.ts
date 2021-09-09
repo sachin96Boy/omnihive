@@ -1,5 +1,4 @@
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IsHelper, ServerStatus } from "@withonevision/omnihive-core-cjs";
 import vscode from "vscode";
 import { AddServerCommand } from "./commands/AddServerCommand";
 import { EditServerCommand } from "./commands/EditServerCommand";

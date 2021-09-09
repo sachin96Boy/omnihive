@@ -1,6 +1,6 @@
 /// <reference path="../../../types/globals.omnihive.esm.d.ts" />
 
-import { OmniHiveClient } from "@withonevision/omnihive-client/index.js";
+import { OmniHiveClient } from "@withonevision/omnihive-client-esm/index.js";
 import {
     AdminEventType,
     AdminRequest,

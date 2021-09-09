@@ -1,11 +1,9 @@
+import { EnvironmentVariable, EnvironmentVariableType, IsHelper } from "@withonevision/omnihive-core-cjs";
+import isEqual from "lodash.isequal";
 import React from "react";
+import { WebpanelImageSources } from "../../models/WebpanelImageSources";
 import { FormStyles } from "../common/CommonStyles";
 import { ModalWrapper } from "./ModalWrapper";
-import isEqual from "lodash.isequal";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
-import { WebpanelImageSources } from "../../models/WebpanelImageSources";
 
 export interface EnvironmentEditorObject extends EnvironmentVariable {
     index: number;

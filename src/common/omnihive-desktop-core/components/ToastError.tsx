@@ -1,7 +1,7 @@
 import React from "react";
-import { ToastContainer } from "./ToastContainer";
-import { ToastCommonStyles } from "./ToastCommonStyles";
 import toastErrorIcon from "../assets/toastError.png";
+import { ToastCommonStyles } from "./ToastCommonStyles";
+import { ToastContainer } from "./ToastContainer";
 
 export type ToastErrorProps = {
     show: boolean;

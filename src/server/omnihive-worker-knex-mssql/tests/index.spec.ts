@@ -1,4 +1,4 @@
-/// <reference path="../../../types/globals.omnihive.test.d.ts" />
+/// <reference path="../../../types/globals.omnihive.esm.test.d.ts" />
 
 import {
     AwaitHelper,
@@ -7,8 +7,8 @@ import {
     IsHelper,
     ProcFunctionSchema,
     RegisteredHiveWorkerSection,
-} from "@withonevision/omnihive-core/index.js";
-import NullLogWorker from "@withonevision/omnihive-worker-log-null/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
+import NullLogWorker from "../..//omnihive-worker-log-null/index.js";
 import { expect } from "chai";
 import fs from "fs";
 import { before, beforeEach, describe, it } from "mocha";

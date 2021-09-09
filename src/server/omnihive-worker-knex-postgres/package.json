@@ -35,6 +35,7 @@
         "@types/lodash.orderby": "4.6.6",
         "@types/pg": "8.6.1",
         "chai": "4.3.4",
+        "mocha": "9.1.1",
         "typescript": "4.4.2"
     }
 }

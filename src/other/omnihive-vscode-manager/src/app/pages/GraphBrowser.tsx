@@ -1,12 +1,9 @@
-import React from "react";
-import { ReactPropsModel } from "../../models/ReactPropsModel";
+import { AdminEventType, AdminResponse, IsHelper, ServerStatus } from "@withonevision/omnihive-core-cjs";
 import GraphiQL from "graphiql";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { RegisteredServerModel } from "../../models/RegisteredServerModel";
+import React from "react";
 import socketio, { Socket } from "socket.io-client";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ReactPropsModel } from "../../models/ReactPropsModel";
+import { RegisteredServerModel } from "../../models/RegisteredServerModel";
 
 type Props = {
     props: ReactPropsModel;

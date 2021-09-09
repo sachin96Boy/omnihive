@@ -1,5 +1,5 @@
 {
-    "name": "@withonevision/omnihive-client",
+    "name": "@withonevision/omnihive-client-esm",
     "version": "6.2.57",
     "description": "OmniHive Client",
     "license": "MIT",

@@ -233,7 +233,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     `import { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } from "graphql";`
                 );
                 builder.appendLine(
-                    `import { AwaitHelper, GraphQLJSONObject, HiveWorkerType } from "@withonevision/omnihive-core/index.js;`
+                    `import { AwaitHelper, GraphQLJSONObject, HiveWorkerType } from "@withonevision/omnihive-core-esm/index.js;`
                 );
                 builder.appendLine(
                     `import { CustomGraphHelper } from "@withonevision/omnihive-worker-server-v1/helpers/CustomGraphHelper.js";`

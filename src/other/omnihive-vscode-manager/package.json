@@ -269,7 +269,7 @@
     },
     "dependencies": {
         "@types/vscode": "1.60.0",
-        "@withonevision/omnihive-core": "6.2.62",
+        "@withonevision/omnihive-core-cjs": "workspace:*",
         "ace-builds": "1.4.12",
         "ag-grid-community": "26.0.0",
         "ag-grid-react": "26.0.0",

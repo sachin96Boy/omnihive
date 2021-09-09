@@ -9,9 +9,13 @@
     "dependencies": {
         "@withonevision/omnihive-core-cjs": "workspace:*",
         "@withonevision/omnihive-desktop-core": "workspace:*",
+        "@withonevision/omnihive-desktop-server-manager": "workspace:*",
         "electron-better-ipc": "2.0.1",
         "electron-store": "8.0.0",
         "lodash": "4.17.21",
+        "rc-dock": "3.1.0",
+        "react": "17.0.2",
+        "react-dom": "17.0.2",
         "react-tooltip": "4.2.21"
     },
     "devDependencies": {
@@ -27,8 +31,6 @@
         "electron-util": "0.17.2",
         "esbuild": "0.12.25",
         "postcss": "8.3.6",
-        "react": "17.0.2",
-        "react-dom": "17.0.2",
         "tailwindcss": "2.2.9",
         "typescript": "4.4.2",
         "vite": "2.5.3",

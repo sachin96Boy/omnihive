@@ -1,8 +1,8 @@
 import vscode from "vscode";
 import { VsCodeCommand } from "../enums/VsCodeCommand";
+import { VsCodeWebpanelRoute } from "../enums/VsCodeWebpanelRoute";
 import { WebViewPanelProvider } from "../providers/WebViewPanelProvider";
 import { ExtensionStore } from "../stores/ExtensionStore";
-import { VsCodeWebpanelRoute } from "../enums/VsCodeWebpanelRoute";
 
 export class LogViewerCommand {
     public setup = (context: vscode.ExtensionContext) => {

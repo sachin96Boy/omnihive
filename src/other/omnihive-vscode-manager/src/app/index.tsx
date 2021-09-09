@@ -9,8 +9,8 @@ import { LogViewer } from "./pages/LogViewer";
 import { RawEditor } from "./pages/RawEditor";
 import { RetrieveToken } from "./pages/RetrieveToken";
 import { SettingsEditor } from "./pages/SettingsEditor";
-import "./styles/styles.css";
 
+import "./styles/styles.css";
 declare global {
     interface Window {
         acquireVsCodeApi(): any;

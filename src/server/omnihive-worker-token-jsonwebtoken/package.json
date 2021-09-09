@@ -24,7 +24,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-esm": "workspace:*",
         "jsonwebtoken": "8.5.1",
         "nanoid": "3.1.25",
         "uuid": "8.3.2"

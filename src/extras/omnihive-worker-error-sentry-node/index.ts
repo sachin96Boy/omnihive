@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/node";
-import { AwaitHelper, HiveWorkerBase, IErrorWorker } from "@withonevision/omnihive-core/index.js";
+import { AwaitHelper, HiveWorkerBase, IErrorWorker } from "@withonevision/omnihive-core-esm/index.js";
 
 export class SentryErrorWorkerMetadata {
     public sentryDsn: string = "";

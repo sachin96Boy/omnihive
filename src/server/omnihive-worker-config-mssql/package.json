@@ -24,7 +24,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-esm": "workspace:*",
         "knex": "0.95.11",
         "mssql": "7.2.1",
         "tedious": "11.8.0"

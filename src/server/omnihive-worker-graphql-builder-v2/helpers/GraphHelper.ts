@@ -1,4 +1,4 @@
-import { IDateWorker, IsHelper, TableSchema } from "@withonevision/omnihive-core/index.js";
+import { IDateWorker, IsHelper, TableSchema } from "@withonevision/omnihive-core-esm/index.js";
 import { FieldNode, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
 
 export class GraphHelper {

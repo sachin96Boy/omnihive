@@ -5,7 +5,7 @@ import {
     IEncryptionWorker,
     IsHelper,
     IStorageWorker,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import { CrossStorageClient, CrossStorageClientOptions } from "cross-storage";
 
 export class CrossStorageStorageWorkerMetadata {

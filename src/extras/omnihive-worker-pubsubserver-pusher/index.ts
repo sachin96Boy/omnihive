@@ -3,7 +3,7 @@ import {
     HiveWorkerBase,
     IPubSubServerWorker,
     PubSubListener,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import PusherServer from "pusher";
 
 export class PusherPubSubServerWorkerMetadata {

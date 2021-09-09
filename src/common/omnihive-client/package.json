@@ -24,7 +24,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-esm": "workspace:*",
         "axios": "0.21.4"
     },
     "devDependencies": {

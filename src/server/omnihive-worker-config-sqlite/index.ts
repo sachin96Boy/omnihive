@@ -1,4 +1,4 @@
-/// <reference path="../../types/globals.omnihive.d.ts" />
+/// <reference path="../../types/globals.omnihive.esm.d.ts" />
 
 import {
     AwaitHelper,
@@ -10,7 +10,7 @@ import {
     IConfigWorker,
     ServerConfig,
     StringBuilder,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
 import sqlite from "sqlite3";

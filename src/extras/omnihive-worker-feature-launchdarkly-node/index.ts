@@ -6,7 +6,7 @@ import {
     ILogWorker,
     IsHelper,
     OmniHiveLogLevel,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import LaunchDarkly, { LDUser } from "launchdarkly-node-server-sdk";
 
 type LaunchDarklyFeatureClient = {

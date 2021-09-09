@@ -35,7 +35,7 @@
         "release:dry-run": "standard-version --dry-run",
         "server:debug": "cd src/server/omnihive && yarn run server:debug",
         "taskRunner:debug": "cd src/server/omnihive && yarn run taskRunner:debug",
-        "test:debug": "docker-compose -f docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f docker-compose.test.yml down",
+        "test:debug": "docker-compose -f docker-compose.test.yml up -d --force-recreate && c8 mocha --inspect --exit;docker-compose -f docker-compose.test.yml down",
         "update:packages": "npx npm-check -u -E"
     },
     "dependencies": {
@@ -48,7 +48,6 @@
     "devDependencies": {
         "@commitlint/cli": "13.1.0",
         "@commitlint/config-conventional": "13.1.0",
-        "@istanbuljs/nyc-config-typescript": "1.0.1",
         "@types/chai": "4.2.21",
         "@types/faker": "5.5.8",
         "@types/figlet": "1.5.4",
@@ -60,6 +59,7 @@
         "@typescript-eslint/eslint-plugin": "4.31.0",
         "@typescript-eslint/parser": "4.31.0",
         "axios": "0.21.4",
+        "c8": "7.8.0",
         "chai": "4.3.4",
         "chalk": "4.1.2",
         "commitizen": "4.2.4",
@@ -81,7 +81,6 @@
         "listr2": "3.11.1",
         "mocha": "9.1.1",
         "nodemon": "2.0.12",
-        "nyc": "15.1.0",
         "prettier": "2.3.2",
         "read-pkg-up": "8.0.0",
         "replace-in-file": "6.2.0",

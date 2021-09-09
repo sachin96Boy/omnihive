@@ -19,11 +19,12 @@
         "OmniHive",
         "With One Vision"
     ],
+    "type": "commonjs",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-cjs": "workspace:*",
         "@withonevision/omnihive-desktop-core": "workspace:*",
         "classnames": "2.3.1",
         "immer": "9.0.6",

@@ -1,4 +1,9 @@
-import { AwaitHelper, GraphContext, IDatabaseWorker, ProcFunctionSchema } from "@withonevision/omnihive-core/index.js";
+import {
+    AwaitHelper,
+    GraphContext,
+    IDatabaseWorker,
+    ProcFunctionSchema,
+} from "@withonevision/omnihive-core-esm/index.js";
 import { FieldNode, GraphQLResolveInfo, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
 import { WorkerHelper } from "../helpers/WorkerHelper.js";
 

@@ -24,7 +24,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-esm": "workspace:*",
         "auth0": "2.36.1",
         "axios": "0.21.4",
         "jwt-decode": "3.1.2",

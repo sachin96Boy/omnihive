@@ -1,4 +1,4 @@
-import { AwaitHelper, HiveWorkerBase, IsHelper, ITokenWorker } from "@withonevision/omnihive-core/index.js";
+import { AwaitHelper, HiveWorkerBase, IsHelper, ITokenWorker } from "@withonevision/omnihive-core-esm/index.js";
 import { AuthenticationClient, ClientCredentialsGrantOptions } from "auth0";
 import axios, { AxiosResponse } from "axios";
 import jwtDecode from "jwt-decode";

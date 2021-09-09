@@ -3507,19 +3507,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@istanbuljs/nyc-config-typescript@npm:1.0.1":
-  version: 1.0.1
-  resolution: "@istanbuljs/nyc-config-typescript@npm:1.0.1"
-  dependencies:
-    "@istanbuljs/schema": ^0.1.2
-  peerDependencies:
-    nyc: ">=15"
-    source-map-support: "*"
-    ts-node: "*"
-  checksum: b4106446f88a637a0b168d1fcee73510de0c403584dc2722e507c5fd874b2cb1e513349d63f2cfc6d58aa59f153cd66e910bb3c80c65a37ca01f8aafc484dffd
-  languageName: node
-  linkType: hard
-
 "@istanbuljs/schema@npm:^0.1.2":
   version: 0.1.3
   resolution: "@istanbuljs/schema@npm:0.1.3"
@@ -7014,9 +7001,34 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-client@workspace:src/common/omnihive-client"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     axios: 0.21.4
     chai: 4.3.4
+    typescript: 4.4.2
+  languageName: unknown
+  linkType: soft
+
+"@withonevision/omnihive-core-cjs@workspace:*, @withonevision/omnihive-core-cjs@workspace:src/common/omnihive-core-cjs":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-core-cjs@workspace:src/common/omnihive-core-cjs"
+  dependencies:
+    "@types/faker": 5.5.8
+    chai: 4.3.4
+    faker: 5.5.3
+    graphql: 15.5.2
+    typescript: 4.4.2
+  languageName: unknown
+  linkType: soft
+
+"@withonevision/omnihive-core-esm@workspace:*, @withonevision/omnihive-core-esm@workspace:src/common/omnihive-core-esm":
+  version: 0.0.0-use.local
+  resolution: "@withonevision/omnihive-core-esm@workspace:src/common/omnihive-core-esm"
+  dependencies:
+    "@types/faker": 5.5.8
+    "@withonevision/omnihive-core-cjs": "workspace:*"
+    chai: 4.3.4
+    faker: 5.5.3
+    graphql: 15.5.2
     typescript: 4.4.2
   languageName: unknown
   linkType: soft
@@ -7030,18 +7042,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@withonevision/omnihive-core@workspace:*, @withonevision/omnihive-core@workspace:src/common/omnihive-core":
-  version: 0.0.0-use.local
-  resolution: "@withonevision/omnihive-core@workspace:src/common/omnihive-core"
-  dependencies:
-    "@types/faker": 5.5.8
-    chai: 4.3.4
-    faker: 5.5.3
-    graphql: 15.5.2
-    typescript: 4.4.2
-  languageName: unknown
-  linkType: soft
-
 "@withonevision/omnihive-desktop-core@workspace:*, @withonevision/omnihive-desktop-core@workspace:src/common/omnihive-desktop-core":
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-desktop-core@workspace:src/common/omnihive-desktop-core"
@@ -7049,7 +7049,7 @@ __metadata:
     "@types/faker": 5.5.8
     "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-cjs": "workspace:*"
     autoprefixer: 10.3.4
     chai: 4.3.4
     classnames: 2.3.1
@@ -7072,7 +7072,7 @@ __metadata:
     "@types/faker": 5.5.8
     "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-cjs": "workspace:*"
     "@withonevision/omnihive-desktop-core": "workspace:*"
     autoprefixer: 10.3.4
     chai: 4.3.4
@@ -7111,7 +7111,7 @@ __metadata:
     "@storybook/react": 6.3.8
     "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     "@withonevision/omnihive-desktop-core": "workspace:*"
     "@withonevision/omnihive-desktop-server-manager": "workspace:*"
     autoprefixer: 10.3.4
@@ -7134,7 +7134,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-cache-nodecache@workspace:src/server/omnihive-worker-cache-nodecache"
   dependencies:
     "@types/faker": 5.5.8
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     faker: 5.5.3
     node-cache: 5.1.2
@@ -7148,7 +7148,7 @@ __metadata:
   dependencies:
     "@types/faker": 5.5.8
     "@types/ioredis": 4.27.1
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     faker: 5.5.3
     ioredis: 4.27.9
@@ -7161,7 +7161,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-config-json@workspace:src/server/omnihive-worker-config-json"
   dependencies:
     "@types/fs-extra": 9.0.12
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     typescript: 4.4.2
@@ -7173,7 +7173,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-config-mssql@workspace:src/server/omnihive-worker-config-mssql"
   dependencies:
     "@types/mssql": 7.1.3
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     knex: 0.95.11
     mssql: 7.2.1
@@ -7187,7 +7187,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-config-mysql@workspace:src/server/omnihive-worker-config-mysql"
   dependencies:
     "@types/fs-extra": 9.0.12
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     knex: 0.95.11
@@ -7202,7 +7202,7 @@ __metadata:
   dependencies:
     "@types/fs-extra": 9.0.12
     "@types/pg": 8.6.1
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     knex: 0.95.11
@@ -7217,7 +7217,7 @@ __metadata:
   dependencies:
     "@types/fs-extra": 9.0.12
     "@types/sqlite3": 3.1.7
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     knex: 0.95.11
@@ -7231,7 +7231,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-config-yaml@workspace:src/server/omnihive-worker-config-yaml"
   dependencies:
     "@types/fs-extra": 9.0.12
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     typescript: 4.4.2
@@ -7244,7 +7244,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-date-dayjs@workspace:src/server/omnihive-worker-date-dayjs"
   dependencies:
     "@types/faker": 5.5.8
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     dayjs: 1.10.6
     faker: 5.5.3
@@ -7257,7 +7257,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-encryption-nodeforge@workspace:src/server/omnihive-worker-encryption-nodeforge"
   dependencies:
     "@types/node-forge": 0.10.3
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     node-forge: 0.10.0
     typescript: 4.4.2
@@ -7269,7 +7269,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-error-sentry-node@workspace:src/extras/omnihive-worker-error-sentry-node"
   dependencies:
     "@sentry/node": 6.12.0
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     typescript: 4.4.2
   languageName: unknown
@@ -7279,7 +7279,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-feature-launchdarkly-node@workspace:src/extras/omnihive-worker-feature-launchdarkly-node"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     launchdarkly-node-server-sdk: 6.2.0
     typescript: 4.4.2
@@ -7292,7 +7292,7 @@ __metadata:
   dependencies:
     "@types/faker": 5.5.8
     "@types/fs-extra": 9.0.12
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     faker: 5.5.3
     fs-extra: 10.0.0
@@ -7306,7 +7306,7 @@ __metadata:
   dependencies:
     "@types/express": 4.17.13
     "@types/swagger-ui-express": 4.1.3
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     express: 4.17.1
     serialize-error: 8.1.0
@@ -7323,7 +7323,7 @@ __metadata:
     "@graphql-tools/schema": 7.1.5
     "@types/lodash": 4.14.172
     "@types/pluralize": 0.0.29
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     apollo-server: 2.25.2
     chai: 4.3.4
     graphql: 15.5.2
@@ -7341,7 +7341,7 @@ __metadata:
   dependencies:
     "@types/fs-extra": 9.0.12
     "@types/mssql": 7.1.3
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     knex: 0.95.11
@@ -7358,7 +7358,7 @@ __metadata:
     "@types/fs-extra": 9.0.12
     "@types/lodash.orderby": 4.6.6
     "@types/mysql": 2.15.19
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     knex: 0.95.11
@@ -7375,7 +7375,7 @@ __metadata:
     "@types/fs-extra": 9.0.12
     "@types/lodash.orderby": 4.6.6
     "@types/pg": 8.6.1
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     knex: 0.95.11
@@ -7390,7 +7390,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-knex-sqlite@workspace:src/server/omnihive-worker-knex-sqlite"
   dependencies:
     "@types/fs-extra": 9.0.12
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     fs-extra: 10.0.0
     knex: 0.95.11
@@ -7404,7 +7404,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-log-console@workspace:src/server/omnihive-worker-log-console"
   dependencies:
     "@types/sinon": 10.0.2
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     sinon: 11.1.2
     typescript: 4.4.2
@@ -7415,7 +7415,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-log-core@workspace:src/server/omnihive-worker-log-core"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     chalk: 4.1.2
     dayjs: 1.10.6
@@ -7429,7 +7429,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-log-elastic@workspace:src/extras/omnihive-worker-log-elastic"
   dependencies:
     "@elastic/elasticsearch": 7.14.1
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     typescript: 4.4.2
   languageName: unknown
@@ -7439,7 +7439,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-log-null@workspace:src/server/omnihive-worker-log-null"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     typescript: 4.4.2
   languageName: unknown
@@ -7449,7 +7449,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-pubsubclient-pusherjs-react-native@workspace:src/extras/omnihive-worker-pubsubclient-pusherjs-react-native"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     pusher-js: 7.0.3
     typescript: 4.4.2
@@ -7460,7 +7460,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-pubsubclient-pusherjs@workspace:src/extras/omnihive-worker-pubsubclient-pusherjs"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     pusher-js: 7.0.3
     typescript: 4.4.2
@@ -7471,7 +7471,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-pubsubclient-socketio@workspace:src/server/omnihive-worker-pubsubclient-socketio"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     socket.io-client: 4.1.3
     typescript: 4.4.2
@@ -7482,7 +7482,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-pubsubserver-pusher@workspace:src/extras/omnihive-worker-pubsubserver-pusher"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     pusher: 5.0.0
     typescript: 4.4.2
@@ -7493,7 +7493,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@withonevision/omnihive-worker-pubsubserver-socketio@workspace:src/server/omnihive-worker-pubsubserver-socketio"
   dependencies:
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     socket.io: 4.1.3
     typescript: 4.4.2
@@ -7506,7 +7506,7 @@ __metadata:
   dependencies:
     "@types/express": 4.17.13
     "@types/swagger-ui-express": 4.1.3
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     apollo-server: 2.25.2
     apollo-server-express: 2.25.2
     chai: 4.3.4
@@ -7527,7 +7527,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-storage-cross-storage@workspace:src/extras/omnihive-worker-cross-storage"
   dependencies:
     "@types/cross-storage": 0.8.30
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     cross-storage: 1.0.0
     typescript: 4.4.2
@@ -7540,7 +7540,7 @@ __metadata:
   dependencies:
     "@types/auth0": 2.33.5
     "@types/node-jose": 1.1.8
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     auth0: 2.36.1
     axios: 0.21.4
     chai: 4.3.4
@@ -7556,7 +7556,7 @@ __metadata:
   dependencies:
     "@types/jsonwebtoken": 8.5.5
     "@types/uuid": 8.3.1
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     chai: 4.3.4
     jsonwebtoken: 8.5.1
     nanoid: 3.1.25
@@ -7570,7 +7570,7 @@ __metadata:
   resolution: "@withonevision/omnihive-worker-user-auth0@workspace:src/extras/omnihive-worker-user-auth0"
   dependencies:
     "@types/auth0": 2.33.5
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     auth0: 2.36.1
     chai: 4.3.4
     typescript: 4.4.2
@@ -8348,26 +8348,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"append-transform@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "append-transform@npm:2.0.0"
-  dependencies:
-    default-require-extensions: ^3.0.0
-  checksum: f26f393bf7a428fd1bb18f2758a819830a582243310c5170edb3f98fdc5a535333d02b952f7c2d9b14522bd8ead5b132a0b15000eca18fa9f49172963ebbc231
-  languageName: node
-  linkType: hard
-
 "aproba@npm:^1.0.3, aproba@npm:^1.1.1":
   version: 1.2.0
   resolution: "aproba@npm:1.2.0"
   checksum: 0fca141966559d195072ed047658b6e6c4fe92428c385dd38e288eacfc55807e7b4989322f030faff32c0f46bb0bc10f1e0ac32ec22d25315a1e5bbc0ebb76dc
-  languageName: node
-  linkType: hard
-
-"archy@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "archy@npm:1.0.0"
-  checksum: 504ae7af655130bab9f471343cfdb054feaec7d8e300e13348bc9fe9e660f83d422e473069584f73233c701ae37d1c8452ff2522f2a20c38849e0f406f1732ac
   languageName: node
   linkType: hard
 
@@ -9716,7 +9700,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"c8@npm:^7.6.0":
+"c8@npm:7.8.0, c8@npm:^7.6.0":
   version: 7.8.0
   resolution: "c8@npm:7.8.0"
   dependencies:
@@ -9823,18 +9807,6 @@ __metadata:
   version: 2.2.0
   resolution: "cachedir@npm:2.2.0"
   checksum: 7b55a54c312885dc497c19780ed5ec527f1ae9df61db4bdb939ba66d00a49a1f28ced3919f1f094b472eac36874c268d6d63f397a093caf8c534f34be78c6438
-  languageName: node
-  linkType: hard
-
-"caching-transform@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "caching-transform@npm:4.0.0"
-  dependencies:
-    hasha: ^5.0.0
-    make-dir: ^3.0.0
-    package-hash: ^4.0.0
-    write-file-atomic: ^3.0.0
-  checksum: c4db6939533b677866808de67c32f0aaf8bf4fd3e3b8dc957e5d630c007c06b7f11512d44c38a38287fb068e931067e8da9019c34d787259a44121c9a6b87a1f
   languageName: node
   linkType: hard
 
@@ -12084,15 +12056,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"default-require-extensions@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "default-require-extensions@npm:3.0.0"
-  dependencies:
-    strip-bom: ^4.0.0
-  checksum: 0b5bdb6786ebb0ff6ef55386f37c8d221963fbbd3009588fe71032c85ca16da05eff2ad01bfe9bfc8bac5ce95a18f66b38c50d454482e3e9d2de1142424a3e7c
-  languageName: node
-  linkType: hard
-
 "defer-to-connect@npm:^1.0.1":
   version: 1.1.3
   resolution: "defer-to-connect@npm:1.1.3"
@@ -13465,7 +13428,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es6-error@npm:^4.0.1, es6-error@npm:^4.1.1":
+"es6-error@npm:^4.1.1":
   version: 4.1.1
   resolution: "es6-error@npm:4.1.1"
   checksum: ae41332a51ec1323da6bbc5d75b7803ccdeddfae17c41b6166ebbafc8e8beb7a7b80b884b7fab1cc80df485860ac3c59d78605e860bb4f8cd816b3d6ade0d010
@@ -14520,7 +14483,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find-cache-dir@npm:^3.2.0, find-cache-dir@npm:^3.3.1":
+"find-cache-dir@npm:^3.3.1":
   version: 3.3.2
   resolution: "find-cache-dir@npm:3.3.2"
   dependencies:
@@ -14847,13 +14810,6 @@ __metadata:
   version: 0.1.7
   resolution: "from@npm:0.1.7"
   checksum: b85125b7890489656eb2e4f208f7654a93ec26e3aefaf3bbbcc0d496fc1941e4405834fcc9fe7333192aa2187905510ace70417bbf9ac6f6f4784a731d986939
-  languageName: node
-  linkType: hard
-
-"fromentries@npm:^1.2.0":
-  version: 1.3.2
-  resolution: "fromentries@npm:1.3.2"
-  checksum: 33729c529ce19f5494f846f0dd4945078f4e37f4e8955f4ae8cc7385c218f600e9d93a7d225d17636c20d1889106fd87061f911550861b7072f53bf891e6b341
   languageName: node
   linkType: hard
 
@@ -16079,16 +16035,6 @@ fsevents@^1.2.7:
     inherits: ^2.0.3
     minimalistic-assert: ^1.0.1
   checksum: e350096e659c62422b85fa508e4b3669017311aa4c49b74f19f8e1bc7f3a54a584fdfd45326d4964d6011f2b2d882e38bea775a96046f2a61b7779a979629d8f
-  languageName: node
-  linkType: hard
-
-"hasha@npm:^5.0.0":
-  version: 5.2.2
-  resolution: "hasha@npm:5.2.2"
-  dependencies:
-    is-stream: ^2.0.0
-    type-fest: ^0.8.0
-  checksum: 06cc474bed246761ff61c19d629977eb5f53fa817be4313a255a64ae0f433e831a29e83acb6555e3f4592b348497596f1d1653751008dda4f21c9c21ca60ac5a
   languageName: node
   linkType: hard
 
@@ -17770,19 +17716,10 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.0.0-alpha.1":
+"istanbul-lib-coverage@npm:^3.0.0":
   version: 3.0.0
   resolution: "istanbul-lib-coverage@npm:3.0.0"
   checksum: ea57c2428858cc5d1e04c0e28b362950bbf6415e8ba1235cdd6f4c8dc3c57cb950db8b4e8a4f7e33abc240aa1eb816dba0d7285bdb8b70bda22bb2082492dbfc
-  languageName: node
-  linkType: hard
-
-"istanbul-lib-hook@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "istanbul-lib-hook@npm:3.0.0"
-  dependencies:
-    append-transform: ^2.0.0
-  checksum: ac4d0a0751e959cfe4c95d817df5f1f573f9b0cf892552e60d81785654291391fac1ceb667f13bb17fcc2ef23b74c89ed8cf1c6148c833c8596a2b920b079101
   languageName: node
   linkType: hard
 
@@ -17798,21 +17735,6 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"istanbul-lib-processinfo@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "istanbul-lib-processinfo@npm:2.0.2"
-  dependencies:
-    archy: ^1.0.0
-    cross-spawn: ^7.0.0
-    istanbul-lib-coverage: ^3.0.0-alpha.1
-    make-dir: ^3.0.0
-    p-map: ^3.0.0
-    rimraf: ^3.0.0
-    uuid: ^3.3.3
-  checksum: 400bd0b25b623c172e48d37e5bdda7a58b2fe5beeedfeb03099aed3385223d31e4cfa6f9932be07bbf06cfd039023301bce81d3b70b9a20a79a38b0f12cb261a
-  languageName: node
-  linkType: hard
-
 "istanbul-lib-report@npm:^3.0.0":
   version: 3.0.0
   resolution: "istanbul-lib-report@npm:3.0.0"
@@ -17821,17 +17743,6 @@ fsevents@^1.2.7:
     make-dir: ^3.0.0
     supports-color: ^7.1.0
   checksum: 3f29eb3f53c59b987386e07fe772d24c7f58c6897f34c9d7a296f4000de7ae3de9eb95c3de3df91dc65b134c84dee35c54eee572a56243e8907c48064e34ff1b
-  languageName: node
-  linkType: hard
-
-"istanbul-lib-source-maps@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "istanbul-lib-source-maps@npm:4.0.0"
-  dependencies:
-    debug: ^4.1.1
-    istanbul-lib-coverage: ^3.0.0
-    source-map: ^0.6.1
-  checksum: 292bfb4083e5f8783cdf829a7686b1a377d0c6c2119d4343c8478e948b38146c4827cddc7eee9f57605acd63c291376d67e4a84163d37c5fc78ad0f27f7e2621
   languageName: node
   linkType: hard
 
@@ -18726,13 +18637,6 @@ fsevents@^1.2.7:
   version: 4.4.0
   resolution: "lodash.flatten@npm:4.4.0"
   checksum: 0ac34a393d4b795d4b7421153d27c13ae67e08786c9cbb60ff5b732210d46f833598eee3fb3844bb10070e8488efe390ea53bb567377e0cb47e9e630bf0811cb
-  languageName: node
-  linkType: hard
-
-"lodash.flattendeep@npm:^4.4.0":
-  version: 4.4.0
-  resolution: "lodash.flattendeep@npm:4.4.0"
-  checksum: 8521c919acac3d4bcf0aaf040c1ca9cb35d6c617e2d72e9b4d51c9a58b4366622cd6077441a18be626c3f7b28227502b3bf042903d447b056ee7e0b11d45c722
   languageName: node
   linkType: hard
 
@@ -20478,15 +20382,6 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"node-preload@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "node-preload@npm:0.2.1"
-  dependencies:
-    process-on-spawn: ^1.0.0
-  checksum: 4586f91ac7417b33accce0ac629fb60f642d0c8d212b3c536dc3dda37fe54f8a3b858273380e1036e41a65d85470332c358315d2288e6584260d620fb4b00fb3
-  languageName: node
-  linkType: hard
-
 "node-releases@npm:^1.1.61, node-releases@npm:^1.1.75":
   version: 1.1.75
   resolution: "node-releases@npm:1.1.75"
@@ -20801,43 +20696,6 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"nyc@npm:15.1.0":
-  version: 15.1.0
-  resolution: "nyc@npm:15.1.0"
-  dependencies:
-    "@istanbuljs/load-nyc-config": ^1.0.0
-    "@istanbuljs/schema": ^0.1.2
-    caching-transform: ^4.0.0
-    convert-source-map: ^1.7.0
-    decamelize: ^1.2.0
-    find-cache-dir: ^3.2.0
-    find-up: ^4.1.0
-    foreground-child: ^2.0.0
-    get-package-type: ^0.1.0
-    glob: ^7.1.6
-    istanbul-lib-coverage: ^3.0.0
-    istanbul-lib-hook: ^3.0.0
-    istanbul-lib-instrument: ^4.0.0
-    istanbul-lib-processinfo: ^2.0.2
-    istanbul-lib-report: ^3.0.0
-    istanbul-lib-source-maps: ^4.0.0
-    istanbul-reports: ^3.0.2
-    make-dir: ^3.0.0
-    node-preload: ^0.2.1
-    p-map: ^3.0.0
-    process-on-spawn: ^1.0.0
-    resolve-from: ^5.0.0
-    rimraf: ^3.0.0
-    signal-exit: ^3.0.2
-    spawn-wrap: ^2.0.0
-    test-exclude: ^6.0.0
-    yargs: ^15.0.2
-  bin:
-    nyc: bin/nyc.js
-  checksum: 82a7031982df2fd6ab185c9f1b5d032b6221846268007b45b5773c6582e776ab33e96cd22b4231520345942fcef69b4339bd967675b8483f3fa255b56326faef
-  languageName: node
-  linkType: hard
-
 "oauth-sign@npm:~0.9.0":
   version: 0.9.0
   resolution: "oauth-sign@npm:0.9.0"
@@ -20999,7 +20857,7 @@ fsevents@^1.2.7:
     "@types/react": 17.0.20
     "@types/react-dom": 17.0.9
     "@vitejs/plugin-react-refresh": 1.3.6
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-cjs": "workspace:*"
     "@withonevision/omnihive-desktop-core": "workspace:*"
     autoprefixer: 10.3.4
     electron: 13.1.6
@@ -21138,7 +20996,7 @@ fsevents@^1.2.7:
     "@types/uuid": 8.3.1
     "@types/yargs": 17.0.2
     "@withonevision/omnihive-client": "workspace:*"
-    "@withonevision/omnihive-core": "workspace:*"
+    "@withonevision/omnihive-core-esm": "workspace:*"
     "@withonevision/omnihive-worker-config-json": "workspace:*"
     "@withonevision/omnihive-worker-config-mssql": "workspace:*"
     "@withonevision/omnihive-worker-config-mysql": "workspace:*"
@@ -21540,18 +21398,6 @@ fsevents@^1.2.7:
     ip: ^1.1.5
     netmask: ^2.0.1
   checksum: 84471dbdf45a4853e6d8977297456016b18fb2b2eda2b2af6bf786b1254dd1ddcc5283bb8f5c16e29dcbec6f1346932c7400197c4d68aa1549757b9224f373c6
-  languageName: node
-  linkType: hard
-
-"package-hash@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "package-hash@npm:4.0.0"
-  dependencies:
-    graceful-fs: ^4.1.15
-    hasha: ^5.0.0
-    lodash.flattendeep: ^4.4.0
-    release-zalgo: ^1.0.0
-  checksum: 32c49e3a0e1c4a33b086a04cdd6d6e570aee019cb8402ec16476d9b3564a40e38f91ce1a1f9bc88b08f8ef2917a11e0b786c08140373bdf609ea90749031e6fc
   languageName: node
   linkType: hard
 
@@ -23020,15 +22866,6 @@ fsevents@^1.2.7:
   version: 2.0.1
   resolution: "process-nextick-args@npm:2.0.1"
   checksum: 1d38588e520dab7cea67cbbe2efdd86a10cc7a074c09657635e34f035277b59fbb57d09d8638346bf7090f8e8ebc070c96fa5fd183b777fff4f5edff5e9466cf
-  languageName: node
-  linkType: hard
-
-"process-on-spawn@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "process-on-spawn@npm:1.0.0"
-  dependencies:
-    fromentries: ^1.2.0
-  checksum: 597769e3db6a8e2cb1cd64a952bbc150220588debac31c7cf1a9f620ce981e25583d8d70848d8a14953577608512984a8808c3be77e09af8ebdcdc14ec23a295
   languageName: node
   linkType: hard
 
@@ -24564,15 +24401,6 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"release-zalgo@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "release-zalgo@npm:1.0.0"
-  dependencies:
-    es6-error: ^4.0.1
-  checksum: b59849dc310f6c426f34e308c48ba83df3d034ddef75189951723bb2aac99d29d15f5e127edad951c4095fc9025aa582053907154d68fe0c5380cd6a75365e53
-  languageName: node
-  linkType: hard
-
 "remark-admonitions@npm:^1.2.1":
   version: 1.2.1
   resolution: "remark-admonitions@npm:1.2.1"
@@ -25083,7 +24911,6 @@ fsevents@^1.2.7:
   dependencies:
     "@commitlint/cli": 13.1.0
     "@commitlint/config-conventional": 13.1.0
-    "@istanbuljs/nyc-config-typescript": 1.0.1
     "@types/chai": 4.2.21
     "@types/faker": 5.5.8
     "@types/figlet": 1.5.4
@@ -25095,6 +24922,7 @@ fsevents@^1.2.7:
     "@typescript-eslint/eslint-plugin": 4.31.0
     "@typescript-eslint/parser": 4.31.0
     axios: 0.21.4
+    c8: 7.8.0
     chai: 4.3.4
     chalk: 4.1.2
     commitizen: 4.2.4
@@ -25120,7 +24948,6 @@ fsevents@^1.2.7:
     listr2: 3.11.1
     mocha: 9.1.1
     nodemon: 2.0.12
-    nyc: 15.1.0
     prettier: 2.3.2
     read-pkg-up: 8.0.0
     replace-in-file: 6.2.0
@@ -26146,20 +25973,6 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"spawn-wrap@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "spawn-wrap@npm:2.0.0"
-  dependencies:
-    foreground-child: ^2.0.0
-    is-windows: ^1.0.2
-    make-dir: ^3.0.0
-    rimraf: ^3.0.0
-    signal-exit: ^3.0.2
-    which: ^2.0.1
-  checksum: 5a518e37620def6d516b86207482a4f76bcf3c37c57d8d886d9fa399b04e5668d11fd12817b178029b02002a5ebbd09010374307effa821ba39594042f0a2d96
-  languageName: node
-  linkType: hard
-
 "spdx-correct@npm:^3.0.0":
   version: 3.1.1
   resolution: "spdx-correct@npm:3.1.1"
@@ -26733,7 +26546,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"strip-bom@npm:4.0.0, strip-bom@npm:^4.0.0":
+"strip-bom@npm:4.0.0":
   version: 4.0.0
   resolution: "strip-bom@npm:4.0.0"
   checksum: 9dbcfbaf503c57c06af15fe2c8176fb1bf3af5ff65003851a102749f875a6dbe0ab3b30115eccf6e805e9d756830d3e40ec508b62b3f1ddf3761a20ebe29d3f3
@@ -28055,7 +27868,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^0.8.0, type-fest@npm:^0.8.1":
+"type-fest@npm:^0.8.1":
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: d61c4b2eba24009033ae4500d7d818a94fd6d1b481a8111612ee141400d5f1db46f199c014766b9fa9b31a6a7374d96fc748c6d688a78a3ce5a33123839becb7
@@ -29885,7 +29698,7 @@ typescript@^3.9.7:
   languageName: node
   linkType: hard
 
-"yargs@npm:^15.0.2, yargs@npm:^15.3.1":
+"yargs@npm:^15.3.1":
   version: 15.4.1
   resolution: "yargs@npm:15.4.1"
   dependencies:

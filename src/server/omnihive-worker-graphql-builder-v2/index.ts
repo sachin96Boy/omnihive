@@ -16,7 +16,7 @@ import {
     RegisteredHiveWorker,
     StringBuilder,
     TableSchema,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import { GraphQLSchema } from "graphql";
 import { GraphHelper } from "./helpers/GraphHelper.js";
 import { ParseMaster } from "./parsers/ParseMaster.js";

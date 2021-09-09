@@ -5,7 +5,7 @@ import {
     IsHelper,
     ITokenWorker,
     RestEndpointExecuteResponse,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 

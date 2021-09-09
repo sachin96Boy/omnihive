@@ -24,7 +24,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-esm": "workspace:*",
         "fs-extra": "10.0.0",
         "yaml": "1.10.2"
     },

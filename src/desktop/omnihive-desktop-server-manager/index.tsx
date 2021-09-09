@@ -1,10 +1,10 @@
-import { DividerBox } from "rc-dock";
-import React from "react";
 import { ModuleDock } from "@withonevision/omnihive-desktop-core/components/ModuleDock";
 import { useOpenGridTab } from "@withonevision/omnihive-desktop-core/hooks/useOpenGridTab";
-import { AddEditServer } from "./components/AddEditServer";
+import { DividerBox } from "rc-dock";
+import React from "react";
 import addIcon from "./assets/add.png";
 import trashIcon from "./assets/trash.png";
+import { AddEditServer } from "./components/AddEditServer";
 
 const moduleKey: string = "withonevision-omnihive-desktop-server-manager";
 const serverTreeHeaderButtonStyle: string = "h-6 w-6 ml-1 mr-1 hover:cursor-pointer";

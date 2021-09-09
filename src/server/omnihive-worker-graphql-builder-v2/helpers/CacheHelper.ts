@@ -4,7 +4,7 @@ import {
     IEncryptionWorker,
     ILogWorker,
     OmniHiveLogLevel,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 
 export class CacheHelper {
     // Workers

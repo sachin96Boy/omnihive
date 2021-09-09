@@ -26,7 +26,7 @@
     "dependencies": {
         "@graphql-tools/merge": "6.2.17",
         "@graphql-tools/schema": "7.1.5",
-        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-esm": "workspace:*",
         "apollo-server": "2.25.2",
         "graphql": "15.5.2",
         "json5": "2.2.0",

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { IsHelper } from "@withonevision/omnihive-core/index.js";
+import { IsHelper } from "@withonevision/omnihive-core-esm/index.js";
 import yargs from "yargs";
 import { CommandLineArgs } from "./models/CommandLineArgs.js";
 import { ServerService } from "./services/ServerService.js";

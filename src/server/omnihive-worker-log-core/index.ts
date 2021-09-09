@@ -1,4 +1,4 @@
-/// <reference path="../../types/globals.omnihive.d.ts" />
+/// <reference path="../../types/globals.omnihive.esm.d.ts" />
 
 import {
     AdminEventType,
@@ -8,7 +8,7 @@ import {
     ILogWorker,
     OmniHiveLogLevel,
     RegisteredHiveWorker,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import os from "os";

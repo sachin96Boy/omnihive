@@ -1,5 +1,5 @@
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
+import { ServerStatus } from "@withonevision/omnihive-core-cjs/enums/ServerStatus";
+import { RegisteredUrl } from "@withonevision/omnihive-core-cjs/models/RegisteredUrl";
 
 export type RegisteredServerModel = {
     address: string;

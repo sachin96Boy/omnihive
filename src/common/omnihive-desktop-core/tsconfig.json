@@ -5,12 +5,12 @@
       "esModuleInterop": true,
       "jsx": "react",
       "lib": ["DOM", "DOM.Iterable", "ES2020"],
-      "module": "ES2020",
+      "module": "CommonJS",
       "moduleResolution": "Node",
       "noImplicitAny": true,
       "outDir": "dist",
       "paths": {
-        "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../other/*"]
+        "@withonevision/*": ["../*", "../../common/*", "../../extras/*", "../../other/*", "../../server/*"]
       },
       "resolveJsonModule": true,
       "skipLibCheck": true,

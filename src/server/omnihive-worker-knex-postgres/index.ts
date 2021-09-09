@@ -1,4 +1,4 @@
-/// <reference path="../../types/globals.omnihive.d.ts" />
+/// <reference path="../../types/globals.omnihive.esm.d.ts" />
 
 import {
     AwaitHelper,
@@ -13,7 +13,7 @@ import {
     ProcFunctionSchema,
     StringBuilder,
     TableSchema,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
 import orderBy from "lodash.orderby";

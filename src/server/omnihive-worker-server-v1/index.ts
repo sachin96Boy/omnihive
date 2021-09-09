@@ -1,4 +1,4 @@
-/// <reference path="../../types/globals.omnihive.d.ts" />
+/// <reference path="../../types/globals.omnihive.esm.d.ts" />
 
 import {
     AwaitHelper,
@@ -24,7 +24,7 @@ import {
     ServerStatus,
     StringBuilder,
     TableSchema,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
 import { camelCase } from "change-case";
 import { transformSync } from "esbuild";
@@ -230,19 +230,13 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 // Build imports
                 builder.appendLine(
-                    `var { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`
+                    `import { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } from "graphql";`
                 );
                 builder.appendLine(
-                    `var { GraphQLJSONObject } = require("@withonevision/omnihive-core/models/GraphQLJSON");`
+                    `import { AwaitHelper, GraphQLJSONObject, HiveWorkerType } from "@withonevision/omnihive-core/index.js;`
                 );
                 builder.appendLine(
-                    `var { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`
-                );
-                builder.appendLine(
-                    `var { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`
-                );
-                builder.appendLine(
-                    `var { CustomGraphHelper } = require("@withonevision/omnihive-worker-server-v1/helpers/CustomGraphHelper");`
+                    `import { CustomGraphHelper } from "@withonevision/omnihive-worker-server-v1/helpers/CustomGraphHelper.js";`
                 );
                 builder.appendLine();
 
@@ -552,7 +546,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
     }
 
     private importFromString = (code: string): any => {
-        const transformResult = transformSync(code, { format: "cjs" });
+        const transformResult = transformSync(code, { format: "esm" });
         const contextModule = new Module(nanoid());
 
         runInNewContext(transformResult.code, {

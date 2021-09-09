@@ -16,6 +16,6 @@
     },
     "exclude": ["node_modules"],
     "paths": {
-        "@withonevision/*": ["../../*", "../../../server/*", "../../../extras/*", "../../../other/*"]
+        "@withonevision/*": ["../../*", "../../../common/*", "../../../extras/*", "../../../other/*", "../../../server/*"]
     }
 }

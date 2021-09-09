@@ -1,15 +1,17 @@
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import produce from "immer";
-import create from "zustand";
+import {
+    AdminEventType,
+    AdminRequest,
+    AdminResponse,
+    IsHelper,
+    RegisteredUrl,
+    ServerStatus,
+} from "@withonevision/omnihive-core-cjs";
 import { AppSettings } from "@withonevision/omnihive-desktop-core/models/AppSettings";
 import { RegisteredClientModel } from "@withonevision/omnihive-desktop-core/models/RegisteredClientModel";
 import { RegisteredServerModel } from "@withonevision/omnihive-desktop-core/models/RegisteredServerModel";
+import produce from "immer";
 import socketio from "socket.io-client";
-import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
+import create from "zustand";
 
 export type ServerManagerStoreType = {
     appSettings: AppSettings;

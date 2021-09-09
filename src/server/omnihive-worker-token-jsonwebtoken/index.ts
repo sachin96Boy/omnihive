@@ -1,4 +1,4 @@
-import { AwaitHelper, HiveWorkerBase, IsHelper, ITokenWorker } from "@withonevision/omnihive-core/index.js";
+import { AwaitHelper, HiveWorkerBase, IsHelper, ITokenWorker } from "@withonevision/omnihive-core-esm/index.js";
 import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
 import { v4 as uuidv4 } from "uuid";

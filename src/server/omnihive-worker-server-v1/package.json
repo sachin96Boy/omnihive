@@ -24,7 +24,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core": "workspace:*",
+        "@withonevision/omnihive-core-esm": "workspace:*",
         "apollo-server": "2.25.2",
         "apollo-server-express": "2.25.2",
         "change-case": "4.1.2",

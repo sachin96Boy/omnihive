@@ -9,7 +9,7 @@ import {
     IsHelper,
     ServerConfig,
     StringBuilder,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
 import mysql from "mysql2";

@@ -1,4 +1,4 @@
-import { AwaitHelper, GraphContext, ProcFunctionSchema, TableSchema } from "@withonevision/omnihive-core/index.js";
+import { AwaitHelper, GraphContext, ProcFunctionSchema, TableSchema } from "@withonevision/omnihive-core-esm/index.js";
 import { GraphQLResolveInfo } from "graphql";
 import { ParseAggregate } from "./ParseAggregate.js";
 import { ParseAstQuery } from "./ParseAstQuery.js";

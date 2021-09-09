@@ -1,13 +1,13 @@
-import path from "path";
-import fs from "fs";
-import { format } from "url";
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions, session, shell } from "electron";
-import { is } from "electron-util";
-import ElectronStore from "electron-store";
+import { IsHelper } from "@withonevision/omnihive-core-cjs";
 import { AppSettings } from "@withonevision/omnihive-desktop-core/models/AppSettings";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import _ from "lodash";
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, session, shell } from "electron";
 import { ipcMain } from "electron-better-ipc";
+import ElectronStore from "electron-store";
+import { is } from "electron-util";
+import fs from "fs";
+import _ from "lodash";
+import path from "path";
+import { format } from "url";
 
 // Variables
 let store: ElectronStore;

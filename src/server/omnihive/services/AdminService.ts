@@ -1,4 +1,4 @@
-/// <reference path="../../../types/globals.omnihive.d.ts" />
+/// <reference path="../../../types/globals.omnihive.esm.d.ts" />
 
 import { createAdapter } from "@socket.io/redis-adapter";
 import { Emitter } from "@socket.io/redis-emitter";
@@ -17,7 +17,7 @@ import {
     ObjectHelper,
     OmniHiveLogLevel,
     ServerConfig,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import ipc from "node-ipc";
 import redis from "redis";
 import { serializeError } from "serialize-error";

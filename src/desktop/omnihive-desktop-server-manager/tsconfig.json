@@ -10,7 +10,7 @@
     "noImplicitAny": true,
     "outDir": "dist",
     "paths": {
-      "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../other/*"]
+      "@withonevision/*": ["../*", "../../common/*", "../../extras/*", "../../other/*", "../../server/*"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,

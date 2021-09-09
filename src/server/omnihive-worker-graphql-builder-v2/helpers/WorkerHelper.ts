@@ -8,7 +8,7 @@ import {
     IEncryptionWorker,
     ILogWorker,
     ITokenWorker,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import { Knex } from "knex";
 
 export class WorkerHelper {

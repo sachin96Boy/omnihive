@@ -1,4 +1,4 @@
-/// <reference path="../../types/globals.omnihive.d.ts" />
+/// <reference path="../../types/globals.omnihive.esm.d.ts" />
 
 import {
     HiveWorkerBase,
@@ -7,7 +7,7 @@ import {
     IsHelper,
     ITokenWorker,
     RestEndpointExecuteResponse,
-} from "@withonevision/omnihive-core/index.js";
+} from "@withonevision/omnihive-core-esm/index.js";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 

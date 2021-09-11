@@ -1,5 +1,0 @@
--- Socket.IO => Do not upgrade to 4.2.x from 4.1.3.  There are problems with the typings that break implementation.
--- Electron => Electron 14 is out but is not compliant with any building or debugging process we are using.  Stay on 13.x.
--- Tedious (MSSQL) => Tedious is untested with knex beyond version 11.x.  Once either they or we test it we can upgrade, but stay on 11.x until then.
--- Apollo Server/Server Express => We are untested past version 2.x.  3.x needs thorough testing first.
--- @graphql-tools => Do not do any major version updates of any @graphql-tools libraries until we go to Apollo 3.x.

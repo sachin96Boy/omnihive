@@ -8,13 +8,11 @@
         "declarationMap": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "lib": ["ES2020"],
+        "isolatedModules": true,
+        "jsx": "react",
+        "lib": ["DOM", "DOM.Iterable", "ES2020"],
         "module": "ES2020",
         "moduleResolution": "Node",
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
         "outDir": "./dist",
         "removeComments": true,
         "resolveJsonModule": true,
@@ -25,10 +23,15 @@
         "target": "ES2020",
         "types": ["mocha", "node"]
     },
-    "references": [],
-    "paths": {
-        "@withonevision/*": ["./src/common/*", "./src/desktop/*", "./src/extras/*", "./src/other/*", "./src/server/*"]
-    },
-    "include": ["./src/**/*.ts", "./src/**/*.tsx", "./src/**/package.json"],
-    "exclude": [".yarn/**/*", "node_modules/**/*", "**/node_modules/**/*", "./dist/**/*", "src/**/*.spec.ts" ]
+    "include": ["./**/*.ts", "./**/*.tsx", "./**/package.json"],
+    "exclude": [
+        "node_modules/**/*", 
+        "**/node_modules/**/*",
+        "dist/**/*",
+        "**/dist/**/*",
+        "out/**/*",
+        "**/out/**/*",
+        "./package.json",
+        "./buildServer.ts",
+        "./buildServerManual.ts"]
 }

@@ -8,7 +8,6 @@ reporter:
 include:
     - "src/server/**/*"
 exclude:
-    - "**/.yarn/**"
     - "**/node_modules/**"
     - "**/tests/**"
     - "**/*.js"

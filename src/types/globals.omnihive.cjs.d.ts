@@ -1,7 +1,7 @@
 import express from "express";
 import { Server } from "http";
 import socketio from "socket.io";
-import { OmniHiveClient } from "src/common/omnihive-client-cjs";
+import { OmniHiveClient } from "@withonevision/omnihive-client-cjs/index";
 import {
     AdminEventType,
     AdminRoomType,
@@ -14,7 +14,7 @@ import {
     RegisteredUrl,
     ServerConfig,
     ServerStatus,
-} from "src/common/omnihive-core-cjs";
+} from "@withonevision/omnihive-core-cjs/index";
 
 declare global {
     declare namespace globalThis {

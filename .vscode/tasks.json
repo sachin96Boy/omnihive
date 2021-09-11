@@ -10,7 +10,7 @@
             },
             "label": "Watch VS Code Extension",
             "options": {
-                "cwd": "./src/other/omnihive-vscode-manager"
+                "cwd": "./src/other/omnihive-vscode-extension"
             },
             "problemMatcher": "$tsc-watch",
             "type": "npm",

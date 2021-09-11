@@ -1,3 +1,11 @@
-**/dist
-**/.yarn
+#dependencies
 **/node_modules
+**/node_modules/**
+
+#production
+**/dist
+**/dist/**
+**/out
+**/out/**
+**/.webpack
+**/.docusaurus

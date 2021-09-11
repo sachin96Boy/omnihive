@@ -5,7 +5,7 @@ import {
     IsHelper,
     RegisteredUrl,
     ServerStatus,
-} from "@withonevision/omnihive-core-cjs";
+} from "@withonevision/omnihive-core-cjs/index";
 import { AppSettings } from "@withonevision/omnihive-desktop-core/models/AppSettings";
 import { RegisteredClientModel } from "@withonevision/omnihive-desktop-core/models/RegisteredClientModel";
 import { RegisteredServerModel } from "@withonevision/omnihive-desktop-core/models/RegisteredServerModel";

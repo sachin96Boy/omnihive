@@ -1,54 +1,51 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
+#See https://help.github.com/ignore-files/ for more about ignoring files.
 
-# dependencies
-.yarn/*
-**/node_modules/
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
+#dependencies
+**/node_modules
+**/node_modules/**
 
-# production
+#production
 **/dist
-
-# build
+**/dist/**
+**/out
+**/out/**
+**/.webpack
+**/.docusaurus
 **/*.js
 **/*.js.map
 **/*.d.ts
 **/*.d.ts.map
-tsconfig.tsbuildinfo
+**/tsconfig.tsbuildinfo
+**/*.tgz
 
 #coverage
 .nyc_output
 coverage
 .self_coverage
-self-coverage/
+self-coverage
+self-coverage/**
 *.swp
 needs-transpile.js
 
-# misc
+#misc
 **/.DS_Store
-**/*.env
 .idea
-
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 #settings
+**/*.env
 /settings/**
 !/settings/default_omnihive_server_config.json
 !/settings/default_omnihive_server_config.yaml
 !/settings/default_omnihive.env
 
-#custom types
+#types
 !**/types/**
 !**/*.d.ts
 
-#desktop
+#config
 !**/.storybook/**
 !**/postcss.config.js
 !**/tailwind.config.js
 !**/webpack.*.config.js
 !**/webpack.config.js
-**/.webpack

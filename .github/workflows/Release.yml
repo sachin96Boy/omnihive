@@ -30,11 +30,11 @@ jobs:
                   git config --global user.name "$GH_NAME"
                   echo $GH_CLI_AUTH_TOKEN > gh.txt
                   gh auth login --with-token < gh.txt
-                  yarn install
+                  pnpm install
                   rm gh.txt
             - name: Run Monorepo Build Script
               id: monorepoBuild
-              run: yarn node -r ts-node/register ./buildServer.ts
+              run: node -r ts-node/register ./buildServer.ts
             - name: Log into Docker Hub
               uses: docker/login-action@v1
               with:

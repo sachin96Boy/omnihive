@@ -1,4 +1,4 @@
-import { AdminEventType, AdminResponse, IsHelper, ServerStatus } from "@withonevision/omnihive-core-cjs";
+import { AdminEventType, AdminResponse, IsHelper, ServerStatus } from "@withonevision/omnihive-core-cjs/index";
 import ohLightIcon from "@withonevision/omnihive-desktop-core/assets/oh_icon_light.png";
 import ohSpinner from "@withonevision/omnihive-desktop-core/assets/spinner.png";
 import { FormCommonStyles } from "@withonevision/omnihive-desktop-core/components/FormCommonStyles";

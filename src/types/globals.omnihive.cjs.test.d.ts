@@ -1,4 +1,4 @@
-import { IHiveWorker, RegisteredHiveWorker } from "src/common/omnihive-core-cjs";
+import { IHiveWorker, RegisteredHiveWorker } from "@withonevision/omnihive-core-cjs/index";
 
 declare global {
     declare namespace globalThis {

@@ -265,9 +265,9 @@ const pushGithubChanges = () => {
 
 const runVersioning = async (debug: boolean) => {
     if (debug) {
-        console.log(execa.commandSync("yarn run release:dry-run", { cwd: path.join(`.`), shell: true }).stdout);
+        console.log(execa.commandSync("pnpm run release:dry-run", { cwd: path.join(`.`), shell: true }).stdout);
     } else {
-        console.log(execa.commandSync("yarn run release", { cwd: path.join(`.`), shell: true }).stdout);
+        console.log(execa.commandSync("pnpm run release", { cwd: path.join(`.`), shell: true }).stdout);
     }
 };
 

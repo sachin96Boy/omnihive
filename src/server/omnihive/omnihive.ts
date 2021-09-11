@@ -90,9 +90,9 @@ const init = async () => {
         commandLineArgs.environmentFile &&
         !fse.existsSync(commandLineArgs.environmentFile)
     ) {
-        if (fse.existsSync(path.join(global.omnihive.ohDirName, commandLineArgs.environmentFile))) {
+        if (fse.existsSync(path.join(runningDir, commandLineArgs.environmentFile))) {
             dotenv.config({
-                path: path.join(global.omnihive.ohDirName, commandLineArgs.environmentFile),
+                path: path.join(runningDir, commandLineArgs.environmentFile),
             });
         }
     }

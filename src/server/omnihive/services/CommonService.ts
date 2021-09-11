@@ -23,7 +23,9 @@ import { GlobalObject } from "../models/GlobalObject.js";
 
 export class CommonService {
     public bootLoader = async (rootDir: string, commandLineArgs: CommandLineArgs) => {
+        //@ts-ignore
         global.omnihive = new GlobalObject();
+
         global.omnihive.ohDirName = rootDir;
         global.omnihive.commandLineArgs = commandLineArgs;
         global.omnihive.serverConfig = new ServerConfig();
@@ -301,7 +303,7 @@ export class CommonService {
             } else {
                 logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Package(s)`);
                 const removeCommand = new StringBuilder();
-                removeCommand.append("yarn remove ");
+                removeCommand.append("pnpm remove ");
 
                 packagesToRemove.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packageName} Package`);
@@ -318,16 +320,6 @@ export class CommonService {
                     logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
                     throw error;
                 }
-            }
-
-            logWorker?.write(OmniHiveLogLevel.Info, `Cleaning Yarn Cache`);
-
-            // Clean Yarn Cache
-            try {
-                execa.commandSync("yarn cache clean", { cwd: global.omnihive.ohDirName });
-            } catch (error) {
-                logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
-                throw error;
             }
 
             //Find out what to add
@@ -368,7 +360,7 @@ export class CommonService {
             } else {
                 logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Package(s)`);
                 const addCommand = new StringBuilder();
-                addCommand.append("yarn add ");
+                addCommand.append("pnpm add ");
 
                 packagesToAdd.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packageName} As a New Package`);

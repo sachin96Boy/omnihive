@@ -1,4 +1,4 @@
-import { IsHelper } from "@withonevision/omnihive-core-cjs";
+import { IsHelper } from "@withonevision/omnihive-core-cjs/index";
 import { AppSettings } from "@withonevision/omnihive-desktop-core/models/AppSettings";
 import { app, BrowserWindow, Menu, MenuItemConstructorOptions, session, shell } from "electron";
 import { ipcMain } from "electron-better-ipc";

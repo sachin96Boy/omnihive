@@ -10,7 +10,7 @@ import {
     RegisteredHiveWorker,
     RestMethod,
     StringBuilder,
-} from "@withonevision/omnihive-core-cjs";
+} from "@withonevision/omnihive-core-cjs/index";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 export class OmniHiveClient {

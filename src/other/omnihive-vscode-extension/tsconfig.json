@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"esModuleInterop": true,
+        "jsx": "react",
+        "lib": ["DOM", "DOM.Iterable", "ES2020"],
+        "module": "commonjs",
+		"paths": {
+			"@withonevision/common/*": ["../../common/*"],
+			"@withonevision/desktop/*": ["../../desktop/*"],
+			"@withonevision/extras/*": ["../../extras/*"],
+			"@withonevision/other/*": ["../../other/*"],
+			"@withonevision/server/*": ["../../server/*"]
+		},
+        "outDir": "out",
+		"skipLibCheck": true,
+        "sourceMap": true,
+		"strict": true,
+        "target": "es6"
+	},
+	"exclude": [
+		"node_modules",
+		".vscode-test",
+		"out"
+	]
+}

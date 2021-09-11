@@ -89,4 +89,4 @@ If you want more details about the features of the VS Code Extension then click 
 
 ## Start up your new OmniHive Server
 
-Now that you have all of your configuration set all you need to do is run `yarn server:debug` from a console at the root of the project.
+Now that you have all of your configuration set all you need to do is run `pnpm server:debug` from a console at the root of the project.

@@ -1,4 +1,4 @@
-import { AwaitHelper, GraphContext } from "@withonevision/omnihive-core-esm/index.js";
+import { AwaitHelper, GraphContext } from "@withonevision/omnihive-core";
 import { WorkerHelper } from "../helpers/WorkerHelper.js";
 
 export class ParseCustomSql {

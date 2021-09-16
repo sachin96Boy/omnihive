@@ -1,12 +1,6 @@
-/// <reference path="../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../types/globals.omnihive.d.ts" />
 
-import {
-    AwaitHelper,
-    HiveWorkerBase,
-    IConfigWorker,
-    ObjectHelper,
-    ServerConfig,
-} from "@withonevision/omnihive-core-esm/index.js";
+import { AwaitHelper, HiveWorkerBase, IConfigWorker, ObjectHelper, ServerConfig } from "@withonevision/omnihive-core";
 import fse from "fs-extra";
 import yaml from "yaml";
 

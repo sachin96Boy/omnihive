@@ -19,12 +19,11 @@
         "OmniHive",
         "With One Vision"
     ],
-    "type": "module",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core-esm": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "dayjs": "1.10.7"
     },
     "devDependencies": {

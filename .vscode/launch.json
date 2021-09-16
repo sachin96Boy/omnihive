@@ -6,6 +6,7 @@
     "configurations": [
         {
             "name": "OH Desktop : Attach to Renderer",
+            "postDebugTask": "Clean Up Common Dev Build",
             "port": 8315,
             "request": "attach",
             "type": "pwa-chrome",
@@ -16,26 +17,24 @@
             "type": "pwa-node",
             "request": "launch",
             "name": "OH Desktop : Main Debug",
+            "postDebugTask": "Clean Up Common Dev Build",
             "runtimeExecutable": "pnpm",
             "cwd": "${workspaceFolder}",
             "runtimeArgs": ["run", "desktop:debug"],
             "timeout": 10000,
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "skipFiles": ["<node_internals>/**"],
             "console": "integratedTerminal"
         },
         {
             "type": "pwa-node",
             "request": "launch",
             "name": "OH Desktop : Storybook",
+            "postDebugTask": "Clean Up Common Dev Build",
             "runtimeExecutable": "pnpm",
             "cwd": "${workspaceFolder}",
             "runtimeArgs": ["run", "desktop:storybook"],
             "timeout": 10000,
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "skipFiles": ["<node_internals>/**"],
             "console": "integratedTerminal"
         },
         {
@@ -46,9 +45,7 @@
             "cwd": "${workspaceFolder}",
             "runtimeArgs": ["run", "docs:debug"],
             "timeout": 10000,
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "skipFiles": ["<node_internals>/**"],
             "console": "integratedTerminal"
         },
         {
@@ -56,12 +53,11 @@
             "request": "launch",
             "name": "OH Server : Debug",
             "runtimeExecutable": "pnpm",
+            "postDebugTask": "Clean Up Common Dev Build",
             "cwd": "${workspaceFolder}",
             "runtimeArgs": ["run", "server:debug"],
             "timeout": 10000,
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "skipFiles": ["<node_internals>/**"],
             "console": "integratedTerminal"
         },
         {
@@ -69,12 +65,11 @@
             "request": "launch",
             "name": "Test Suite : Debug",
             "runtimeExecutable": "pnpm",
+            "postDebugTask": "Clean Up Common Dev Build",
             "cwd": "${workspaceFolder}",
             "runtimeArgs": ["run", "test:debug"],
             "timeout": 10000,
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "skipFiles": ["<node_internals>/**"],
             "console": "integratedTerminal"
         },
         {
@@ -84,14 +79,15 @@
             "args": ["--extensionDevelopmentPath=${workspaceFolder}/src/other/omnihive-vscode-extension"],
             "outFiles": ["${workspaceFolder}/src/other/omnihive-vscode-extension/out/**/*.js"],
             "preLaunchTask": "Watch VS Code Extension",
+            "postDebugTask": "Clean Up Common Dev Build",
             "sourceMaps": true,
             "console": "integratedTerminal"
         }
     ],
     "compounds": [
         {
-          "name": "Compound : OH Desktop : Full Debug",
-          "configurations": ["OH Desktop : Main Debug", "OH Desktop : Attach to Renderer"]
+            "name": "Compound : OH Desktop : Full Debug",
+            "configurations": ["OH Desktop : Main Debug", "OH Desktop : Attach to Renderer"]
         }
-      ]
+    ]
 }

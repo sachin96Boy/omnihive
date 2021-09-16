@@ -1,6 +1,6 @@
-/// <reference path="../types/globals.omnihive.esm.test.d.ts" />
+/// <reference path="../types/globals.omnihive.test.d.ts" />
 
-import { IHiveWorker, IsHelper, RegisteredHiveWorker } from "../common/omnihive-core-esm/index.js";
+import { IHiveWorker, IsHelper, RegisteredHiveWorker } from "../common/omnihive-core";
 
 export class GlobalTestObject {
     public ohDirName: string = "";

@@ -1,11 +1,9 @@
-import {
-    AdminEventType,
-    AdminResponse,
-    EnvironmentVariable,
-    IsHelper,
-    ServerConfig,
-    ServerStatus,
-} from "@withonevision/omnihive-core-cjs/index";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
+import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
+import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import Parser from "html-react-parser";
 import isEqual from "lodash.isequal";
 import React from "react";

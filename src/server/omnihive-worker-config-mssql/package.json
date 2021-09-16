@@ -19,12 +19,11 @@
         "OmniHive",
         "With One Vision"
     ],
-    "type": "module",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core-esm": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "knex": "0.95.11",
         "mssql": "7.2.1",
         "tedious": "11.8.0"

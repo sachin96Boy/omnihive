@@ -19,12 +19,11 @@
         "OmniHive",
         "With One Vision"
     ],
-    "type": "module",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core-esm": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "ioredis": "4.27.9"
     },
     "devDependencies": {

@@ -1,10 +1,4 @@
-import {
-    AuthUser,
-    AwaitHelper,
-    HiveWorkerBase,
-    IsHelper,
-    IUserWorker,
-} from "@withonevision/omnihive-core-esm/index.js";
+import { AuthUser, AwaitHelper, HiveWorkerBase, IsHelper, IUserWorker } from "@withonevision/omnihive-core";
 import {
     AppMetadata,
     AuthenticationClient,

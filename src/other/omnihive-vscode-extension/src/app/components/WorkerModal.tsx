@@ -1,4 +1,5 @@
-import { HiveWorkerConfig, IsHelper } from "@withonevision/omnihive-core-cjs/index";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
 import isEqual from "lodash.isequal";
 import React from "react";
 import AceEditor from "react-ace";

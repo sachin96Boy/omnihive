@@ -1,4 +1,4 @@
-/// <reference path="../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../types/globals.omnihive.d.ts" />
 
 import {
     AwaitHelper,
@@ -12,7 +12,7 @@ import {
     OmniHiveLogLevel,
     ProcFunctionSchema,
     TableSchema,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
 import path from "path";

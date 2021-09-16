@@ -8,7 +8,7 @@ import {
     ILogWorker,
     IsHelper,
     TableSchema,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import { FieldNode, GraphQLResolveInfo } from "graphql";
 import { Path } from "graphql/jsutils/Path.js";
 import { Knex } from "knex";

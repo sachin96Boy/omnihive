@@ -15,7 +15,7 @@
 **/*.js.map
 **/*.d.ts
 **/*.d.ts.map
-**/tsconfig.tsbuildinfo
+**/*.tsbuildinfo
 **/*.tgz
 
 #coverage
@@ -42,6 +42,8 @@ npm-debug.log*
 #types
 !**/types/**
 !**/*.d.ts
+src/common/omnihive-client/**/*.d.ts
+src/common/omnihive-core/**/*.d.ts
 
 #config
 !**/.storybook/**

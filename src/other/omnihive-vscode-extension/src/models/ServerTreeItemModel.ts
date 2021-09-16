@@ -1,4 +1,4 @@
-import { ServerStatus } from "@withonevision/omnihive-core-cjs/index";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
 import vscode from "vscode";
 
 export class ServerTreeItemModel extends vscode.TreeItem {

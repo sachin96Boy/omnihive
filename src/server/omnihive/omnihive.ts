@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-/// <reference path="../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { AwaitHelper, IsHelper } from "@withonevision/omnihive-core-esm/index.js";
+import { AwaitHelper, IsHelper } from "@withonevision/omnihive-core";
 import chalk from "chalk";
 import dotenv from "dotenv";
 import exitHook from "exit-hook";

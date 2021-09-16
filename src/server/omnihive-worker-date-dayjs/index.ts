@@ -1,4 +1,4 @@
-import { AwaitHelper, HiveWorkerBase, IDateWorker, IsHelper } from "@withonevision/omnihive-core-esm/index.js";
+import { AwaitHelper, HiveWorkerBase, IDateWorker, IsHelper } from "@withonevision/omnihive-core";
 import dayjs from "dayjs";
 import tz from "dayjs/plugin/timezone.js";
 import utc from "dayjs/plugin/utc.js";

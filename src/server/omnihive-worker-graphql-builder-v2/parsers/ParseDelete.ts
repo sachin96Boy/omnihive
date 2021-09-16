@@ -1,10 +1,4 @@
-import {
-    AwaitHelper,
-    GraphContext,
-    IDatabaseWorker,
-    IDateWorker,
-    TableSchema,
-} from "@withonevision/omnihive-core-esm/index.js";
+import { AwaitHelper, GraphContext, IDatabaseWorker, IDateWorker, TableSchema } from "@withonevision/omnihive-core";
 import { Knex } from "knex";
 import { DatabaseHelper } from "../helpers/DatabaseHelper.js";
 import { GraphHelper } from "../helpers/GraphHelper.js";

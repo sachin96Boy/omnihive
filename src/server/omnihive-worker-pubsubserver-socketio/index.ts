@@ -4,7 +4,7 @@ import {
     IPubSubServerWorker,
     IsHelper,
     PubSubListener,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import { Server, Socket } from "socket.io";
 
 export class SocketIoPubSubServerWorkerMetadata {

@@ -7,7 +7,7 @@
         "package": "electron-builder"
     },
     "dependencies": {
-        "@withonevision/omnihive-core-cjs": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "@withonevision/omnihive-desktop-core": "workspace:*",
         "@withonevision/omnihive-desktop-server-manager": "workspace:*",
         "electron-better-ipc": "2.0.1",

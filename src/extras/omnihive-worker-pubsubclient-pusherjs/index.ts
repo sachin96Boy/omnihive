@@ -4,7 +4,7 @@ import {
     IPubSubClientWorker,
     IsHelper,
     PubSubListener,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import Pusher, { Channel } from "pusher-js";
 
 export class PusherJsPubSubClientWorkerMetadata {

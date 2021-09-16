@@ -1,13 +1,11 @@
-import {
-    AdminEventType,
-    AdminResponse,
-    EnvironmentVariable,
-    EnvironmentVariableType,
-    HiveWorkerConfig,
-    IsHelper,
-    ServerConfig,
-    ServerStatus,
-} from "@withonevision/omnihive-core-cjs/index";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
+import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
+import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
+import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import { ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import React from "react";

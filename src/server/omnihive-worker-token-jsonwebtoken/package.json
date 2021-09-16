@@ -19,12 +19,11 @@
         "OmniHive",
         "With One Vision"
     ],
-    "type": "module",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core-esm": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "jsonwebtoken": "8.5.1",
         "nanoid": "3.1.25",
         "uuid": "8.3.2"

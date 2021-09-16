@@ -1,3 +1,10 @@
 {
-  "extends": "../../../tsconfig.json"
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "../../../dist/desktop/omnihive-desktop-server-manager"
+    },
+    "references": [
+        { "path": "../../common/omnihive-core/tsconfig.esm.json" },
+        { "path": "../../common/omnihive-desktop-core/tsconfig.esm.json" }
+    ]
 }

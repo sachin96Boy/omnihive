@@ -19,12 +19,11 @@
         "OmniHive",
         "With One Vision"
     ],
-    "type": "module",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@withonevision/omnihive-core-esm": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "fs-extra": "10.0.0",
         "knex": "0.95.11",
         "pg": "8.7.1"

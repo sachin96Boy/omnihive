@@ -1,0 +1,21 @@
+{
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "jsx": "react",
+        "lib": ["DOM", "DOM.Iterable", "ES2021"],
+        "module": "ES2020",
+        "paths": {
+            "@withonevision/*": [
+                "../../common/*",
+                "../../desktop/*",
+                "../../extras/*",
+                "../../other/*",
+                "../../server/*"
+            ]
+        },
+        "rootDir": ".",
+        "target": "ES2021"
+    },
+    "include": ["./**/*.ts", "./**/*.tsx", "./package.json"],
+    "exclude": ["node_modules/**/*", "**/node_modules/**/*"]
+}

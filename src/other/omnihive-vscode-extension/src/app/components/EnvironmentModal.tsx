@@ -1,4 +1,6 @@
-import { EnvironmentVariable, EnvironmentVariableType, IsHelper } from "@withonevision/omnihive-core-cjs/index";
+import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
 import isEqual from "lodash.isequal";
 import React from "react";
 import { WebpanelImageSources } from "../../models/WebpanelImageSources";

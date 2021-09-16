@@ -1,4 +1,5 @@
-import { IsHelper, StringBuilder } from "@withonevision/omnihive-core-cjs/index";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import vscode from "vscode";
 import { VsCodeWebpanelRoute } from "../enums/VsCodeWebpanelRoute";
 import { ActivePanel } from "../models/ActivePanel";

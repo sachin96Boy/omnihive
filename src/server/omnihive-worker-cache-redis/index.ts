@@ -1,4 +1,4 @@
-import { AwaitHelper, HiveWorkerBase, ICacheWorker, IsHelper } from "@withonevision/omnihive-core-esm/index.js";
+import { AwaitHelper, HiveWorkerBase, ICacheWorker, IsHelper } from "@withonevision/omnihive-core";
 import Redis from "ioredis";
 export class RedisCacheWorkerMetadata {
     public connectionString: string = "";

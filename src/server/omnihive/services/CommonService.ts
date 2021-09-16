@@ -1,4 +1,4 @@
-/// <reference path="../../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
 import {
     AwaitHelper,
@@ -14,7 +14,7 @@ import {
     RegisteredHiveWorkerSection,
     ServerConfig,
     StringBuilder,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import execa, { ExecaSyncError } from "execa";
 import { NormalizedReadResult, readPackageUpSync } from "read-pkg-up";
 import { ConfigType } from "../enums/ConfigType.js";

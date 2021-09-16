@@ -1,4 +1,4 @@
-/// <reference path="../../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
 import {
     AdminEventType,
@@ -17,7 +17,7 @@ import {
     RegisteredUrlType,
     RestEndpointExecuteResponse,
     ServerStatus,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";

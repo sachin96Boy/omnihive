@@ -1,4 +1,4 @@
-/// <reference path="../../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
 import {
     AwaitHelper,
@@ -7,7 +7,7 @@ import {
     IsHelper,
     OmniHiveLogLevel,
     RegisteredHiveWorker,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import fse from "fs-extra";
 import { serializeError } from "serialize-error";
 import yaml from "yaml";

@@ -22,7 +22,6 @@
     "main": "./omnihive.js",
     "types": "./omnihive.d.ts",
     "bin": "./omnihive.js",
-    "type": "module",
     "scripts": {
         "build": "tsc",
         "taskRunner:debug": "nodemon --no-stdin --config ./nodemon.taskRunner.json",
@@ -31,8 +30,8 @@
     "dependencies": {
         "@socket.io/redis-adapter": "7.0.0",
         "@socket.io/redis-emitter": "4.1.0",
-        "@withonevision/omnihive-client-esm": "workspace:*",
-        "@withonevision/omnihive-core-esm": "workspace:*",
+        "@withonevision/omnihive-client": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "@withonevision/omnihive-worker-config-json": "workspace:*",
         "@withonevision/omnihive-worker-config-mssql": "workspace:*",
         "@withonevision/omnihive-worker-config-mysql": "workspace:*",
@@ -106,8 +105,8 @@
         "coreDependencies": {
             "@socket.io/redis-adapter": "7.0.0",
             "@socket.io/redis-emitter": "4.1.0",
-            "@withonevision/omnihive-client-esm": "workspace:*",
-            "@withonevision/omnihive-core-esm": "workspace:*",
+            "@withonevision/omnihive-client": "workspace:*",
+            "@withonevision/omnihive-core": "workspace:*",
             "@withonevision/omnihive-worker-config-json": "workspace:*",
             "@withonevision/omnihive-worker-config-mssql": "workspace:*",
             "@withonevision/omnihive-worker-config-mysql": "workspace:*",

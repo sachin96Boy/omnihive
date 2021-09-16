@@ -25,7 +25,7 @@
         "build-storybook": "build-storybook"
     },
     "dependencies": {
-        "@withonevision/omnihive-core-cjs": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "@withonevision/omnihive-desktop-core": "workspace:*",
         "@withonevision/omnihive-desktop-server-manager": "workspace:*",
         "react": "17.0.2",

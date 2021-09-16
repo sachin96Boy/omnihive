@@ -19,13 +19,12 @@
         "OmniHive",
         "With One Vision"
     ],
-    "type": "module",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
         "@elastic/elasticsearch": "7.14.1",
-        "@withonevision/omnihive-core-esm": "workspace:*"
+        "@withonevision/omnihive-core": "workspace:*"
     },
     "devDependencies": {
         "@types/chai": "4.2.21",

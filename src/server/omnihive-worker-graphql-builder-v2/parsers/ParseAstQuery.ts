@@ -1,4 +1,4 @@
-/// <reference path="../../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
 import {
     AwaitHelper,
@@ -9,7 +9,7 @@ import {
     IEncryptionWorker,
     ILogWorker,
     TableSchema,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import { FieldNode, GraphQLResolveInfo } from "graphql";
 import { Knex } from "knex";
 import { CacheHelper } from "../helpers/CacheHelper.js";

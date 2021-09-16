@@ -1,6 +1,6 @@
 {
-    "name": "omnihive-vscode-extension",
-    "displayName": "OmniHive Visual Code Extension",
+    "name": "omnihive-server-manager",
+    "displayName": "OmniHive Server Manager",
     "description": "IDE-based tool for interacting with the OmniHive Server",
     "version": "6.1.4",
     "license": "MIT",
@@ -252,16 +252,16 @@
     },
     "scripts": {
         "compile": "npm-run-all compile:*",
-        "compile:extension": "tsc -p ./",
+        "compile:extension": "tsc --build ./tsconfig.json",
         "compile:app": "NODE_ENV=production pnpm run webpack --mode production",
         "vscode:prepublish": "pnpm run compile",
         "watch": "npm-run-all -p watch:*",
-        "watch:extension": "tsc -watch -p ./",
+        "watch:extension": "tsc --build --watch ./tsconfig.dev.json",
         "watch:app": "webpack --watch --mode development"
     },
     "dependencies": {
         "@types/vscode": "1.60.0",
-        "@withonevision/omnihive-core-cjs": "workspace:*",
+        "@withonevision/omnihive-core": "workspace:*",
         "ace-builds": "1.4.12",
         "ag-grid-community": "26.0.0",
         "ag-grid-react": "26.0.0",

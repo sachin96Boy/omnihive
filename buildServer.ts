@@ -1,4 +1,4 @@
-import { IsHelper } from "./src/common/omnihive-core-esm/index.js";
+import { IsHelper } from "./src/common/omnihive-core/helpers/IsHelper";
 import chalk from "chalk";
 import execa from "execa";
 import figlet from "figlet";

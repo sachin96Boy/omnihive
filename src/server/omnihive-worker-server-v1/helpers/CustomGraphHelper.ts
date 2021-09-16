@@ -4,7 +4,7 @@ import {
     IGraphEndpointWorker,
     IsHelper,
     RegisteredHiveWorker,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 
 export class CustomGraphHelper {
     public parseCustomGraph = async (

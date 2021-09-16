@@ -8,7 +8,7 @@ import path from "path";
 import { readPackageUpSync } from "read-pkg-up";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import yargs from "yargs";
-import { IsHelper } from "./src/common/omnihive-core-esm/index.js";
+import { IsHelper } from "./src/common/omnihive-core/helpers/IsHelper";
 
 interface IArgs {
     ohVersion: string;

@@ -8,7 +8,7 @@ import {
     IConfigWorker,
     ServerConfig,
     StringBuilder,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import knex, { Knex } from "knex";
 import sql from "mssql";
 

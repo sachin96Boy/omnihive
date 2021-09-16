@@ -1,4 +1,4 @@
-import { HiveWorkerBase, ILogWorker, OmniHiveLogLevel } from "@withonevision/omnihive-core-esm/index.js";
+import { HiveWorkerBase, ILogWorker, OmniHiveLogLevel } from "@withonevision/omnihive-core";
 
 export default class ConsoleLogWorker extends HiveWorkerBase implements ILogWorker {
     constructor() {

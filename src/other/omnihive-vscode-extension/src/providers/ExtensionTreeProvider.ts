@@ -1,4 +1,6 @@
-import { IsHelper, RegisteredUrl, ServerStatus } from "@withonevision/omnihive-core-cjs/index";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
 import orderBy from "lodash.orderby";
 import vscode from "vscode";
 import { EditServerEnvironmentTreeItemModel } from "../models/EditServerEnvironmentTreeItemModel";

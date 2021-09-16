@@ -18,7 +18,19 @@
             "isBackground": true,
             "presentation": {
                 "reveal": "always"
+            }
+        },
+        {
+            "label": "Clean Up Common Dev Build",
+            "options": {
+                "cwd": "./"
             },
+            "type": "npm",
+            "script": "clean:dev:build",
+            "isBackground": false,
+            "presentation": {
+                "reveal": "always"
+            }
         }
     ]
 }

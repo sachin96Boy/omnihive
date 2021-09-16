@@ -1,6 +1,6 @@
-/// <reference path="../../../types/globals.omnihive.esm.d.ts" />
+/// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { OmniHiveClient } from "@withonevision/omnihive-client-esm/index.js";
+import { OmniHiveClient } from "@withonevision/omnihive-client";
 import {
     AdminEventType,
     AdminRequest,
@@ -17,7 +17,7 @@ import {
     RegisteredUrl,
     ServerConfig,
     ServerStatus,
-} from "@withonevision/omnihive-core-esm/index.js";
+} from "@withonevision/omnihive-core";
 import express from "express";
 import fse from "fs-extra";
 import { Server } from "http";

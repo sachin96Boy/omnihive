@@ -1,23 +1,21 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import {
-    AdminEventType,
-    AdminRoomType,
-    AwaitHelper,
-    HiveWorkerMetadataRestFunction,
-    HiveWorkerType,
-    ILogWorker,
-    IRestEndpointWorker,
-    IServerWorker,
-    IsHelper,
-    ObjectHelper,
-    OmniHiveLogLevel,
-    RegisteredHiveWorker,
-    RegisteredHiveWorkerSection,
-    RegisteredUrlType,
-    RestEndpointExecuteResponse,
-    ServerStatus,
-} from "@withonevision/omnihive-core";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
+import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
+import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -25,9 +23,9 @@ import http, { Server } from "http";
 import path from "path";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
-import { CommandLineArgs } from "../models/CommandLineArgs.js";
-import { AdminService } from "./AdminService.js";
-import { CommonService } from "./CommonService.js";
+import { CommandLineArgs } from "../models/CommandLineArgs";
+import { AdminService } from "./AdminService";
+import { CommonService } from "./CommonService";
 
 export class ServerService {
     private webRootUrl: string = "";
@@ -139,9 +137,9 @@ export class ServerService {
             app.get("/", (_req, res) => {
                 return res.status(200).render("index", {
                     rootUrl: this.webRootUrl,
-                    registeredUrls: global.omnihive.registeredUrls,
+                    registeredUrls: JSON.stringify(global.omnihive.registeredUrls),
                     status: global.omnihive.serverStatus,
-                    error: global.omnihive.serverError,
+                    error: JSON.stringify(global.omnihive.serverError),
                 });
             });
 
@@ -152,7 +150,7 @@ export class ServerService {
             app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
                     rootUrl: this.webRootUrl,
-                    registeredUrls: global.omnihive.registeredUrls,
+                    registeredUrls: JSON.stringify(global.omnihive.registeredUrls),
                     status: global.omnihive.serverStatus,
                     error: serializeError(err),
                 });

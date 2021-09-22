@@ -1,4 +1,7 @@
-import { AwaitHelper, HiveWorkerBase, IEncryptionWorker, IsHelper } from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import forge from "node-forge";
 
 export class NodeForgeEncryptionWorkerMetadata {

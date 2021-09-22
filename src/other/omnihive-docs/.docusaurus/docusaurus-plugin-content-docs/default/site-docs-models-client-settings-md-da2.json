@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/client-settings",
+  "id": "models/client-settings",
+  "isDocsHomePage": false,
+  "title": "ClientSettings",
+  "description": "Properties",
+  "source": "@site/docs/models/client-settings.md",
+  "sourceDirName": "models",
+  "slug": "/models/client-settings",
+  "permalink": "/docs/models/client-settings",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/client-settings.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "ClientSettings"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "AuthUser",
+    "permalink": "/docs/models/auth-user"
+  },
+  "next": {
+    "title": "ConnectionSchema",
+    "permalink": "/docs/models/connection-schema"
+  }
+}

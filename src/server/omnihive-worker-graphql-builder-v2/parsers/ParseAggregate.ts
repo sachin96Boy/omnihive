@@ -1,21 +1,19 @@
-import {
-    AwaitHelper,
-    GraphContext,
-    ICacheWorker,
-    IDatabaseWorker,
-    IDateWorker,
-    IEncryptionWorker,
-    ILogWorker,
-    IsHelper,
-    TableSchema,
-} from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { FieldNode, GraphQLResolveInfo } from "graphql";
-import { Path } from "graphql/jsutils/Path.js";
+import { Path } from "graphql/jsutils/Path";
 import { Knex } from "knex";
-import { CacheHelper } from "../helpers/CacheHelper.js";
-import { DatabaseHelper } from "../helpers/DatabaseHelper.js";
-import { GraphHelper } from "../helpers/GraphHelper.js";
-import { WorkerHelper } from "../helpers/WorkerHelper.js";
+import { CacheHelper } from "../helpers/CacheHelper";
+import { DatabaseHelper } from "../helpers/DatabaseHelper";
+import { GraphHelper } from "../helpers/GraphHelper";
+import { WorkerHelper } from "../helpers/WorkerHelper";
 
 export class ParseAggregate {
     // Workers

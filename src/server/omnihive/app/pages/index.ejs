@@ -5,9 +5,14 @@
         <script>
             var status = "<%= status %>";
             var serverError = "<%= serverError %>";
+            var registeredUrls = "<%= registeredUrls %>";
 
             if (serverError) {
-                console.log(serverError);
+                console.log(JSON.parse(serverError));
+            }
+
+            if (registeredUrls) {
+                console.log(JSON.parse(registeredUrls));
             }
         </script>
     </head>

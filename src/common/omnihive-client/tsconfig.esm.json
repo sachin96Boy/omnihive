@@ -1,8 +1,0 @@
-{
-    "extends": "./tsconfig.base.json",
-    "compilerOptions": {
-        "module": "ES2020",
-        "outDir": "../../../dist/common/omnihive-client"
-    },
-    "references": [{ "path": "../omnihive-core/tsconfig.esm.json" }]
-}

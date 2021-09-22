@@ -11,11 +11,6 @@
             "type": "boolean"
         },
         {
-            "key": "OH_CORE_GRAPH_TRACING",
-            "value": "false",
-            "type": "boolean"
-        },
-        {
             "key": "OH_CORE_SWAGGER",
             "value": "true",
             "type": "boolean"

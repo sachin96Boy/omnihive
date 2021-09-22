@@ -1,0 +1,26 @@
+{
+  "unversionedId": "enums/local-function-type",
+  "id": "enums/local-function-type",
+  "isDocsHomePage": false,
+  "title": "Local Function Type",
+  "description": "Values",
+  "source": "@site/docs/enums/local-function-type.md",
+  "sourceDirName": "enums",
+  "slug": "/enums/local-function-type",
+  "permalink": "/docs/enums/local-function-type",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/enums/local-function-type.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Local Function Type"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Lifecycle Worker Stage",
+    "permalink": "/docs/enums/lifecycle-worker-stage"
+  },
+  "next": {
+    "title": "OmniHive Log Level",
+    "permalink": "/docs/enums/omnihive-log-level"
+  }
+}

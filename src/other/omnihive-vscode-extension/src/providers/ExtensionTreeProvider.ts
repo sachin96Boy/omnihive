@@ -1,7 +1,7 @@
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
-import orderBy from "lodash.orderby";
+import { ServerStatus } from "@withonevision/omnihive-core-cjs/enums/ServerStatus";
+import { IsHelper } from "@withonevision/omnihive-core-cjs/helpers/IsHelper";
+import { RegisteredUrl } from "@withonevision/omnihive-core-cjs/models/RegisteredUrl";
+import _ from "lodash";
 import vscode from "vscode";
 import { EditServerEnvironmentTreeItemModel } from "../models/EditServerEnvironmentTreeItemModel";
 import { EditServerWorkersTreeItemModel } from "../models/EditServerWorkersTreeItemModel";
@@ -45,7 +45,7 @@ export class ExtensionTreeProvider implements vscode.TreeDataProvider<any> {
 
             const servers: ServerTreeItemModel[] = [];
 
-            orderBy(ExtensionStore.getSingleton().registeredServers, "label", "asc").forEach(
+            _.orderBy(ExtensionStore.getSingleton().registeredServers, "label", "asc").forEach(
                 (server: RegisteredServerModel) => {
                     servers.push(new ServerTreeItemModel(server.label, server.label, server.status));
                 }
@@ -101,7 +101,7 @@ export class ExtensionTreeProvider implements vscode.TreeDataProvider<any> {
             (server: RegisteredServerModel) => server.label === serverLabel
         )[0];
 
-        orderBy(server.urls, "path", "asc").forEach((url: RegisteredUrl) => {
+        _.orderBy(server.urls, "path", "asc").forEach((url: RegisteredUrl) => {
             switch (url.type) {
                 case "graphDatabase":
                     browserEndpoints.push(new GraphTreeItemModel(url.path, `${element.ohPath}||${url.path}`));

@@ -1,10 +1,8 @@
-import {
-    AwaitHelper,
-    HiveWorkerBase,
-    IPubSubServerWorker,
-    IsHelper,
-    PubSubListener,
-} from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
 import { Server, Socket } from "socket.io";
 
 export class SocketIoPubSubServerWorkerMetadata {

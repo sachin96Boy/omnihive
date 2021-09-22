@@ -1,10 +1,14 @@
 {
-    "extends": "./tsconfig.base.json",
+    "extends": "./../../tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "../../../dist/desktop/omnihive-desktop-server-manager"
+        "lib": ["DOM", "DOM.Iterable", "ES2021"],
+        "outDir": "./",
+        "rootDir": "./"
     },
     "references": [
-        { "path": "../../common/omnihive-core/tsconfig.esm.json" },
-        { "path": "../../common/omnihive-desktop-core/tsconfig.esm.json" }
-    ]
+        { "path": "./../../common/omnihive-core/tsconfig.json" },
+        { "path": "./../../common/omnihive-desktop-core/tsconfig.json" }
+    ],
+    "include": ["./**/*.ts", "./**/*.tsx", "./**/*.png", "./**/*.css"],
+    "exclude": ["./node_modules/**/*"]
 }

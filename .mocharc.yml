@@ -1,6 +1,6 @@
 extension:
     - "ts"
 spec:
-    - "./src/server/**/tests/**/*.spec.ts"
-loader:
-    - "ts-node/esm"
+    - "./src/**/tests/**/*.spec.ts"
+require:
+    - "ts-node/register"

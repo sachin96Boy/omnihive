@@ -1,4 +1,7 @@
-import { AwaitHelper, HiveWorkerBase, IPubSubServerWorker, PubSubListener } from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
 import PusherServer from "pusher";
 
 export class PusherPubSubServerWorkerMetadata {

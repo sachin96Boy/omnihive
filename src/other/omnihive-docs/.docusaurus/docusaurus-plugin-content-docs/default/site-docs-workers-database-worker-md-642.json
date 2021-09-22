@@ -1,0 +1,26 @@
+{
+  "unversionedId": "workers/database-worker",
+  "id": "workers/database-worker",
+  "isDocsHomePage": false,
+  "title": "Database Worker",
+  "description": "",
+  "source": "@site/docs/workers/database-worker.md",
+  "sourceDirName": "workers",
+  "slug": "/workers/database-worker",
+  "permalink": "/docs/workers/database-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/workers/database-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Database Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "String Helper",
+    "permalink": "/docs/helpers/string-helper"
+  },
+  "next": {
+    "title": "Cache Worker Interface",
+    "permalink": "/docs/interfaces/cache-worker"
+  }
+}

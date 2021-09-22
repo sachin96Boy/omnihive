@@ -1,15 +1,13 @@
-import {
-    AwaitHelper,
-    HiveWorkerBase,
-    HiveWorkerType,
-    IEncryptionWorker,
-    IRestEndpointWorker,
-    IsHelper,
-    ITokenWorker,
-    RestEndpointExecuteResponse,
-} from "@withonevision/omnihive-core";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 
 export default class SystemAccessTokenWorker extends HiveWorkerBase implements IRestEndpointWorker {
     private tokenWorker!: ITokenWorker;

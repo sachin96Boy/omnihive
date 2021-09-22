@@ -1,7 +1,7 @@
-import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import isEqual from "lodash.isequal";
+import { EnvironmentVariableType } from "@withonevision/omnihive-core-cjs/enums/EnvironmentVariableType";
+import { IsHelper } from "@withonevision/omnihive-core-cjs/helpers/IsHelper";
+import { EnvironmentVariable } from "@withonevision/omnihive-core-cjs/models/EnvironmentVariable";
+import _ from "lodash";
 import React from "react";
 import { WebpanelImageSources } from "../../models/WebpanelImageSources";
 import { FormStyles } from "../common/CommonStyles";
@@ -87,7 +87,7 @@ export const EnvironmentModal: React.FC<Props> = (props): React.ReactElement => 
             isSystem: props.editorObject.isSystem,
         };
 
-        return isEqual(originalEditorObject, newObject);
+        return _.isEqual(originalEditorObject, newObject);
     };
 
     return (

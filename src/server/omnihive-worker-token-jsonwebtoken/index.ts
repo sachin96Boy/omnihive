@@ -1,4 +1,7 @@
-import { AwaitHelper, HiveWorkerBase, IsHelper, ITokenWorker } from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
 import { v4 as uuidv4 } from "uuid";

@@ -1,9 +1,9 @@
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
-import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
+import { AdminEventType } from "@withonevision/omnihive-core-cjs/enums/AdminEventType";
+import { ServerStatus } from "@withonevision/omnihive-core-cjs/enums/ServerStatus";
+import { IsHelper } from "@withonevision/omnihive-core-cjs/helpers/IsHelper";
+import { AdminRequest } from "@withonevision/omnihive-core-cjs/models/AdminRequest";
+import { AdminResponse } from "@withonevision/omnihive-core-cjs/models/AdminResponse";
+import { RegisteredUrl } from "@withonevision/omnihive-core-cjs/models/RegisteredUrl";
 import socketio from "socket.io-client";
 import { URL } from "url";
 import vscode from "vscode";

@@ -1,36 +1,25 @@
-#See https://help.github.com/ignore-files/ for more about ignoring files.
 
 #dependencies
-**/node_modules
+node_modules/**
 **/node_modules/**
+pnpm-*.log*
 
-#production
-**/dist
+#build
+dist/**
 **/dist/**
-**/out
-**/out/**
-**/.webpack
-**/.docusaurus
 **/*.js
 **/*.js.map
 **/*.d.ts
 **/*.d.ts.map
-**/*.tsbuildinfo
-**/*.tgz
+tsconfig.tsbuildinfo
 
-#coverage
+#test
 .nyc_output
 coverage
 .self_coverage
-self-coverage
-self-coverage/**
+self-coverage/
 *.swp
 needs-transpile.js
-
-#misc
-**/.DS_Store
-.idea
-npm-debug.log*
 
 #settings
 **/*.env
@@ -40,14 +29,9 @@ npm-debug.log*
 !/settings/default_omnihive.env
 
 #types
-!**/types/**
-!**/*.d.ts
-src/common/omnihive-client/**/*.d.ts
-src/common/omnihive-core/**/*.d.ts
+!**/globals.omnihive.d.ts
+!**/globals.omnihive.test.d.ts
 
-#config
-!**/.storybook/**
-!**/postcss.config.js
-!**/tailwind.config.js
-!**/webpack.*.config.js
-!**/webpack.config.js
+#misc
+**/.DS_Store
+.idea

@@ -1,6 +1,6 @@
 import { UserInputError } from "apollo-server";
 import { GraphQLScalarType } from "graphql";
-import { Kind } from "graphql/language/index.js";
+import { Kind } from "graphql/language";
 
 export default new GraphQLScalarType({
     name: "DbFloat",

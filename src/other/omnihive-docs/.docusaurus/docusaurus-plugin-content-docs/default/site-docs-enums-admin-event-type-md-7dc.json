@@ -1,0 +1,26 @@
+{
+  "unversionedId": "enums/admin-event-type",
+  "id": "enums/admin-event-type",
+  "isDocsHomePage": false,
+  "title": "Admin Event Type",
+  "description": "Values",
+  "source": "@site/docs/enums/admin-event-type.md",
+  "sourceDirName": "enums",
+  "slug": "/enums/admin-event-type",
+  "permalink": "/docs/enums/admin-event-type",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/enums/admin-event-type.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Admin Event Type"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "User Worker",
+    "permalink": "/docs/interfaces/user-worker"
+  },
+  "next": {
+    "title": "Admin Room Type",
+    "permalink": "/docs/enums/admin-room-type"
+  }
+}

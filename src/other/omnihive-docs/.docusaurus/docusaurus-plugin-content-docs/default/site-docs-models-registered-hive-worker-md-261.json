@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/registered-hive-worker",
+  "id": "models/registered-hive-worker",
+  "isDocsHomePage": false,
+  "title": "RegisteredHiveWorker",
+  "description": "Properties",
+  "source": "@site/docs/models/registered-hive-worker.md",
+  "sourceDirName": "models",
+  "slug": "/models/registered-hive-worker",
+  "permalink": "/docs/models/registered-hive-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/registered-hive-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "RegisteredHiveWorker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "PubSubListener",
+    "permalink": "/docs/models/pub-sub-listener"
+  },
+  "next": {
+    "title": "RegisteredUrl",
+    "permalink": "/docs/models/registered-url"
+  }
+}

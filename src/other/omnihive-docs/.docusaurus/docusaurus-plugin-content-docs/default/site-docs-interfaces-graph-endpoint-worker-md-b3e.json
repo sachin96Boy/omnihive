@@ -1,0 +1,26 @@
+{
+  "unversionedId": "interfaces/graph-endpoint-worker",
+  "id": "interfaces/graph-endpoint-worker",
+  "isDocsHomePage": false,
+  "title": "Graph Endpoint Worker",
+  "description": "Interface Name: IGraphEndpointWorker",
+  "source": "@site/docs/interfaces/graph-endpoint-worker.md",
+  "sourceDirName": "interfaces",
+  "slug": "/interfaces/graph-endpoint-worker",
+  "permalink": "/docs/interfaces/graph-endpoint-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/interfaces/graph-endpoint-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Graph Endpoint Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Graph Builder Worker",
+    "permalink": "/docs/interfaces/graph-builder-worker"
+  },
+  "next": {
+    "title": "Hive Worker",
+    "permalink": "/docs/interfaces/hive-worker"
+  }
+}

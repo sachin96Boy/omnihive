@@ -1,0 +1,26 @@
+{
+  "unversionedId": "foreword/what-plug-and-play-means",
+  "id": "foreword/what-plug-and-play-means",
+  "isDocsHomePage": false,
+  "title": "What plug and play means",
+  "description": "",
+  "source": "@site/docs/foreword/what-plug-and-play-means.md",
+  "sourceDirName": "foreword",
+  "slug": "/foreword/what-plug-and-play-means",
+  "permalink": "/docs/foreword/what-plug-and-play-means",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/foreword/what-plug-and-play-means.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "What plug and play means"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Why We Built Omnihive",
+    "permalink": "/docs/foreword/why-we-built-omnihive"
+  },
+  "next": {
+    "title": "Installing OmniHive",
+    "permalink": "/docs/"
+  }
+}

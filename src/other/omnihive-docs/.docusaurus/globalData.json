@@ -1,0 +1,371 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/docs",
+          "mainDocId": "getting-started/installation",
+          "docs": [
+            {
+              "id": "deeper-look/configuration-file",
+              "path": "/docs/deeper-look/configuration-file",
+              "sidebar": "docs"
+            },
+            {
+              "id": "deeper-look/graph-builder",
+              "path": "/docs/deeper-look/graph-builder",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/admin-event-type",
+              "path": "/docs/enums/admin-event-type",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/admin-room-type",
+              "path": "/docs/enums/admin-room-type",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/hive-worker-type",
+              "path": "/docs/enums/hive-worker-type",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/lifecycle-worker-action",
+              "path": "/docs/enums/lifecycle-worker-action",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/lifecycle-worker-stage",
+              "path": "/docs/enums/lifecycle-worker-stage",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/local-function-type",
+              "path": "/docs/enums/local-function-type",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/omnihive-log-level",
+              "path": "/docs/enums/omnihive-log-level",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/query-cache-type",
+              "path": "/docs/enums/query-cache-type",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/registered-url-type",
+              "path": "/docs/enums/registered-url-type",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/rest-method",
+              "path": "/docs/enums/rest-method",
+              "sidebar": "docs"
+            },
+            {
+              "id": "enums/server-status",
+              "path": "/docs/enums/server-status",
+              "sidebar": "docs"
+            },
+            {
+              "id": "foreword/what-plug-and-play-means",
+              "path": "/docs/foreword/what-plug-and-play-means",
+              "sidebar": "docs"
+            },
+            {
+              "id": "foreword/why-we-built-omnihive",
+              "path": "/docs/foreword/why-we-built-omnihive",
+              "sidebar": "docs"
+            },
+            {
+              "id": "getting-started/custom-worker-development",
+              "path": "/docs/getting-started/custom-worker-development",
+              "sidebar": "docs"
+            },
+            {
+              "id": "getting-started/installation",
+              "path": "/docs/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "getting-started/setup-local-instance",
+              "path": "/docs/getting-started/setup-local-instance",
+              "sidebar": "docs"
+            },
+            {
+              "id": "getting-started/vscode-extension",
+              "path": "/docs/getting-started/vscode-extension",
+              "sidebar": "docs"
+            },
+            {
+              "id": "helpers/async-helper",
+              "path": "/docs/helpers/async-helper",
+              "sidebar": "docs"
+            },
+            {
+              "id": "helpers/object-helper",
+              "path": "/docs/helpers/object-helper",
+              "sidebar": "docs"
+            },
+            {
+              "id": "helpers/string-builder",
+              "path": "/docs/helpers/string-builder",
+              "sidebar": "docs"
+            },
+            {
+              "id": "helpers/string-helper",
+              "path": "/docs/helpers/string-helper",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/cache-worker",
+              "path": "/docs/interfaces/cache-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/config-worker",
+              "path": "/docs/interfaces/config-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/database-worker",
+              "path": "/docs/interfaces/database-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/date-worker",
+              "path": "/docs/interfaces/date-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/encryption-worker",
+              "path": "/docs/interfaces/encryption-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/error-worker",
+              "path": "/docs/interfaces/error-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/feature-worker",
+              "path": "/docs/interfaces/feature-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/file-system-worker",
+              "path": "/docs/interfaces/file-system-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/graph-builder-worker",
+              "path": "/docs/interfaces/graph-builder-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/graph-endpoint-worker",
+              "path": "/docs/interfaces/graph-endpoint-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/hive-worker",
+              "path": "/docs/interfaces/hive-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/log-worker",
+              "path": "/docs/interfaces/log-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/pub-sub-client-worker",
+              "path": "/docs/interfaces/pub-sub-client-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/pub-sub-server-worker",
+              "path": "/docs/interfaces/pub-sub-server-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/rest-endpoint-worker",
+              "path": "/docs/interfaces/rest-endpoint-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/server-worker",
+              "path": "/docs/interfaces/server-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/storage-worker",
+              "path": "/docs/interfaces/storage-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/task-endpoint-worker",
+              "path": "/docs/interfaces/task-endpoint-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/token-worker",
+              "path": "/docs/interfaces/token-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "interfaces/user-worker",
+              "path": "/docs/interfaces/user-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/admin-request",
+              "path": "/docs/models/admin-request",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/admin-response",
+              "path": "/docs/models/admin-response",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/auth-user",
+              "path": "/docs/models/auth-user",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/client-settings",
+              "path": "/docs/models/client-settings",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/connection-schema",
+              "path": "/docs/models/connection-schema",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/converter-sql-info",
+              "path": "/docs/models/converter-sql-info",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/graph-context",
+              "path": "/docs/models/graph-context",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/graphql-json",
+              "path": "/docs/models/graphql-json",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/hive-worker",
+              "path": "/docs/models/hive-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/hive-worker-base",
+              "path": "/docs/models/hive-worker-base",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/hive-worker-metadata-config-database",
+              "path": "/docs/models/hive-worker-metadata-config-database",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/hive-worker-metadata-database",
+              "path": "/docs/models/hive-worker-metadata-database",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/hive-worker-metadata-graph-builder",
+              "path": "/docs/models/hive-worker-metadata-graph-builder",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/hive-worker-metadata-lifecycle-function",
+              "path": "/docs/models/hive-worker-metadata-lifecycle-function",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/hive-worker-metadata-rest-function",
+              "path": "/docs/models/hive-worker-metadata-rest-function",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/hive-worker-metadata-server",
+              "path": "/docs/models/hive-worker-metadata-server",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/proc-function-schema",
+              "path": "/docs/models/proc-function-schema",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/pub-sub-listener",
+              "path": "/docs/models/pub-sub-listener",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/registered-hive-worker",
+              "path": "/docs/models/registered-hive-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/registered-url",
+              "path": "/docs/models/registered-url",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/rest-endpoint-execute-response",
+              "path": "/docs/models/rest-endpoint-execute-response",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/server-settings",
+              "path": "/docs/models/server-settings",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/table-schema",
+              "path": "/docs/models/table-schema",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/worker-getter-base",
+              "path": "/docs/models/worker-getter-base",
+              "sidebar": "docs"
+            },
+            {
+              "id": "models/worker-setter-base",
+              "path": "/docs/models/worker-setter-base",
+              "sidebar": "docs"
+            },
+            {
+              "id": "workers/built-in-worker-library",
+              "path": "/docs/workers/built-in-worker-library"
+            },
+            {
+              "id": "workers/database-worker",
+              "path": "/docs/workers/database-worker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "workers/server-worker",
+              "path": "/docs/workers/server-worker"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

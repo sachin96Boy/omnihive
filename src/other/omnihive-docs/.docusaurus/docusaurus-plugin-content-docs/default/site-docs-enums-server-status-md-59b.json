@@ -1,0 +1,26 @@
+{
+  "unversionedId": "enums/server-status",
+  "id": "enums/server-status",
+  "isDocsHomePage": false,
+  "title": "Server Status",
+  "description": "Values",
+  "source": "@site/docs/enums/server-status.md",
+  "sourceDirName": "enums",
+  "slug": "/enums/server-status",
+  "permalink": "/docs/enums/server-status",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/enums/server-status.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Server Status"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Rest Method",
+    "permalink": "/docs/enums/rest-method"
+  },
+  "next": {
+    "title": "AdminRequest",
+    "permalink": "/docs/models/admin-request"
+  }
+}

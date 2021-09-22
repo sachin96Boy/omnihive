@@ -1,0 +1,26 @@
+{
+  "unversionedId": "interfaces/user-worker",
+  "id": "interfaces/user-worker",
+  "isDocsHomePage": false,
+  "title": "User Worker",
+  "description": "Interface Name: IUserWorker",
+  "source": "@site/docs/interfaces/user-worker.md",
+  "sourceDirName": "interfaces",
+  "slug": "/interfaces/user-worker",
+  "permalink": "/docs/interfaces/user-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/interfaces/user-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "User Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Token Worker",
+    "permalink": "/docs/interfaces/token-worker"
+  },
+  "next": {
+    "title": "Admin Event Type",
+    "permalink": "/docs/enums/admin-event-type"
+  }
+}

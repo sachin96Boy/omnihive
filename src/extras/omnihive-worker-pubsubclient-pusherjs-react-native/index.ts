@@ -1,10 +1,8 @@
-import {
-    AwaitHelper,
-    HiveWorkerBase,
-    IPubSubClientWorker,
-    IsHelper,
-    PubSubListener,
-} from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IPubSubClientWorker } from "@withonevision/omnihive-core/interfaces/IPubSubClientWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
 import Pusher, { Channel } from "pusher-js/react-native";
 
 export class PusherJsReactNativePubSubClientWorkerMetadata {

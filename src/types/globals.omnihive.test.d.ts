@@ -1,4 +1,5 @@
-import { IHiveWorker, RegisteredHiveWorker } from "@withonevision/omnihive-core";
+import { IHiveWorker } from "../common/omnihive-core/interfaces/IHiveWorker";
+import { RegisteredHiveWorker } from "../common/omnihive-core/models/RegisteredHiveWorker";
 
 declare global {
     declare namespace globalThis {

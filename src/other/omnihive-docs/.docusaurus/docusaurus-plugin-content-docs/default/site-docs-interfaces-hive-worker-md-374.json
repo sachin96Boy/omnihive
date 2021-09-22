@@ -1,0 +1,26 @@
+{
+  "unversionedId": "interfaces/hive-worker",
+  "id": "interfaces/hive-worker",
+  "isDocsHomePage": false,
+  "title": "Hive Worker",
+  "description": "Interface Name: IHiveWorker",
+  "source": "@site/docs/interfaces/hive-worker.md",
+  "sourceDirName": "interfaces",
+  "slug": "/interfaces/hive-worker",
+  "permalink": "/docs/interfaces/hive-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/interfaces/hive-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Hive Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Graph Endpoint Worker",
+    "permalink": "/docs/interfaces/graph-endpoint-worker"
+  },
+  "next": {
+    "title": "Log Worker",
+    "permalink": "/docs/interfaces/log-worker"
+  }
+}

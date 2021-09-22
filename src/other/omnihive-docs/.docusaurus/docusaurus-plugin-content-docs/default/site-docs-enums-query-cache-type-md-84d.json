@@ -1,0 +1,26 @@
+{
+  "unversionedId": "enums/query-cache-type",
+  "id": "enums/query-cache-type",
+  "isDocsHomePage": false,
+  "title": "Query Cache Type",
+  "description": "Values",
+  "source": "@site/docs/enums/query-cache-type.md",
+  "sourceDirName": "enums",
+  "slug": "/enums/query-cache-type",
+  "permalink": "/docs/enums/query-cache-type",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/enums/query-cache-type.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Query Cache Type"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "OmniHive Log Level",
+    "permalink": "/docs/enums/omnihive-log-level"
+  },
+  "next": {
+    "title": "Registered URL Type",
+    "permalink": "/docs/enums/registered-url-type"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "unversionedId": "interfaces/task-endpoint-worker",
+  "id": "interfaces/task-endpoint-worker",
+  "isDocsHomePage": false,
+  "title": "Task Endpoint Worker",
+  "description": "Interface Name: ITaskEndpointWorker",
+  "source": "@site/docs/interfaces/task-endpoint-worker.md",
+  "sourceDirName": "interfaces",
+  "slug": "/interfaces/task-endpoint-worker",
+  "permalink": "/docs/interfaces/task-endpoint-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/interfaces/task-endpoint-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Task Endpoint Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Storage Worker",
+    "permalink": "/docs/interfaces/storage-worker"
+  },
+  "next": {
+    "title": "Token Worker",
+    "permalink": "/docs/interfaces/token-worker"
+  }
+}

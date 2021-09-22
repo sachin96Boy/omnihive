@@ -1,20 +1,18 @@
 import express from "express";
 import { Server } from "http";
 import socketio from "socket.io";
-import { OmniHiveClient } from "@withonevision/omnihive-client";
-import {
-    AdminEventType,
-    AdminRoomType,
-    CommandLineArgs,
-    ConnectionSchema,
-    HiveWorkerConfig,
-    IHiveWorker,
-    RegisteredHiveWorker,
-    RegisteredHiveWorkerSection,
-    RegisteredUrl,
-    ServerConfig,
-    ServerStatus,
-} from "@withonevision/omnihive-core";
+import { OmniHiveClient } from "../common/omnihive-core/client/OmniHiveClient";
+import { AdminEventType } from "../common/omnihive-core/enums/AdminEventType";
+import { AdminRoomType } from "../common/omnihive-core/enums/AdminRoomType";
+import { RegisteredHiveWorkerSection } from "../common/omnihive-core/enums/RegisteredHiveWorkerSection";
+import { ServerStatus } from "../common/omnihive-core/enums/ServerStatus";
+import { IHiveWorker } from "../common/omnihive-core/interfaces/IHiveWorker";
+import { CommandLineArgs } from "../common/omnihive-core/models/CommandLineArgs";
+import { ConnectionSchema } from "../common/omnihive-core/models/ConnectionSchema";
+import { HiveWorkerConfig } from "../common/omnihive-core/models/HiveWorkerConfig";
+import { RegisteredHiveWorker } from "../common/omnihive-core/models/RegisteredHiveWorker";
+import { RegisteredUrl } from "../common/omnihive-core/models/RegisteredUrl";
+import { ServerConfig } from "../common/omnihive-core/models/ServerConfig";
 
 declare global {
     declare namespace globalThis {

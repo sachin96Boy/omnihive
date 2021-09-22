@@ -9,7 +9,7 @@ import { AddEditServer } from "./components/AddEditServer";
 const moduleKey: string = "withonevision-omnihive-desktop-server-manager";
 const serverTreeHeaderButtonStyle: string = "h-6 w-6 ml-1 mr-1 hover:cursor-pointer";
 
-const Index: React.FC = (): React.ReactElement => {
+export const ServerManager: React.FC = (): React.ReactElement => {
     const gridOpen = useOpenGridTab();
 
     return (
@@ -39,5 +39,3 @@ const Index: React.FC = (): React.ReactElement => {
         </div>
     );
 };
-
-export default Index;

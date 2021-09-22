@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/worker-getter-base",
+  "id": "models/worker-getter-base",
+  "isDocsHomePage": false,
+  "title": "WorkerGetterBase",
+  "description": "Properties",
+  "source": "@site/docs/models/worker-getter-base.md",
+  "sourceDirName": "models",
+  "slug": "/models/worker-getter-base",
+  "permalink": "/docs/models/worker-getter-base",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/worker-getter-base.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "WorkerGetterBase"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "TableSchema",
+    "permalink": "/docs/models/table-schema"
+  },
+  "next": {
+    "title": "WorkerSetterBase",
+    "permalink": "/docs/models/worker-setter-base"
+  }
+}

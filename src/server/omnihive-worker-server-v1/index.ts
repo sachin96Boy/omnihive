@@ -1,31 +1,30 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import {
-    AwaitHelper,
-    ConnectionSchema,
-    HiveWorkerBase,
-    HiveWorkerMetadataDatabase,
-    HiveWorkerMetadataGraphBuilder,
-    HiveWorkerMetadataRestFunction,
-    HiveWorkerMetadataServer,
-    HiveWorkerType,
-    IDatabaseWorker,
-    IGraphBuildWorker,
-    ILogWorker,
-    IRestEndpointWorker,
-    IServerWorker,
-    IsHelper,
-    ObjectHelper,
-    OmniHiveLogLevel,
-    RegisteredHiveWorker,
-    RegisteredHiveWorkerSection,
-    RegisteredUrlType,
-    RestEndpointExecuteResponse,
-    ServerStatus,
-    StringBuilder,
-    TableSchema,
-} from "@withonevision/omnihive-core";
-import { ApolloServer, ApolloServerExpressConfig, mergeSchemas } from "apollo-server-express";
+import { mergeSchemas } from "@graphql-tools/schema";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
+import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/RegisteredUrlType";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { IRestEndpointWorker } from "@withonevision/omnihive-core/interfaces/IRestEndpointWorker";
+import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
+import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
+import { HiveWorkerMetadataRestFunction } from "@withonevision/omnihive-core/models/HiveWorkerMetadataRestFunction";
+import { HiveWorkerMetadataServer } from "@withonevision/omnihive-core/models/HiveWorkerMetadataServer";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { RestEndpointExecuteResponse } from "@withonevision/omnihive-core/models/RestEndpointExecuteResponse";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { ApolloServer, ApolloServerExpressConfig } from "apollo-server-express";
 import { camelCase } from "change-case";
 import { transformSync } from "esbuild";
 import express from "express";
@@ -34,6 +33,7 @@ import { nanoid } from "nanoid";
 import { serializeError } from "serialize-error";
 import swaggerUi from "swagger-ui-express";
 import { runInNewContext } from "vm";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 
 type BuilderDatabaseWorker = {
     registeredWorker: RegisteredHiveWorker;
@@ -46,7 +46,6 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
     private webRootUrl = global.omnihive.getEnvironmentVariable<string>("OH_WEB_ROOT_URL");
     private graphIntrospection =
         global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_INTROSPECTION") ?? false;
-    private graphTracing = global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_TRACING") ?? false;
     private graphPlayground = global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_PLAYGROUND") ?? true;
     private swagger = global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_SWAGGER");
 
@@ -236,7 +235,7 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                     `import { AwaitHelper, GraphQLJSONObject, HiveWorkerType } from "@withonevision/omnihive-core;`
                 );
                 builder.appendLine(
-                    `import { CustomGraphHelper } from "@withonevision/omnihive-worker-server-v1/helpers/CustomGraphHelper.js";`
+                    `import { CustomGraphHelper } from "@withonevision/omnihive-worker-server-v1/helpers/CustomGraphHelper";`
                 );
                 builder.appendLine();
 
@@ -320,7 +319,6 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                         const graphDatabaseConfig: ApolloServerExpressConfig = {
                             introspection: this.graphIntrospection,
-                            tracing: this.graphTracing,
                             schema: graphDatabaseSchema,
                             context: async ({ req }) => {
                                 const omnihive = {
@@ -334,14 +332,15 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                         };
 
                         if (this.graphPlayground) {
-                            graphDatabaseConfig.playground = {
-                                endpoint: `${this.webRootUrl}/${this.typedMetadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
-                            };
-                        } else {
-                            graphDatabaseConfig.playground = false;
+                            graphDatabaseConfig.plugins?.push(
+                                ApolloServerPluginLandingPageGraphQLPlayground({
+                                    endpoint: `${this.webRootUrl}/${this.typedMetadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
+                                })
+                            );
                         }
 
                         const graphDatabaseServer: ApolloServer = new ApolloServer(graphDatabaseConfig);
+                        await graphDatabaseServer.start();
                         graphDatabaseServer.applyMiddleware({
                             app,
                             path: `/${this.typedMetadata.urlRoute}/${builderMeta.urlRoute}/${dbWorkerMeta.urlRoute}`,
@@ -372,7 +371,6 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
                 const graphFunctionConfig: ApolloServerExpressConfig = {
                     introspection: this.graphIntrospection,
-                    tracing: this.graphTracing,
                     schema: graphFunctionSchema,
                     context: async ({ req }) => {
                         const omnihive = {
@@ -386,14 +384,15 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
                 };
 
                 if (this.graphPlayground) {
-                    graphFunctionConfig.playground = {
-                        endpoint: `${this.webRootUrl}/${this.typedMetadata.urlRoute}/custom/graphql`,
-                    };
-                } else {
-                    graphFunctionConfig.playground = false;
+                    graphFunctionConfig.plugins?.push(
+                        ApolloServerPluginLandingPageGraphQLPlayground({
+                            endpoint: `${this.webRootUrl}/${this.typedMetadata.urlRoute}/custom/graphql`,
+                        })
+                    );
                 }
 
                 const graphFunctionServer: ApolloServer = new ApolloServer(graphFunctionConfig);
+                await graphFunctionServer.start();
                 graphFunctionServer.applyMiddleware({
                     app,
                     path: `/${this.typedMetadata.urlRoute}/custom/graphql`,

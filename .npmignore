@@ -1,4 +1,11 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
-# tests
+node_modules/**
+**/node_modules/**
+dist/**
+**/dist/**
 **/tests
+**/.DS_Store
+**/*.env
+**/tsconfig.tsbuildinfo
+**/*.tgz

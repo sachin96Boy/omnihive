@@ -1,4 +1,7 @@
-import { AwaitHelper, HiveWorkerBase, ICacheWorker, IsHelper } from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import NodeCache from "node-cache";
 
 export default class NodeCacheWorker extends HiveWorkerBase implements ICacheWorker {

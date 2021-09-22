@@ -1,23 +1,21 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import {
-    AwaitHelper,
-    ConnectionSchema,
-    HiveWorkerBase,
-    HiveWorkerMetadataDatabase,
-    HiveWorkerType,
-    IDatabaseWorker,
-    ILogWorker,
-    IsHelper,
-    OmniHiveLogLevel,
-    ProcFunctionSchema,
-    StringBuilder,
-    TableSchema,
-} from "@withonevision/omnihive-core";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
 import sql from "mssql";
 import path from "path";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { HiveWorkerMetadataDatabase } from "../../common/omnihive-core/models/HiveWorkerMetadataDatabase";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 
 export default class MssqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;

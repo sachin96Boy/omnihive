@@ -1,0 +1,26 @@
+{
+  "unversionedId": "getting-started/custom-worker-development",
+  "id": "getting-started/custom-worker-development",
+  "isDocsHomePage": false,
+  "title": "Building Custom Workers",
+  "description": "OmniHive gives developers the ability to create and override any worker with whatever worker they want.",
+  "source": "@site/docs/getting-started/custom-worker-development.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/custom-worker-development",
+  "permalink": "/docs/getting-started/custom-worker-development",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/getting-started/custom-worker-development.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Building Custom Workers"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Setup a local instance",
+    "permalink": "/docs/getting-started/setup-local-instance"
+  },
+  "next": {
+    "title": "Visual Studio Code Extension",
+    "permalink": "/docs/getting-started/vscode-extension"
+  }
+}

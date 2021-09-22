@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/hive-worker-metadata-lifecycle-function",
+  "id": "models/hive-worker-metadata-lifecycle-function",
+  "isDocsHomePage": false,
+  "title": "HiveWorkerMetadataLifecycleFunction",
+  "description": "Properties",
+  "source": "@site/docs/models/hive-worker-metadata-lifecycle-function.md",
+  "sourceDirName": "models",
+  "slug": "/models/hive-worker-metadata-lifecycle-function",
+  "permalink": "/docs/models/hive-worker-metadata-lifecycle-function",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/hive-worker-metadata-lifecycle-function.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "HiveWorkerMetadataLifecycleFunction"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "HiveWorkerMetadataGraphBuilder",
+    "permalink": "/docs/models/hive-worker-metadata-graph-builder"
+  },
+  "next": {
+    "title": "HiveWorkerMetadataRestFunction",
+    "permalink": "/docs/models/hive-worker-metadata-rest-function"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "unversionedId": "enums/omnihive-log-level",
+  "id": "enums/omnihive-log-level",
+  "isDocsHomePage": false,
+  "title": "OmniHive Log Level",
+  "description": "Values",
+  "source": "@site/docs/enums/omnihive-log-level.md",
+  "sourceDirName": "enums",
+  "slug": "/enums/omnihive-log-level",
+  "permalink": "/docs/enums/omnihive-log-level",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/enums/omnihive-log-level.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "OmniHive Log Level"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Local Function Type",
+    "permalink": "/docs/enums/local-function-type"
+  },
+  "next": {
+    "title": "Query Cache Type",
+    "permalink": "/docs/enums/query-cache-type"
+  }
+}

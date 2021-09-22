@@ -1,16 +1,15 @@
 #!/usr/bin/env node
-import { IsHelper } from "@withonevision/omnihive-core";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import yargs from "yargs";
-import { CommandLineArgs } from "./models/CommandLineArgs.js";
-import { ServerService } from "./services/ServerService.js";
-import { URL } from "url";
+import { CommandLineArgs } from "./models/CommandLineArgs";
+import { ServerService } from "./services/ServerService";
 
 const run = async () => {
     const serverService = new ServerService();
 
     const input = await yargs(process.argv.slice(2)).argv;
 
-    const runningDir: string = new URL(".", import.meta.url).pathname;
+    const runningDir: string = __dirname;
     const commandLineArgs: CommandLineArgs = new CommandLineArgs();
     commandLineArgs.ipcServerId = input._[0] as string;
 

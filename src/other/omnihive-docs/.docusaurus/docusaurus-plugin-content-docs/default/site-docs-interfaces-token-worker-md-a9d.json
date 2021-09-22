@@ -1,0 +1,26 @@
+{
+  "unversionedId": "interfaces/token-worker",
+  "id": "interfaces/token-worker",
+  "isDocsHomePage": false,
+  "title": "Token Worker",
+  "description": "Interface Name: ITokenWorker",
+  "source": "@site/docs/interfaces/token-worker.md",
+  "sourceDirName": "interfaces",
+  "slug": "/interfaces/token-worker",
+  "permalink": "/docs/interfaces/token-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/interfaces/token-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Token Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Task Endpoint Worker",
+    "permalink": "/docs/interfaces/task-endpoint-worker"
+  },
+  "next": {
+    "title": "User Worker",
+    "permalink": "/docs/interfaces/user-worker"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "unversionedId": "enums/admin-room-type",
+  "id": "enums/admin-room-type",
+  "isDocsHomePage": false,
+  "title": "Admin Room Type",
+  "description": "Values",
+  "source": "@site/docs/enums/admin-room-type.md",
+  "sourceDirName": "enums",
+  "slug": "/enums/admin-room-type",
+  "permalink": "/docs/enums/admin-room-type",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/enums/admin-room-type.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Admin Room Type"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Admin Event Type",
+    "permalink": "/docs/enums/admin-event-type"
+  },
+  "next": {
+    "title": "Hive Worker Type",
+    "permalink": "/docs/enums/hive-worker-type"
+  }
+}

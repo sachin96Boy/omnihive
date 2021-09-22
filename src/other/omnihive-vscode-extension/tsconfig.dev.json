@@ -1,7 +1,0 @@
-{
-    "extends": "./tsconfig.base.json",
-    "references": [
-        { "path": "../../common/omnihive-client/tsconfig.cjs.dev.json" },
-        { "path": "../../common/omnihive-core/tsconfig.cjs.dev.json" }
-    ]
-}

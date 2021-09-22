@@ -75,5 +75,3 @@ export const HomeSection = ({ data, orientation, content }: HomeSectionProps) =>
         );
     }
 };
-
-export default HomeSection;

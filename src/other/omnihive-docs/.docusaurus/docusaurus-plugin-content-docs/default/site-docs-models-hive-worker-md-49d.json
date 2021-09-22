@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/hive-worker",
+  "id": "models/hive-worker",
+  "isDocsHomePage": false,
+  "title": "HiveWorker",
+  "description": "Properties",
+  "source": "@site/docs/models/hive-worker.md",
+  "sourceDirName": "models",
+  "slug": "/models/hive-worker",
+  "permalink": "/docs/models/hive-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/hive-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "HiveWorker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "GraphQLJSON",
+    "permalink": "/docs/models/graphql-json"
+  },
+  "next": {
+    "title": "HiveWorkerBase",
+    "permalink": "/docs/models/hive-worker-base"
+  }
+}

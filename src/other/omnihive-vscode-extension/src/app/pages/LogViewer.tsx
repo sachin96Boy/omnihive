@@ -1,8 +1,8 @@
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { AdminEventType } from "@withonevision/omnihive-core-cjs/enums/AdminEventType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core-cjs/enums/OmniHiveLogLevel";
+import { ServerStatus } from "@withonevision/omnihive-core-cjs/enums/ServerStatus";
+import { IsHelper } from "@withonevision/omnihive-core-cjs/helpers/IsHelper";
+import { AdminResponse } from "@withonevision/omnihive-core-cjs/models/AdminResponse";
 import Parser from "html-react-parser";
 import React from "react";
 import { serializeError } from "serialize-error";

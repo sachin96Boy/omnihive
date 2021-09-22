@@ -21,12 +21,12 @@
             }
         },
         {
-            "label": "Clean Up Common Dev Build",
+            "label": "Clean Up Core Dev Build",
             "options": {
                 "cwd": "./"
             },
             "type": "npm",
-            "script": "clean:dev:build",
+            "script": "cleanup:core:build",
             "isBackground": false,
             "presentation": {
                 "reveal": "always"

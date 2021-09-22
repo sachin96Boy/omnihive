@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/pub-sub-listener",
+  "id": "models/pub-sub-listener",
+  "isDocsHomePage": false,
+  "title": "PubSubListener",
+  "description": "Properties",
+  "source": "@site/docs/models/pub-sub-listener.md",
+  "sourceDirName": "models",
+  "slug": "/models/pub-sub-listener",
+  "permalink": "/docs/models/pub-sub-listener",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/pub-sub-listener.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "PubSubListener"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "ProcFunctionSchema",
+    "permalink": "/docs/models/proc-function-schema"
+  },
+  "next": {
+    "title": "RegisteredHiveWorker",
+    "permalink": "/docs/models/registered-hive-worker"
+  }
+}

@@ -1,11 +1,11 @@
-import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
-import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
+import { AdminEventType } from "@withonevision/omnihive-core-cjs/enums/AdminEventType";
+import { ServerStatus } from "@withonevision/omnihive-core-cjs/enums/ServerStatus";
+import { IsHelper } from "@withonevision/omnihive-core-cjs/helpers/IsHelper";
+import { AdminResponse } from "@withonevision/omnihive-core-cjs/models/AdminResponse";
+import { EnvironmentVariable } from "@withonevision/omnihive-core-cjs/models/EnvironmentVariable";
+import { ServerConfig } from "@withonevision/omnihive-core-cjs/models/ServerConfig";
 import Parser from "html-react-parser";
-import isEqual from "lodash.isequal";
+import _ from "lodash";
 import React from "react";
 import AceEditor from "react-ace";
 import semver from "semver";
@@ -257,7 +257,7 @@ export const RawEditor: React.FC<Props> = ({ props }): React.ReactElement => {
                 break;
         }
 
-        const sameSettings: boolean = isEqual(loadedConfig.config, parsedCurrentSettings);
+        const sameSettings: boolean = _.isEqual(loadedConfig.config, parsedCurrentSettings);
 
         setEditorDirty(!sameSettings);
 

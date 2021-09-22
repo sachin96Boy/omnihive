@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/server-settings",
+  "id": "models/server-settings",
+  "isDocsHomePage": false,
+  "title": "ServerSettings",
+  "description": "Properties",
+  "source": "@site/docs/models/server-settings.md",
+  "sourceDirName": "models",
+  "slug": "/models/server-settings",
+  "permalink": "/docs/models/server-settings",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/server-settings.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "ServerSettings"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "RestEndpointExecuteResponse",
+    "permalink": "/docs/models/rest-endpoint-execute-response"
+  },
+  "next": {
+    "title": "TableSchema",
+    "permalink": "/docs/models/table-schema"
+  }
+}

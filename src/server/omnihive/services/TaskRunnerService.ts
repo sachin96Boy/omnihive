@@ -1,18 +1,16 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import {
-    AwaitHelper,
-    HiveWorkerType,
-    ILogWorker,
-    IsHelper,
-    OmniHiveLogLevel,
-    RegisteredHiveWorker,
-} from "@withonevision/omnihive-core";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import fse from "fs-extra";
 import { serializeError } from "serialize-error";
 import yaml from "yaml";
-import { CommandLineArgs } from "../models/CommandLineArgs.js";
-import { CommonService } from "./CommonService.js";
+import { CommandLineArgs } from "../models/CommandLineArgs";
+import { CommonService } from "./CommonService";
 
 export class TaskRunnerService {
     public run = async (rootDir: string, commandLineArgs: CommandLineArgs): Promise<void> => {

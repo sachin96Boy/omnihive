@@ -1,7 +1,10 @@
-import { AwaitHelper, HiveWorkerBase, IDateWorker, IsHelper } from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import dayjs from "dayjs";
-import tz from "dayjs/plugin/timezone.js";
-import utc from "dayjs/plugin/utc.js";
+import tz from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 
 export class DayJsDateWorkerMetadata {
     public dateFormat: string = "";

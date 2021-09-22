@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/proc-function-schema",
+  "id": "models/proc-function-schema",
+  "isDocsHomePage": false,
+  "title": "ProcFunctionSchema",
+  "description": "Properties",
+  "source": "@site/docs/models/proc-function-schema.md",
+  "sourceDirName": "models",
+  "slug": "/models/proc-function-schema",
+  "permalink": "/docs/models/proc-function-schema",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/proc-function-schema.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "ProcFunctionSchema"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "HiveWorkerMetadataServer",
+    "permalink": "/docs/models/hive-worker-metadata-server"
+  },
+  "next": {
+    "title": "PubSubListener",
+    "permalink": "/docs/models/pub-sub-listener"
+  }
+}

@@ -1,4 +1,6 @@
-import { IDateWorker, IsHelper, TableSchema } from "@withonevision/omnihive-core";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { FieldNode, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
 
 export class GraphHelper {

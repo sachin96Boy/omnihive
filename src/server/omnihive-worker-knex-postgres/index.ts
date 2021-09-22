@@ -1,22 +1,20 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import {
-    AwaitHelper,
-    ConnectionSchema,
-    HiveWorkerBase,
-    HiveWorkerMetadataDatabase,
-    HiveWorkerType,
-    IDatabaseWorker,
-    ILogWorker,
-    IsHelper,
-    OmniHiveLogLevel,
-    ProcFunctionSchema,
-    StringBuilder,
-    TableSchema,
-} from "@withonevision/omnihive-core";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
+import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
-import orderBy from "lodash.orderby";
+import _ from "lodash";
 import path from "path";
 import pg from "pg";
 
@@ -127,7 +125,7 @@ export default class PostgresDatabaseWorker extends HiveWorkerBase implements ID
 
         builder.append("(");
 
-        orderBy(procFunctionSchema, ["parameterOrder"], ["asc"]).forEach(
+        _.orderBy(procFunctionSchema, ["parameterOrder"], ["asc"]).forEach(
             (schema: ProcFunctionSchema, index: number) => {
                 const arg: { name: string; value: any; isString: boolean } | undefined = args.find(
                     (arg) => arg.name.toLowerCase() === schema.parameterName.toLowerCase()

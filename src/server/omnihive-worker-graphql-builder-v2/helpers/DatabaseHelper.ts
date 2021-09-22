@@ -1,4 +1,5 @@
-import { IsHelper, TableSchema } from "@withonevision/omnihive-core";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { Knex } from "knex";
 
 export class DatabaseHelper {

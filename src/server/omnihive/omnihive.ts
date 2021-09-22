@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
-import { AwaitHelper, IsHelper } from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import chalk from "chalk";
 import dotenv from "dotenv";
-import exitHook from "exit-hook";
 import figlet from "figlet";
 import forever from "forever-monitor";
 import fse from "fs-extra";
 import ipc from "node-ipc";
 import path from "path";
-import { URL } from "url";
 import { v4 as uuidv4 } from "uuid";
 import yargs from "yargs";
-import { ServerRunnerType } from "./enums/ServerRunnerType.js";
-import { CommandLineArgs } from "./models/CommandLineArgs.js";
-import { TaskRunnerService } from "./services/TaskRunnerService.js";
+import { ServerRunnerType } from "./enums/ServerRunnerType";
+import exitHook from "./helpers/ExitHook";
+import { CommandLineArgs } from "./models/CommandLineArgs";
+import { TaskRunnerService } from "./services/TaskRunnerService";
 
 // Setup IPC
 
@@ -28,7 +28,7 @@ ipc.config.sync = true;
 let child: forever.Monitor;
 
 // Get running directory
-const runningDir: string = new URL(".", import.meta.url).pathname;
+const runningDir: string = __dirname;
 
 const init = async () => {
     // Interpret command line

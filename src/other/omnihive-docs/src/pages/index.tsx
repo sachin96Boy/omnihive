@@ -4,8 +4,8 @@ import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
 import React from "react";
 
-import HomePageFeature from "../components/HomePageFeature";
-import HomeSection, { HomeSectionProps } from "../components/HomeSection";
+import { HomePageFeature } from "../components/HomePageFeature";
+import { HomeSection, HomeSectionProps } from "../components/HomeSection";
 import styles from "./index.module.scss";
 
 interface FeatureData {

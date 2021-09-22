@@ -1,0 +1,26 @@
+{
+  "unversionedId": "interfaces/pub-sub-server-worker",
+  "id": "interfaces/pub-sub-server-worker",
+  "isDocsHomePage": false,
+  "title": "Pub Sub Server Worker",
+  "description": "Interface Name: IPubSubServerWorker",
+  "source": "@site/docs/interfaces/pub-sub-server-worker.md",
+  "sourceDirName": "interfaces",
+  "slug": "/interfaces/pub-sub-server-worker",
+  "permalink": "/docs/interfaces/pub-sub-server-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/interfaces/pub-sub-server-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Pub Sub Server Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Pub Sub Client Worker",
+    "permalink": "/docs/interfaces/pub-sub-client-worker"
+  },
+  "next": {
+    "title": "Rest Endpoint Worker",
+    "permalink": "/docs/interfaces/rest-endpoint-worker"
+  }
+}

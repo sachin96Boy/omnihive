@@ -1,0 +1,26 @@
+{
+  "unversionedId": "interfaces/storage-worker",
+  "id": "interfaces/storage-worker",
+  "isDocsHomePage": false,
+  "title": "Storage Worker",
+  "description": "Interface Name: IStorageWorker",
+  "source": "@site/docs/interfaces/storage-worker.md",
+  "sourceDirName": "interfaces",
+  "slug": "/interfaces/storage-worker",
+  "permalink": "/docs/interfaces/storage-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/interfaces/storage-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Storage Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Server Worker",
+    "permalink": "/docs/interfaces/server-worker"
+  },
+  "next": {
+    "title": "Task Endpoint Worker",
+    "permalink": "/docs/interfaces/task-endpoint-worker"
+  }
+}

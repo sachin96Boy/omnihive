@@ -1,6 +1,6 @@
 {
     "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git"],
     "watch": ["../../**/*.ts"],
-    "exec": "pnpm node --inspect --inspect-port=0 --loader ts-node/esm ./omnihive.ts server --ef ../../../settings/omnihive.env",
+    "exec": "pnpm exec node --inspect --inspect-port=0 -r ts-node/register ./omnihive.ts server --ef ../../../settings/omnihive.env",
     "ext": "ts,json,css,html"
 }

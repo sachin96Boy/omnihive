@@ -1,11 +1,9 @@
-import {
-    AwaitHelper,
-    HiveWorkerBase,
-    HiveWorkerType,
-    IEncryptionWorker,
-    IsHelper,
-    IStorageWorker,
-} from "@withonevision/omnihive-core";
+import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncryptionWorker";
+import { IStorageWorker } from "@withonevision/omnihive-core/interfaces/IStorageWorker";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { CrossStorageClient, CrossStorageClientOptions } from "cross-storage";
 
 export class CrossStorageStorageWorkerMetadata {

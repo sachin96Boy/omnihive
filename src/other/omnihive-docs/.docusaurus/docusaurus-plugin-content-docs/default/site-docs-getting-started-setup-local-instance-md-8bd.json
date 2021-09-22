@@ -1,0 +1,26 @@
+{
+  "unversionedId": "getting-started/setup-local-instance",
+  "id": "getting-started/setup-local-instance",
+  "isDocsHomePage": false,
+  "title": "Setup a local instance",
+  "description": "In order to do any custom function development it is recommended that you setup you're own local instance of OmniHive for testing and debugging.",
+  "source": "@site/docs/getting-started/setup-local-instance.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/setup-local-instance",
+  "permalink": "/docs/getting-started/setup-local-instance",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/getting-started/setup-local-instance.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Setup a local instance"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Installing OmniHive",
+    "permalink": "/docs/"
+  },
+  "next": {
+    "title": "Building Custom Workers",
+    "permalink": "/docs/getting-started/custom-worker-development"
+  }
+}

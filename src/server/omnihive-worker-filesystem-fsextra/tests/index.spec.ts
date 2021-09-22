@@ -1,12 +1,12 @@
-import { AwaitHelper } from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { expect } from "chai";
 import faker from "faker";
 import fse from "fs-extra";
 import { after, afterEach, beforeEach, describe, it } from "mocha";
 import path from "path";
-import FileSystemWorker from "../index.js";
+import FileSystemWorker from "../index";
 
-const runningDir: string = new URL(".", import.meta.url).pathname;
+const runningDir: string = __dirname;
 
 const testValues = {
     workerName: "testFilesystemFsExtra",

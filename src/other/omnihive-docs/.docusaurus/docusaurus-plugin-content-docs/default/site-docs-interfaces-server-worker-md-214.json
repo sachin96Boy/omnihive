@@ -1,0 +1,26 @@
+{
+  "unversionedId": "interfaces/server-worker",
+  "id": "interfaces/server-worker",
+  "isDocsHomePage": false,
+  "title": "Server Worker",
+  "description": "Interface Name: IServerWorker",
+  "source": "@site/docs/interfaces/server-worker.md",
+  "sourceDirName": "interfaces",
+  "slug": "/interfaces/server-worker",
+  "permalink": "/docs/interfaces/server-worker",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/interfaces/server-worker.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Server Worker"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Rest Endpoint Worker",
+    "permalink": "/docs/interfaces/rest-endpoint-worker"
+  },
+  "next": {
+    "title": "Storage Worker",
+    "permalink": "/docs/interfaces/storage-worker"
+  }
+}

@@ -1,8 +1,0 @@
-{
-    "extends": "./tsconfig.base.json",
-    "compilerOptions": {
-        "module": "CommonJS",
-        "outDir": "../../../dist/common/omnihive-client"
-    },
-    "references": [{ "path": "../omnihive-core/tsconfig.cjs.json" }]
-}

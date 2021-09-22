@@ -2,7 +2,7 @@ import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { AppSettings } from "@withonevision/omnihive-desktop-core/models/AppSettings";
 import { DesktopModule } from "@withonevision/omnihive-desktop-core/models/DesktopModule";
 import serverManagerIcon from "@withonevision/omnihive-desktop-server-manager/assets/sidebar_icon.png";
-import ServerManager from "@withonevision/omnihive-desktop-server-manager/index";
+import { ServerManager } from "@withonevision/omnihive-desktop-server-manager/index";
 import { ipcRenderer } from "electron-better-ipc";
 import React, { useCallback, useEffect, useState } from "react";
 import ReactTooltip from "react-tooltip";

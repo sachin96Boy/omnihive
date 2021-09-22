@@ -1,0 +1,26 @@
+{
+  "unversionedId": "models/registered-url",
+  "id": "models/registered-url",
+  "isDocsHomePage": false,
+  "title": "RegisteredUrl",
+  "description": "Properties",
+  "source": "@site/docs/models/registered-url.md",
+  "sourceDirName": "models",
+  "slug": "/models/registered-url",
+  "permalink": "/docs/models/registered-url",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/models/registered-url.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "RegisteredUrl"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "RegisteredHiveWorker",
+    "permalink": "/docs/models/registered-hive-worker"
+  },
+  "next": {
+    "title": "RestEndpointExecuteResponse",
+    "permalink": "/docs/models/rest-endpoint-execute-response"
+  }
+}

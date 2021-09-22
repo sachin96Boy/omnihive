@@ -1,0 +1,26 @@
+{
+  "unversionedId": "enums/lifecycle-worker-stage",
+  "id": "enums/lifecycle-worker-stage",
+  "isDocsHomePage": false,
+  "title": "Lifecycle Worker Stage",
+  "description": "Values",
+  "source": "@site/docs/enums/lifecycle-worker-stage.md",
+  "sourceDirName": "enums",
+  "slug": "/enums/lifecycle-worker-stage",
+  "permalink": "/docs/enums/lifecycle-worker-stage",
+  "editUrl": "https://github.com/WithOneVisionTechnologies/omnihive-web/docs/enums/lifecycle-worker-stage.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Lifecycle Worker Stage"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Lifecycle Worker Action",
+    "permalink": "/docs/enums/lifecycle-worker-action"
+  },
+  "next": {
+    "title": "Local Function Type",
+    "permalink": "/docs/enums/local-function-type"
+  }
+}

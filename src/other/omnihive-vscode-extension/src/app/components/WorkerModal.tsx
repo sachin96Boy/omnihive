@@ -1,6 +1,6 @@
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
-import isEqual from "lodash.isequal";
+import { IsHelper } from "@withonevision/omnihive-core-cjs/helpers/IsHelper";
+import { HiveWorkerConfig } from "@withonevision/omnihive-core-cjs/models/HiveWorkerConfig";
+import _ from "lodash";
 import React from "react";
 import AceEditor from "react-ace";
 import semver from "semver";
@@ -234,7 +234,7 @@ export const WorkerModal: React.FC<Props> = (props): React.ReactElement => {
             metadata: parsedMetadata,
         };
 
-        return isEqual(originalEditorObject, newObject);
+        return _.isEqual(originalEditorObject, newObject);
     };
 
     return (

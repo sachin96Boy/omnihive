@@ -1,6 +1,9 @@
-import { AwaitHelper, GraphContext, IDatabaseWorker, ProcFunctionSchema } from "@withonevision/omnihive-core";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
+import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { FieldNode, GraphQLResolveInfo, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
-import { WorkerHelper } from "../helpers/WorkerHelper.js";
+import { WorkerHelper } from "../helpers/WorkerHelper";
 
 export class ParseProcedure {
     // Workers

@@ -1,3 +1,11 @@
 {
-  "extends": "../../../tsconfig.json"
+    "extends": "./../../tsconfig.base.json",
+    "compilerOptions": {
+        "module": "CommonJS",
+        "outDir": "./",
+        "rootDir": "./"
+    },
+    "references": [{ "path": "./../../common/omnihive-core/tsconfig.json" }],
+    "include": ["./**/*.ts", "./package.json", "./**/*.json", "./**/*.sql"],
+    "exclude": ["./node_modules/**/*"]
 }

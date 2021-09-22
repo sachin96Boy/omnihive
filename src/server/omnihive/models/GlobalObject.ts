@@ -1,30 +1,27 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
-import { OmniHiveClient } from "@withonevision/omnihive-client";
-import {
-    AdminEventType,
-    AdminRequest,
-    AdminResponse,
-    AdminRoomType,
-    AwaitHelper,
-    ConnectionSchema,
-    EnvironmentVariable,
-    HiveWorkerConfig,
-    IHiveWorker,
-    IsHelper,
-    RegisteredHiveWorker,
-    RegisteredHiveWorkerSection,
-    RegisteredUrl,
-    ServerConfig,
-    ServerStatus,
-} from "@withonevision/omnihive-core";
+import { OmniHiveClient } from "@withonevision/omnihive-core/client/OmniHiveClient";
+import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
+import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
+import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
+import { ServerStatus } from "@withonevision/omnihive-core/enums/ServerStatus";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
+import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
+import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
+import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
+import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
+import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { RegisteredUrl } from "@withonevision/omnihive-core/models/RegisteredUrl";
+import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import express from "express";
 import fse from "fs-extra";
 import { Server } from "http";
-import { createRequire } from "module";
 import path from "path";
 import socketIo from "socket.io";
-import { CommandLineArgs } from "./CommandLineArgs.js";
+import { CommandLineArgs } from "./CommandLineArgs";
 
 export class GlobalObject {
     public adminServer: socketIo.Server | undefined = undefined;
@@ -202,21 +199,22 @@ export class GlobalObject {
 
         let newWorker: any;
 
+        // Try all manner of imports
+
         try {
-            // Try default ESM import
             newWorker = await import(hiveWorker.importPath);
         } catch {
             try {
-                // Try default ESM with js extension
                 newWorker = await import(`${hiveWorker.importPath}.js`);
             } catch {
                 try {
-                    // Try default ESM adding index.js
-                    newWorker = await import(`${hiveWorker.importPath}/index.js`);
+                    newWorker = await import(`${hiveWorker.importPath}.ts`);
                 } catch {
-                    // Try CommonJS import
-                    const cjsRequire = createRequire(import.meta.url);
-                    newWorker = cjsRequire(hiveWorker.importPath);
+                    try {
+                        newWorker = await import(`${hiveWorker.importPath}/index.js`);
+                    } catch {
+                        newWorker = await import(`${hiveWorker.importPath}/index.ts`);
+                    }
                 }
             }
         }

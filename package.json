@@ -1,7 +1,7 @@
 {
     "name": "omnihive-workspace",
     "private": true,
-    "version": "1.0.0",
+    "version": "6.2.57",
     "workspaces": [
         "./common/*",
         "./custom/*",
@@ -22,6 +22,7 @@
         "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build/buildServer.ts -d",
         "cleanup:core:build": "ts-node ./build/cleanupCoreBuild.ts",
         "desktop:debug": "cd ./src/desktop/omnihive-desktop && pnpm run dev",
+        "desktop:storybook": "cd ./src/desktop/omnihive-desktop-storybook && pnpm run storybook",
         "docs:debug": "cd ./src/other/omnihive-docs && pnpm start",
         "server:debug": "cd ./src/server/omnihive && pnpm run server:debug",
         "taskRunner:debug": "cd ./src/server/omnihive && pnpm run taskRunner:debug",
@@ -44,6 +45,7 @@
         "chai": "4.3.4",
         "chalk": "4.1.2",
         "cross-env": "7.0.3",
+        "enquirer": "2.3.6",
         "eslint": "7.32.0",
         "eslint-config-prettier": "8.3.0",
         "eslint-plugin-prettier": "4.0.0",

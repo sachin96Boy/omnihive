@@ -1,2 +1,6 @@
 !src/css.d.ts
 !src/png.d.ts
+
+!electron-esbuild.config.yaml
+!postcss.config.js
+!tailwind.config.js

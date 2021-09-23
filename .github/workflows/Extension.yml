@@ -16,6 +16,8 @@ jobs:
               uses: actions/setup-node@v1
               with:
                   node-version: "14"
+            - name: Setup PNPM
+              uses: pnpm/action-setup@v2.0.1
             - name: Run Prerequisites
               env:
                   GH_CLI_AUTH_TOKEN: ${{secrets.GH_CLI_AUTH_TOKEN}}

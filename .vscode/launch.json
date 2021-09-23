@@ -26,6 +26,17 @@
         {
             "type": "pwa-node",
             "request": "launch",
+            "name": "OH Desktop : Storybook",
+            "runtimeExecutable": "pnpm",
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": ["run", "desktop:storybook"],
+            "timeout": 10000,
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
             "name": "OH Docs Web : Debug",
             "runtimeExecutable": "pnpm",
             "cwd": "${workspaceFolder}",

@@ -16,16 +16,16 @@
     },
     "scripts": {
         "add:dev:deps": "pnpm add @types/chai @types/faker @types/mocha @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser chai eslint eslint-config-prettier eslint-plugin-prettier faker mocha prettier sinon stylelint stylelint-config-standard typescript -D -E -r",
-        "build": "pnpm node -r ts-node/register ./buildServer.ts",
-        "build:custom": "pnpm node -r ts-node/register ./buildServerManual.ts -w custom",
-        "build:manual": "pnpm node -r ts-node/register ./buildServerManual.ts",
-        "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./buildServer.ts -d",
-        "cleanup:core:build": "ts-node ./cleanupCoreBuild.ts",
-        "desktop:debug": "cd src/desktop/omnihive-desktop && pnpm run dev",
-        "docs:debug": "cd src/other/omnihive-docs && pnpm start",
-        "server:debug": "cd src/server/omnihive && pnpm run server:debug",
-        "taskRunner:debug": "cd src/server/omnihive && pnpm run taskRunner:debug",
-        "test:debug": "docker-compose -f docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f docker-compose.test.yml down"
+        "build": "pnpm node -r ts-node/register ./build/buildServer.ts",
+        "build:custom": "pnpm node -r ts-node/register ./build/buildManual.ts -w custom",
+        "build:manual": "pnpm node -r ts-node/register ./build/buildManual.ts",
+        "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build/buildServer.ts -d",
+        "cleanup:core:build": "ts-node ./build/cleanupCoreBuild.ts",
+        "desktop:debug": "cd ./src/desktop/omnihive-desktop && pnpm run dev",
+        "docs:debug": "cd ./src/other/omnihive-docs && pnpm start",
+        "server:debug": "cd ./src/server/omnihive && pnpm run server:debug",
+        "taskRunner:debug": "cd ./src/server/omnihive && pnpm run taskRunner:debug",
+        "test:debug": "docker-compose -f ./docker/docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f ./docker/docker-compose.test.yml down"
     },
     "devDependencies": {
         "@istanbuljs/esm-loader-hook": "0.1.2",

@@ -1,17 +1,21 @@
 
 #dependencies
+node_modules
 node_modules/**
 **/node_modules/**
+**/node_modules
 pnpm-*.log*
 
 #build
+dist
 dist/**
 **/dist/**
+**/dist
 **/*.js
 **/*.js.map
 **/*.d.ts
 **/*.d.ts.map
-tsconfig.tsbuildinfo
+**/*tsconfig.tsbuildinfo
 
 #test
 .nyc_output
@@ -29,8 +33,7 @@ needs-transpile.js
 !/settings/default_omnihive.env
 
 #types
-!**/globals.omnihive.d.ts
-!**/globals.omnihive.test.d.ts
+!/src/types/**/*
 
 #misc
 **/.DS_Store

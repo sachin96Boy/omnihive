@@ -3,16 +3,18 @@
     <head>
         <%- include('../components/head') -%>
         <script>
-            var status = "<%= status %>";
-            var serverError = "<%= serverError %>";
-            var registeredUrls = "<%= registeredUrls %>";
+            var status = "<%- status %>";
+            var serverError = <%- serverError %>;
+            var registeredUrls = <%- registeredUrls %>;
 
             if (serverError) {
-                console.log(JSON.parse(serverError));
+                console.log("Server Error:");
+                console.log(serverError);
             }
 
             if (registeredUrls) {
-                console.log(JSON.parse(registeredUrls));
+                console.log("Registered URLs");
+                console.log(registeredUrls);
             }
         </script>
     </head>

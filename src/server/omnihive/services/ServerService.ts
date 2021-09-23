@@ -78,7 +78,8 @@ export class ServerService {
                 res.status(200).render("index", {
                     rootUrl: this.webRootUrl,
                     status: global.omnihive.serverStatus,
-                    serverError: global.omnihive.serverError,
+                    registeredUrls: JSON.stringify(global.omnihive.registeredUrls),
+                    serverError: JSON.stringify(global.omnihive.serverError),
                 });
             });
 
@@ -88,11 +89,11 @@ export class ServerService {
                 });
             });
 
-            app.use((_err: any, _req: any, res: any, _next: any) => {
+            app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
                     rootUrl: this.webRootUrl,
                     status: global.omnihive.serverStatus,
-                    serverError: global.omnihive.serverError,
+                    serverError: serializeError(err),
                 });
             });
 
@@ -150,7 +151,6 @@ export class ServerService {
             app.use((err: any, _req: any, res: any, _next: any) => {
                 return res.status(500).render("500", {
                     rootUrl: this.webRootUrl,
-                    registeredUrls: JSON.stringify(global.omnihive.registeredUrls),
                     status: global.omnihive.serverStatus,
                     error: serializeError(err),
                 });

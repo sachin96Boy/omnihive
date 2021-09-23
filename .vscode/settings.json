@@ -6,6 +6,5 @@
     "typescript.preferences.quoteStyle": "double",
     "npm.packageManager": "pnpm",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "autoimport.doubleQuotes": true
+    "editor.formatOnSave": true
 }

@@ -16,6 +16,7 @@ dist/**
 **/*.d.ts
 **/*.d.ts.map
 **/*tsconfig.tsbuildinfo
+!.versionrc.js
 
 #test
 .nyc_output

@@ -5,13 +5,13 @@ import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
 import { HiveWorkerMetadataConfigDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataConfigDatabase";
+import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
 import sqlite from "sqlite3";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 
 export class SqliteWorkerMetadata extends HiveWorkerMetadataConfigDatabase {
     public filename: string = "";

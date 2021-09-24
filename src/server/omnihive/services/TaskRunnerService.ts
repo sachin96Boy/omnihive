@@ -2,15 +2,15 @@
 
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import fse from "fs-extra";
 import { serializeError } from "serialize-error";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { CommonService } from "./CommonService";
-import { CommandLineArgs } from "../models/CommandLineArgs";
 import yaml from "yaml";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { CommandLineArgs } from "../models/CommandLineArgs";
+import { CommonService } from "./CommonService";
 
 export class TaskRunnerService {
     public run = async (rootDir: string, commandLineArgs: CommandLineArgs): Promise<void> => {
@@ -69,7 +69,7 @@ export class TaskRunnerService {
     };
 
     private logError = async (workerName: string, err: Error) => {
-        const logWorker: ILogWorker | undefined = global.omnihive.getWorker<ILogWorker>(
+        const logWorker: ILogWorker | undefined = globalThis.omnihive.getWorker<ILogWorker>(
             HiveWorkerType.Log,
             "__ohBootLogWorker"
         );

@@ -1,6 +1,6 @@
-import { Knex } from "knex";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { Knex } from "knex";
 
 export class DatabaseHelper {
     private joinFieldSuffix: string = "_table";

@@ -1,0 +1,8 @@
+packages:
+    - "src/common/**"
+    - "src/custom/**"
+    - "src/desktop/**"
+    - "src/extras/**"
+    - "src/other/**"
+    - "src/server/**"
+prefer-workspace-packages: true

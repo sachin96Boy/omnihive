@@ -32,7 +32,7 @@ function buildVersionRc() {
 
     getPackageFolders().forEach((directory) => {
         rcObject.bumpFiles.push({
-            filename: `${path.join(".", "src", "server", directory, "package.json")}`,
+            filename: `${path.join(".", "src", "packages", directory, "package.json")}`,
             type: "json",
         });
     });
@@ -42,8 +42,8 @@ function buildVersionRc() {
 
 const getPackageFolders = () => {
     return fse
-        .readdirSync(path.join(`.`, `src`, `server`))
-        .filter((f) => fse.statSync(path.join(`.`, `src`, `server`, f)).isDirectory());
+        .readdirSync(path.join(`.`, `src`, `packages`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `packages`, f)).isDirectory());
 };
 
 module.exports = buildVersionRc();

@@ -1,6 +1,6 @@
 import "rc-dock/dist/rc-dock.css";
 import "tailwindcss/dist/tailwind.css";
-import "../../omnihive-desktop-core/styles/core.css";
+import "../core.css";
 
 export const parameters = {
     actions: { argTypesRegex: "^on[A-Z].*" },

@@ -6,9 +6,7 @@ export interface ThemedImageProps extends React.ImgHTMLAttributes<HTMLImageEleme
     darkimagesource: string;
 }
 
-const ThemedImage: React.FC<ThemedImageProps> = (props: ThemedImageProps): React.ReactElement => {
+export const ThemedImage: React.FC<ThemedImageProps> = (props: ThemedImageProps): React.ReactElement => {
     const { isDarkTheme } = useThemeContext();
     return <img src={isDarkTheme ? props.darkimagesource : props.lightimagesource} {...props} />;
 };
-
-export default ThemedImage;

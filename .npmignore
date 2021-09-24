@@ -1,27 +1,11 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
-# dependencies
-.yarn/*
-**/node_modules/
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
-
-# production
-**/dist
-
-# tests
+node_modules/**
+**/node_modules/**
+dist/**
+**/dist/**
 **/tests
-
-# misc
 **/.DS_Store
 **/*.env
-yarn-debug.log*
-yarn-error.log*
-
-#build
 **/tsconfig.tsbuildinfo
-
-#pack
 **/*.tgz

@@ -1,6 +1,6 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import ServerManager from "@withonevision/omnihive-desktop-server-manager/index";
+import { ServerManager } from "@withonevision/omnihive-desktop-server-manager/index";
 
 const stories = storiesOf("Server Manager", module);
 

@@ -6,14 +6,12 @@ reporter:
     - "text"
     - "text-summary"
 include:
-    - "src/server/**/*"
+    - "src/**/*"
 exclude:
-    - "**/.yarn/**"
     - "**/node_modules/**"
     - "**/tests/**"
     - "**/*.js"
     - "**/*.d.ts"
     - "**/dist/**"
-    - "src/server/**/interfaces/**"
-    - "src/server/**/enums/**"
-    - "build*.ts"
+    - "src/**/interfaces/**"
+    - "src/**/enums/**"

@@ -1,22 +1,22 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
+import fse from "fs-extra";
+import knex, { Knex } from "knex";
+import _ from "lodash";
+import mysql from "mysql";
+import path from "path";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { OmniHiveLogLevel } from "@withonevision/omnihive-core/enums/OmniHiveLogLevel";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
-import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import knex, { Knex } from "knex";
-import fse from "fs-extra";
-import path from "path";
-import mysql from "mysql";
-import orderBy from "lodash.orderby";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 export default class MySqlDatabaseWorker extends HiveWorkerBase implements IDatabaseWorker {
     public connection!: Knex;
@@ -124,7 +124,7 @@ export default class MySqlDatabaseWorker extends HiveWorkerBase implements IData
 
         builder.append("(");
 
-        orderBy(procFunctionSchema, ["parameterOrder"], ["asc"]).forEach(
+        _.orderBy(procFunctionSchema, ["parameterOrder"], ["asc"]).forEach(
             (schema: ProcFunctionSchema, index: number) => {
                 const arg: { name: string; value: any; isString: boolean } | undefined = args.find(
                     (arg) => arg.name.toLowerCase() === schema.parameterName.toLowerCase()

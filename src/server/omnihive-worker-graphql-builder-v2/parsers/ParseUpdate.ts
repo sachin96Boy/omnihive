@@ -1,13 +1,13 @@
-import { GraphQLResolveInfo } from "graphql";
-import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
-import { GraphHelper } from "../helpers/GraphHelper";
+import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { GraphQLResolveInfo } from "graphql";
 import { Knex } from "knex";
-import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
-import { WorkerHelper } from "../helpers/WorkerHelper";
 import { DatabaseHelper } from "../helpers/DatabaseHelper";
+import { GraphHelper } from "../helpers/GraphHelper";
+import { WorkerHelper } from "../helpers/WorkerHelper";
 
 export class ParseUpdate {
     // Workers

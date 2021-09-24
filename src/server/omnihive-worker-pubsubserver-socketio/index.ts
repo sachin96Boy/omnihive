@@ -3,14 +3,14 @@ import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IPubSubServerWorker } from "@withonevision/omnihive-core/interfaces/IPubSubServerWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
-import * as socketio from "socket.io";
+import { Server, Socket } from "socket.io";
 
 export class SocketIoPubSubServerWorkerMetadata {
     public port: number = 8080;
 }
 
 export default class SocketIoPubSubServerWorker extends HiveWorkerBase implements IPubSubServerWorker {
-    private ioServer!: socketio.Server;
+    private ioServer!: Server;
     private listeners: PubSubListener[] = [];
 
     constructor() {
@@ -22,10 +22,10 @@ export default class SocketIoPubSubServerWorker extends HiveWorkerBase implement
         const typedMetadata: SocketIoPubSubServerWorkerMetadata =
             this.checkObjectStructure<SocketIoPubSubServerWorkerMetadata>(SocketIoPubSubServerWorkerMetadata, metadata);
 
-        this.ioServer = new socketio.Server();
+        this.ioServer = new Server();
         this.ioServer.listen(typedMetadata.port);
 
-        this.ioServer.on("connection", (socket: socketio.Socket) => {
+        this.ioServer.on("connection", (socket: Socket) => {
             socket.on("join-room", (room: string) => {
                 socket.join(room);
             });

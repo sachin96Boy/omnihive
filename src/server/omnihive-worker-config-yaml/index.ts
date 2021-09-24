@@ -4,8 +4,8 @@ import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ObjectHelper } from "@withonevision/omnihive-core/helpers/ObjectHelper";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import fse from "fs-extra";
 import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
+import fse from "fs-extra";
 import yaml from "yaml";
 
 export class JsonConfigWorkerMetadata {

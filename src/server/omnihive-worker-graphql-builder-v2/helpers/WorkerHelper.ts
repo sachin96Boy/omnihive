@@ -1,4 +1,3 @@
-import { Knex } from "knex";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
@@ -8,6 +7,7 @@ import { IEncryptionWorker } from "@withonevision/omnihive-core/interfaces/IEncr
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { GraphContext } from "@withonevision/omnihive-core/models/GraphContext";
+import { Knex } from "knex";
 
 export class WorkerHelper {
     /**

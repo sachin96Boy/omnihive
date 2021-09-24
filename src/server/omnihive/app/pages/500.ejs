@@ -3,10 +3,11 @@
     <head>
         <%- include('../components/head') -%>
         <script>
-            var status = "<%= status %>";
-            var serverError = "<%= serverError %>";
+            var status = "<%- status %>";
+            var serverError = <%- serverError %>;
 
             if (serverError) {
+                console.log("Server Error:");
                 console.log(serverError);
             }
         </script>

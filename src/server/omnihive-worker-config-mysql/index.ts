@@ -1,17 +1,17 @@
+import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
-import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
+import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
+import { HiveWorkerMetadataConfigDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataConfigDatabase";
+import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import fse from "fs-extra";
 import knex, { Knex } from "knex";
 import mysql from "mysql2";
 import { Pool } from "mysql2/promise";
-import { HiveWorkerMetadataConfigDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataConfigDatabase";
-import { EnvironmentVariableType } from "@withonevision/omnihive-core/enums/EnvironmentVariableType";
-import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
-import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 export default class MySqlConfigWorker extends HiveWorkerBase implements IConfigWorker {
     public connection!: Knex;

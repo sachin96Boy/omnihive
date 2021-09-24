@@ -1,20 +1,15 @@
 {
-  "compilerOptions": {
-    "allowJs": true,
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "jsx": "react",
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
-    "module": "ES2020",
-    "moduleResolution": "Node",
-    "noImplicitAny": true,
-    "outDir": "dist",
-    "paths": {
-      "@withonevision/*": ["../*", "../../server/*", "../../extras/*", "../../other/*"]
+    "extends": "./../../tsconfig.base.json",
+    "compilerOptions": {
+        "lib": ["DOM", "DOM.Iterable", "ES2021"],
+        "outDir": "./",
+        "rootDir": "./"
     },
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "target": "ES2020"
-  }
+    "references": [
+        { "path": "./../../common/omnihive-core/tsconfig.json" },
+        { "path": "./../../common/omnihive-desktop-core/tsconfig.json" },
+        { "path": "./../omnihive-desktop-server-manager/tsconfig.json" }
+    ],
+    "include": ["./**/*.ts", "./**/*.tsx", "./**/*.png", "./**/*.css"],
+    "exclude": ["./node_modules/**/*"]
 }

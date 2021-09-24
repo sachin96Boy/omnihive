@@ -10,7 +10,7 @@
             },
             "label": "Watch VS Code Extension",
             "options": {
-                "cwd": "./src/other/omnihive-vscode-manager"
+                "cwd": "./src/other/omnihive-vscode-extension"
             },
             "problemMatcher": "$tsc-watch",
             "type": "npm",
@@ -18,7 +18,19 @@
             "isBackground": true,
             "presentation": {
                 "reveal": "always"
+            }
+        },
+        {
+            "label": "Clean Up Core Dev Build",
+            "options": {
+                "cwd": "./"
             },
+            "type": "npm",
+            "script": "cleanup:core:build",
+            "isBackground": false,
+            "presentation": {
+                "reveal": "always"
+            }
         }
     ]
 }

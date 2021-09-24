@@ -2,20 +2,20 @@
 /// <reference path="../../types/globals.omnihive.d.ts" />
 
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import chalk from "chalk";
-import exitHook from "exit-hook";
+import dotenv from "dotenv";
 import figlet from "figlet";
 import forever from "forever-monitor";
+import fse from "fs-extra";
 import ipc from "node-ipc";
+import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import yargs from "yargs";
 import { ServerRunnerType } from "./enums/ServerRunnerType";
+import exitHook from "./helpers/ExitHook";
 import { CommandLineArgs } from "./models/CommandLineArgs";
 import { TaskRunnerService } from "./services/TaskRunnerService";
-import dotenv from "dotenv";
-import fse from "fs-extra";
-import path from "path";
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 
 // Setup IPC
 
@@ -90,9 +90,9 @@ const init = async () => {
         commandLineArgs.environmentFile &&
         !fse.existsSync(commandLineArgs.environmentFile)
     ) {
-        if (fse.existsSync(path.join(global.omnihive.ohDirName, commandLineArgs.environmentFile))) {
+        if (fse.existsSync(path.join(runningDir, commandLineArgs.environmentFile))) {
             dotenv.config({
-                path: path.join(global.omnihive.ohDirName, commandLineArgs.environmentFile),
+                path: path.join(runningDir, commandLineArgs.environmentFile),
             });
         }
     }
@@ -146,7 +146,7 @@ const createServerChild = async (commandLineArgs: CommandLineArgs) => {
             `${
                 serverRunnerType === ServerRunnerType.Production
                     ? `node`
-                    : `node -r ts-node/register --inspect --inspect-port=0`
+                    : `node --loader ts-node/esm --inspect --inspect-port=0`
             }`,
             `serverRunner.${serverRunnerType === ServerRunnerType.Production ? `js` : `ts`}`,
             `${ipcId}`,

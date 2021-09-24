@@ -9,19 +9,21 @@ import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { IConfigWorker } from "@withonevision/omnihive-core/interfaces/IConfigWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
 import { HiveWorkerConfig } from "@withonevision/omnihive-core/models/HiveWorkerConfig";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import execa, { ExecaSyncError } from "execa";
-import readPkgUp, { NormalizedReadResult } from "read-pkg-up";
 import { ConfigType } from "../enums/ConfigType";
 import { CommandLineArgs } from "../models/CommandLineArgs";
 import { GlobalObject } from "../models/GlobalObject";
+import packageJson from "../package.json";
 
 export class CommonService {
     public bootLoader = async (rootDir: string, commandLineArgs: CommandLineArgs) => {
+        //@ts-ignore
         global.omnihive = new GlobalObject();
+
         global.omnihive.ohDirName = rootDir;
         global.omnihive.commandLineArgs = commandLineArgs;
         global.omnihive.serverConfig = new ServerConfig();
@@ -57,16 +59,13 @@ export class CommonService {
                 });
             });
 
-        const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
-
         // Load Config Worker
         if (
-            !IsHelper.isNullOrUndefined(pkgJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive.configWorkers)
+            !IsHelper.isNullOrUndefined(packageJson) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive.configWorkers)
         ) {
-            const configWorkers: HiveWorkerConfig[] = pkgJson.packageJson.omniHive.configWorkers as HiveWorkerConfig[];
+            const configWorkers: HiveWorkerConfig[] = packageJson.omniHive.configWorkers as HiveWorkerConfig[];
             let selectedConfigWorkerName: string;
 
             switch (process.env["OH_CONFIG_TYPE"] as ConfigType) {
@@ -157,12 +156,11 @@ export class CommonService {
 
         // Load Boot Workers
         if (
-            !IsHelper.isNullOrUndefined(pkgJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive.bootWorkers)
+            !IsHelper.isNullOrUndefined(packageJson) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive.bootWorkers)
         ) {
-            const bootWorkers: HiveWorkerConfig[] = pkgJson.packageJson.omniHive.bootWorkers as HiveWorkerConfig[];
+            const bootWorkers: HiveWorkerConfig[] = packageJson.omniHive.bootWorkers as HiveWorkerConfig[];
 
             for (const bootWorker of bootWorkers) {
                 if (
@@ -187,19 +185,17 @@ export class CommonService {
             "__ohBootLogWorker"
         );
 
-        const pkgJson: NormalizedReadResult | undefined = await AwaitHelper.execute(readPkgUp());
         const serverConfig: ServerConfig = await AwaitHelper.execute(configWorker.get());
 
         // Load Core Workers
         logWorker?.write(OmniHiveLogLevel.Info, `Loading core workers from package.json...`);
 
         if (
-            !IsHelper.isNullOrUndefined(pkgJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive.coreWorkers)
+            !IsHelper.isNullOrUndefined(packageJson) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive.coreWorkers)
         ) {
-            const coreWorkers: HiveWorkerConfig[] = pkgJson.packageJson.omniHive.coreWorkers as HiveWorkerConfig[];
+            const coreWorkers: HiveWorkerConfig[] = packageJson.omniHive.coreWorkers as HiveWorkerConfig[];
 
             for (const coreWorker of coreWorkers) {
                 if (
@@ -223,13 +219,11 @@ export class CommonService {
         // Load Default Workers
         logWorker?.write(OmniHiveLogLevel.Info, `Registering default workers from package.json...`);
         if (
-            !IsHelper.isNullOrUndefined(pkgJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive.defaultWorkers)
+            !IsHelper.isNullOrUndefined(packageJson) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive.defaultWorkers)
         ) {
-            const defaultWorkers: HiveWorkerConfig[] = pkgJson.packageJson.omniHive
-                .defaultWorkers as HiveWorkerConfig[];
+            const defaultWorkers: HiveWorkerConfig[] = packageJson.omniHive.defaultWorkers as HiveWorkerConfig[];
 
             defaultWorkers.forEach((defaultWorker: HiveWorkerConfig) => {
                 if (
@@ -245,15 +239,14 @@ export class CommonService {
         logWorker?.write(OmniHiveLogLevel.Info, `Working on package management...`);
 
         if (
-            !IsHelper.isNullOrUndefined(pkgJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.dependencies) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive) &&
-            !IsHelper.isNullOrUndefined(pkgJson.packageJson.omniHive.coreDependencies)
+            !IsHelper.isNullOrUndefined(packageJson) &&
+            !IsHelper.isNullOrUndefined(packageJson.dependencies) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive) &&
+            !IsHelper.isNullOrUndefined(packageJson.omniHive.coreDependencies)
         ) {
             // Build lists
-            const corePackages: any = pkgJson.packageJson.omniHive.coreDependencies;
-            const loadedPackages: any = pkgJson.packageJson.dependencies;
+            const corePackages: any = packageJson.omniHive.coreDependencies;
+            const loadedPackages: any = packageJson.dependencies;
             const workerPackages: any = {};
 
             global.omnihive.serverConfig.workers.forEach((hiveWorker: HiveWorkerConfig) => {
@@ -299,7 +292,7 @@ export class CommonService {
             } else {
                 logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Package(s)`);
                 const removeCommand = new StringBuilder();
-                removeCommand.append("yarn remove ");
+                removeCommand.append("pnpm remove ");
 
                 packagesToRemove.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packageName} Package`);
@@ -316,16 +309,6 @@ export class CommonService {
                     logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
                     throw error;
                 }
-            }
-
-            logWorker?.write(OmniHiveLogLevel.Info, `Cleaning Yarn Cache`);
-
-            // Clean Yarn Cache
-            try {
-                execa.commandSync("yarn cache clean", { cwd: global.omnihive.ohDirName });
-            } catch (error) {
-                logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
-                throw error;
             }
 
             //Find out what to add
@@ -366,7 +349,7 @@ export class CommonService {
             } else {
                 logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Package(s)`);
                 const addCommand = new StringBuilder();
-                addCommand.append("yarn add ");
+                addCommand.append("pnpm add ");
 
                 packagesToAdd.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packageName} As a New Package`);

@@ -3,7 +3,7 @@ import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IPubSubClientWorker } from "@withonevision/omnihive-core/interfaces/IPubSubClientWorker";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { PubSubListener } from "@withonevision/omnihive-core/models/PubSubListener";
-import * as socketio from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 export class SocketIoPubSubClientWorkerMetadata {
     public serverUrl: string = "";
@@ -12,7 +12,7 @@ export class SocketIoPubSubClientWorkerMetadata {
 
 export default class SocketIoPubSubClientWorker extends HiveWorkerBase implements IPubSubClientWorker {
     private connected: boolean = false;
-    private ioClient!: socketio.Socket;
+    private ioClient!: Socket;
     private listeners: PubSubListener[] = [];
     private rooms: string[] = [];
     private typedMetadata!: SocketIoPubSubClientWorkerMetadata;
@@ -27,7 +27,7 @@ export default class SocketIoPubSubClientWorker extends HiveWorkerBase implement
             SocketIoPubSubClientWorkerMetadata,
             metadata
         );
-        this.ioClient = socketio.io({ path: this.typedMetadata.serverUrl });
+        this.ioClient = io({ path: this.typedMetadata.serverUrl });
 
         this.ioClient.on("connect", () => {
             this.connect();

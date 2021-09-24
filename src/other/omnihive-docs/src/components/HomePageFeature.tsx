@@ -4,16 +4,16 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 import React from "react";
 
 import styles from "./HomePageFeature.module.scss";
-import ThemedImage from "./ThemedImage";
+import { ThemedImage } from "./ThemedImage";
 
-export interface FeatureProps {
+export interface HomePageFeatureProps {
     lightImageSource: string;
     darkImageSource: string;
     title: string;
     description: React.ReactElement;
 }
 
-const Feature: React.FC<FeatureProps> = ({
+export const HomePageFeature: React.FC<HomePageFeatureProps> = ({
     lightImageSource,
     darkImageSource,
     title,
@@ -37,5 +37,3 @@ const Feature: React.FC<FeatureProps> = ({
         </div>
     );
 };
-
-export default Feature;

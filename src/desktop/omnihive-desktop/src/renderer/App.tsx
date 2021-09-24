@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
-import ReactTooltip from "react-tooltip";
-import ServerManager from "@withonevision/omnihive-desktop-server-manager/index";
-import { DesktopModule } from "@withonevision/omnihive-desktop-core/models/DesktopModule";
-import _ from "lodash";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { AppSettings } from "@withonevision/omnihive-desktop-core/models/AppSettings";
-import blankAppImage from "../../resources/blank_app.png";
+import { DesktopModule } from "@withonevision/omnihive-desktop-core/models/DesktopModule";
 import serverManagerIcon from "@withonevision/omnihive-desktop-server-manager/assets/sidebar_icon.png";
+import { ServerManager } from "@withonevision/omnihive-desktop-server-manager/index";
 import { ipcRenderer } from "electron-better-ipc";
+import React, { useCallback, useEffect, useState } from "react";
+import ReactTooltip from "react-tooltip";
+import blankAppImage from "../../resources/blank_app.png";
 
 const registeredModules: DesktopModule[] = [
     {

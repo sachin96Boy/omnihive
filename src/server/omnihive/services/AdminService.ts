@@ -14,13 +14,13 @@ import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { ITokenWorker } from "@withonevision/omnihive-core/interfaces/ITokenWorker";
 import { AdminRequest } from "@withonevision/omnihive-core/models/AdminRequest";
 import { AdminResponse } from "@withonevision/omnihive-core/models/AdminResponse";
-import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import { EnvironmentVariable } from "@withonevision/omnihive-core/models/EnvironmentVariable";
+import { ServerConfig } from "@withonevision/omnihive-core/models/ServerConfig";
 import ipc from "node-ipc";
 import redis from "redis";
+import { serializeError } from "serialize-error";
 import * as socketio from "socket.io";
 import { v4 as uuidv4 } from "uuid";
-import { serializeError } from "serialize-error";
 
 let ipcId: string = uuidv4();
 ipc.config.id = ipcId;

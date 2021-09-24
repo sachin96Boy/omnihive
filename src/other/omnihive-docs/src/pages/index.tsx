@@ -4,8 +4,8 @@ import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
 import React from "react";
 
-import HomePageFeature from "../components/HomePageFeature";
-import HomeSection, { HomeSectionProps } from "../components/HomeSection";
+import { HomePageFeature } from "../components/HomePageFeature";
+import { HomeSection, HomeSectionProps } from "../components/HomeSection";
 import styles from "./index.module.scss";
 
 interface FeatureData {
@@ -62,9 +62,9 @@ const features: FeatureData[] = [
         darkImageSource: "img/scale-dark.png",
         description: (
             <>
-                Host and run OmniHive however you like. Download a ZIP file to a file system, run from NPM/Yarn global,
-                run as a Docker image, run inside Kubernetes...anything you like. Cluster-aware settings allow you to
-                run behind any kind of load-balancing system.
+                Host and run OmniHive however you like. Download a ZIP file to a file system, run from NPM/Yarn/PNPM
+                global, run as a Docker image, run inside Kubernetes...anything you like. Cluster-aware settings allow
+                you to run behind any kind of load-balancing system.
             </>
         ),
     },
@@ -257,7 +257,7 @@ const sections: HomeSectionProps[] = [
 
 const Home: React.FC = (): React.ReactElement => {
     const context = useDocusaurusContext();
-    const { siteConfig = {} } = context;
+    const { siteConfig } = context;
     return (
         <Layout title={`${siteConfig.title}`} description="OmniHive Documentation Home">
             <header className={`hero hero--primary ${styles.heroBanner}`}>

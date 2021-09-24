@@ -1,5 +1,6 @@
 /// <reference path="../../../types/globals.omnihive.d.ts" />
 
+import { OmniHiveClient } from "@withonevision/omnihive-core/client/OmniHiveClient";
 import { AdminEventType } from "@withonevision/omnihive-core/enums/AdminEventType";
 import { AdminRoomType } from "@withonevision/omnihive-core/enums/AdminRoomType";
 import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
@@ -20,7 +21,6 @@ import fse from "fs-extra";
 import { Server } from "http";
 import path from "path";
 import socketIo from "socket.io";
-import { OmniHiveClient } from "@withonevision/omnihive-client";
 import { CommandLineArgs } from "./CommandLineArgs";
 
 export class GlobalObject {
@@ -197,7 +197,28 @@ export class GlobalObject {
 
         this.checkWorkerImportPath(hiveWorker);
 
-        const newWorker: any = await import(hiveWorker.importPath);
+        let newWorker: any;
+
+        // Try all manner of imports
+
+        try {
+            newWorker = await import(hiveWorker.importPath);
+        } catch {
+            try {
+                newWorker = await import(`${hiveWorker.importPath}.js`);
+            } catch {
+                try {
+                    newWorker = await import(`${hiveWorker.importPath}.ts`);
+                } catch {
+                    try {
+                        newWorker = await import(`${hiveWorker.importPath}/index.js`);
+                    } catch {
+                        newWorker = await import(`${hiveWorker.importPath}/index.ts`);
+                    }
+                }
+            }
+        }
+
         const newWorkerInstance: any = new newWorker.default();
         (newWorkerInstance as IHiveWorker).environmentVariables = this.serverConfig.environmentVariables;
         await AwaitHelper.execute((newWorkerInstance as IHiveWorker).init(hiveWorker.name, hiveWorker.metadata));

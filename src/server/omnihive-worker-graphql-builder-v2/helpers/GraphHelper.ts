@@ -1,7 +1,7 @@
-import { FieldNode, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
-import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IDateWorker } from "@withonevision/omnihive-core/interfaces/IDateWorker";
+import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { FieldNode, ListValueNode, ObjectFieldNode, ObjectValueNode } from "graphql";
 
 export class GraphHelper {
     private columnCount: number = 0;

@@ -1,6 +1,6 @@
+import { UserInputError } from "apollo-server";
 import { GraphQLScalarType } from "graphql";
 import { Kind } from "graphql/language";
-import { UserInputError } from "apollo-server";
 
 export default new GraphQLScalarType({
     name: "DbBoolean",

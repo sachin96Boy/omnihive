@@ -1,19 +1,21 @@
-import { describe, it, beforeEach, afterEach, after } from "mocha";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { expect } from "chai";
-import path from "path";
-import FileSystemWorker from "..";
 import faker from "faker";
 import fse from "fs-extra";
+import { after, afterEach, beforeEach, describe, it } from "mocha";
+import path from "path";
+import FileSystemWorker from "../index";
+
+const runningDir: string = __dirname;
 
 const testValues = {
     workerName: "testFilesystemFsExtra",
-    dirnamePath: __dirname,
-    workDirectoryPath: path.join(__dirname, "work-directory"),
-    copyDirectoryPath: path.join(__dirname, "work-copy-folder"),
+    dirnamePath: runningDir,
+    workDirectoryPath: path.join(runningDir, "work-directory"),
+    copyDirectoryPath: path.join(runningDir, "work-copy-folder"),
     testData: JSON.parse(faker.datatype.json()),
     testJsonFileName: "test-json-file.json",
-    testJsonFilePath: path.join(__dirname, "work-directory", "test-json-file.json"),
+    testJsonFilePath: path.join(runningDir, "work-directory", "test-json-file.json"),
 };
 
 const initWorker = async (): Promise<FileSystemWorker> => {

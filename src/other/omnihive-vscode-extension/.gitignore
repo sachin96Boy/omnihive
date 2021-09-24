@@ -1,0 +1,9 @@
+out/**
+**/out/**
+**/out
+/out
+out
+
+!postcss.config.js
+!tailwind.config.js
+!webpack.config.js

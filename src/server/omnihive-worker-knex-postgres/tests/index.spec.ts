@@ -1,6 +1,5 @@
 /// <reference path="../../../types/globals.omnihive.test.d.ts" />
 
-import { describe, it, beforeEach, before } from "mocha";
 import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
@@ -9,10 +8,11 @@ import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/
 import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
 import { expect } from "chai";
 import fs from "fs";
+import { before, beforeEach, describe, it } from "mocha";
 import path from "path";
-import PostgresDatabaseWorker from "..";
-import { GlobalTestObject } from "../../../tests/GlobalTestObject";
-import NullLogWorker from "../../omnihive-worker-log-null";
+import { GlobalTestObject } from "@withonevision/omnihive-test-core/GlobalTestObject";
+import NullLogWorker from "@withonevision/omnihive-worker-log-null/index";
+import PostgresDatabaseWorker from "../index";
 
 const testValues = {
     metadata: {

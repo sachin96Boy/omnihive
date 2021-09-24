@@ -3,7 +3,6 @@ import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IUserWorker } from "@withonevision/omnihive-core/interfaces/IUserWorker";
 import { AuthUser } from "@withonevision/omnihive-core/models/AuthUser";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-
 import {
     AppMetadata,
     AuthenticationClient,

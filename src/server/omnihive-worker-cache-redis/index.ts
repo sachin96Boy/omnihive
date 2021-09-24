@@ -1,8 +1,9 @@
+import Redis from "ioredis";
+import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
+import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { ICacheWorker } from "@withonevision/omnihive-core/interfaces/ICacheWorker";
-import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
-import Redis from "ioredis";
+
 export class RedisCacheWorkerMetadata {
     public connectionString: string = "";
 }

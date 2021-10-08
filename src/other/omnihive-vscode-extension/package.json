@@ -254,6 +254,7 @@
         "compile": "npm-run-all compile:*",
         "compile:extension": "tsc --build ./tsconfig.json",
         "compile:app": "NODE_ENV=production pnpm run webpack --mode production",
+        "deploy": "vsce publish",
         "vscode:prepublish": "pnpm run compile",
         "watch": "npm-run-all -p watch:*",
         "watch:extension": "tsc --build --watch ./tsconfig.json",

@@ -15,13 +15,14 @@
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build": "pnpm node -r ts-node/register ./build-server.ts",
         "build:cleanupCoreBuild": "ts-node ./build-cleanupCoreBuild.ts",
         "build:custom": "pnpm node -r ts-node/register ./build-manual.ts -w custom",
         "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build-server.ts -d",
         "build:docs": "cd ./src/other/omnihive-docs && pnpm run build",
+        "build:extension": "cd ./src/other/omnihive-vscode-extension && pnpm run build",
         "build:manual": "pnpm node -r ts-node/register ./build-manual.ts",
         "build:release": "standard-version",
+        "build:server": "pnpm node -r ts-node/register ./build-server.ts",
         "desktop:debug": "cd ./src/desktop/omnihive-desktop && pnpm run dev",
         "desktop:storybook": "cd ./src/desktop/omnihive-desktop-storybook && pnpm run storybook",
         "docs:debug": "cd ./src/other/omnihive-docs && pnpm start",

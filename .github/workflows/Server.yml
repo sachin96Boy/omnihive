@@ -45,7 +45,7 @@ jobs:
               with:
                   push: true
                   tags: withonevision/omnihive
-                  file: ./omnihive.dockerfile
+                  file: ./docker-server.dockerfile
                   context: ./
             - name: Get Version Number
               id: version
@@ -55,7 +55,7 @@ jobs:
               with:
                   push: true
                   tags: withonevision/omnihive:${{ steps.version.outputs.VERSION }}
-                  file: ./omnihive.dockerfile
+                  file: ./docker-server.dockerfile
                   context: ./
             - name: Create GitHub Release
               run: |

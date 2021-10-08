@@ -18,7 +18,7 @@ jobs:
             - name: Build Docusaurus
               run: pnpm run build:docs
             - name: Build Docker Images
-              run: docker build . -f ./docker/docs.dockerfile --tag omnihive-web
+              run: docker build . -f ./docker-docs.dockerfile --tag omnihive-web
             - name: GitHub Action for DigitalOcean - doctl
               uses: digitalocean/action-doctl@v2.1.0
               with:

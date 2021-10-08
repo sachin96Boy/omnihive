@@ -15,20 +15,20 @@
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build": "pnpm node -r ts-node/register ./build/buildServer.ts",
-        "build:custom": "pnpm node -r ts-node/register ./build/buildManual.ts -w custom",
-        "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build/buildServer.ts -d",
+        "build": "pnpm node -r ts-node/register ./build-server.ts",
+        "build:custom": "pnpm node -r ts-node/register ./build-manual.ts -w custom",
+        "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build-server.ts -d",
         "build:docs": "cd ./src/other/omnihive-docs && pnpm run build",
-        "build:manual": "pnpm node -r ts-node/register ./build/buildManual.ts",
+        "build:manual": "pnpm node -r ts-node/register ./build-manual.ts",
         "build:release": "standard-version",
         "desktop:debug": "cd ./src/desktop/omnihive-desktop && pnpm run dev",
         "desktop:storybook": "cd ./src/desktop/omnihive-desktop-storybook && pnpm run storybook",
         "docs:debug": "cd ./src/other/omnihive-docs && pnpm start",
         "misc:addDevDeps": "pnpm add @types/chai @types/faker @types/mocha @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser chai eslint eslint-config-prettier eslint-plugin-prettier faker mocha prettier sinon stylelint stylelint-config-standard typescript -D -E -r",
-        "misc:cleanupCoreBuild": "ts-node ./build/cleanupCoreBuild.ts",
+        "misc:cleanupCoreBuild": "ts-node ./build-cleanupCoreBuild.ts",
         "server:debug": "cd ./src/server/omnihive && pnpm run server:debug",
         "taskRunner:debug": "cd ./src/server/omnihive && pnpm run taskRunner:debug",
-        "test:debug": "docker-compose -f ./docker/docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f ./docker/docker-compose.test.yml down"
+        "test:debug": "docker-compose -f ./docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f ./docker-compose.test.yml down"
     },
     "devDependencies": {
         "@istanbuljs/esm-loader-hook": "0.1.2",

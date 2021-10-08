@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.3.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.0...v6.3.1) (2021-10-08)
+
+
+### Code Maintenance
+
+* **monorepo:** changing settings for conventional changelog ([a2623b8](https://github.com/WithOneVisionTechnologies/omnihive/commit/a2623b80ed921ad26a0bdc07c76159081d911f52))
+* **monorepo:** cleaning up file layout ([d821cf0](https://github.com/WithOneVisionTechnologies/omnihive/commit/d821cf06ceb18f65931ebf3fb9b6a207de0a5d1a))
+
+
+### Build
+
+* **monorepo:** :green_heart: working on vscode extension build ([b0a6ddc](https://github.com/WithOneVisionTechnologies/omnihive/commit/b0a6ddc97cb6d5cb22aac6b11db887ef1c0697ad))
+
 ## [6.3.0](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.2.62...v6.3.0) (2021-10-08)
 
 

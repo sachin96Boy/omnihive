@@ -55,7 +55,7 @@ module.exports = {
                         },
                         {
                             label: "All Backing Options",
-                            to: "/become-backer",
+                            to: "https://www.omnihive.io/become-backer",
                         },
                     ],
                 },
@@ -76,7 +76,7 @@ module.exports = {
                         },
                         {
                             label: "All Social Media",
-                            to: "/social-media",
+                            to: "https://www.omnihive.io/social-media",
                         },
                     ],
                 },

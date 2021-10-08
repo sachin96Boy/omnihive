@@ -18,6 +18,7 @@
         "build": "pnpm node -r ts-node/register ./build/buildServer.ts",
         "build:custom": "pnpm node -r ts-node/register ./build/buildManual.ts -w custom",
         "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build/buildServer.ts -d",
+        "build:docs": "cd ./src/other/omnihive-docs && pnpm run build",
         "build:manual": "pnpm node -r ts-node/register ./build/buildManual.ts",
         "build:release": "standard-version",
         "desktop:debug": "cd ./src/desktop/omnihive-desktop && pnpm run dev",

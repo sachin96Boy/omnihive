@@ -4,8 +4,8 @@
 /.docusaurus
 .docusaurus
 
-static/**
-**/static/**
-**/static
-/static
-static
+build/**
+**/build/**
+**/build
+/build
+build

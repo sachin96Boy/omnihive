@@ -1,9 +1,6 @@
 name: Build & Publish
 
 on:
-    push:
-        branches: [main]
-
     workflow_dispatch:
 
 jobs:
@@ -12,12 +9,16 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v2
-            - name: Yarn Install
-              run: yarn install
+            - name: PNPM Install
+              uses: pnpm/action-setup@v2.0.1
+              with:
+                  version: 6.16.1
+                  run_install: |
+                      - recursive: true
             - name: Build Docusaurus
-              run: yarn run build
+              run: pnpm run build:docs
             - name: Build Docker Images
-              run: docker build . -f ./build.dockerfile --tag omnihive-web
+              run: docker build . -f ./docker/docs.dockerfile --tag omnihive-web
             - name: GitHub Action for DigitalOcean - doctl
               uses: digitalocean/action-doctl@v2.1.0
               with:

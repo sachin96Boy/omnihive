@@ -26,7 +26,7 @@
                 "cwd": "./"
             },
             "type": "npm",
-            "script": "cleanup:core:build",
+            "script": "build:cleanupCoreBuild",
             "isBackground": false,
             "presentation": {
                 "reveal": "always"

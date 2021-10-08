@@ -20,7 +20,8 @@
         "With One Vision"
     ],
     "scripts": {
-        "build": "tsc"
+        "build:dev": "tsc",
+        "build:prod": "tsc --p ./tsconfig.prod.json"
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",

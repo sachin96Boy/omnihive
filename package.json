@@ -17,7 +17,7 @@
     "scripts": {
         "build:cleanupCoreBuild": "ts-node ./build-cleanupCoreBuild.ts",
         "build:custom": "pnpm node -r ts-node/register ./build-manual.ts -w custom",
-        "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build-server.ts -d",
+        "build:debug": "node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build-server.ts -d",
         "build:docs": "cd ./src/other/omnihive-docs && pnpm run build",
         "build:extension": "cd ./src/other/omnihive-vscode-extension && pnpm run build",
         "build:manual": "pnpm node -r ts-node/register ./build-manual.ts",

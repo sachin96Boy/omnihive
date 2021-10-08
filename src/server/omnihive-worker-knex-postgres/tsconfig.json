@@ -8,6 +8,6 @@
         { "path": "./../../common/omnihive-core/tsconfig.json" },
         { "path": "./../../server/omnihive-worker-log-null/tsconfig.json" }
     ],
-    "include": ["./**/*.ts", "./package.json", "./**/*.json", "./**/*.sql"],
+    "include": ["./**/*.ts", "./package.json"],
     "exclude": ["./node_modules/**/*"]
 }

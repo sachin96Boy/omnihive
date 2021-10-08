@@ -21,7 +21,8 @@
     ],
     "type": "commonjs",
     "scripts": {
-        "build": "tsc"
+        "build:dev": "tsc",
+        "build:prod": "tsc --p ./tsconfig.prod.json"
     },
     "dependencies": {
         "axios": "0.22.0",

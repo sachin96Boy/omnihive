@@ -1,6 +1,11 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "outDir": "./dist"
-    }
+        "outDir": "./../../../dist/desktop/omnihive-desktop-storybook"
+    },
+    "references": [
+        { "path": "./../../common/omnihive-core/tsconfig.prod.json" },
+        { "path": "./../../common/omnihive-desktop-core/tsconfig.prod.json" },
+        { "path": "./../omnihive-desktop-server-manager/tsconfig.prod.json" }
+    ]
 }

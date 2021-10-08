@@ -19,9 +19,6 @@
         "OmniHive",
         "With One Vision"
     ],
-    "scripts": {
-        "build": "tsc"
-    },
     "devDependencies": {
         "@types/chai": "4.2.22",
         "@types/faker": "5.5.8",

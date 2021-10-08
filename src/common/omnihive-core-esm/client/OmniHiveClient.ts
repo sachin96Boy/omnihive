@@ -138,7 +138,7 @@ export class OmniHiveClient {
 
             axios
                 .post(graphUrl, JSON.stringify(dataObject), config as Object)
-                .then((response) => {
+                .then((response: AxiosResponse<any>) => {
                     if (
                         !IsHelper.isNullOrUndefined(response.data.errors) &&
                         !IsHelper.isEmptyArray(response.data.errors)
@@ -191,11 +191,11 @@ export class OmniHiveClient {
             }
 
             if (!IsHelper.isEmptyStringOrWhitespace(this.accessToken)) {
-                config.headers["x-omnihive-access"] = this.accessToken;
+                headers["x-omnihive-access"] = this.accessToken;
             }
 
             if (!IsHelper.isEmptyStringOrWhitespace(this.authToken)) {
-                config.headers["authorization"] = "BEARER " + this.authToken;
+                headers["authorization"] = "BEARER " + this.authToken;
             }
 
             if (!IsHelper.isEmptyObject(headers)) {
@@ -225,7 +225,7 @@ export class OmniHiveClient {
             }
 
             axios(config)
-                .then((response: AxiosResponse) => {
+                .then((response: AxiosResponse<any>) => {
                     if (
                         !IsHelper.isNullOrUndefined(response.data.errors) &&
                         !IsHelper.isEmptyArray(response.data.errors)

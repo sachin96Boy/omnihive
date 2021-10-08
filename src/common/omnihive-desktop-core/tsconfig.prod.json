@@ -1,6 +1,7 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "outDir": "./dist"
-    }
+        "outDir": "./../../../dist/common/omnihive-desktop-core"
+    },
+    "references": [{ "path": "./../omnihive-core/tsconfig.prod.json" }]
 }

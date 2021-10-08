@@ -23,7 +23,8 @@
     "types": "./omnihive.d.ts",
     "bin": "./omnihive.js",
     "scripts": {
-        "build": "tsc",
+        "build:dev": "tsc",
+        "build:prod": "tsc --p ./tsconfig.prod.json",
         "taskRunner:debug": "nodemon --no-stdin --config ./nodemon.taskRunner.json",
         "server:debug": "nodemon --no-stdin --config ./nodemon.server.json"
     },

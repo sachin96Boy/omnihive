@@ -7,6 +7,7 @@ import path from "path";
 import replaceInFile, { ReplaceInFileConfig } from "replace-in-file";
 import tar from "tar";
 import yargs from "yargs";
+import rimraf from "rimraf";
 
 // Master build process
 const build = async (): Promise<void> => {
@@ -52,14 +53,6 @@ const build = async (): Promise<void> => {
 const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
     return new Listr<any>([
         {
-            title: "Run Standard Version",
-            task: () => runVersioning(debug),
-            exitOnError: true,
-            options: {
-                showTimer: true,
-            },
-        },
-        {
             title: "Clear Out Existing Dist Directories",
             task: clearOutExistingDist,
             exitOnError: true,
@@ -69,7 +62,7 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
         },
         {
             title: "Build Repo",
-            task: buildRepo,
+            task: async () => await buildRepo(),
             exitOnError: true,
             options: {
                 showTimer: true,
@@ -109,8 +102,8 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
             },
         },
         {
-            title: "Update Package Versions",
-            task: async () => await updateVersion(),
+            title: "Update Workspace Versions",
+            task: async () => await updateWorkspaceVersion(),
             options: {
                 showTimer: true,
             },
@@ -143,118 +136,118 @@ const setupTasks = (debug: boolean, distTag: string): Listr<any> => {
                 showTimer: true,
             },
         },
-        {
-            title: "Push GitHub changes",
-            skip: (_ctx) => debug,
-            task: pushGithubChanges,
-            exitOnError: true,
-            options: {
-                showTimer: true,
-            },
-        },
     ]);
 };
 
 // Helpers
-const buildRepo = () => {
-    execa.commandSync("npx tsc -b --force", { cwd: path.join(`..`) });
+const buildRepo = async () => {
+    fse.readdirSync(path.join(`.`, `src`, `common`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `common`, f)).isDirectory())
+        .forEach((directory) => {
+            if (directory === "omnihive-test-core") {
+                return;
+            }
+
+            execa.commandSync("pnpm run build:prod", { cwd: path.join(`.`, `src`, `common`, directory) });
+            rimraf(path.join(`.`, `dist`, `common`, directory, `tests`), () => {});
+            fse.rm(path.join(`.`, `dist`, `common`, directory, `tsconfig.prod.tsbuildinfo`));
+        });
+
+    execa.commandSync("pnpm run build:prod", { cwd: path.join(`.`, `src`, `server`, `omnihive-worker-log-null`) });
+    execa.commandSync("pnpm run build:prod", { cwd: path.join(`.`, `src`, `server`, `omnihive-worker-log-console`) });
+
+    fse.readdirSync(path.join(`.`, `src`, `server`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `server`, f)).isDirectory())
+        .forEach((directory) => {
+            execa.commandSync("pnpm run build:prod", { cwd: path.join(`.`, `src`, `server`, directory) });
+            rimraf(path.join(`.`, `dist`, `server`, directory, `tests`), () => {});
+            fse.rm(path.join(`.`, `dist`, `server`, directory, `tsconfig.prod.tsbuildinfo`));
+        });
 };
 
 const clearOutExistingDist = () => {
-    fse.rmSync(path.join(`..`, `dist`), { recursive: true, force: true });
+    fse.rmSync(path.join(`.`, `dist`), { recursive: true, force: true });
 };
 
 const copyRequiredFile = (file: string) => {
-    fse.copyFileSync(path.join(`..`, `src`, `${file}`), path.join(`..`, `dist`, `${file}`));
+    fse.copyFileSync(path.join(`.`, `src`, `${file}`), path.join(`.`, `dist`, `${file}`));
 };
 
 const copyRequiredFolder = (folder: string) => {
-    fse.copySync(path.join(`..`, `src`, `${folder}`), path.join(`..`, `dist`, `${folder}`));
+    fse.copySync(path.join(`.`, `src`, `${folder}`), path.join(`.`, `dist`, `${folder}`));
 };
 
 const createTarball = () => {
     tar.c(
         {
             gzip: true,
-            cwd: path.join("..", "dist", "server", "omnihive"),
+            cwd: path.join(".", "dist", "server", "omnihive"),
         },
-        [".."]
+        ["."]
     ).pipe(fse.createWriteStream("./omnihive.tgz"));
 };
 
 const getPublishFolders = () => {
     // Get all packages directories
-    return fse
-        .readdirSync(path.join(`..`, `dist`))
-        .filter((f) => fse.statSync(path.join(`..`, `dist`, f)).isDirectory());
+    const directories: string[] = [];
+
+    fse.readdirSync(path.join(`.`, `dist`, `common`))
+        .filter((f) => fse.statSync(path.join(`.`, `dist`, `common`, f)).isDirectory())
+        .forEach((directory: string) => directories.push(path.join(`common`, directory)));
+
+    fse.readdirSync(path.join(`.`, `dist`, `server`))
+        .filter((f) => fse.statSync(path.join(`.`, `dist`, `server`, f)).isDirectory())
+        .forEach((directory: string) => directories.push(path.join(`server`, directory)));
+
+    return directories;
 };
 
 const getRequiredFiles = () => {
     return [
-        path.join(`omnihive`, `.npmignore`),
-        path.join(`omnihive-worker-knex-mssql`, `.npmignore`),
-        path.join(`omnihive-worker-knex-mysql`, `.npmignore`),
-        path.join(`omnihive-worker-knex-postgres`, `.npmignore`),
-        path.join(`omnihive-worker-knex-sqlite`, `.npmignore`),
+        path.join(`server`, `omnihive`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-knex-mssql`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-knex-mysql`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-knex-postgres`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-knex-sqlite`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-config-mssql`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-config-mysql`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-config-postgres`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-config-sqlite`, `.npmignore`),
+        path.join(`server`, `omnihive-worker-config-mssql`, `defaultConfig.sql`),
+        path.join(`server`, `omnihive-worker-config-mysql`, `defaultConfig.sql`),
+        path.join(`server`, `omnihive-worker-config-postgres`, `defaultConfig.sql`),
+        path.join(`server`, `omnihive-worker-config-sqlite`, `defaultConfig.sql`),
     ];
 };
 
 const getRequiredFolders = () => {
     return [
-        path.join(`omnihive`, `app`),
-        path.join(`omnihive-worker-knex-mssql`, `scripts`),
-        path.join(`omnihive-worker-knex-mysql`, `scripts`),
-        path.join(`omnihive-worker-knex-postgres`, `scripts`),
-        path.join(`omnihive-worker-knex-sqlite`, `scripts`),
+        path.join(`server`, `omnihive`, `app`),
+        path.join(`server`, `omnihive-worker-knex-mssql`, `scripts`),
+        path.join(`server`, `omnihive-worker-knex-mysql`, `scripts`),
+        path.join(`server`, `omnihive-worker-knex-postgres`, `scripts`),
+        path.join(`server`, `omnihive-worker-knex-sqlite`, `scripts`),
     ];
 };
 
-const isEmptyString = (value: unknown): boolean => {
-    return isString(value) && String(value).length === 0;
-};
-
-const isEmptyStringOrWhitespace = (value: unknown): boolean => {
-    return isEmptyString(value) || isWhiteSpaceString(value);
-};
-
-const isNull = (value: unknown): value is null => {
-    return value === null;
-};
-
-const isNullOrUndefined = (value: unknown): value is null | undefined => {
-    return isNull(value) || isUndefined(value);
-};
-
-const isString = (value: unknown): value is string => {
-    return typeof value === "string";
-};
-
-const isUndefined = (value: unknown): value is undefined => {
-    return typeof value === "undefined" || value === undefined;
-};
-
-const isWhiteSpaceString = (value: unknown): value is string => {
-    return isString(value) && !isEmptyString(value) && !/\S/.test(String(value));
-};
-
 const publish = (directory: string, distTag: string) => {
-    fse.rmdirSync(path.join(`..`, `dist`, directory, `tests`), { recursive: true });
-
     let publishString: string = "npm publish --access public";
 
-    if (!isEmptyStringOrWhitespace(distTag) && distTag !== "latest") {
+    if (distTag !== "" && distTag !== "latest") {
         publishString = `${publishString} --tag ${distTag}`;
     }
 
     console.log(`Publishing NPM Package at ${directory}`);
-    execa.commandSync(publishString, { cwd: path.join(`..`, `dist`, `${directory}`) });
+    execa.commandSync(publishString, { cwd: path.join(`.`, `dist`, `${directory}`) });
 };
 
 const removeNonCorePackagesFromMainPackageJson = () => {
     // Get package.json
-    const packageJson = JSON.parse(fse.readFileSync(path.join(`..`, `dist`, `omnihive`), { encoding: "utf8" }));
+    const packageJson = JSON.parse(
+        fse.readFileSync(path.join(`.`, `dist`, `server`, `omnihive`, `package.json`), { encoding: "utf8" })
+    );
 
-    if (isNullOrUndefined(packageJson)) {
+    if (!packageJson) {
         throw new Error("OmniHive package.json not found");
     }
 
@@ -272,34 +265,27 @@ const removeNonCorePackagesFromMainPackageJson = () => {
         }
 
         if (removeLoadedPackage) {
-            if (!isNullOrUndefined(packageJson.dependencies)) {
+            if (packageJson.dependencies) {
                 delete packageJson.dependencies[loadedPackage[0]];
             }
         }
     }
 
-    if (!isNullOrUndefined(packageJson)) {
-        fse.writeFileSync(path.join(`..`, `dist`, `omnihive`), JSON.stringify(packageJson));
+    if (packageJson) {
+        fse.writeFileSync(
+            path.join(`.`, `dist`, `server`, `omnihive`, `package.json`),
+            JSON.stringify(packageJson, null, 2)
+        );
     }
 };
 
-const pushGithubChanges = () => {
-    execa.commandSync(`git push --follow-tags origin main`, { cwd: path.join(`..`) });
-};
-
-const runVersioning = (debug: boolean) => {
-    if (debug) {
-        console.log(execa.commandSync("yarn run release:dry-run", { cwd: path.join(`..`), shell: true }).stdout);
-    } else {
-        console.log(execa.commandSync("yarn run release", { cwd: path.join(`..`), shell: true }).stdout);
-    }
-};
-
-const updateVersion = async () => {
+const updateWorkspaceVersion = async () => {
     // Get package.json
-    const packageJson = JSON.parse(fse.readFileSync(path.join(`..`, `dist`, `omnihive`), { encoding: "utf8" }));
+    const packageJson = JSON.parse(
+        fse.readFileSync(path.join(`.`, `dist`, `server`, `omnihive`, `package.json`), { encoding: "utf8" })
+    );
 
-    if (isNullOrUndefined(packageJson)) {
+    if (!packageJson) {
         throw new Error("Update version cannot find the main package.json");
     }
 
@@ -313,15 +299,6 @@ const updateVersion = async () => {
     };
 
     await replaceInFile.replaceInFile(replaceWorkspaceOptions);
-
-    const replaceVersionOptions: ReplaceInFileConfig = {
-        allowEmptyPaths: true,
-        files: [path.join(`dist`, `**`, `package.json`)],
-        from: /"version": "0.0.1"/g,
-        to: `"version": "${currentVersion}"`,
-    };
-
-    await replaceInFile.replaceInFile(replaceVersionOptions);
 };
 
 // Master runner

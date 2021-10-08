@@ -1,4 +1,4 @@
-name: Build & Publish
+name: OmniHive Web/Docs
 
 on:
     workflow_dispatch:

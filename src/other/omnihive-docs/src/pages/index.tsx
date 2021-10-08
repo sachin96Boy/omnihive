@@ -289,8 +289,8 @@ const Home: React.FC = (): React.ReactElement => {
                     <HomeSection data={item.data} orientation={item.orientation} content={item.content} />
                 ))}
 
-                <div className={`${styles.cornerRibbon} ${styles.bottomLeft}`}>In Pre-Alpha!</div>
-                <div className={`${styles.cornerRibbon} ${styles.bottomRight}`}>In Pre-Alpha!</div>
+                <div className={`${styles.cornerRibbon} ${styles.bottomLeft}`}>In Beta!</div>
+                <div className={`${styles.cornerRibbon} ${styles.bottomRight}`}>In Beta!</div>
             </main>
         </Layout>
     );

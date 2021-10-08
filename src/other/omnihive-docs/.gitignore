@@ -1,0 +1,11 @@
+.docusaurus/**
+**/.docusaurus/**
+**/.docusaurus
+/.docusaurus
+.docusaurus
+
+build/**
+**/build/**
+**/build
+/build
+build

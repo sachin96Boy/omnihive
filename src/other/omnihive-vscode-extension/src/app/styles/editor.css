@@ -1,0 +1,27 @@
+.ag-theme-alpine {
+    --ag-alpine-active-color: white;
+    --ag-header-background-color: #d38d13;
+    --ag-header-column-resize-handle-color: white;
+    --ag-header-foreground-color: white;
+    --ag-odd-row-background-color: #f3f4f6;
+    --ag-range-selection-border-color: #b45309;
+    --ag-row-border-color: #ebeff3;
+    --ag-row-hover-color: #e5e7eb;
+    --ag-secondary-foreground-color: white;
+    --ag-selected-row-background-color: #212121;
+}
+
+input:focus,
+.ag-theme-alpine .ag-picker-field-wrapper:focus {
+    outline: none !important;
+    box-shadow: 0 0 5px 3px #d97706 !important;
+}
+
+.ag-grid-oh-system-env-variable {
+    background-color: #fffbeb;
+    color: #b45309;
+}
+
+.ag-theme-alpine .ag-row-selected {
+    color: white;
+}

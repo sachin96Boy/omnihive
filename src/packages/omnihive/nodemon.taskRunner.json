@@ -1,6 +1,0 @@
-{
-    "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.git"],
-    "watch": ["../../**/*.ts"],
-    "exec": "yarn node --inspect --inspect-port=0 -r ts-node/register ./omnihive.ts taskRunner",
-    "ext": "ts"
-}

@@ -1,50 +1,10 @@
 {
-    "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[json]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "editor.formatOnSave": true,
-    "mocha.requires": ["ts-node/register"],
-    "mocha.files.glob": "packages/**/tests/**/*.ts",
-    "mocha.runTestsOnSave": "true",
-    "mocha.showInExplorer": false,
-    "mocha.options": {
-        "timeout": 5000,
-        "retries": 5
-    },
-    "mocha.coverage": {
-        "enable": true,
-        "decoration": true,
-        "runWithInterval": false,
-        "autoUpdateInterval": 20000,
-        "activeOnStart": true,
-        "runAfterTest": true,
-        "reporters": ["lcov"]
-    },
-    "mocha.logVerbose": false,
-    "mocha.parallelTests": 5,
-    "mocha.sideBarOptions": {
-        "lens": true,
-        "decoration": true,
-        "autoUpdateTime": 2000,
-        "showDebugTestStatus": true
-    },
     "debug.javascript.autoAttachFilter": "onlyWithFlag",
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": false,
-    "conventionalCommits.scopes": [
-        "omnihive",
-        "client",
-        "worker",
-        "monorepo"
-    ],
-    "typescript.preferences.quoteStyle": "double"
+    "conventionalCommits.scopes": ["omnihive", "client", "worker", "monorepo", "desktop"],
+    "typescript.preferences.quoteStyle": "double",
+    "npm.packageManager": "pnpm",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
 }

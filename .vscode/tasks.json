@@ -1,0 +1,36 @@
+// See https://go.microsoft.com/fwlink/?LinkId=733558
+// for the documentation about the tasks.json format
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "label": "Watch VS Code Extension",
+            "options": {
+                "cwd": "./src/other/omnihive-vscode-extension"
+            },
+            "problemMatcher": "$tsc-watch",
+            "type": "npm",
+            "script": "watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Clean Up Core Dev Build",
+            "options": {
+                "cwd": "./"
+            },
+            "type": "npm",
+            "script": "cleanup:core:build",
+            "isBackground": false,
+            "presentation": {
+                "reveal": "always"
+            }
+        }
+    ]
+}

@@ -91,7 +91,7 @@ export default class LaunchDarklyNodeFeatureWorker extends HiveWorkerBase implem
 
         try {
             value = await AwaitHelper.execute(this.client.instance.variation(name, this.user, defaultValue));
-        } catch (err) {
+        } catch (error) {
             throw new Error(`Failed to retrieve LaunchDarkly feature ${name}`);
         }
 

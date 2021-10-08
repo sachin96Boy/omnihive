@@ -1,0 +1,13 @@
+{
+    "extends": "./../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./",
+        "rootDir": "./"
+    },
+    "references": [
+        { "path": "./../../common/omnihive-core/tsconfig.json" },
+        { "path": "./../../server/omnihive-worker-log-null/tsconfig.json" }
+    ],
+    "include": ["./**/*.ts", "./package.json", "./**/*.json", "./**/*.sql"],
+    "exclude": ["./node_modules/**/*"]
+}

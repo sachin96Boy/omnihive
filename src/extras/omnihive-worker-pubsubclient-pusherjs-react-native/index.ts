@@ -93,7 +93,7 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
 
             this.pusher = new Pusher(this.typedMetadata.key, { cluster: this.typedMetadata.cluster });
             this.connected = true;
-        } catch (err) {
+        } catch (error) {
             if (retry <= this.typedMetadata.maxRetries) {
                 this.connect(retry++);
             } else {
@@ -159,8 +159,8 @@ export default class PusherJsReactNativePubSubClientWorker extends HiveWorkerBas
                 this.connect();
 
                 return true;
-            } catch (err) {
-                throw new Error(err.message);
+            } catch (error) {
+                throw error;
             }
         } else if (!this.connected && !autoConnect) {
             return false;

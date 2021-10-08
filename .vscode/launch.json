@@ -1,0 +1,99 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "OH Desktop : Attach to Renderer",
+            "port": 8315,
+            "request": "attach",
+            "type": "pwa-chrome",
+            "webRoot": "${workspaceFolder}",
+            "timeout": 10000
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "OH Desktop : Main Debug",
+            "runtimeExecutable": "pnpm",
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": ["run", "desktop:debug"],
+            "timeout": 10000,
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "OH Desktop : Storybook",
+            "runtimeExecutable": "pnpm",
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": ["run", "desktop:storybook"],
+            "timeout": 10000,
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "OH Docs Web : Debug",
+            "runtimeExecutable": "pnpm",
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": ["run", "docs:debug"],
+            "timeout": 10000,
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "OH Server : Cut Release",
+            "runtimeExecutable": "pnpm",
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": ["run", "build:release"],
+            "timeout": 10000,
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "OH Server : Debug",
+            "runtimeExecutable": "pnpm",
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": ["run", "server:debug"],
+            "timeout": 10000,
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Test Suite : Debug",
+            "runtimeExecutable": "pnpm",
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": ["run", "test:debug"],
+            "timeout": 10000,
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "VS Code Extension : Debug",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": ["--extensionDevelopmentPath=${workspaceFolder}/src/other/omnihive-vscode-extension"],
+            "outFiles": ["${workspaceFolder}/src/other/omnihive-vscode-extension/out/**/*.js"],
+            "preLaunchTask": "Watch VS Code Extension",
+            "postDebugTask": "Clean Up Core Dev Build",
+            "sourceMaps": true,
+            "console": "integratedTerminal"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Compound : OH Desktop : Full Debug",
+            "configurations": ["OH Desktop : Main Debug", "OH Desktop : Attach to Renderer"]
+        }
+    ]
+}

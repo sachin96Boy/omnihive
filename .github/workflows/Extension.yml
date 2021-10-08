@@ -30,11 +30,11 @@ jobs:
                   echo $GH_CLI_AUTH_TOKEN > gh.txt
                   gh auth login --with-token < gh.txt
                   rm gh.txt
-            - name: Package Extension
+            - name: Package and Publish Extension
               id: packageExtension
-              run: vsce package
-            - name: Publish Extension
-              id: publishExtension
               env:
                   VSCE_PAT: ${{secrets.VSCE_PAT}}
-              run: pnpm run deploy
+              run: |
+                  cd src/other/omnihive-vscode-extension
+                  vsce package
+                  pnpm run deploy

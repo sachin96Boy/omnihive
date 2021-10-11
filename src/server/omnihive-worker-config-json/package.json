@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-config-json",
-    "version": "6.3.1",
+    "version": "6.3.2",
     "description": "OmniHive JSON Config Worker",
     "license": "MIT",
     "author": {

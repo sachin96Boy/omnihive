@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.3.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.1...v6.3.2) (2021-10-11)
+
+
+### Build
+
+* **monorepo:** :hammer: major update to build ([8389930](https://github.com/WithOneVisionTechnologies/omnihive/commit/838993064b7ca682e362ddf7998a95f5797d0a0f))
+* **monorepo:** fix for test and build colliding ([c53326d](https://github.com/WithOneVisionTechnologies/omnihive/commit/c53326d51f338382df89138e789f1ffa2aadb961))
+* **vscode:** WIP extension build ([c1cc61d](https://github.com/WithOneVisionTechnologies/omnihive/commit/c1cc61dae6d2c8ecf529588706e14edfd04ad1a2))
+
 ### [6.3.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.0...v6.3.1) (2021-10-08)
 
 

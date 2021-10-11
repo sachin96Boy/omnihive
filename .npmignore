@@ -9,3 +9,5 @@ dist/**
 **/*.env
 **/tsconfig.tsbuildinfo
 **/*.tgz
+**/tsconfig.json
+**/tsconfig.prod.json

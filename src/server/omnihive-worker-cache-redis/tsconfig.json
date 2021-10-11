@@ -5,6 +5,6 @@
         "rootDir": "./"
     },
     "references": [{ "path": "./../../common/omnihive-core/tsconfig.json" }],
-    "include": ["./**/*.ts", "./package.json", "./**/*.json", "./**/*.sql"],
+    "include": ["./**/*.ts", "./package.json"],
     "exclude": ["./node_modules/**/*"]
 }

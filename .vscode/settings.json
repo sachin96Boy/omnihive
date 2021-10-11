@@ -2,7 +2,7 @@
     "debug.javascript.autoAttachFilter": "onlyWithFlag",
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": false,
-    "conventionalCommits.scopes": ["omnihive", "client", "worker", "monorepo", "desktop"],
+    "conventionalCommits.scopes": ["monorepo", "common", "server", "desktop", "vscode", "docs", "tests", "extras"],
     "typescript.preferences.quoteStyle": "double",
     "npm.packageManager": "pnpm",
     "editor.defaultFormatter": "esbenp.prettier-vscode",

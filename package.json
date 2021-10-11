@@ -1,7 +1,7 @@
 {
     "name": "omnihive-workspace",
     "private": true,
-    "version": "6.2.57",
+    "version": "6.3.3",
     "workspaces": [
         "./common/*",
         "./custom/*",
@@ -15,20 +15,21 @@
         "url": "https://github.com/WithOneVisionTechnologies/omnihive.git"
     },
     "scripts": {
-        "build": "pnpm node -r ts-node/register ./build/buildServer.ts",
-        "build:custom": "pnpm node -r ts-node/register ./build/buildManual.ts -w custom",
-        "build:debug": "pnpm node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build/buildServer.ts -d",
+        "build:cleanupCoreBuild": "ts-node ./build-cleanupCoreBuild.ts",
+        "build:custom": "pnpm node -r ts-node/register ./build-manual.ts -w custom",
+        "build:debug": "node --inspect=127.0.0.1:9228 --trace-warnings -r ts-node/register ./build-server.ts -d",
         "build:docs": "cd ./src/other/omnihive-docs && pnpm run build",
-        "build:manual": "pnpm node -r ts-node/register ./build/buildManual.ts",
+        "build:extension": "cd ./src/other/omnihive-vscode-extension && pnpm run build",
+        "build:manual": "pnpm node -r ts-node/register ./build-manual.ts",
         "build:release": "standard-version",
+        "build:server": "pnpm node -r ts-node/register ./build-server.ts",
         "desktop:debug": "cd ./src/desktop/omnihive-desktop && pnpm run dev",
         "desktop:storybook": "cd ./src/desktop/omnihive-desktop-storybook && pnpm run storybook",
         "docs:debug": "cd ./src/other/omnihive-docs && pnpm start",
         "misc:addDevDeps": "pnpm add @types/chai @types/faker @types/mocha @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser chai eslint eslint-config-prettier eslint-plugin-prettier faker mocha prettier sinon stylelint stylelint-config-standard typescript -D -E -r",
-        "misc:cleanupCoreBuild": "ts-node ./build/cleanupCoreBuild.ts",
         "server:debug": "cd ./src/server/omnihive && pnpm run server:debug",
         "taskRunner:debug": "cd ./src/server/omnihive && pnpm run taskRunner:debug",
-        "test:debug": "docker-compose -f ./docker/docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f ./docker/docker-compose.test.yml down"
+        "test:debug": "docker-compose -f ./docker-compose.test.yml up -d --force-recreate && nyc mocha --inspect --exit;docker-compose -f ./docker-compose.test.yml down"
     },
     "devDependencies": {
         "@istanbuljs/esm-loader-hook": "0.1.2",
@@ -37,13 +38,13 @@
         "@types/faker": "5.5.8",
         "@types/fs-extra": "9.0.13",
         "@types/mocha": "9.0.0",
-        "@types/node": "16.9.6",
+        "@types/node": "16.10.3",
         "@types/rimraf": "3.0.2",
         "@types/tar": "4.0.5",
         "@types/yargs": "17.0.3",
-        "@typescript-eslint/eslint-plugin": "4.31.2",
-        "@typescript-eslint/parser": "4.31.2",
-        "axios": "0.21.4",
+        "@typescript-eslint/eslint-plugin": "4.33.0",
+        "@typescript-eslint/parser": "4.33.0",
+        "axios": "0.22.0",
         "chai": "4.3.4",
         "chalk": "4.1.2",
         "cross-env": "7.0.3",
@@ -55,9 +56,9 @@
         "faker": "5.5.3",
         "figlet": "1.5.2",
         "fs-extra": "10.0.0",
-        "listr2": "3.12.1",
-        "mocha": "9.1.1",
-        "nodemon": "2.0.12",
+        "listr2": "3.12.2",
+        "mocha": "9.1.2",
+        "nodemon": "2.0.13",
         "nyc": "15.1.0",
         "prettier": "2.4.1",
         "replace-in-file": "6.2.0",
@@ -70,6 +71,6 @@
         "tar": "6.1.11",
         "ts-node": "10.2.1",
         "typescript": "4.4.3",
-        "yargs": "17.1.1"
+        "yargs": "17.2.1"
     }
 }

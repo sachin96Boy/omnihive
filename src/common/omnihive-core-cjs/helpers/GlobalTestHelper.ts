@@ -1,10 +1,10 @@
-/// <reference path="../../types/globals.omnihive.test.d.ts" />
+/// <reference path="../../../types/globals.omnihive.cjs.test.d.ts" />
 
-import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
-import { IHiveWorker } from "@withonevision/omnihive-core/interfaces/IHiveWorker";
-import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
+import { IsHelper } from "./IsHelper";
+import { IHiveWorker } from "../interfaces/IHiveWorker";
+import { RegisteredHiveWorker } from "../models/RegisteredHiveWorker";
 
-export class GlobalTestObject {
+export class GlobalTestHelper {
     public ohDirName: string = "";
     public registeredWorkers: RegisteredHiveWorker[] = [];
 

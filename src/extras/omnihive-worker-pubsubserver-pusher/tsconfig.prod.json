@@ -1,6 +1,7 @@
 {
-    "extends": "./tsconfig.base.json",
+    "extends": "./tsconfig.json",
     "compilerOptions": {
-        "outDir": "./dist"
-    }
+        "outDir": "./../../../dist/extras/omnihive-worker-pubsubserver-pusher"
+    },
+    "references": [{ "path": "./../../common/omnihive-core/tsconfig.prod.json" }]
 }

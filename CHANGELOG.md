@@ -1,0 +1,75 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [6.3.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.2...v6.3.3) (2021-10-11)
+
+
+### Build
+
+* **monorepo:** fix for TestHelper bad builds ([b050e80](https://github.com/WithOneVisionTechnologies/omnihive/commit/b050e8067c6ccf78b299f29eb92c5bb858b03508))
+
+### [6.3.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.1...v6.3.2) (2021-10-11)
+
+
+### Build
+
+* **monorepo:** :hammer: major update to build ([8389930](https://github.com/WithOneVisionTechnologies/omnihive/commit/838993064b7ca682e362ddf7998a95f5797d0a0f))
+* **monorepo:** fix for test and build colliding ([c53326d](https://github.com/WithOneVisionTechnologies/omnihive/commit/c53326d51f338382df89138e789f1ffa2aadb961))
+* **vscode:** WIP extension build ([c1cc61d](https://github.com/WithOneVisionTechnologies/omnihive/commit/c1cc61dae6d2c8ecf529588706e14edfd04ad1a2))
+
+### [6.3.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.0...v6.3.1) (2021-10-08)
+
+
+### Code Maintenance
+
+* **monorepo:** changing settings for conventional changelog ([a2623b8](https://github.com/WithOneVisionTechnologies/omnihive/commit/a2623b80ed921ad26a0bdc07c76159081d911f52))
+* **monorepo:** cleaning up file layout ([d821cf0](https://github.com/WithOneVisionTechnologies/omnihive/commit/d821cf06ceb18f65931ebf3fb9b6a207de0a5d1a))
+
+
+### Build
+
+* **monorepo:** :green_heart: working on vscode extension build ([b0a6ddc](https://github.com/WithOneVisionTechnologies/omnihive/commit/b0a6ddc97cb6d5cb22aac6b11db887ef1c0697ad))
+
+## [6.3.0](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.2.62...v6.3.0) (2021-10-08)
+
+
+### Bug Fixes
+
+* **worker:** graph builder v2 inserts now work with aliasing ([7dfe188](https://github.com/WithOneVisionTechnologies/omnihive/commit/7dfe188e3fc2c3860fddabf3eb0ad3146d324469))
+* **worker:** Pulling in Kaleb's changes ([bd94be0](https://github.com/WithOneVisionTechnologies/omnihive/commit/bd94be0404af0c9ac3b1c58694a7f0b535127a85))
+
+
+### Documentation
+
+* **web:** Switch to beta ([d28a26a](https://github.com/WithOneVisionTechnologies/omnihive/commit/d28a26a9660027074e16efa7c2579e7e539dcc81))
+
+
+### Code Maitenance
+
+* **build:** Building docs ([bf381ff](https://github.com/WithOneVisionTechnologies/omnihive/commit/bf381ff31cc271af99792a95ec46ac0361836f7b))
+* **build:** Fixing docker context ([c215140](https://github.com/WithOneVisionTechnologies/omnihive/commit/c2151404c3819d7318ce63fd0367eb150fb1ef52))
+* **build:** Rename actions ([12737b3](https://github.com/WithOneVisionTechnologies/omnihive/commit/12737b3f558a58d37fef259f64a14cf92dfb0dd5))
+* **desktop:** first desktop commit to monorepo ([a291e92](https://github.com/WithOneVisionTechnologies/omnihive/commit/a291e92bb0ba611c33ccfa3a8014ac9686fb507f))
+* **monorepo:**  More WIP to get to ESM/CJS ([4fb2d81](https://github.com/WithOneVisionTechnologies/omnihive/commit/4fb2d81aae4ab948016af703d3b0aaaabd8679c4))
+* **monorepo:**  Yarn updates ([14ce6f1](https://github.com/WithOneVisionTechnologies/omnihive/commit/14ce6f1508caa653ec62cf0218870d8a96889b47))
+* **monorepo:** Add in docusaurus stuff ([1e090bf](https://github.com/WithOneVisionTechnologies/omnihive/commit/1e090bff0e2ef9497f561caf2400d9ad07b28ae6))
+* **monorepo:** Add in omnihive-docs ([df76dfd](https://github.com/WithOneVisionTechnologies/omnihive/commit/df76dfda2baa552cfea94e40cdf110ad65c3438d))
+* **monorepo:** All files converted to ESM ([ddae303](https://github.com/WithOneVisionTechnologies/omnihive/commit/ddae303706f8a2a1898831ee48ab8c134902bade))
+* **monorepo:** Build fixes ([92005d3](https://github.com/WithOneVisionTechnologies/omnihive/commit/92005d3cd59271a5eff10555b35828905f58a6b6))
+* **monorepo:** Cleaning up settings file ([421a39b](https://github.com/WithOneVisionTechnologies/omnihive/commit/421a39bda9a204e424bdba3d2ad032c121f2a612))
+* **monorepo:** Common cleanup ([4538a6c](https://github.com/WithOneVisionTechnologies/omnihive/commit/4538a6c724bfae7c1870b02ee3766027126b8345))
+* **monorepo:** Debug fixes ([d424ab6](https://github.com/WithOneVisionTechnologies/omnihive/commit/d424ab682e4d41ccda7e3a12b6eaaf3d760a5a24))
+* **monorepo:** Final cleanup before working on builds ([0fce7f1](https://github.com/WithOneVisionTechnologies/omnihive/commit/0fce7f13969a132ce37d579362a5763f45f916dd))
+* **monorepo:** Finishing ESM and merging ([d106ed6](https://github.com/WithOneVisionTechnologies/omnihive/commit/d106ed65c26d477f5ec64996aab48a9ef98fd186))
+* **monorepo:** Full debugging in desktop ([ccc8655](https://github.com/WithOneVisionTechnologies/omnihive/commit/ccc8655d51e3e0596ba1be951fb101f8ea1a5977))
+* **monorepo:** monorepo fixes ([51a4f78](https://github.com/WithOneVisionTechnologies/omnihive/commit/51a4f788dd0b08eae51c17a1f18a8881258fc419))
+* **monorepo:** picking up all changes ([73ac087](https://github.com/WithOneVisionTechnologies/omnihive/commit/73ac087fa8b8f24cfbc1bb5f1d349f79b95b6b25))
+* **monorepo:** Rebuilt from scratch on pnpm ([25ef3f0](https://github.com/WithOneVisionTechnologies/omnihive/commit/25ef3f011e4c46bdefb98de676d14917961f07cc))
+* **monorepo:** reorganizing monorepo ([309680b](https://github.com/WithOneVisionTechnologies/omnihive/commit/309680bb27a920a651639f82eb714e3f5d83a76e))
+* **monorepo:** TypeScript cleanup ([dcd16cd](https://github.com/WithOneVisionTechnologies/omnihive/commit/dcd16cd3b9ac16faab90bd6f91610ab157b951ab))
+* **monorepo:** VS Code plugin working ([ef8b9fd](https://github.com/WithOneVisionTechnologies/omnihive/commit/ef8b9fdd49d55413ced3b0164bd5887e6d66e08d))
+* **monorepo:** WIP of breaking out common libs to ESM ([dbd2ea5](https://github.com/WithOneVisionTechnologies/omnihive/commit/dbd2ea522acf475a39c31b8a9550a0890c315da8))
+* **monorepo:** WIP of ESM. ([9f40a60](https://github.com/WithOneVisionTechnologies/omnihive/commit/9f40a60dd56903a4e52c18f2536e2afa4d994f59))
+* **monorepo:** Working on build ([edc91d7](https://github.com/WithOneVisionTechnologies/omnihive/commit/edc91d7357379b98d1bf6b6f494a5fdd63e95506))
+* **monorepo:** Wrapping up ESM stuff ([f9442f4](https://github.com/WithOneVisionTechnologies/omnihive/commit/f9442f489a57e66698061ace149795babc987adc))

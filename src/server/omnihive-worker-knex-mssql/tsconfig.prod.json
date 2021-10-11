@@ -1,6 +1,10 @@
 {
-    "extends": "./tsconfig.base.json",
+    "extends": "./tsconfig.json",
     "compilerOptions": {
-        "outDir": "./dist"
-    }
+        "outDir": "./../../../dist/server/omnihive-worker-knex-mssql"
+    },
+    "references": [
+        { "path": "./../../common/omnihive-core/tsconfig.prod.json" },
+        { "path": "./../../server/omnihive-worker-log-null/tsconfig.prod.json" }
+    ]
 }

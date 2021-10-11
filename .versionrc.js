@@ -30,20 +30,52 @@ function buildVersionRc() {
         type: "json",
     });
 
-    getPackageFolders().forEach((directory) => {
-        rcObject.bumpFiles.push({
-            filename: `${path.join(".", "src", "packages", directory, "package.json")}`,
-            type: "json",
+    fse.readdirSync(path.join(`.`, `src`, `common`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `common`, f)).isDirectory())
+        .forEach((directory) => {
+            rcObject.bumpFiles.push({
+                filename: `${path.join(".", "src", "common", directory, "package.json")}`,
+                type: "json",
+            });
         });
-    });
+
+    fse.readdirSync(path.join(`.`, `src`, `desktop`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `desktop`, f)).isDirectory())
+        .forEach((directory) => {
+            rcObject.bumpFiles.push({
+                filename: `${path.join(".", "src", "desktop", directory, "package.json")}`,
+                type: "json",
+            });
+        });
+
+    fse.readdirSync(path.join(`.`, `src`, `extras`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `extras`, f)).isDirectory())
+        .forEach((directory) => {
+            rcObject.bumpFiles.push({
+                filename: `${path.join(".", "src", "extras", directory, "package.json")}`,
+                type: "json",
+            });
+        });
+
+    fse.readdirSync(path.join(`.`, `src`, `other`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `other`, f)).isDirectory())
+        .forEach((directory) => {
+            rcObject.bumpFiles.push({
+                filename: `${path.join(".", "src", "other", directory, "package.json")}`,
+                type: "json",
+            });
+        });
+
+    fse.readdirSync(path.join(`.`, `src`, `server`))
+        .filter((f) => fse.statSync(path.join(`.`, `src`, `server`, f)).isDirectory())
+        .forEach((directory) => {
+            rcObject.bumpFiles.push({
+                filename: `${path.join(".", "src", "server", directory, "package.json")}`,
+                type: "json",
+            });
+        });
 
     return rcObject;
 }
-
-const getPackageFolders = () => {
-    return fse
-        .readdirSync(path.join(`.`, `src`, `packages`))
-        .filter((f) => fse.statSync(path.join(`.`, `src`, `packages`, f)).isDirectory());
-};
 
 module.exports = buildVersionRc();

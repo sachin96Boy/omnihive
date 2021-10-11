@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import chalk from "chalk";
 import execa from "execa";
 import figlet from "figlet";
@@ -108,8 +108,8 @@ const build = async (): Promise<void> => {
     if (!isNullOrUndefined(args.ohVersion) && isString(args.ohVersion)) {
         args.ohVersion = args.ohVersion as string;
     } else {
-        const versions = (await axios.get("https://registry.npmjs.org/-/package/omnihive/dist-tags")).data;
-        args.ohVersion = versions.latest;
+        const versions: AxiosResponse<any> = await axios.get("https://registry.npmjs.org/-/package/omnihive/dist-tags");
+        args.ohVersion = versions.data.latest;
     }
 
     // Header

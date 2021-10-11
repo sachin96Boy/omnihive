@@ -11,13 +11,12 @@ jobs:
             - name: Checkout
               id: checkout
               uses: actions/checkout@v2
-            - name: Add NodeJS
-              id: addNode
-              uses: actions/setup-node@v1
-              with:
-                  node-version: "14"
-            - name: Setup PNPM
+            - name: PNPM Install
               uses: pnpm/action-setup@v2.0.1
+              with:
+                  version: 6.17.0
+                  run_install: |
+                      - recursive: true
             - name: Run Prerequisites
               env:
                   GH_CLI_AUTH_TOKEN: ${{secrets.GH_CLI_AUTH_TOKEN}}
@@ -30,25 +29,12 @@ jobs:
                   git config --global user.name "$GH_NAME"
                   echo $GH_CLI_AUTH_TOKEN > gh.txt
                   gh auth login --with-token < gh.txt
-                  yarn install
                   rm gh.txt
-            - name: Bump Versioning
-              id: bumpVersioning
-              run: yarn run release
-            - name: Package Extension
+            - name: Package and Publish Extension
               id: packageExtension
-              run: vsce package
-            - name: Publish Extension
-              id: publishExtension
               env:
                   VSCE_PAT: ${{secrets.VSCE_PAT}}
-              run: yarn run deploy
-            - name: Get Version Number
-              id: version
-              run: echo "::set-output name=VERSION::$(node -p -e "require('./package.json').version")"
-            - name: Create GitHub Release
-              id: createGitHubRelease
-              run: gh release create ${{steps.version.outputs.VERSION}} -F CHANGELOG.md ./omnihive-server-manager-${{steps.version.outputs.VERSION}}.vsix
-            - name: Push Version Bump
-              id: pushVersionBump
-              run: git push --follow-tags origin master
+              run: |
+                  cd src/other/omnihive-vscode-extension
+                  vsce package
+                  pnpm run deploy

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.3.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.2...v6.3.3) (2021-10-11)
+
+
+### Build
+
+* **monorepo:** fix for TestHelper bad builds ([b050e80](https://github.com/WithOneVisionTechnologies/omnihive/commit/b050e8067c6ccf78b299f29eb92c5bb858b03508))
+
 ### [6.3.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.1...v6.3.2) (2021-10-11)
 
 

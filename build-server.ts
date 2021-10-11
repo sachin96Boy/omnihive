@@ -144,10 +144,6 @@ const buildRepo = async () => {
     fse.readdirSync(path.join(`.`, `src`, `common`))
         .filter((f) => fse.statSync(path.join(`.`, `src`, `common`, f)).isDirectory())
         .forEach((directory) => {
-            if (directory === "omnihive-test-core") {
-                return;
-            }
-
             execa.commandSync("pnpm run build:prod", { cwd: path.join(`.`, `src`, `common`, directory) });
             rimraf(path.join(`.`, `dist`, `common`, directory, `tests`), () => {});
             fse.rm(path.join(`.`, `dist`, `common`, directory, `tsconfig.prod.tsbuildinfo`));

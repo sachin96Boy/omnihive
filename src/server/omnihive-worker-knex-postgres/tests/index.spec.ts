@@ -10,7 +10,7 @@ import { expect } from "chai";
 import fs from "fs";
 import { before, beforeEach, describe, it } from "mocha";
 import path from "path";
-import { GlobalTestObject } from "@withonevision/omnihive-test-core/GlobalTestObject";
+import { GlobalTestHelper } from "@withonevision/omnihive-core/helpers/GlobalTestHelper";
 import NullLogWorker from "@withonevision/omnihive-worker-log-null/index";
 import PostgresDatabaseWorker from "../index";
 
@@ -97,7 +97,7 @@ const createDatabase = async () => {
 describe("Worker Test - Knex - Postgres", () => {
     before(async () => {
         // @ts-ignore
-        global.omnihive = new GlobalTestObject();
+        global.omnihive = new GlobalTestHelper();
         global.omnihive.ohDirName = __dirname;
 
         await AwaitHelper.execute(createDatabase());

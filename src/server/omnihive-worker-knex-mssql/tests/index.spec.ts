@@ -2,11 +2,11 @@
 
 import { RegisteredHiveWorkerSection } from "@withonevision/omnihive-core/enums/RegisteredHiveWorkerSection";
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
+import { GlobalTestHelper } from "@withonevision/omnihive-core/helpers/GlobalTestHelper";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
 import { ProcFunctionSchema } from "@withonevision/omnihive-core/models/ProcFunctionSchema";
-import { GlobalTestObject } from "@withonevision/omnihive-test-core/GlobalTestObject";
 import NullLogWorker from "@withonevision/omnihive-worker-log-null/index";
 import { expect } from "chai";
 import fs from "fs";
@@ -106,7 +106,7 @@ const createDatabase = async () => {
 describe("Worker Test - Knex - MSSQL", () => {
     before(async () => {
         // @ts-ignore
-        global.omnihive = new GlobalTestObject();
+        global.omnihive = new GlobalTestHelper();
         global.omnihive.ohDirName = __dirname;
 
         await AwaitHelper.execute(createDatabase());

@@ -1,4 +1,4 @@
-/// <reference path="../../../types/globals.omnihive.test.d.ts" />
+/// <reference path="../../../types/globals.omnihive.esm.test.d.ts" />
 
 import { IsHelper } from "./IsHelper.js";
 import { IHiveWorker } from "../interfaces/IHiveWorker.js";

@@ -1,5 +1,5 @@
-import { IHiveWorker } from "../common/omnihive-core/interfaces/IHiveWorker.js";
-import { RegisteredHiveWorker } from "../common/omnihive-core/models/RegisteredHiveWorker.js";
+import { IHiveWorker } from "../common/omnihive-core-esm/interfaces/IHiveWorker.js";
+import { RegisteredHiveWorker } from "../common/omnihive-core-esm/models/RegisteredHiveWorker.js";
 
 declare global {
     declare namespace globalThis {

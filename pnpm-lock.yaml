@@ -1030,6 +1030,7 @@ importers:
       react-ace: 9.4.4
       react-copy-to-clipboard: 5.0.4
       react-dom: 17.0.2
+      replace-in-file: 6.2.0
       semver: 7.3.5
       serialize-error: 8.1.0
       sinon: 11.1.2
@@ -1096,6 +1097,7 @@ importers:
       postcss: 8.3.9
       postcss-loader: 6.1.1_postcss@8.3.9+webpack@5.58.0
       prettier: 2.4.1
+      replace-in-file: 6.2.0
       sinon: 11.1.2
       style-loader: 3.3.0_webpack@5.58.0
       stylelint: 13.13.1

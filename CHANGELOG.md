@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.3.4](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.3...v6.3.4) (2021-11-02)
+
+
+### Build
+
+* **monorepo:** change build script name ([ce2d6aa](https://github.com/WithOneVisionTechnologies/omnihive/commit/ce2d6aab323990d305c42e3fda715d85ad6615c2))
+
+
+### Code Maitenance
+
+* **monorepo:** CommonJS now the stock for OH command line ([8902b66](https://github.com/WithOneVisionTechnologies/omnihive/commit/8902b66de30be79ab0d74372f4ee7e50cc3bfc74))
+
 ### [6.3.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.2...v6.3.3) (2021-10-11)
 
 

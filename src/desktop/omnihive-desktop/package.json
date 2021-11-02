@@ -1,6 +1,6 @@
 {
     "name": "omnihive-desktop",
-    "version": "6.3.3",
+    "version": "6.3.4",
     "scripts": {
         "dev": "electron-esbuild dev",
         "build": "electron-esbuild build",

@@ -146,7 +146,7 @@ const createServerChild = async (commandLineArgs: CommandLineArgs) => {
             `${
                 serverRunnerType === ServerRunnerType.Production
                     ? `node`
-                    : `node --loader ts-node/esm --inspect --inspect-port=0`
+                    : `node -r ts-node/register --inspect --inspect-port=0`
             }`,
             `serverRunner.${serverRunnerType === ServerRunnerType.Production ? `js` : `ts`}`,
             `${ipcId}`,

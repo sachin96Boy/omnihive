@@ -39,7 +39,7 @@ jobs:
                   rm gh.txt
             - name: Run Monorepo Build Script
               id: monorepoBuild
-              run: node -r ts-node/register ./build-server.ts
+              run: node -r ts-node/register ./build-monorepo.ts
             - name: Log into Docker Hub
               uses: docker/login-action@v1
               with:

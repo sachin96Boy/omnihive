@@ -3,7 +3,6 @@
         "esModuleInterop": true,
         "jsx": "react",
         "lib": ["DOM", "DOM.Iterable", "ES2021"],
-        "module": "CommonJS",
         "outDir": "out",
         "skipLibCheck": true,
         "sourceMap": true,

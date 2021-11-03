@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.4.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.2...v6.4.3) (2021-11-03)
+
+
+### Bug Fixes
+
+* **project:** fix for bad execution script ([742295e](https://github.com/WithOneVisionTechnologies/omnihive/commit/742295ebbfaf25935edf0eca3634511f03e65c34))
+
 ### [6.4.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.1...v6.4.2) (2021-11-03)
 
 

@@ -22,6 +22,7 @@ import { Server } from "http";
 import path from "path";
 import socketIo from "socket.io";
 import { CommandLineArgs } from "./CommandLineArgs";
+import importFresh from "import-fresh";
 
 export class GlobalObject {
     public adminServer: socketIo.Server | undefined = undefined;
@@ -202,18 +203,18 @@ export class GlobalObject {
         // Try all manner of imports
 
         try {
-            newWorker = await import(hiveWorker.importPath);
+            newWorker = await importFresh(hiveWorker.importPath);
         } catch {
             try {
-                newWorker = await import(`${hiveWorker.importPath}.js`);
+                newWorker = await importFresh(`${hiveWorker.importPath}.js`);
             } catch {
                 try {
-                    newWorker = await import(`${hiveWorker.importPath}.ts`);
+                    newWorker = await importFresh(`${hiveWorker.importPath}.ts`);
                 } catch {
                     try {
-                        newWorker = await import(`${hiveWorker.importPath}/index.js`);
+                        newWorker = await importFresh(`${hiveWorker.importPath}/index.js`);
                     } catch {
-                        newWorker = await import(`${hiveWorker.importPath}/index.ts`);
+                        newWorker = await importFresh(`${hiveWorker.importPath}/index.ts`);
                     }
                 }
             }

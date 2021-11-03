@@ -23,6 +23,7 @@ import path from "path";
 import socketIo from "socket.io";
 import { CommandLineArgs } from "./CommandLineArgs";
 import importFresh from "import-fresh";
+import { RuntimeMode } from "../enums/RuntimeMode";
 
 export class GlobalObject {
     public adminServer: socketIo.Server | undefined = undefined;
@@ -180,6 +181,8 @@ export class GlobalObject {
     }
 
     public async pushWorker(hiveWorker: HiveWorkerConfig, section?: RegisteredHiveWorkerSection): Promise<void> {
+        const runtimeProjectPath: string | undefined = this.getEnvironmentVariable<string>("OH_RUNTIME_PROJECT_PATH");
+
         if (!hiveWorker.enabled) {
             return;
         }
@@ -202,21 +205,31 @@ export class GlobalObject {
 
         // Try all manner of imports
 
-        try {
-            newWorker = await importFresh(hiveWorker.importPath);
-        } catch {
+        const pathTries: string[] = [
+            hiveWorker.importPath,
+            `${hiveWorker.importPath}.js`,
+            `${hiveWorker.importPath}.ts`,
+            `${hiveWorker.importPath}/index.js`,
+            `${hiveWorker.importPath}/index.ts`,
+            `${runtimeProjectPath ?? ""}/node_modules/${hiveWorker.importPath}.js`,
+            `${runtimeProjectPath ?? ""}/node_modules/${hiveWorker.importPath}.ts`,
+            `${runtimeProjectPath ?? ""}/node_modules/${hiveWorker.importPath}/index.js`,
+            `${runtimeProjectPath ?? ""}/node_modules/${hiveWorker.importPath}/index.ts`,
+        ];
+
+        for (let i = 0; i < pathTries.length; i++) {
             try {
-                newWorker = await importFresh(`${hiveWorker.importPath}.js`);
-            } catch {
-                try {
-                    newWorker = await importFresh(`${hiveWorker.importPath}.ts`);
-                } catch {
-                    try {
-                        newWorker = await importFresh(`${hiveWorker.importPath}/index.js`);
-                    } catch {
-                        newWorker = await importFresh(`${hiveWorker.importPath}/index.ts`);
-                    }
+                newWorker = await importFresh(pathTries[i]);
+                if (!IsHelper.isNullOrUndefined(newWorker)) {
+                    break;
                 }
+            } catch {
+                if (i === pathTries.length - 1) {
+                    throw new Error(
+                        `Could not find a worker module for ${hiveWorker.name} with import path ${hiveWorker.importPath}`
+                    );
+                }
+                continue;
             }
         }
 
@@ -231,4 +244,8 @@ export class GlobalObject {
         };
         this.registeredWorkers.push(registeredWorker);
     }
+
+    private getImport = async (path: string) => {
+        return await import(path);
+    };
 }

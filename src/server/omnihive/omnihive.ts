@@ -152,8 +152,7 @@ const createServerChild = async (commandLineArgs: CommandLineArgs) => {
 
     if (
         !IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_LANGUAGE) &&
-        IsHelper.isString(process.env.OH_RUNTIME_LANGUAGE) &&
-        runtimeMode === RuntimeMode.Debug
+        IsHelper.isString(process.env.OH_RUNTIME_LANGUAGE)
     ) {
         switch (process.env.OH_RUNTIME_LANGUAGE.toLowerCase()) {
             case "typescript":
@@ -165,20 +164,32 @@ const createServerChild = async (commandLineArgs: CommandLineArgs) => {
         }
     }
 
-    const executionString: StringBuilder = new StringBuilder("node ");
+    const executionCommand: StringBuilder = new StringBuilder("node ");
 
     if (runtimeLanguage === RuntimeLanguage.TypeScript) {
-        executionString.append("-r ts-node/register ");
+        executionCommand.append("-r ts-node/register ");
     }
 
     if (runtimeMode !== RuntimeMode.Production) {
-        executionString.append("--inspect --inspect-port=0 ");
+        executionCommand.append("--inspect --inspect-port=0 ");
+    }
+
+    const executionScript: StringBuilder = new StringBuilder("serverRunner.");
+
+    if (runtimeLanguage === RuntimeLanguage.JavaScript) {
+        executionScript.append("js");
+    } else if (runtimeLanguage === RuntimeLanguage.TypeScript) {
+        if (runtimeMode === RuntimeMode.Debug) {
+            executionScript.append("ts");
+        } else {
+            executionScript.append("js");
+        }
     }
 
     child = new forever.Monitor(
         [
-            `${executionString.outputString().trim()}`,
-            `serverRunner.${runtimeLanguage === RuntimeLanguage.JavaScript ? `js` : `ts`}`,
+            `${executionCommand.outputString().trim()}`,
+            `${executionScript}`,
             `${ipcId}`,
             `${
                 !IsHelper.isEmptyStringOrWhitespace(commandLineArgs.environmentFile)

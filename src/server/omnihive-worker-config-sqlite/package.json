@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-config-sqlite",
-    "version": "6.4.5",
+    "version": "6.4.6",
     "description": "OmniHive SQLite Config Worker",
     "license": "MIT",
     "author": {

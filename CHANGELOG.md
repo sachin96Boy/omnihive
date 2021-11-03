@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.4.6](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.5...v6.4.6) (2021-11-03)
+
+
+### Bug Fixes
+
+* **worker:** mssql worker using bad import string ([3d01641](https://github.com/WithOneVisionTechnologies/omnihive/commit/3d016410505386a26757916287206e92d5bb66d0))
+
 ### [6.4.5](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.4...v6.4.5) (2021-11-03)
 
 

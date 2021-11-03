@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.4.0](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.4...v6.4.0) (2021-11-03)
+
+
+### Features
+
+* **project:** Implementing changes for create-oh-project ([e65ffd9](https://github.com/WithOneVisionTechnologies/omnihive/commit/e65ffd9d36fc65988dfc625480c4447cbc63a297))
+
 ### [6.3.4](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.3.3...v6.3.4) (2021-11-02)
 
 

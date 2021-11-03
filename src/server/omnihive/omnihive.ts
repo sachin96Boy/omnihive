@@ -189,7 +189,7 @@ const createServerChild = async (commandLineArgs: CommandLineArgs) => {
     child = new forever.Monitor(
         [
             `${executionCommand.outputString().trim()}`,
-            `${executionScript}`,
+            `${executionScript.outputString().trim()}`,
             `${ipcId}`,
             `${
                 !IsHelper.isEmptyStringOrWhitespace(commandLineArgs.environmentFile)

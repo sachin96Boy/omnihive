@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.4.4](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.3...v6.4.4) (2021-11-03)
+
+
+### Bug Fixes
+
+* **project:** moving to import-fresh to cover module loading better ([4cc8238](https://github.com/WithOneVisionTechnologies/omnihive/commit/4cc8238ffe2b38f4575cff85a6d0b18a801fedc6))
+
 ### [6.4.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.2...v6.4.3) (2021-11-03)
 
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.4.5](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.4...v6.4.5) (2021-11-03)
+
+
+### Bug Fixes
+
+* **project:** Adding ability to search root node_modules. ([ef3df7c](https://github.com/WithOneVisionTechnologies/omnihive/commit/ef3df7c3d0d6f1ffdfccc28935adc01bfa71e267))
+
 ### [6.4.4](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.3...v6.4.4) (2021-11-03)
 
 

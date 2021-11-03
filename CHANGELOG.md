@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.4.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.1...v6.4.2) (2021-11-03)
+
+
+### Bug Fixes
+
+* **project:** Fix child execution mode for project ([77706e7](https://github.com/WithOneVisionTechnologies/omnihive/commit/77706e726a6375d090dd2d5b23cfacaac2ba6b47))
+
 ### [6.4.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.0...v6.4.1) (2021-11-03)
 
 

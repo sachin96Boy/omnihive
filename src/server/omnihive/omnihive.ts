@@ -136,20 +136,6 @@ const createServerChild = async (commandLineArgs: CommandLineArgs) => {
     let runtimeLanguage: RuntimeLanguage = RuntimeLanguage.JavaScript;
     let runtimeMode: RuntimeMode = RuntimeMode.Production;
 
-    if (
-        !IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_LANGUAGE) &&
-        IsHelper.isString(process.env.OH_RUNTIME_LANGUAGE)
-    ) {
-        switch (process.env.OH_RUNTIME_LANGUAGE.toLowerCase()) {
-            case "typescript":
-                runtimeLanguage = RuntimeLanguage.JavaScript;
-                break;
-            default:
-                runtimeLanguage = RuntimeLanguage.TypeScript;
-                break;
-        }
-    }
-
     if (!IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_MODE) && IsHelper.isString(process.env.OH_RUNTIME_MODE)) {
         switch (process.env.OH_RUNTIME_MODE.toLowerCase()) {
             case "debug":
@@ -160,6 +146,21 @@ const createServerChild = async (commandLineArgs: CommandLineArgs) => {
                 break;
             default:
                 runtimeMode = RuntimeMode.Production;
+                break;
+        }
+    }
+
+    if (
+        !IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_LANGUAGE) &&
+        IsHelper.isString(process.env.OH_RUNTIME_LANGUAGE) &&
+        runtimeMode === RuntimeMode.Debug
+    ) {
+        switch (process.env.OH_RUNTIME_LANGUAGE.toLowerCase()) {
+            case "typescript":
+                runtimeLanguage = RuntimeLanguage.TypeScript;
+                break;
+            default:
+                runtimeLanguage = RuntimeLanguage.JavaScript;
                 break;
         }
     }

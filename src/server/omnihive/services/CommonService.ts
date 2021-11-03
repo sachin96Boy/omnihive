@@ -19,6 +19,7 @@ import { CommandLineArgs } from "../models/CommandLineArgs";
 import { GlobalObject } from "../models/GlobalObject";
 import packageJson from "../package.json";
 import { RuntimePackageManager } from "../enums/RuntimePackageManager";
+import { RuntimeMode } from "../enums/RuntimeMode";
 
 export class CommonService {
     public bootLoader = async (rootDir: string, commandLineArgs: CommandLineArgs) => {
@@ -188,11 +189,30 @@ export class CommonService {
 
         const serverConfig: ServerConfig = await AwaitHelper.execute(configWorker.get());
         let runtimePackageManager: RuntimePackageManager = RuntimePackageManager.NPM;
+        let runtimeMode: RuntimeMode = RuntimeMode.Production;
         let runtimeProjectPath: string = "";
 
         if (
+            !IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_MODE) &&
+            IsHelper.isString(process.env.OH_RUNTIME_MODE)
+        ) {
+            switch (process.env.OH_RUNTIME_MODE.toLowerCase()) {
+                case "debug":
+                    runtimeMode = RuntimeMode.Debug;
+                    break;
+                case "project":
+                    runtimeMode = RuntimeMode.Project;
+                    break;
+                default:
+                    runtimeMode = RuntimeMode.Production;
+                    break;
+            }
+        }
+
+        if (
             !IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_PACKAGE_MANAGER) &&
-            IsHelper.isString(process.env.OH_RUNTIME_PACKAGE_MANAGER)
+            IsHelper.isString(process.env.OH_RUNTIME_PACKAGE_MANAGER) &&
+            runtimeMode !== RuntimeMode.Production
         ) {
             switch (process.env.OH_RUNTIME_PACKAGE_MANAGER.toLowerCase()) {
                 case "npm":
@@ -209,7 +229,8 @@ export class CommonService {
 
         if (
             !IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(process.env.OH_RUNTIME_PROJECT_PATH) &&
-            IsHelper.isString(process.env.OH_RUNTIME_PROJECT_PATH)
+            IsHelper.isString(process.env.OH_RUNTIME_PROJECT_PATH) &&
+            runtimeMode !== RuntimeMode.Production
         ) {
             runtimeProjectPath = process.env.OH_RUNTIME_PROJECT_PATH;
         }

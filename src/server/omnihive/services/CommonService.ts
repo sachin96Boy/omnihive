@@ -18,6 +18,7 @@ import { ConfigType } from "../enums/ConfigType";
 import { CommandLineArgs } from "../models/CommandLineArgs";
 import { GlobalObject } from "../models/GlobalObject";
 import packageJson from "../package.json";
+import { RuntimePackageManager } from "../enums/RuntimePackageManager";
 
 export class CommonService {
     public bootLoader = async (rootDir: string, commandLineArgs: CommandLineArgs) => {
@@ -186,6 +187,32 @@ export class CommonService {
         );
 
         const serverConfig: ServerConfig = await AwaitHelper.execute(configWorker.get());
+        let runtimePackageManager: RuntimePackageManager = RuntimePackageManager.NPM;
+        let runtimeProjectPath: string = "";
+
+        if (
+            !IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_PACKAGE_MANAGER) &&
+            IsHelper.isString(process.env.OH_RUNTIME_PACKAGE_MANAGER)
+        ) {
+            switch (process.env.OH_RUNTIME_PACKAGE_MANAGER.toLowerCase()) {
+                case "npm":
+                    runtimePackageManager = RuntimePackageManager.NPM;
+                    break;
+                case "yarn":
+                    runtimePackageManager = RuntimePackageManager.YARN;
+                    break;
+                default:
+                    runtimePackageManager = RuntimePackageManager.PNPM;
+                    break;
+            }
+        }
+
+        if (
+            !IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(process.env.OH_RUNTIME_PROJECT_PATH) &&
+            IsHelper.isString(process.env.OH_RUNTIME_PROJECT_PATH)
+        ) {
+            runtimeProjectPath = process.env.OH_RUNTIME_PROJECT_PATH;
+        }
 
         // Load Core Workers
         logWorker?.write(OmniHiveLogLevel.Info, `Loading core workers from package.json...`);
@@ -292,7 +319,18 @@ export class CommonService {
             } else {
                 logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packagesToRemove.length} Package(s)`);
                 const removeCommand = new StringBuilder();
-                removeCommand.append("pnpm remove ");
+
+                switch (runtimePackageManager) {
+                    case RuntimePackageManager.PNPM:
+                        removeCommand.append("pnpm remove ");
+                        break;
+                    case RuntimePackageManager.YARN:
+                        removeCommand.append("yarn remove ");
+                        break;
+                    case RuntimePackageManager.NPM:
+                        removeCommand.append("npm uninistall ");
+                        break;
+                }
 
                 packagesToRemove.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packageName} Package`);
@@ -304,7 +342,11 @@ export class CommonService {
                 });
 
                 try {
-                    execa.commandSync(removeCommand.outputString(), { cwd: global.omnihive.ohDirName });
+                    execa.commandSync(removeCommand.outputString(), {
+                        cwd: IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(runtimeProjectPath)
+                            ? global.omnihive.ohDirName
+                            : runtimeProjectPath,
+                    });
                 } catch (error) {
                     logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
                     throw error;
@@ -349,7 +391,21 @@ export class CommonService {
             } else {
                 logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packagesToAdd.length} Package(s)`);
                 const addCommand = new StringBuilder();
-                addCommand.append("pnpm add ");
+
+                switch (runtimePackageManager) {
+                    case RuntimePackageManager.PNPM:
+                        addCommand.append("pnpm add ");
+                        break;
+                    case RuntimePackageManager.YARN:
+                        addCommand.append("yarn add ");
+                        break;
+                    case RuntimePackageManager.NPM:
+                        addCommand.append("npm install ");
+                        break;
+                    default:
+                        addCommand.append("pnpm add ");
+                        break;
+                }
 
                 packagesToAdd.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packageName} As a New Package`);
@@ -361,7 +417,11 @@ export class CommonService {
                 });
 
                 try {
-                    execa.commandSync(addCommand.outputString(), { cwd: global.omnihive.ohDirName });
+                    execa.commandSync(addCommand.outputString(), {
+                        cwd: IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(runtimeProjectPath)
+                            ? global.omnihive.ohDirName
+                            : runtimeProjectPath,
+                    });
                 } catch (error) {
                     logWorker?.write(OmniHiveLogLevel.Error, (error as ExecaSyncError).stderr.toString().trim());
                     throw error;

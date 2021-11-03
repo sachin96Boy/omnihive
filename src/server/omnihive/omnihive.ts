@@ -12,10 +12,12 @@ import ipc from "node-ipc";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import yargs from "yargs";
-import { ServerRunnerType } from "./enums/ServerRunnerType";
 import exitHook from "./helpers/ExitHook";
 import { CommandLineArgs } from "./models/CommandLineArgs";
 import { TaskRunnerService } from "./services/TaskRunnerService";
+import { RuntimeLanguage } from "./enums/RuntimeLanguage";
+import { RuntimeMode } from "./enums/RuntimeMode";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 
 // Setup IPC
 
@@ -131,24 +133,51 @@ const init = async () => {
 
 // Child process spawner
 const createServerChild = async (commandLineArgs: CommandLineArgs) => {
-    let serverRunnerType: ServerRunnerType = ServerRunnerType.Production;
+    let runtimeLanguage: RuntimeLanguage = RuntimeLanguage.JavaScript;
+    let runtimeMode: RuntimeMode = RuntimeMode.Production;
 
     if (
-        !IsHelper.isNullOrUndefined(process.env.OH_PRODUCTION_MODE) &&
-        IsHelper.isBoolean(process.env.OH_PRODUCTION_MODE) &&
-        process.env.OH_PRODUCTION_MODE === "false"
+        !IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_LANGUAGE) &&
+        IsHelper.isString(process.env.OH_RUNTIME_LANGUAGE)
     ) {
-        serverRunnerType = ServerRunnerType.Debug;
+        switch (process.env.OH_RUNTIME_LANGUAGE.toLowerCase()) {
+            case "typescript":
+                runtimeLanguage = RuntimeLanguage.JavaScript;
+                break;
+            default:
+                runtimeLanguage = RuntimeLanguage.TypeScript;
+                break;
+        }
+    }
+
+    if (!IsHelper.isNullOrUndefined(process.env.OH_RUNTIME_MODE) && IsHelper.isString(process.env.OH_RUNTIME_MODE)) {
+        switch (process.env.OH_RUNTIME_MODE.toLowerCase()) {
+            case "debug":
+                runtimeMode = RuntimeMode.Debug;
+                break;
+            case "project":
+                runtimeMode = RuntimeMode.Project;
+                break;
+            default:
+                runtimeMode = RuntimeMode.Production;
+                break;
+        }
+    }
+
+    const executionString: StringBuilder = new StringBuilder("node ");
+
+    if (runtimeLanguage === RuntimeLanguage.TypeScript) {
+        executionString.append("-r ts-node/register ");
+    }
+
+    if (runtimeMode !== RuntimeMode.Production) {
+        executionString.append("--inspect --inspect-port=0 ");
     }
 
     child = new forever.Monitor(
         [
-            `${
-                serverRunnerType === ServerRunnerType.Production
-                    ? `node`
-                    : `node -r ts-node/register --inspect --inspect-port=0`
-            }`,
-            `serverRunner.${serverRunnerType === ServerRunnerType.Production ? `js` : `ts`}`,
+            `${executionString.outputString().trim()}`,
+            `serverRunner.${runtimeLanguage === RuntimeLanguage.JavaScript ? `js` : `ts`}`,
             `${ipcId}`,
             `${
                 !IsHelper.isEmptyStringOrWhitespace(commandLineArgs.environmentFile)

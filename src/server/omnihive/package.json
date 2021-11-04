@@ -42,10 +42,8 @@
         "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*",
         "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
         "@withonevision/omnihive-worker-function-core": "workspace:*",
-        "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:*",
         "@withonevision/omnihive-worker-knex-mssql": "workspace:*",
         "@withonevision/omnihive-worker-log-core": "workspace:*",
-        "@withonevision/omnihive-worker-server-v1": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",
         "apollo-server": "3.3.0",
         "apollo-server-core": "3.3.0",
@@ -324,21 +322,6 @@
         ],
         "defaultWorkers": [
             {
-                "name": "__ohDefaultBuildWorker",
-                "type": "graphBuilder",
-                "package": "@withonevision/omnihive-worker-graphql-builder-v2",
-                "version": "workspace:*",
-                "importPath": "@withonevision/omnihive-worker-graphql-builder-v2/index",
-                "default": true,
-                "enabled": true,
-                "metadata": {
-                    "dbWorkers": [
-                        "*"
-                    ],
-                    "urlRoute": "builder1"
-                }
-            },
-            {
                 "name": "__ohDefaultDateWorker",
                 "type": "date",
                 "package": "@withonevision/omnihive-worker-date-dayjs",
@@ -361,21 +344,6 @@
                 "metadata": {
                     "encryptionKey": "${OH_SECURITY_ENCRYPTION_KEY}",
                     "randomCharacters": "${OH_SECURITY_ENCRYPTION_RANDOM_CHARACTERS}"
-                }
-            },
-            {
-                "name": "__ohDefaultServerWorker",
-                "type": "server",
-                "package": "@withonevision/omnihive-worker-server-v1",
-                "version": "workspace:*",
-                "importPath": "@withonevision/omnihive-worker-server-v1/index",
-                "default": true,
-                "enabled": true,
-                "metadata": {
-                    "buildWorkers": [
-                        "*"
-                    ],
-                    "urlRoute": "server1"
                 }
             },
             {

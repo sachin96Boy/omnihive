@@ -1,4 +1,5 @@
 import { makeExecutableSchema, mergeSchemas } from "@graphql-tools/schema";
+import { stitchSchemas, ValidationLevel } from "@graphql-tools/stitch";
 import { HiveWorkerType } from "@withonevision/omnihive-core/enums/HiveWorkerType";
 import { LifecycleWorkerAction } from "@withonevision/omnihive-core/enums/LifecycleWorkerAction";
 import { LifecycleWorkerStage } from "@withonevision/omnihive-core/enums/LifecycleWorkerStage";
@@ -22,6 +23,8 @@ import GraphFloatDb from "./scalarTypes/GraphFloatDb";
 import GraphIntDb from "./scalarTypes/GraphIntDb";
 import GraphQLAny from "./scalarTypes/GraphQLAny";
 import GraphStringDb from "./scalarTypes/GraphStringDb";
+import { SubschemaConfig } from "@graphql-tools/delegate";
+import { stitchingDirectives } from "@graphql-tools/stitching-directives";
 
 type LifecycleData = {
     schema: string;
@@ -62,6 +65,8 @@ type LifecycleData = {
 
 export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildWorker {
     // Declare Helpers
+    private typeDefinitions: string[] = [];
+    private resolvers: any[] = [];
     private graphHelper: GraphHelper = new GraphHelper();
     private parseMaster: ParseMaster = new ParseMaster();
     private builder: StringBuilder = new StringBuilder();
@@ -84,7 +89,6 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
     private deleteTypeSuffix: string = "DeleteType";
 
     // Declare Global Variables
-    private graphSchemas: GraphQLSchema[] = [];
     private tables: { [tableName: string]: TableSchema[] } = {};
     private storedProcs: { [procName: string]: ProcFunctionSchema[] } = {};
     private lifecycleWorkers: LifecycleData[] = [];
@@ -104,7 +108,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         connectionSchema: ConnectionSchema | undefined
     ): Promise<GraphQLSchema | undefined> => {
         try {
-            this.graphSchemas = [];
+            this.typeDefinitions = [];
+            this.resolvers = [];
             this.tables = {};
             this.storedProcs = {};
             this.lifecycleWorkers = [];
@@ -145,9 +150,9 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
                 this.buildMainCustomSqlSchema(databaseWorker),
             ]);
 
-            // Merge all the schemas into one master schema to rule them all
             return mergeSchemas({
-                schemas: [...this.graphSchemas],
+                typeDefs: [this.typeDefinitions],
+                resolvers: this.resolvers,
             });
         } catch (error) {
             throw error;
@@ -224,7 +229,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
 
     private buildMainCustomSqlSchema = async (databaseWorker: IDatabaseWorker) => {
         try {
-            this.graphSchemas.push(this.buildCustomSqlSchema(databaseWorker));
+            this.buildCustomSqlSchema(databaseWorker);
         } catch (error) {
             throw error;
         }
@@ -253,12 +258,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
             this.buildTypeDefinitions(schema, foreignColumns);
             const resolver = this.buildResolvers(schema, databaseWorker, foreignColumns);
 
-            this.graphSchemas.push(
-                makeExecutableSchema({
-                    typeDefs: this.builder.outputString(),
-                    resolvers: resolver,
-                })
-            );
+            this.typeDefinitions.push(this.builder.outputString());
+            this.resolvers.push(resolver);
         } catch (error) {
             throw error;
         }
@@ -1564,12 +1565,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Build resolvers
         const resolver = this.buildProcResolvers(proc, databaseWorker);
 
-        this.graphSchemas.push(
-            makeExecutableSchema({
-                typeDefs: this.builder.outputString(),
-                resolvers: resolver,
-            })
-        );
+        this.typeDefinitions.push(this.builder.outputString());
+        this.resolvers.push(resolver);
     };
 
     /**
@@ -1665,7 +1662,7 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
      *
      * @returns { GraphQLSchema }
      */
-    private buildCustomSqlSchema = (databaseWorker: IDatabaseWorker): GraphQLSchema => {
+    private buildCustomSqlSchema = (databaseWorker: IDatabaseWorker): void => {
         // Clear string builder for new table processing
         this.builder.clear();
 
@@ -1675,10 +1672,8 @@ export default class GraphBuilder extends HiveWorkerBase implements IGraphBuildW
         // Build resolvers
         const resolver = this.buildCustomSqlResolvers(databaseWorker);
 
-        return makeExecutableSchema({
-            typeDefs: this.builder.outputString(),
-            resolvers: resolver,
-        });
+        this.typeDefinitions.push(this.builder.outputString());
+        this.resolvers.push(resolver);
     };
 
     /**

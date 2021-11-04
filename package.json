@@ -72,5 +72,9 @@
         "ts-node": "10.2.1",
         "typescript": "4.4.3",
         "yargs": "17.2.1"
+    },
+    "dependencies": {
+        "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:^6.5.1",
+        "@withonevision/omnihive-worker-server-v1": "workspace:^6.5.1"
     }
 }

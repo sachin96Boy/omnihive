@@ -24,8 +24,11 @@
         "build:prod": "tsc --p ./tsconfig.prod.json"
     },
     "dependencies": {
+        "@graphql-tools/delegate": "8.4.1",
         "@graphql-tools/merge": "8.1.2",
         "@graphql-tools/schema": "8.2.0",
+        "@graphql-tools/stitch": "8.4.1",
+        "@graphql-tools/stitching-directives": "2.2.1",
         "@withonevision/omnihive-core": "workspace:*",
         "apollo-server": "3.3.0",
         "apollo-server-core": "3.3.0",

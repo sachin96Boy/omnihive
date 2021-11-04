@@ -355,6 +355,7 @@ export class CommonService {
 
                 packagesToRemove.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packageName} Package`);
+                    packageName = packageName.replace("${ohProjectPath}", runtimeProjectPath ?? "");
                     removeCommand.append(`${packageName}`);
 
                     if (index < packagesToRemove.length - 1) {
@@ -415,21 +416,22 @@ export class CommonService {
 
                 switch (runtimePackageManager) {
                     case RuntimePackageManager.PNPM:
-                        addCommand.append("pnpm add ");
+                        addCommand.append("pnpm add --ignore-workspace-root-check ");
                         break;
                     case RuntimePackageManager.YARN:
-                        addCommand.append("yarn add ");
+                        addCommand.append("yarn add --ignore-workspace-root-check ");
                         break;
                     case RuntimePackageManager.NPM:
                         addCommand.append("npm install ");
                         break;
                     default:
-                        addCommand.append("pnpm add ");
+                        addCommand.append("pnpm add --ignore-workspace-root-check ");
                         break;
                 }
 
                 packagesToAdd.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packageName} As a New Package`);
+                    packageName = packageName.replace("${ohProjectPath}", runtimeProjectPath ?? "");
                     addCommand.append(`${packageName}`);
 
                     if (index < packagesToAdd.length - 1) {

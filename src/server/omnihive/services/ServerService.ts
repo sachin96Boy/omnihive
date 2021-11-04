@@ -26,7 +26,13 @@ import swaggerUi from "swagger-ui-express";
 import { CommandLineArgs } from "../models/CommandLineArgs";
 import { AdminService } from "./AdminService";
 import { CommonService } from "./CommonService";
-
+import { ApolloServerExpressConfig, ApolloServer } from "apollo-server-express";
+import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
+import { runInNewContext } from "vm";
+import Module from "module";
+import { nanoid } from "nanoid";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
+import { transformSync } from "esbuild";
 export class ServerService {
     private webRootUrl: string = "";
     private webPortNumber: number = 3001;
@@ -37,8 +43,18 @@ export class ServerService {
         //Run environment loader
         await AwaitHelper.execute(commonService.bootLoader(rootDir, commandLineArgs));
 
+        //Setup environment
         this.webRootUrl = global.omnihive.getEnvironmentVariable<string>("OH_WEB_ROOT_URL") ?? "";
         this.webPortNumber = global.omnihive.getEnvironmentVariable<number>("OH_WEB_PORT_NUMBER") ?? 3001;
+
+        const customGraphSlug =
+            global.omnihive.getEnvironmentVariable<string>("OH_WEB_CUSTOM_GRAPH_SLUG") ?? "/custom/graphql";
+        const customRestSlug =
+            global.omnihive.getEnvironmentVariable<string>("OH_WEB_CUSTOM_REST_SLUG") ?? "/custom/rest";
+        const graphIntrospection =
+            global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_INTROSPECTION") ?? false;
+        const graphPlayground = global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_GRAPH_PLAYGROUND") ?? true;
+        const swagger = global.omnihive.getEnvironmentVariable<boolean>("OH_CORE_SWAGGER");
 
         if (
             IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(this.webRootUrl) ||
@@ -71,8 +87,243 @@ export class ServerService {
             );
 
             for (const server of servers) {
+                logWorker?.write(OmniHiveLogLevel.Info, `Server Worker ${server.name} => Begin Build`);
                 app = await AwaitHelper.execute((server.instance as IServerWorker).buildServer(app));
+                logWorker?.write(OmniHiveLogLevel.Info, `Server Worker ${server.name} => Build Complete`);
             }
+
+            // Build custom graph workers
+            logWorker?.write(OmniHiveLogLevel.Info, `Master Web Process => Custom Graph Generation Started`);
+
+            let graphEndpointModule: any | undefined = undefined;
+
+            const customGraphWorkers: RegisteredHiveWorker[] = global.omnihive.registeredWorkers.filter(
+                (worker: RegisteredHiveWorker) => worker.type === HiveWorkerType.GraphEndpointFunction
+            );
+            if (!IsHelper.isEmptyArray(customGraphWorkers)) {
+                const builder: StringBuilder = new StringBuilder();
+
+                // Build imports
+                builder.appendLine(
+                    `const { GraphQLInt, GraphQLSchema, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInputObjectType } = require("graphql");`
+                );
+                builder.appendLine(
+                    `const { AwaitHelper } = require("@withonevision/omnihive-core/helpers/AwaitHelper");`
+                );
+                builder.appendLine(
+                    `const { GraphQLJSONObject } = require("@withonevision/omnihive-core/models/GraphQLJSON");`
+                );
+                builder.appendLine(
+                    `const { HiveWorkerType } = require("@withonevision/omnihive-core/enums/HiveWorkerType");`
+                );
+                builder.appendLine(`const { CustomGraphHelper } = require("../helpers/CustomGraphHelper");`);
+                builder.appendLine();
+
+                // Build main graph schema
+                builder.appendLine(`exports.FederatedCustomFunctionQuerySchema = new GraphQLSchema({`);
+
+                // Query Object Type
+                builder.appendLine(`\tquery: new GraphQLObjectType({`);
+                builder.appendLine(`\t\tname: 'Query',`);
+                builder.appendLine(`\t\tfields: () => ({`);
+
+                // Loop through graph endpoints
+
+                customGraphWorkers.forEach((worker: RegisteredHiveWorker) => {
+                    builder.appendLine(`\t\t\t${worker.name}: {`);
+                    builder.appendLine(`\t\t\t\ttype: GraphQLJSONObject,`);
+                    builder.appendLine(`\t\t\t\targs: {`);
+                    builder.appendLine(`\t\t\t\t\tcustomArgs: { type: GraphQLJSONObject },`);
+                    builder.appendLine(`\t\t\t\t},`);
+                    builder.appendLine(`\t\t\t\tresolve: async (parent, args, context, resolveInfo) => {`);
+                    builder.appendLine(`\t\t\t\t\tvar graphHelper = new CustomGraphHelper();`);
+                    builder.appendLine(
+                        `\t\t\t\t\tvar customFunctionReturn = await AwaitHelper.execute(graphHelper.parseCustomGraph("${worker.name}", args.customArgs, context.omnihive));`
+                    );
+                    builder.appendLine(`\t\t\t\t\treturn customFunctionReturn;`);
+                    builder.appendLine(`\t\t\t\t},`);
+                    builder.appendLine(`\t\t\t},`);
+                });
+
+                builder.appendLine(`\t\t})`);
+                builder.appendLine(`\t}),`);
+                builder.appendLine(`});`);
+
+                graphEndpointModule = this.importFromString(builder.outputString());
+            }
+
+            logWorker?.write(OmniHiveLogLevel.Info, `Master Web Process => Graph Generation Files Completed`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Master Web Process => Graph Schema Build Completed Successfully`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Master Web Process => Booting Up Graph Server`);
+
+            // Register custom graph apollo server
+            logWorker?.write(
+                OmniHiveLogLevel.Info,
+                `Master Web Process => Custom Functions Graph Endpoint Registering`
+            );
+
+            if (
+                global.omnihive.registeredWorkers.some(
+                    (worker: RegisteredHiveWorker) => worker.type === HiveWorkerType.GraphEndpointFunction
+                ) &&
+                !IsHelper.isNullOrUndefined(graphEndpointModule)
+            ) {
+                const functionDynamicModule: any = graphEndpointModule;
+                const graphFunctionSchema: any = functionDynamicModule.FederatedCustomFunctionQuerySchema;
+
+                const graphFunctionConfig: ApolloServerExpressConfig = {
+                    introspection: graphIntrospection,
+                    schema: graphFunctionSchema,
+                    context: async ({ req }) => {
+                        const omnihive = {
+                            access: req.headers["x-omnihive-access"] || ``,
+                            auth: req.headers.authorization || ``,
+                            cache: req.headers["x-omnihive-cache-type"] || ``,
+                            cacheSeconds: req.headers["x-omnihive-cache-seconds"],
+                        };
+                        return { omnihive };
+                    },
+                };
+
+                if (graphPlayground) {
+                    graphFunctionConfig.plugins?.push(
+                        ApolloServerPluginLandingPageGraphQLPlayground({
+                            endpoint: `${this.webRootUrl}${customGraphSlug}`,
+                        })
+                    );
+                }
+
+                const graphFunctionServer: ApolloServer = new ApolloServer(graphFunctionConfig);
+                await graphFunctionServer.start();
+                graphFunctionServer.applyMiddleware({
+                    app,
+                    path: `${this.webRootUrl}${customGraphSlug}`,
+                });
+
+                global.omnihive.registeredUrls.push({
+                    path: `${this.webRootUrl}${customGraphSlug}`,
+                    type: RegisteredUrlType.GraphFunction,
+                    metadata: {},
+                });
+            }
+
+            logWorker?.write(OmniHiveLogLevel.Info, `Master Web Process => Custom Functions Endpoint Registered`);
+            logWorker?.write(OmniHiveLogLevel.Info, `Master Web Process => REST Server Generation Started`);
+
+            // Register "custom" REST endpoints
+            if (
+                global.omnihive.registeredWorkers.some(
+                    (worker: RegisteredHiveWorker) => worker.type === HiveWorkerType.RestEndpointFunction
+                )
+            ) {
+                const swaggerDefinition: swaggerUi.JsonObject = {
+                    info: {
+                        title: "OmniHive Custom Function REST Interface",
+                        version: "1.0.0",
+                        description:
+                            "All custom REST endpoint functions written by the OmniHive account administrators",
+                    },
+                    license: {},
+                    openapi: "3.0.0",
+                    servers: [
+                        {
+                            url: `${this.webRootUrl}${customRestSlug}`,
+                        },
+                    ],
+                };
+
+                const restWorkers = global.omnihive.registeredWorkers.filter(
+                    (rw: RegisteredHiveWorker) =>
+                        rw.type === HiveWorkerType.RestEndpointFunction &&
+                        rw.section === RegisteredHiveWorkerSection.User
+                );
+
+                restWorkers.forEach((rw: RegisteredHiveWorker) => {
+                    let workerMetaData: HiveWorkerMetadataRestFunction;
+
+                    try {
+                        workerMetaData = ObjectHelper.createStrict<HiveWorkerMetadataRestFunction>(
+                            HiveWorkerMetadataRestFunction,
+                            rw.metadata
+                        );
+                    } catch (error) {
+                        logWorker?.write(
+                            OmniHiveLogLevel.Error,
+                            `Cannot register custom REST worker ${rw.name}.  MetaData is incorrect.`
+                        );
+
+                        return;
+                    }
+
+                    const workerInstance: IRestEndpointWorker = rw.instance as IRestEndpointWorker;
+
+                    app[workerMetaData.restMethod](
+                        `${customRestSlug}/${workerMetaData.urlRoute}`,
+                        async (req: express.Request, res: express.Response) => {
+                            res.setHeader("Content-Type", "application/json");
+
+                            try {
+                                const workerResponse: RestEndpointExecuteResponse = await AwaitHelper.execute(
+                                    workerInstance.execute(
+                                        req.headers,
+                                        `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+                                        req.body
+                                    )
+                                );
+
+                                if (!IsHelper.isNullOrUndefined(workerResponse.response)) {
+                                    res.status(workerResponse.status).json(workerResponse.response);
+                                } else {
+                                    res.status(workerResponse.status).send(true);
+                                }
+                            } catch (error) {
+                                return res.status(500).render("500", {
+                                    rootUrl: this.webRootUrl,
+                                    error: serializeError(error),
+                                });
+                            }
+                        }
+                    );
+
+                    global.omnihive.registeredUrls.push({
+                        path: `${this.webRootUrl}${customRestSlug}/${workerMetaData.urlRoute}`,
+                        type: RegisteredUrlType.RestFunction,
+                        metadata: {},
+                    });
+
+                    const workerSwagger: swaggerUi.JsonObject | undefined = workerInstance.getSwaggerDefinition();
+
+                    if (!IsHelper.isNullOrUndefined(workerSwagger)) {
+                        swaggerDefinition.paths = { ...swaggerDefinition.paths, ...workerSwagger.paths };
+                        swaggerDefinition.definitions = {
+                            ...swaggerDefinition.definitions,
+                            ...workerSwagger.definitions,
+                        };
+                    }
+                });
+
+                if (swagger && !IsHelper.isEmptyArray(restWorkers)) {
+                    app.get(
+                        `${customRestSlug}/api-docs/swagger.json`,
+                        async (_req: express.Request, res: express.Response) => {
+                            res.setHeader("Content-Type", "application/json");
+                            return res.status(200).json(swaggerDefinition);
+                        }
+                    );
+
+                    app.use(`${customRestSlug}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
+
+                    global.omnihive.registeredUrls.push({
+                        path: `${this.webRootUrl}${customRestSlug}/api-docs`,
+                        type: RegisteredUrlType.Swagger,
+                        metadata: {
+                            swaggerJsonUrl: `${this.webRootUrl}${customRestSlug}/api-docs/swagger.json`,
+                        },
+                    });
+                }
+            }
+
+            logWorker?.write(OmniHiveLogLevel.Info, `Master Web Process => REST Server Generation Completed`);
 
             app.get("/", (_req, res) => {
                 res.status(200).render("index", {
@@ -347,5 +598,18 @@ export class ServerService {
         });
 
         return app;
+    };
+
+    private importFromString = (code: string): any => {
+        const transformResult = transformSync(code, { format: "cjs" });
+        const contextModule = new Module(nanoid());
+
+        runInNewContext(transformResult.code, {
+            exports: contextModule.exports,
+            module: contextModule,
+            require,
+        });
+
+        return contextModule.exports;
     };
 }

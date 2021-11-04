@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.5.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.2...v6.5.3) (2021-11-04)
+
+
+### Bug Fixes
+
+* **project:** Fix for importing inside of project files. ([2a43d12](https://github.com/WithOneVisionTechnologies/omnihive/commit/2a43d1257e6504c9201f9a89e7b46542dd3d825f))
+
 ### [6.5.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.1...v6.5.2) (2021-11-04)
 
 

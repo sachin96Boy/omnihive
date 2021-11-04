@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-cache-redis",
-    "version": "6.5.2",
+    "version": "6.5.3",
     "description": "OmniHive Redis Cache Worker",
     "license": "MIT",
     "author": {

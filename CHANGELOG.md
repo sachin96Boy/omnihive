@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.5.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.1...v6.5.2) (2021-11-04)
+
+
+### Bug Fixes
+
+* **server:** speed improvements for builder2 ([af3e1f5](https://github.com/WithOneVisionTechnologies/omnihive/commit/af3e1f5a61c4a20dd225d1a7e6679ef4779b8d7d))
+
+
+### Code Maitenance
+
+* **build:** Updating PNPM lock file ([0cf8b8d](https://github.com/WithOneVisionTechnologies/omnihive/commit/0cf8b8d5f171fb1eeb7f3ad9ed380ece5a915768))
+* **build:** Updating PNPM Version ([34f0f6d](https://github.com/WithOneVisionTechnologies/omnihive/commit/34f0f6d82dfa509e8e80dadf4ff4dd1eee03bf29))
+
 ### [6.5.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.0...v6.5.1) (2021-11-04)
 
 

@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-storage-cross-storage",
-    "version": "6.5.1",
+    "version": "6.5.2",
     "description": "OmniHive Cross-Storage Worker",
     "license": "MIT",
     "author": {

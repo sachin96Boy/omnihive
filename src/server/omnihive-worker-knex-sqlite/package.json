@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-knex-sqlite",
-    "version": "6.5.0",
+    "version": "6.5.1",
     "description": "OmniHive Knex SQLite Database Worker",
     "license": "MIT",
     "author": {

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.5.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.0...v6.5.1) (2021-11-04)
+
+
+### Code Maitenance
+
+* **omnihive:** Take out unnecessary default workers ([06358bf](https://github.com/WithOneVisionTechnologies/omnihive/commit/06358bfc4b41130387604267fd22d0a11c19f041))
+
 ## [6.5.0](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.6...v6.5.0) (2021-11-04)
 
 

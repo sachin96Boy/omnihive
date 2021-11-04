@@ -40,6 +40,9 @@ export class GlobalObject {
     public webServer: Server | undefined = undefined;
 
     public checkWorkerImportPath = (hiveWorker: HiveWorkerConfig) => {
+        const runtimeProjectPath = this.getEnvironmentVariable<string>("OH_RUNTIME_PROJECT_PATH") ?? "";
+        const runtimeMode = this.getEnvironmentVariable<string>("OH_RUNTIME_MODE") ?? "production";
+
         if (
             IsHelper.isNullOrUndefined(hiveWorker.importPath) ||
             IsHelper.isEmptyStringOrWhitespace(hiveWorker.importPath)
@@ -48,10 +51,18 @@ export class GlobalObject {
         }
 
         if (IsHelper.isEmptyStringOrWhitespace(hiveWorker.package)) {
-            if (!IsHelper.isEmptyStringOrWhitespace(this.ohDirName)) {
-                hiveWorker.importPath = path.join(this.ohDirName, hiveWorker.importPath);
+            if (
+                hiveWorker.importPath.includes("${ohProjectPath}") &&
+                !IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(runtimeProjectPath) &&
+                runtimeMode === RuntimeMode.Project
+            ) {
+                hiveWorker.importPath = hiveWorker.importPath.replace("${ohProjectPath}", runtimeProjectPath);
             } else {
-                hiveWorker.importPath = path.join(process.cwd(), hiveWorker.importPath);
+                if (!IsHelper.isEmptyStringOrWhitespace(this.ohDirName)) {
+                    hiveWorker.importPath = path.join(this.ohDirName, hiveWorker.importPath);
+                } else {
+                    hiveWorker.importPath = path.join(process.cwd(), hiveWorker.importPath);
+                }
             }
         }
     };

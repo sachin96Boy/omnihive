@@ -355,8 +355,10 @@ export class CommonService {
 
                 packagesToRemove.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Removing ${packageName} Package`);
-                    packageName = packageName.replace("${ohProjectPath}", runtimeProjectPath ?? "");
-                    removeCommand.append(`${packageName}`);
+
+                    if (!IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(packageName)) {
+                        removeCommand.append(`${packageName}`);
+                    }
 
                     if (index < packagesToRemove.length - 1) {
                         removeCommand.append(" ");
@@ -431,8 +433,10 @@ export class CommonService {
 
                 packagesToAdd.forEach((packageName: string, index: number) => {
                     logWorker?.write(OmniHiveLogLevel.Info, `Adding ${packageName} As a New Package`);
-                    packageName = packageName.replace("${ohProjectPath}", runtimeProjectPath ?? "");
-                    addCommand.append(`${packageName}`);
+
+                    if (!IsHelper.isNullOrUndefinedOrEmptyStringOrWhitespace(packageName)) {
+                        addCommand.append(`${packageName}`);
+                    }
 
                     if (index < packagesToAdd.length - 1) {
                         addCommand.append(" ");

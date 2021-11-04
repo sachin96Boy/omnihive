@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-date-dayjs",
-    "version": "6.4.6",
+    "version": "6.5.0",
     "description": "OmniHive DayJS Date Worker",
     "license": "MIT",
     "author": {

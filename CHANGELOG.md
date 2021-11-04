@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.5.0](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.6...v6.5.0) (2021-11-04)
+
+
+### Features
+
+* **monorepo): feat(monorepo:** Allow for completely custom URL's with custom REST and GraphQL ([babf527](https://github.com/WithOneVisionTechnologies/omnihive/commit/babf5270c59bc15c0bf5cdc948121ac5909df050))
+* **monorepo:** Allow for completely custom URL's with custom REST and GraphQL ([11d8819](https://github.com/WithOneVisionTechnologies/omnihive/commit/11d881923031e99b25449ddca017fbcd8542fd6a))
+
 ### [6.4.6](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.4.5...v6.4.6) (2021-11-03)
 
 

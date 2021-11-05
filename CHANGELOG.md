@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.5.4](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.3...v6.5.4) (2021-11-05)
+
+
+### Bug Fixes
+
+* **server:** The project routes for express have an extra slash in them ([ceafc88](https://github.com/WithOneVisionTechnologies/omnihive/commit/ceafc88074d46f9b9893c52d4de000b590a6c619))
+
 ### [6.5.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.2...v6.5.3) (2021-11-04)
 
 

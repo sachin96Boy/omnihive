@@ -258,7 +258,7 @@ export class ServerService {
                     const workerInstance: IRestEndpointWorker = rw.instance as IRestEndpointWorker;
 
                     app[workerMetaData.restMethod](
-                        `${customRestSlug}/${workerMetaData.urlRoute}`,
+                        `${customRestSlug}${workerMetaData.urlRoute}`,
                         async (req: express.Request, res: express.Response) => {
                             res.setHeader("Content-Type", "application/json");
 
@@ -286,7 +286,7 @@ export class ServerService {
                     );
 
                     global.omnihive.registeredUrls.push({
-                        path: `${this.webRootUrl}${customRestSlug}/${workerMetaData.urlRoute}`,
+                        path: `${this.webRootUrl}${customRestSlug}${workerMetaData.urlRoute}`,
                         type: RegisteredUrlType.RestFunction,
                         metadata: {},
                     });

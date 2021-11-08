@@ -24,6 +24,7 @@
         "build:prod": "tsc --p ./tsconfig.prod.json"
     },
     "dependencies": {
+        "@types/express": "4.17.13",
         "axios": "0.22.0",
         "graphql": "15.6.1"
     },

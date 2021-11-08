@@ -16,8 +16,8 @@ importers:
       '@types/yargs': 17.0.3
       '@typescript-eslint/eslint-plugin': 4.33.0
       '@typescript-eslint/parser': 4.33.0
-      '@withonevision/omnihive-worker-graphql-builder-v2': workspace:^6.5.2
-      '@withonevision/omnihive-worker-server-v1': workspace:^6.5.2
+      '@withonevision/omnihive-worker-graphql-builder-v2': workspace:^6.5.4
+      '@withonevision/omnihive-worker-server-v1': workspace:^6.5.4
       axios: 0.22.0
       chai: 4.3.4
       chalk: 4.1.2
@@ -94,6 +94,7 @@ importers:
   src/common/omnihive-core:
     specifiers:
       '@types/chai': 4.2.22
+      '@types/express': 4.17.13
       '@types/faker': 5.5.8
       '@types/mocha': 9.0.0
       '@types/node': 16.10.3
@@ -113,6 +114,7 @@ importers:
       stylelint-config-standard: 22.0.0
       typescript: 4.4.3
     dependencies:
+      '@types/express': 4.17.13
       axios: 0.22.0
       graphql: 15.6.1
     devDependencies:
@@ -137,6 +139,7 @@ importers:
   src/common/omnihive-core-cjs:
     specifiers:
       '@types/chai': 4.2.22
+      '@types/express': 4.17.13
       '@types/faker': 5.5.8
       '@types/mocha': 9.0.0
       '@types/node': 16.10.3
@@ -156,6 +159,7 @@ importers:
       stylelint-config-standard: 22.0.0
       typescript: 4.4.3
     dependencies:
+      '@types/express': 4.17.13
       axios: 0.22.0
       graphql: 15.6.1
     devDependencies:
@@ -180,6 +184,7 @@ importers:
   src/common/omnihive-core-esm:
     specifiers:
       '@types/chai': 4.2.22
+      '@types/express': 4.17.13
       '@types/faker': 5.5.8
       '@types/mocha': 9.0.0
       '@types/node': 16.10.3
@@ -199,6 +204,7 @@ importers:
       stylelint-config-standard: 22.0.0
       typescript: 4.4.3
     dependencies:
+      '@types/express': 4.17.13
       axios: 0.22.0
       graphql: 15.6.1
     devDependencies:
@@ -2335,6 +2341,7 @@ importers:
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
       '@types/faker': 5.5.8
+      '@types/lodash': 4.14.175
       '@types/mocha': 9.0.0
       '@types/node': 16.10.3
       '@types/swagger-ui-express': 4.1.3
@@ -2353,6 +2360,7 @@ importers:
       express: 4.17.1
       faker: 5.5.3
       graphql: 15.6.1
+      lodash: 4.17.21
       mocha: 9.1.2
       nanoid: 3.1.29
       prettier: 2.4.1
@@ -2373,6 +2381,7 @@ importers:
       esbuild: 0.13.12
       express: 4.17.1
       graphql: 15.6.1
+      lodash: 4.17.21
       nanoid: 3.1.29
       serialize-error: 8.1.0
       swagger-ui-express: 4.1.6_express@4.17.1
@@ -2380,6 +2389,7 @@ importers:
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
       '@types/faker': 5.5.8
+      '@types/lodash': 4.14.175
       '@types/mocha': 9.0.0
       '@types/node': 16.10.3
       '@types/swagger-ui-express': 4.1.3
@@ -8711,7 +8721,7 @@ packages:
     resolution: {integrity: sha512-nCkHGI4w7ZgAdNkrEu0bv+4xNV/XDqW+DydknebMOQwkpDGx8G+HTlj7R7ABI8i8nKxVw0wtKPi1D+lPOkh4YQ==}
     dependencies:
       '@types/mime': 1.3.2
-      '@types/node': 16.9.6
+      '@types/node': 16.10.3
 
   /@types/sinon/10.0.4:
     resolution: {integrity: sha512-fOYjrxQv8zJsqOY6V6ecP4eZhQBxtY80X0er1VVnUIAIZo74jHm8e1vguG5Yt4Iv8W2Wr7TgibB8MfRe32k9pA==}

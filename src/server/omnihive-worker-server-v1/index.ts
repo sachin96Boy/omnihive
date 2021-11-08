@@ -7,25 +7,28 @@ import { RegisteredUrlType } from "@withonevision/omnihive-core/enums/Registered
 import { AwaitHelper } from "@withonevision/omnihive-core/helpers/AwaitHelper";
 import { IsHelper } from "@withonevision/omnihive-core/helpers/IsHelper";
 import { IDatabaseWorker } from "@withonevision/omnihive-core/interfaces/IDatabaseWorker";
+import { IExpressWorker } from "@withonevision/omnihive-core/interfaces/IExpressWorker";
 import { IGraphBuildWorker } from "@withonevision/omnihive-core/interfaces/IGraphBuildWorker";
 import { ILogWorker } from "@withonevision/omnihive-core/interfaces/ILogWorker";
 import { IServerWorker } from "@withonevision/omnihive-core/interfaces/IServerWorker";
 import { ConnectionSchema } from "@withonevision/omnihive-core/models/ConnectionSchema";
 import { HiveWorkerBase } from "@withonevision/omnihive-core/models/HiveWorkerBase";
 import { HiveWorkerMetadataDatabase } from "@withonevision/omnihive-core/models/HiveWorkerMetadataDatabase";
+import { HiveWorkerMetadataExpress } from "@withonevision/omnihive-core/models/HiveWorkerMetadataExpress";
 import { HiveWorkerMetadataGraphBuilder } from "@withonevision/omnihive-core/models/HiveWorkerMetadataGraphBuilder";
 import { HiveWorkerMetadataServer } from "@withonevision/omnihive-core/models/HiveWorkerMetadataServer";
 import { RegisteredHiveWorker } from "@withonevision/omnihive-core/models/RegisteredHiveWorker";
 import { TableSchema } from "@withonevision/omnihive-core/models/TableSchema";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { ApolloServer, ApolloServerExpressConfig } from "apollo-server-express";
 import { camelCase } from "change-case";
 import { transformSync } from "esbuild";
 import express from "express";
+import _ from "lodash";
 import Module from "module";
 import { nanoid } from "nanoid";
 import { serializeError } from "serialize-error";
 import { runInNewContext } from "vm";
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 
 type BuilderDatabaseWorker = {
     registeredWorker: RegisteredHiveWorker;
@@ -67,6 +70,15 @@ export default class CoreServerWorker extends HiveWorkerBase implements IServerW
 
         try {
             logWorker?.write(OmniHiveLogLevel.Info, `Server ${this.name} => Graph Connection Schemas Being Loaded`);
+
+            // Get Express workers
+            for (let worker of _.orderBy(
+                this.registeredWorkers.filter((worker) => worker.type === HiveWorkerType.Express),
+                (item) => (item.metadata as HiveWorkerMetadataExpress).order,
+                "desc"
+            )) {
+                await AwaitHelper.execute((worker.instance as IExpressWorker).execute(app));
+            }
 
             // Get build workers
             const buildWorkers: RegisteredHiveWorker[] = [];

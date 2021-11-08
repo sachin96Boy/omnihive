@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.0...v6.6.1) (2021-11-08)
+
+
+### Bug Fixes
+
+* **server:** custom graph builder wrong url ([ae6f8e9](https://github.com/WithOneVisionTechnologies/omnihive/commit/ae6f8e9f76eafe9653de0b87047a649b5e059fbb))
+
 ## [6.6.0](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.4...v6.6.0) (2021-11-08)
 
 

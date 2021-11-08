@@ -194,10 +194,10 @@ export class ServerService {
                 }
 
                 const graphFunctionServer: ApolloServer = new ApolloServer(graphFunctionConfig);
-                await graphFunctionServer.start();
+                await AwaitHelper.execute(graphFunctionServer.start());
                 graphFunctionServer.applyMiddleware({
                     app,
-                    path: `${this.webRootUrl}${customGraphSlug}`,
+                    path: `${customGraphSlug}`,
                 });
 
                 global.omnihive.registeredUrls.push({

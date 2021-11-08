@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.6.0](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.4...v6.6.0) (2021-11-08)
+
+
+### Features
+
+* **server:** Adding raw Express workers ([3ec4537](https://github.com/WithOneVisionTechnologies/omnihive/commit/3ec4537bff18b4c42654be6536b5576d9157216f))
+
 ### [6.5.4](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.5.3...v6.5.4) (2021-11-05)
 
 

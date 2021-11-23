@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.1...v6.6.2) (2021-11-23)
+
+
+### Bug Fixes
+
+* **build:** Forcing latest yarn, npm, and pnpm to be installed in docker ([4a26cda](https://github.com/WithOneVisionTechnologies/omnihive/commit/4a26cdaa7c0da9647ff7a1174e3543e032ee0d33))
+
 ### [6.6.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.0...v6.6.1) (2021-11-08)
 
 

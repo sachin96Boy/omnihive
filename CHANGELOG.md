@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.4](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.3...v6.6.4) (2022-03-08)
+
+
+### Bug Fixes
+
+* **server:** Standardizing on PNPM ([96f9cab](https://github.com/WithOneVisionTechnologies/omnihive/commit/96f9cabd338d97183501939216a7426bb629e4a0))
+
 ### [6.6.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.2...v6.6.3) (2022-03-08)
 
 

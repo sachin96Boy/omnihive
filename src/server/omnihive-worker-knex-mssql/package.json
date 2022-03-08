@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-knex-mssql",
-    "version": "6.6.3",
+    "version": "6.6.4",
     "description": "OmniHive Knex MSSQL Database Worker",
     "license": "MIT",
     "author": {

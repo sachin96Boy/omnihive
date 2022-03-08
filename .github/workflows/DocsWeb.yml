@@ -12,7 +12,7 @@ jobs:
             - name: PNPM Install
               uses: pnpm/action-setup@v2.0.1
               with:
-                  version: 6.17.0
+                  version: 6.32.3
                   run_install: |
                       - recursive: true
             - name: Build Docusaurus

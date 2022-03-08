@@ -188,7 +188,7 @@ export class CommonService {
         );
 
         const serverConfig: ServerConfig = await AwaitHelper.execute(configWorker.get());
-        let runtimePackageManager: RuntimePackageManager = RuntimePackageManager.NPM;
+        let runtimePackageManager: RuntimePackageManager = RuntimePackageManager.PNPM;
         let runtimeMode: RuntimeMode = RuntimeMode.Production;
         let runtimeProjectPath: string = "";
 

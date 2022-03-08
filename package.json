@@ -101,6 +101,6 @@
         "@12stonechurch/twelvestone-events-api": "1.10.4",
         "@12stonechurch/twelvestone-forms-api": "1.10.4",
         "@12stonechurch/twelvestone-groups-api": "1.10.4",
-        "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:^6.6.2"
+        "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:^6.6.3"
     }
 }

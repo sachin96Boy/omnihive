@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.3](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.2...v6.6.3) (2022-03-08)
+
+
+### Bug Fixes
+
+* **server:** Telling NPM to be quiet when installing ([5b31329](https://github.com/WithOneVisionTechnologies/omnihive/commit/5b3132989b8364fc5bc1cb784803eb45a0f7b5c9))
+* **server:** Version incompatibility of graphql ([5b37a9d](https://github.com/WithOneVisionTechnologies/omnihive/commit/5b37a9d86471f09ab0be09096a4dd4a89c93b7bd))
+
 ### [6.6.2](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.1...v6.6.2) (2021-11-23)
 
 

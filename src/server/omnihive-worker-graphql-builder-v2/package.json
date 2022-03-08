@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-graphql-builder-v2",
-    "version": "6.6.2",
+    "version": "6.6.3",
     "description": "OmniHive GraphQL Build Worker V2",
     "license": "MIT",
     "author": {

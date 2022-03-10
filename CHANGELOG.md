@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.5](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.4...v6.6.5) (2022-03-10)
+
+
+### Bug Fixes
+
+* **server:** move console log to trigger on all failed imports for dx ([905c405](https://github.com/WithOneVisionTechnologies/omnihive/commit/905c405dc75a5667e32b8b110851d9ebbde5e92f))
+
 ### [6.6.4](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.3...v6.6.4) (2022-03-08)
 
 

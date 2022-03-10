@@ -235,8 +235,8 @@ export class GlobalObject {
                     break;
                 }
             } catch (err) {
+                console.log(err);
                 if (i === pathTries.length - 1) {
-                    console.log(err);
                     throw new Error(
                         `Could not find a worker module for ${hiveWorker.name} with import path ${hiveWorker.importPath}`
                     );

@@ -1,6 +1,6 @@
 {
     "name": "omnihive",
-    "version": "6.6.5",
+    "version": "6.6.6",
     "description": "OmniHive Server",
     "license": "MIT",
     "author": {
@@ -59,6 +59,7 @@
         "figlet": "1.5.2",
         "forever-monitor": "3.0.3",
         "fs-extra": "10.0.0",
+        "graphql": "15.5.0",
         "helmet": "4.6.0",
         "import-fresh": "3.3.0",
         "ms": "2.1.3",

@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.13](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.12...v6.6.13) (2022-03-10)
+
 ### [6.6.12](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.11...v6.6.12) (2022-03-10)
 
 

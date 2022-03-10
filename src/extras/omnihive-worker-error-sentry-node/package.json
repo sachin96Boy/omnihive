@@ -25,7 +25,8 @@
     },
     "dependencies": {
         "@sentry/node": "6.13.3",
-        "@withonevision/omnihive-core": "workspace:*"
+        "@withonevision/omnihive-core": "workspace:*",
+        "graphql": "15.5.0"
     },
     "devDependencies": {
         "@types/chai": "4.2.22",

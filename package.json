@@ -74,33 +74,5 @@
         "typescript": "4.4.3",
         "yargs": "17.2.1"
     },
-    "dependencies": {
-        "@12stonechurch/omnihive-worker-analytics": "2.0.76",
-        "@12stonechurch/omnihive-worker-auth": "2.0.76",
-        "@12stonechurch/omnihive-worker-cloudinary": "2.0.76",
-        "@12stonechurch/omnihive-worker-cms": "2.0.76",
-        "@12stonechurch/omnihive-worker-communications": "2.0.104",
-        "@12stonechurch/omnihive-worker-contacts": "2.0.102",
-        "@12stonechurch/omnihive-worker-documents": "2.0.94",
-        "@12stonechurch/omnihive-worker-docusign": "2.0.94",
-        "@12stonechurch/omnihive-worker-elastic": "2.0.76",
-        "@12stonechurch/omnihive-worker-engagements": "2.0.81",
-        "@12stonechurch/omnihive-worker-events": "2.0.76",
-        "@12stonechurch/omnihive-worker-graphql-builder-v1": "2.0.76",
-        "@12stonechurch/omnihive-worker-groups": "2.0.105",
-        "@12stonechurch/omnihive-worker-media": "2.0.76",
-        "@12stonechurch/omnihive-worker-next": "2.0.76",
-        "@12stonechurch/omnihive-worker-old-versions": "2.0.76",
-        "@12stonechurch/omnihive-worker-trainings": "2.0.76",
-        "@12stonechurch/omnihive-worker-watch": "2.0.76",
-        "@12stonechurch/twelvestone-auth-api": "1.10.4",
-        "@12stonechurch/twelvestone-common-api": "1.10.4",
-        "@12stonechurch/twelvestone-communications-api": "1.10.4",
-        "@12stonechurch/twelvestone-contacts-api": "1.10.4",
-        "@12stonechurch/twelvestone-engagements-api": "1.10.4",
-        "@12stonechurch/twelvestone-events-api": "1.10.4",
-        "@12stonechurch/twelvestone-forms-api": "1.10.4",
-        "@12stonechurch/twelvestone-groups-api": "1.10.4",
-        "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:^6.6.3"
-    }
+    "dependencies": {}
 }

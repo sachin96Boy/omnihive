@@ -25,7 +25,8 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "7.15.0",
-        "@withonevision/omnihive-core": "workspace:*"
+        "@withonevision/omnihive-core": "workspace:*",
+        "graphql": "15.5.0"
     },
     "devDependencies": {
         "@types/chai": "4.2.22",

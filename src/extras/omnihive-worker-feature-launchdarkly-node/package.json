@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
+        "graphql": "15.5.0",
         "launchdarkly-node-server-sdk": "6.2.0"
     },
     "devDependencies": {

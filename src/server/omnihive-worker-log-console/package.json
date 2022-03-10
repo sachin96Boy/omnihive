@@ -24,7 +24,8 @@
         "build:prod": "tsc --p ./tsconfig.prod.json"
     },
     "dependencies": {
-        "@withonevision/omnihive-core": "workspace:*"
+        "@withonevision/omnihive-core": "workspace:*",
+        "graphql": "15.5.0"
     },
     "devDependencies": {
         "@types/chai": "4.2.22",

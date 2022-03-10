@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
+        "graphql": "15.5.0",
         "socket.io": "4.2.0"
     },
     "devDependencies": {

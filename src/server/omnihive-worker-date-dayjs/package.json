@@ -25,7 +25,8 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "dayjs": "1.10.7"
+        "dayjs": "1.10.7",
+        "graphql": "15.5.0"
     },
     "devDependencies": {
         "@types/chai": "4.2.22",

@@ -25,7 +25,8 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
-        "auth0": "2.36.2"
+        "auth0": "2.36.2",
+        "graphql": "15.5.0"
     },
     "devDependencies": {
         "@types/auth0": "2.34.2",

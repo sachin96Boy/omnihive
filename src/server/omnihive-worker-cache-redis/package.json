@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
+        "graphql": "15.5.0",
         "ioredis": "4.27.10"
     },
     "devDependencies": {

@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
+        "graphql": "15.5.0",
         "node-forge": "0.10.0"
     },
     "devDependencies": {

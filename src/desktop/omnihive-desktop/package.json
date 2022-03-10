@@ -12,6 +12,7 @@
         "@withonevision/omnihive-desktop-server-manager": "workspace:*",
         "electron-better-ipc": "2.0.1",
         "electron-store": "8.0.1",
+        "graphql": "15.5.0",
         "lodash": "4.17.21",
         "rc-dock": "3.2.0",
         "react": "17.0.2",

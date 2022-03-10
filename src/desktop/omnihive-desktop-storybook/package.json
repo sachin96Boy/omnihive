@@ -28,6 +28,7 @@
         "@withonevision/omnihive-core": "workspace:*",
         "@withonevision/omnihive-desktop-core": "workspace:*",
         "@withonevision/omnihive-desktop-server-manager": "workspace:*",
+        "graphql": "15.5.0",
         "react": "17.0.2",
         "react-dom": "17.0.2"
     },

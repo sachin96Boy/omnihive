@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@withonevision/omnihive-core": "workspace:*",
+        "graphql": "15.5.0",
         "knex": "0.95.11",
         "mssql": "7.2.1",
         "tedious": "13.1.0"

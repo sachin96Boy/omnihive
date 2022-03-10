@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.9](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.8...v6.6.9) (2022-03-10)
+
+
+### Bug Fixes
+
+* **build:** reverting to 14-alpine ([0914ca8](https://github.com/WithOneVisionTechnologies/omnihive/commit/0914ca8d25cd1f6c4e4b7516d7ec083d36bdb9b0))
+
 ### [6.6.8](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.7...v6.6.8) (2022-03-10)
 
 

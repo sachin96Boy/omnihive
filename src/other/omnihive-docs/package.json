@@ -1,6 +1,6 @@
 {
     "name": "omnihive-docs",
-    "version": "6.6.8",
+    "version": "6.6.9",
     "private": true,
     "scripts": {
         "docusaurus": "docusaurus",

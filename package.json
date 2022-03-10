@@ -1,7 +1,7 @@
 {
     "name": "omnihive-workspace",
     "private": true,
-    "version": "6.6.8",
+    "version": "6.6.9",
     "workspaces": [
         "./common/*",
         "./custom/*",

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.7](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.4...v6.6.7) (2022-03-10)
+
+
+### Bug Fixes
+
+* **monorepo:** taking out unneeded packages for root package.json ([2b832ea](https://github.com/WithOneVisionTechnologies/omnihive/commit/2b832ea71e853608600ec5f2900e6d8e86907ccb))
+* **server:** move console log to trigger on all failed imports for dx ([905c405](https://github.com/WithOneVisionTechnologies/omnihive/commit/905c405dc75a5667e32b8b110851d9ebbde5e92f))
+
+
+### Code Maitenance
+
+* **release:** 6.6.5 ([50fd5a6](https://github.com/WithOneVisionTechnologies/omnihive/commit/50fd5a66ccb953f2bd30088017a0cb70f2607247))
+* **release:** 6.6.6 ([7ee14f8](https://github.com/WithOneVisionTechnologies/omnihive/commit/7ee14f8406f544f27f16f38256496f450b37596e))
+* **release:** push lock file ([3e43a79](https://github.com/WithOneVisionTechnologies/omnihive/commit/3e43a7959701bcf507c61cf84d02a8cf97f5fd9a))
+
 ### [6.6.6](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.5...v6.6.6) (2022-03-10)
 
 ### [6.6.5](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.4...v6.6.5) (2022-03-10)

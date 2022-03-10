@@ -29,7 +29,11 @@ import { CommonService } from "./CommonService";
 import { ApolloServerExpressConfig, ApolloServer } from "apollo-server-express";
 import { StringBuilder } from "@withonevision/omnihive-core/helpers/StringBuilder";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
-import { requireFromString } from "module-from-string";
+import { transformSync } from "esbuild";
+import Module from "module";
+import { nanoid } from "nanoid";
+import { runInNewContext } from "vm";
+
 export class ServerService {
     private webRootUrl: string = "";
     private webPortNumber: number = 3001;
@@ -146,7 +150,7 @@ export class ServerService {
                 builder.appendLine(`\t}),`);
                 builder.appendLine(`});`);
 
-                graphEndpointModule = requireFromString(builder.outputString());
+                graphEndpointModule = this.importFromString(builder.outputString());
             }
 
             logWorker?.write(OmniHiveLogLevel.Info, `Master Web Process => Graph Generation Files Completed`);
@@ -595,5 +599,18 @@ export class ServerService {
         });
 
         return app;
+    };
+
+    private importFromString = (code: string): any => {
+        const transformResult = transformSync(code, { format: "cjs" });
+        const contextModule = new Module(nanoid());
+
+        runInNewContext(transformResult.code, {
+            exports: contextModule.exports,
+            module: contextModule,
+            require,
+        });
+
+        return contextModule.exports;
     };
 }

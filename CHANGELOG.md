@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.10](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.9...v6.6.10) (2022-03-10)
+
+
+### Bug Fixes
+
+* **server:** runinnewcontext imports ([243e916](https://github.com/WithOneVisionTechnologies/omnihive/commit/243e916c0222d0b1526e1c3fd7bdcbe7781a79a3))
+
 ### [6.6.9](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.8...v6.6.9) (2022-03-10)
 
 

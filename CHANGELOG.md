@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.12](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.11...v6.6.12) (2022-03-10)
+
+
+### Bug Fixes
+
+* **server:** Reverting serverService and adding graphql to coreDependencies ([cdc3682](https://github.com/WithOneVisionTechnologies/omnihive/commit/cdc3682b92be8bbc5c569c73dc4b19bd8c065515))
+
 ### [6.6.11](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.10...v6.6.11) (2022-03-10)
 
 

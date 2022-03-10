@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.8](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.7...v6.6.8) (2022-03-10)
+
+
+### Bug Fixes
+
+* **build:** Lockfile ([557fe76](https://github.com/WithOneVisionTechnologies/omnihive/commit/557fe769d36fcfc1896e267dd670905da55d262b))
+
 ### [6.6.7](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.4...v6.6.7) (2022-03-10)
 
 

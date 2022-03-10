@@ -2,7 +2,7 @@
     "name": "omnihive-server-manager",
     "displayName": "OmniHive Server Manager",
     "description": "IDE-based tool for interacting with the OmniHive Server",
-    "version": "6.6.10",
+    "version": "6.6.11",
     "license": "MIT",
     "publisher": "with-one-vision",
     "engines": {

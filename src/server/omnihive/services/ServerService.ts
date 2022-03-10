@@ -607,7 +607,7 @@ export class ServerService {
         runInNewContext(transformResult.code, {
             exports: contextModule.exports,
             module: contextModule,
-            require,
+            require: contextModule.require,
         });
 
         return contextModule.exports;

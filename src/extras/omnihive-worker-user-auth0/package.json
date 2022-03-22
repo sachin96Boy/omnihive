@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-user-auth0",
-    "version": "6.6.13",
+    "version": "6.6.14",
     "description": "OmniHive Auth0 User Worker",
     "license": "MIT",
     "author": {

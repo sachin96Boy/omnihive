@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-pubsubserver-pusher",
-    "version": "6.6.13",
+    "version": "6.6.14",
     "description": "OmniHive Pusher Server Worker",
     "license": "MIT",
     "author": {

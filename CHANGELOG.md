@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.14](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.13...v6.6.14) (2022-03-22)
+
+
+### Bug Fixes
+
+* **server:** server boot now properly inits graph builders ([63605b8](https://github.com/WithOneVisionTechnologies/omnihive/commit/63605b883e9e2292e259f82661431306eb1cf352))
+* **worker:** issue in graph builder v2 when parent contains null ([2611a79](https://github.com/WithOneVisionTechnologies/omnihive/commit/2611a79afb89c2e527e2ba864a634c1896e1520d))
+
 ### [6.6.13](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.12...v6.6.13) (2022-03-10)
 
 ### [6.6.12](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.11...v6.6.12) (2022-03-10)

@@ -29,6 +29,7 @@
         "server:debug": "nodemon --no-stdin --config ./nodemon.server.json"
     },
     "dependencies": {
+        "@graphql-tools/schema": "8.2.0",
         "@socket.io/redis-adapter": "7.0.0",
         "@socket.io/redis-emitter": "4.1.0",
         "@withonevision/omnihive-core": "workspace:*",
@@ -42,7 +43,8 @@
         "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*",
         "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
         "@withonevision/omnihive-worker-function-core": "workspace:*",
-        "@withonevision/omnihive-worker-knex-mssql": "workspace:*",
+        "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:^6.6.13",
+        "@withonevision/omnihive-worker-knex-mssql": "6.2.54",
         "@withonevision/omnihive-worker-log-core": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",
         "apollo-server": "3.3.0",
@@ -109,6 +111,7 @@
     },
     "omniHive": {
         "coreDependencies": {
+            "@graphql-tools/schema": "8.2.0",
             "@socket.io/redis-adapter": "7.0.0",
             "@socket.io/redis-emitter": "4.1.0",
             "@withonevision/omnihive-core": "workspace:*",

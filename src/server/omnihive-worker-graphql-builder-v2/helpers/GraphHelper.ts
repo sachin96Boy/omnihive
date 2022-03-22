@@ -764,7 +764,7 @@ export class GraphHelper {
         // Iterate through each returning column
         for (const col of columns) {
             // if the item does not have that column property return false
-            if (!item[col.name]) {
+            if (IsHelper.isUndefined(item[col.name])) {
                 return false;
             }
 

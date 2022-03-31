@@ -204,15 +204,12 @@ const getRequiredFiles = () => {
         path.join(`server`, `omnihive-worker-knex-mssql`, `.npmignore`),
         path.join(`server`, `omnihive-worker-knex-mysql`, `.npmignore`),
         path.join(`server`, `omnihive-worker-knex-postgres`, `.npmignore`),
-        path.join(`server`, `omnihive-worker-knex-sqlite`, `.npmignore`),
         path.join(`server`, `omnihive-worker-config-mssql`, `.npmignore`),
         path.join(`server`, `omnihive-worker-config-mysql`, `.npmignore`),
         path.join(`server`, `omnihive-worker-config-postgres`, `.npmignore`),
-        path.join(`server`, `omnihive-worker-config-sqlite`, `.npmignore`),
         path.join(`server`, `omnihive-worker-config-mssql`, `defaultConfig.sql`),
         path.join(`server`, `omnihive-worker-config-mysql`, `defaultConfig.sql`),
         path.join(`server`, `omnihive-worker-config-postgres`, `defaultConfig.sql`),
-        path.join(`server`, `omnihive-worker-config-sqlite`, `defaultConfig.sql`),
     ];
 };
 
@@ -222,7 +219,6 @@ const getRequiredFolders = () => {
         path.join(`server`, `omnihive-worker-knex-mssql`, `scripts`),
         path.join(`server`, `omnihive-worker-knex-mysql`, `scripts`),
         path.join(`server`, `omnihive-worker-knex-postgres`, `scripts`),
-        path.join(`server`, `omnihive-worker-knex-sqlite`, `scripts`),
     ];
 };
 

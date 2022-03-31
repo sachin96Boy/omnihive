@@ -37,7 +37,6 @@
         "@withonevision/omnihive-worker-config-mssql": "workspace:*",
         "@withonevision/omnihive-worker-config-mysql": "workspace:*",
         "@withonevision/omnihive-worker-config-postgres": "workspace:*",
-        "@withonevision/omnihive-worker-config-sqlite": "workspace:*",
         "@withonevision/omnihive-worker-config-yaml": "workspace:*",
         "@withonevision/omnihive-worker-date-dayjs": "workspace:*",
         "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*",
@@ -119,7 +118,6 @@
             "@withonevision/omnihive-worker-config-mssql": "workspace:*",
             "@withonevision/omnihive-worker-config-mysql": "workspace:*",
             "@withonevision/omnihive-worker-config-postgres": "workspace:*",
-            "@withonevision/omnihive-worker-config-sqlite": "workspace:*",
             "@withonevision/omnihive-worker-config-yaml": "workspace:*",
             "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
             "@withonevision/omnihive-worker-function-core": "workspace:*",
@@ -243,19 +241,6 @@
                     "serverPort": "${OH_CONFIG_DB_SERVER_PORT}",
                     "sslCertPath": "${OH_CONFIG_DB_SSL_CERT_PATH}",
                     "userName": "${OH_CONFIG_DB_USER_NAME}"
-                }
-            },
-            {
-                "name": "__ohConfigSqliteWorker",
-                "type": "config",
-                "package": "@withonevision/omnihive-worker-config-sqlite",
-                "version": "workspace:*",
-                "importPath": "@withonevision/omnihive-worker-config-sqlite/index",
-                "default": false,
-                "enabled": true,
-                "metadata": {
-                    "configName": "${OH_CONFIG_DB_CONFIG_NAME}",
-                    "filename": "${OH_CONFIG_DB_FILE_PATH}"
                 }
             },
             {

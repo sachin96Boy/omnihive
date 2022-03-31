@@ -1,7 +1,0 @@
-{
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "outDir": "./../../../dist/server/omnihive-worker-config-sqlite"
-    },
-    "references": [{ "path": "./../../common/omnihive-core/tsconfig.prod.json" }]
-}

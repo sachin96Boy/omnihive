@@ -1173,7 +1173,7 @@ importers:
       '@withonevision/omnihive-worker-encryption-nodeforge': workspace:*
       '@withonevision/omnihive-worker-filesystem-fsextra': workspace:*
       '@withonevision/omnihive-worker-function-core': workspace:*
-      '@withonevision/omnihive-worker-graphql-builder-v2': workspace:^6.6.13
+      '@withonevision/omnihive-worker-graphql-builder-v2': workspace:*
       '@withonevision/omnihive-worker-knex-mssql': 6.2.54
       '@withonevision/omnihive-worker-log-core': workspace:*
       '@withonevision/omnihive-worker-token-jsonwebtoken': workspace:*
@@ -1450,7 +1450,7 @@ importers:
       eslint-plugin-prettier: 4.0.0
       faker: 5.5.3
       graphql: 15.5.0
-      knex: 1.0.4
+      knex: 0.95.15
       mocha: 9.1.2
       mssql: 7.2.1
       prettier: 2.4.1
@@ -1462,7 +1462,7 @@ importers:
     dependencies:
       '@withonevision/omnihive-core': link:../../common/omnihive-core
       graphql: 15.5.0
-      knex: 1.0.4_tedious@13.1.0
+      knex: 0.95.15_tedious@13.1.0
       mssql: 7.2.1
       tedious: 13.1.0
     devDependencies:
@@ -1502,7 +1502,7 @@ importers:
       faker: 5.5.3
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4
+      knex: 0.95.15
       mocha: 9.1.2
       mysql2: 2.3.0
       prettier: 2.4.1
@@ -1514,7 +1514,7 @@ importers:
       '@withonevision/omnihive-core': link:../../common/omnihive-core
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4_mysql2@2.3.0
+      knex: 0.95.15_mysql2@2.3.0
       mysql2: 2.3.0
     devDependencies:
       '@types/chai': 4.2.22
@@ -1554,7 +1554,7 @@ importers:
       faker: 5.5.3
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4
+      knex: 0.95.15
       mocha: 9.1.2
       pg: 8.7.1
       prettier: 2.4.1
@@ -1566,7 +1566,7 @@ importers:
       '@withonevision/omnihive-core': link:../../common/omnihive-core
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4_pg@8.7.1
+      knex: 0.95.15_pg@8.7.1
       pg: 8.7.1
     devDependencies:
       '@types/chai': 4.2.22
@@ -1855,7 +1855,7 @@ importers:
       faker: 5.5.3
       graphql: 15.5.0
       json5: 2.2.0
-      knex: 1.0.4
+      knex: 0.95.15
       lodash: 4.17.21
       mocha: 9.1.2
       pluralize: 8.0.0
@@ -1875,7 +1875,7 @@ importers:
       apollo-server-core: 3.3.0_graphql@15.5.0
       graphql: 15.5.0
       json5: 2.2.0
-      knex: 1.0.4
+      knex: 0.95.15
       lodash: 4.17.21
       pluralize: 8.0.0
     devDependencies:
@@ -1918,7 +1918,7 @@ importers:
       faker: 5.5.3
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4
+      knex: 0.95.15
       mocha: 9.1.2
       mssql: 7.2.1
       prettier: 2.4.1
@@ -1931,7 +1931,7 @@ importers:
       '@withonevision/omnihive-core': link:../../common/omnihive-core
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4_tedious@13.1.0
+      knex: 0.95.15_tedious@13.1.0
       mssql: 7.2.1
       tedious: 13.1.0
     devDependencies:
@@ -1976,7 +1976,7 @@ importers:
       faker: 5.5.3
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4
+      knex: 0.95.15
       lodash: 4.17.21
       mocha: 9.1.2
       mysql: 2.18.1
@@ -1989,7 +1989,7 @@ importers:
       '@withonevision/omnihive-core': link:../../common/omnihive-core
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4_mysql@2.18.1
+      knex: 0.95.15_mysql@2.18.1
       lodash: 4.17.21
       mysql: 2.18.1
     devDependencies:
@@ -2035,7 +2035,7 @@ importers:
       faker: 5.5.3
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4
+      knex: 0.95.15
       lodash: 4.17.21
       mocha: 9.1.2
       pg: 8.7.1
@@ -2048,7 +2048,7 @@ importers:
       '@withonevision/omnihive-core': link:../../common/omnihive-core
       fs-extra: 10.0.0
       graphql: 15.5.0
-      knex: 1.0.4_pg@8.7.1
+      knex: 0.95.15_pg@8.7.1
       lodash: 4.17.21
       pg: 8.7.1
     devDependencies:
@@ -12789,18 +12789,6 @@ packages:
       supports-color: 8.1.1
     dev: true
 
-  /debug/4.3.3:
-    resolution: {integrity: sha512-/zxw5+vh1Tfv+4Qn7a5nsbcJKPaSvCDhojn6FEl9vupwK2VCSDtEiEtqr8DFtzYFOdz63LBkxec7DYuc2jon6Q==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-    dependencies:
-      ms: 2.1.2
-    dev: false
-
   /debug/4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
     engines: {node: '>=6.0'}
@@ -15231,10 +15219,6 @@ packages:
     resolution: {integrity: sha512-9jb7AW5p3in+IiJWhQiZmmwkpLaR/ccTWdWQCtZM66HJcHHLegowh4q4tSD7gouUyeNvFWRavfK9GXosQHDpFA==}
     dev: false
 
-  /getopts/2.3.0:
-    resolution: {integrity: sha512-5eDf9fuSXwxBL6q5HX+dhDj+dslFGWzU5thZ9kNKUkcPtaPdatmUFKwHFrLb/uf/WpA4BHET+AX3Scl56cAjpA==}
-    dev: false
-
   /git-raw-commits/2.0.11:
     resolution: {integrity: sha512-VnctFhw+xfj8Va1xtfEqCUD2XDrbAPSJx+hSrE5K7fGdjZruW7XV+QOrN7LF/RJyvspRiD2I0asWsxFp0ya26A==}
     engines: {node: '>=10'}
@@ -17355,6 +17339,220 @@ packages:
     resolution: {integrity: sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==}
     engines: {node: '>= 8'}
 
+  /knex/0.95.15:
+    resolution: {integrity: sha512-Loq6WgHaWlmL2bfZGWPsy4l8xw4pOE+tmLGkPG0auBppxpI0UcK+GYCycJcqz9W54f2LiGewkCVLBm3Wq4ur/w==}
+    engines: {node: '>=10'}
+    hasBin: true
+    peerDependencies:
+      mysql: '*'
+      mysql2: '*'
+      pg: '*'
+      pg-native: '*'
+      sqlite3: '*'
+      tedious: '*'
+    peerDependenciesMeta:
+      mysql:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      pg-native:
+        optional: true
+      sqlite3:
+        optional: true
+      tedious:
+        optional: true
+    dependencies:
+      colorette: 2.0.16
+      commander: 7.2.0
+      debug: 4.3.2
+      escalade: 3.1.1
+      esm: 3.2.25
+      getopts: 2.2.5
+      interpret: 2.2.0
+      lodash: 4.17.21
+      pg-connection-string: 2.5.0
+      rechoir: 0.7.0
+      resolve-from: 5.0.0
+      tarn: 3.0.2
+      tildify: 2.0.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /knex/0.95.15_mysql2@2.3.0:
+    resolution: {integrity: sha512-Loq6WgHaWlmL2bfZGWPsy4l8xw4pOE+tmLGkPG0auBppxpI0UcK+GYCycJcqz9W54f2LiGewkCVLBm3Wq4ur/w==}
+    engines: {node: '>=10'}
+    hasBin: true
+    peerDependencies:
+      mysql: '*'
+      mysql2: '*'
+      pg: '*'
+      pg-native: '*'
+      sqlite3: '*'
+      tedious: '*'
+    peerDependenciesMeta:
+      mysql:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      pg-native:
+        optional: true
+      sqlite3:
+        optional: true
+      tedious:
+        optional: true
+    dependencies:
+      colorette: 2.0.16
+      commander: 7.2.0
+      debug: 4.3.2
+      escalade: 3.1.1
+      esm: 3.2.25
+      getopts: 2.2.5
+      interpret: 2.2.0
+      lodash: 4.17.21
+      mysql2: 2.3.0
+      pg-connection-string: 2.5.0
+      rechoir: 0.7.0
+      resolve-from: 5.0.0
+      tarn: 3.0.2
+      tildify: 2.0.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /knex/0.95.15_mysql@2.18.1:
+    resolution: {integrity: sha512-Loq6WgHaWlmL2bfZGWPsy4l8xw4pOE+tmLGkPG0auBppxpI0UcK+GYCycJcqz9W54f2LiGewkCVLBm3Wq4ur/w==}
+    engines: {node: '>=10'}
+    hasBin: true
+    peerDependencies:
+      mysql: '*'
+      mysql2: '*'
+      pg: '*'
+      pg-native: '*'
+      sqlite3: '*'
+      tedious: '*'
+    peerDependenciesMeta:
+      mysql:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      pg-native:
+        optional: true
+      sqlite3:
+        optional: true
+      tedious:
+        optional: true
+    dependencies:
+      colorette: 2.0.16
+      commander: 7.2.0
+      debug: 4.3.2
+      escalade: 3.1.1
+      esm: 3.2.25
+      getopts: 2.2.5
+      interpret: 2.2.0
+      lodash: 4.17.21
+      mysql: 2.18.1
+      pg-connection-string: 2.5.0
+      rechoir: 0.7.0
+      resolve-from: 5.0.0
+      tarn: 3.0.2
+      tildify: 2.0.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /knex/0.95.15_pg@8.7.1:
+    resolution: {integrity: sha512-Loq6WgHaWlmL2bfZGWPsy4l8xw4pOE+tmLGkPG0auBppxpI0UcK+GYCycJcqz9W54f2LiGewkCVLBm3Wq4ur/w==}
+    engines: {node: '>=10'}
+    hasBin: true
+    peerDependencies:
+      mysql: '*'
+      mysql2: '*'
+      pg: '*'
+      pg-native: '*'
+      sqlite3: '*'
+      tedious: '*'
+    peerDependenciesMeta:
+      mysql:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      pg-native:
+        optional: true
+      sqlite3:
+        optional: true
+      tedious:
+        optional: true
+    dependencies:
+      colorette: 2.0.16
+      commander: 7.2.0
+      debug: 4.3.2
+      escalade: 3.1.1
+      esm: 3.2.25
+      getopts: 2.2.5
+      interpret: 2.2.0
+      lodash: 4.17.21
+      pg: 8.7.1
+      pg-connection-string: 2.5.0
+      rechoir: 0.7.0
+      resolve-from: 5.0.0
+      tarn: 3.0.2
+      tildify: 2.0.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /knex/0.95.15_tedious@13.1.0:
+    resolution: {integrity: sha512-Loq6WgHaWlmL2bfZGWPsy4l8xw4pOE+tmLGkPG0auBppxpI0UcK+GYCycJcqz9W54f2LiGewkCVLBm3Wq4ur/w==}
+    engines: {node: '>=10'}
+    hasBin: true
+    peerDependencies:
+      mysql: '*'
+      mysql2: '*'
+      pg: '*'
+      pg-native: '*'
+      sqlite3: '*'
+      tedious: '*'
+    peerDependenciesMeta:
+      mysql:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      pg-native:
+        optional: true
+      sqlite3:
+        optional: true
+      tedious:
+        optional: true
+    dependencies:
+      colorette: 2.0.16
+      commander: 7.2.0
+      debug: 4.3.2
+      escalade: 3.1.1
+      esm: 3.2.25
+      getopts: 2.2.5
+      interpret: 2.2.0
+      lodash: 4.17.21
+      pg-connection-string: 2.5.0
+      rechoir: 0.7.0
+      resolve-from: 5.0.0
+      tarn: 3.0.2
+      tedious: 13.1.0
+      tildify: 2.0.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /knex/0.95.7_tedious@11.0.9:
     resolution: {integrity: sha512-J2X79td0NAcreTyWVmmHHretz5Ox705FHywddjkT3esTtmggphjcfDoaXym18xtsLdjzOvEb53WB/58lqcF14w==}
     engines: {node: '>=10'}
@@ -17390,235 +17588,6 @@ packages:
       resolve-from: 5.0.0
       tarn: 3.0.2
       tedious: 11.0.9
-      tildify: 2.0.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  /knex/1.0.4:
-    resolution: {integrity: sha512-cMQ81fpkVmr4ia20BtyrD3oPere/ir/Q6IGLAgcREKOzRVhMsasQ4nx1VQuDRJjqq6oK5kfcxmvWoYkHKrnuMA==}
-    engines: {node: '>=12'}
-    hasBin: true
-    peerDependencies:
-      '@vscode/sqlite3': '*'
-      better-sqlite3: '*'
-      mysql: '*'
-      mysql2: '*'
-      pg: '*'
-      pg-native: '*'
-      tedious: '*'
-    peerDependenciesMeta:
-      '@vscode/sqlite3':
-        optional: true
-      better-sqlite3:
-        optional: true
-      mysql:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
-      pg-native:
-        optional: true
-      tedious:
-        optional: true
-    dependencies:
-      colorette: 2.0.16
-      commander: 8.3.0
-      debug: 4.3.3
-      escalade: 3.1.1
-      esm: 3.2.25
-      getopts: 2.3.0
-      interpret: 2.2.0
-      lodash: 4.17.21
-      pg-connection-string: 2.5.0
-      rechoir: 0.8.0
-      resolve-from: 5.0.0
-      tarn: 3.0.2
-      tildify: 2.0.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  /knex/1.0.4_mysql2@2.3.0:
-    resolution: {integrity: sha512-cMQ81fpkVmr4ia20BtyrD3oPere/ir/Q6IGLAgcREKOzRVhMsasQ4nx1VQuDRJjqq6oK5kfcxmvWoYkHKrnuMA==}
-    engines: {node: '>=12'}
-    hasBin: true
-    peerDependencies:
-      '@vscode/sqlite3': '*'
-      better-sqlite3: '*'
-      mysql: '*'
-      mysql2: '*'
-      pg: '*'
-      pg-native: '*'
-      tedious: '*'
-    peerDependenciesMeta:
-      '@vscode/sqlite3':
-        optional: true
-      better-sqlite3:
-        optional: true
-      mysql:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
-      pg-native:
-        optional: true
-      tedious:
-        optional: true
-    dependencies:
-      colorette: 2.0.16
-      commander: 8.3.0
-      debug: 4.3.3
-      escalade: 3.1.1
-      esm: 3.2.25
-      getopts: 2.3.0
-      interpret: 2.2.0
-      lodash: 4.17.21
-      mysql2: 2.3.0
-      pg-connection-string: 2.5.0
-      rechoir: 0.8.0
-      resolve-from: 5.0.0
-      tarn: 3.0.2
-      tildify: 2.0.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  /knex/1.0.4_mysql@2.18.1:
-    resolution: {integrity: sha512-cMQ81fpkVmr4ia20BtyrD3oPere/ir/Q6IGLAgcREKOzRVhMsasQ4nx1VQuDRJjqq6oK5kfcxmvWoYkHKrnuMA==}
-    engines: {node: '>=12'}
-    hasBin: true
-    peerDependencies:
-      '@vscode/sqlite3': '*'
-      better-sqlite3: '*'
-      mysql: '*'
-      mysql2: '*'
-      pg: '*'
-      pg-native: '*'
-      tedious: '*'
-    peerDependenciesMeta:
-      '@vscode/sqlite3':
-        optional: true
-      better-sqlite3:
-        optional: true
-      mysql:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
-      pg-native:
-        optional: true
-      tedious:
-        optional: true
-    dependencies:
-      colorette: 2.0.16
-      commander: 8.3.0
-      debug: 4.3.3
-      escalade: 3.1.1
-      esm: 3.2.25
-      getopts: 2.3.0
-      interpret: 2.2.0
-      lodash: 4.17.21
-      mysql: 2.18.1
-      pg-connection-string: 2.5.0
-      rechoir: 0.8.0
-      resolve-from: 5.0.0
-      tarn: 3.0.2
-      tildify: 2.0.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  /knex/1.0.4_pg@8.7.1:
-    resolution: {integrity: sha512-cMQ81fpkVmr4ia20BtyrD3oPere/ir/Q6IGLAgcREKOzRVhMsasQ4nx1VQuDRJjqq6oK5kfcxmvWoYkHKrnuMA==}
-    engines: {node: '>=12'}
-    hasBin: true
-    peerDependencies:
-      '@vscode/sqlite3': '*'
-      better-sqlite3: '*'
-      mysql: '*'
-      mysql2: '*'
-      pg: '*'
-      pg-native: '*'
-      tedious: '*'
-    peerDependenciesMeta:
-      '@vscode/sqlite3':
-        optional: true
-      better-sqlite3:
-        optional: true
-      mysql:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
-      pg-native:
-        optional: true
-      tedious:
-        optional: true
-    dependencies:
-      colorette: 2.0.16
-      commander: 8.3.0
-      debug: 4.3.3
-      escalade: 3.1.1
-      esm: 3.2.25
-      getopts: 2.3.0
-      interpret: 2.2.0
-      lodash: 4.17.21
-      pg: 8.7.1
-      pg-connection-string: 2.5.0
-      rechoir: 0.8.0
-      resolve-from: 5.0.0
-      tarn: 3.0.2
-      tildify: 2.0.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  /knex/1.0.4_tedious@13.1.0:
-    resolution: {integrity: sha512-cMQ81fpkVmr4ia20BtyrD3oPere/ir/Q6IGLAgcREKOzRVhMsasQ4nx1VQuDRJjqq6oK5kfcxmvWoYkHKrnuMA==}
-    engines: {node: '>=12'}
-    hasBin: true
-    peerDependencies:
-      '@vscode/sqlite3': '*'
-      better-sqlite3: '*'
-      mysql: '*'
-      mysql2: '*'
-      pg: '*'
-      pg-native: '*'
-      tedious: '*'
-    peerDependenciesMeta:
-      '@vscode/sqlite3':
-        optional: true
-      better-sqlite3:
-        optional: true
-      mysql:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
-      pg-native:
-        optional: true
-      tedious:
-        optional: true
-    dependencies:
-      colorette: 2.0.16
-      commander: 8.3.0
-      debug: 4.3.3
-      escalade: 3.1.1
-      esm: 3.2.25
-      getopts: 2.3.0
-      interpret: 2.2.0
-      lodash: 4.17.21
-      pg-connection-string: 2.5.0
-      rechoir: 0.8.0
-      resolve-from: 5.0.0
-      tarn: 3.0.2
-      tedious: 13.1.0
       tildify: 2.0.0
     transitivePeerDependencies:
       - supports-color
@@ -21708,18 +21677,18 @@ packages:
       resolve: 1.22.0
     dev: false
 
+  /rechoir/0.7.0:
+    resolution: {integrity: sha512-ADsDEH2bvbjltXEP+hTIAmeFekTFK0V2BTxMkok6qILyAJEXV0AFfoWcAq4yfll5VdIMd/RVXq0lR+wQi5ZU3Q==}
+    engines: {node: '>= 0.10'}
+    dependencies:
+      resolve: 1.22.0
+    dev: false
+
   /rechoir/0.7.1:
     resolution: {integrity: sha512-/njmZ8s1wVeR6pjTZ+0nCnv8SpZNRMT2D1RLOJQESlYFDBvwpTA4KWJpZ+sBJ4+vhjILRcK7JIFdGCdxEAAitg==}
     engines: {node: '>= 0.10'}
     dependencies:
       resolve: 1.22.0
-
-  /rechoir/0.8.0:
-    resolution: {integrity: sha512-/vxpCXddiX8NGfGO/mTafwjq4aFa/71pvamip0++IQk3zG8cbCj0fifNPrjjF1XMXUne91jL9OoxmdykoEtifQ==}
-    engines: {node: '>= 10.13.0'}
-    dependencies:
-      resolve: 1.22.0
-    dev: false
 
   /recursive-readdir/2.2.2:
     resolution: {integrity: sha512-nRCcW9Sj7NuZwa2XvH9co8NPeXUBhZP7CRKJtU+cS6PW9FpCIFoI5ib0NT1ZrbNuPoRy0ylyCaUL8Gih4LSyFg==}

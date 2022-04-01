@@ -42,7 +42,7 @@
         "@withonevision/omnihive-worker-encryption-nodeforge": "workspace:*",
         "@withonevision/omnihive-worker-filesystem-fsextra": "workspace:*",
         "@withonevision/omnihive-worker-function-core": "workspace:*",
-        "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:^6.6.13",
+        "@withonevision/omnihive-worker-graphql-builder-v2": "workspace:*",
         "@withonevision/omnihive-worker-knex-mssql": "6.2.54",
         "@withonevision/omnihive-worker-log-core": "workspace:*",
         "@withonevision/omnihive-worker-token-jsonwebtoken": "workspace:*",

@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.1](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.13...v7.0.1) (2022-04-01)
+
+
+### Bug Fixes
+
+* **knex:** Reverting to 0.95.15 of knex ([c0fc8b4](https://github.com/WithOneVisionTechnologies/omnihive/commit/c0fc8b4c3c528639659a3d866966a6c525fa2313))
+* **server:** server boot now properly inits graph builders ([63605b8](https://github.com/WithOneVisionTechnologies/omnihive/commit/63605b883e9e2292e259f82661431306eb1cf352))
+* **sqlite:**  Removing sqlite for m1 mac build ([82c539e](https://github.com/WithOneVisionTechnologies/omnihive/commit/82c539e1eabba9d07628ade20ecadf4d7aba65d9))
+* **sqlite:** Removing sqlite from build ([1fa82c7](https://github.com/WithOneVisionTechnologies/omnihive/commit/1fa82c739f68666c93645cb73270dc259ce4a5ca))
+* **worker:** issue in graph builder v2 when parent contains null ([2611a79](https://github.com/WithOneVisionTechnologies/omnihive/commit/2611a79afb89c2e527e2ba864a634c1896e1520d))
+* **workspace:** Fix workspace versions ([f8357c4](https://github.com/WithOneVisionTechnologies/omnihive/commit/f8357c44c590b69d6c9d2cd7f0bc617b4317151d))
+
+
+### Code Maitenance
+
+* **release:** 6.6.14 ([5c9f61f](https://github.com/WithOneVisionTechnologies/omnihive/commit/5c9f61fa12f9ef67571f6030da00bba4873bee61))
+
 ### [6.6.14](https://github.com/WithOneVisionTechnologies/omnihive/compare/v6.6.13...v6.6.14) (2022-03-22)
 
 

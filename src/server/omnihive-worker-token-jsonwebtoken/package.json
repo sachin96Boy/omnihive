@@ -1,6 +1,6 @@
 {
     "name": "@withonevision/omnihive-worker-token-jsonwebtoken",
-    "version": "7.0.0",
+    "version": "7.0.1",
     "description": "OmniHive JSON Web Token Worker",
     "license": "MIT",
     "author": {

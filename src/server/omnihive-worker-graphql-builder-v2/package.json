@@ -34,7 +34,7 @@
         "apollo-server-core": "3.3.0",
         "graphql": "15.5.0",
         "json5": "2.2.0",
-        "knex": "1.0.4",
+        "knex": "0.95.15",
         "lodash": "4.17.21",
         "pluralize": "8.0.0"
     },
